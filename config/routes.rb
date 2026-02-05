@@ -1,4 +1,12 @@
 Rails.application.routes.draw do
+  devise_for :users, controllers: {
+    sessions: 'users/sessions',
+    registrations: 'users/registrations'
+  }
+  devise_for :clients, controllers: {
+    sessions: 'clients/sessions',
+    registrations: 'clients/registrations'
+  }
   # Deviseの管理者認証
   devise_for :admins, controllers: {
     sessions: 'admins/sessions',
@@ -49,6 +57,12 @@ Rails.application.routes.draw do
       post :generate_from_pillar
       patch :approve
     end
+  end
+
+  # --- 面接フォーム機能 ---
+  resources :situations do
+    resources :questions, except: [:show]
+    resources :answers, only: [:new, :create, :show]
   end
 
   # --- Sidekiq Web UI ---

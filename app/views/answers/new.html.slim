@@ -1,0 +1,29 @@
+/ app/views/answers/new.html.slim
+h1 面接フォーム: #{@situation.title}
+
+- if @question
+  p
+    strong 質問 #{@current_index + 1} / #{@questions.count}:
+    = @question.question_text
+
+  = form_with url: situation_answers_path(@situation), local: true do |f|
+    = hidden_field_tag :question_id, @question.id
+    = hidden_field_tag :next_index, @current_index + 1
+
+    - case @question.question_type
+    - when 'text'
+      = text_area_tag :response, '', rows: 3, class: 'form-control'
+    - when 'choice'
+      - @question.options&.each do |option|
+        = radio_button_tag :response, option
+        = label_tag "response_#{option}", option
+    - when 'rating'
+      - (1..5).each do |i|
+        = radio_button_tag :response, i
+        = label_tag "response_#{i}", i
+    - else
+      = text_area_tag :response, '', rows: 3, class: 'form-control'
+
+    = f.submit '次へ', class: 'btn btn-primary mt-2'
+- else
+  p すべての質問が終了しました。

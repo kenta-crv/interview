@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_02_04_062107) do
+ActiveRecord::Schema.define(version: 2026_02_05_071546) do
 
   create_table "admins", force: :cascade do |t|
     t.string "email", default: "", null: false
@@ -24,6 +24,30 @@ ActiveRecord::Schema.define(version: 2026_02_04_062107) do
     t.index ["reset_password_token"], name: "index_admins_on_reset_password_token", unique: true
   end
 
+  create_table "answers", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "situation_id", null: false
+    t.json "responses", null: false
+    t.datetime "started_at"
+    t.datetime "finished_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["situation_id"], name: "index_answers_on_situation_id"
+    t.index ["user_id"], name: "index_answers_on_user_id"
+  end
+
+  create_table "clients", force: :cascade do |t|
+    t.string "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["email"], name: "index_clients_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_clients_on_reset_password_token", unique: true
+  end
+
   create_table "columns", force: :cascade do |t|
     t.string "title"
     t.string "file"
@@ -34,7 +58,6 @@ ActiveRecord::Schema.define(version: 2026_02_04_062107) do
     t.text "body"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.string "service_type", default: "cargo", null: false
     t.string "genre"
     t.string "code"
     t.string "article_type", default: "cluster", null: false
@@ -44,7 +67,6 @@ ActiveRecord::Schema.define(version: 2026_02_04_062107) do
     t.index ["article_type"], name: "index_columns_on_article_type"
     t.index ["code"], name: "index_columns_on_code", unique: true
     t.index ["parent_id"], name: "index_columns_on_parent_id"
-    t.index ["service_type"], name: "index_columns_on_service_type"
   end
 
   create_table "contracts", force: :cascade do |t|
@@ -72,15 +94,38 @@ ActiveRecord::Schema.define(version: 2026_02_04_062107) do
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
-  create_table "sites", force: :cascade do |t|
-    t.string "name", null: false
-    t.string "domain", null: false
-    t.string "seo_title"
-    t.string "contact_email"
-    t.boolean "crm_enabled", default: false
+  create_table "questions", force: :cascade do |t|
+    t.integer "situation_id", null: false
+    t.text "question_text", null: false
+    t.string "question_type", null: false
+    t.json "options"
+    t.integer "order"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["domain"], name: "index_sites_on_domain", unique: true
+    t.index ["situation_id"], name: "index_questions_on_situation_id"
   end
 
+  create_table "situations", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "description"
+    t.integer "client_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["client_id"], name: "index_situations_on_client_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.string "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  add_foreign_key "answers", "situations"
+  add_foreign_key "questions", "situations"
 end

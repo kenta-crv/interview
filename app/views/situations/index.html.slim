@@ -1,0 +1,22 @@
+/ app/views/situations/index.html.slim
+h1 面接フォーム一覧
+
+= link_to '新しい面接フォームを作成', new_situation_path, class: 'btn btn-primary mb-3'
+
+table.table.table-striped
+  thead
+    tr
+      th ID
+      th タイトル
+      th 作成日
+      th 操作
+  tbody
+    - @situations.each do |s|
+      tr
+        td= s.id
+        td= s.title
+        td= s.created_at.strftime('%Y-%m-%d')
+        td
+          = link_to '表示', situation_path(s), class: 'btn btn-sm btn-info'
+          = link_to '編集', edit_situation_path(s), class: 'btn btn-sm btn-warning'
+          = link_to '削除', situation_path(s), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-sm btn-danger'

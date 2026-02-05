@@ -1,0 +1,21 @@
+/ app/views/questions/show.html.slim
+h1 質問詳細
+
+p
+  strong 順序:
+  = @question.order
+
+p
+  strong 質問内容:
+  = @question.question_text
+
+p
+  strong タイプ:
+  = @question.question_type
+
+p
+  strong 選択肢:
+  = @question.options
+
+= link_to '編集', edit_situation_question_path(@situation, @question), class: 'btn btn-warning'
+= link_to '一覧に戻る', situation_questions_path(@situation), class: 'btn btn-secondary'
