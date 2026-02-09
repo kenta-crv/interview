@@ -47,6 +47,6 @@ class SituationsController < ApplicationController
   end
 
   def situation_params
-    params.require(:situation).permit(:title, :description)
+    params.require(:situation).permit(:title, :description, :language, :archived)
   end
 end

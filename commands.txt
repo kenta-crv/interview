@@ -1,0 +1,30 @@
+# Start server
+bundle exec rails s
+
+# Open Rails console (interactive shell)
+bundle exec rails console
+# or: bundle exec rails c
+
+# Run tests
+bundle exec rails test
+
+# Create new migration
+bundle exec rails generate migration MigrationName
+
+# Run specific migration
+bundle exec rails db:migrate:up VERSION=20240206000000
+
+# Reset database (warning: deletes all data!)
+bundle exec rails db:reset
+
+# Check database status
+bundle exec rails db:status
+
+# View all routes
+bundle exec rails routes
+
+# Background job queue
+bundle exec sidekiq
+
+# Check active jobs
+bundle exec rails active_job:wait_for_max_wait_time

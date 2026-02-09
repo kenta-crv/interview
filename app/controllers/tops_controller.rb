@@ -32,6 +32,9 @@ class TopsController < ApplicationController
   def short
     @contract = Contract.new
   end
+
+  def interview
+  end
   private
 
   def set_columns

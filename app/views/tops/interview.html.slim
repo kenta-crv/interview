@@ -1,0 +1,93 @@
+/ app/views/tops/interview.html.slim
+.section-interview
+  .interview-hero
+    .interview-hero__content
+      h1 AI Interview Portal
+      p Start your interview instantly. Answer questions with audio, or upload video/audio.
+      .interview-hero__actions
+        button#start_interview.btn-primary Start Interview
+        button#resume_interview.btn-secondary Resume Saved Interview
+
+    .interview-hero__panel
+      .field
+        label for="situation_id" Situation ID
+        input#situation_id type="number" min="1" placeholder="1"
+      .field
+        label for="language" Language
+        select#language
+          option value="en" English
+          option value="ja" 日本語
+      .field
+        label for="email" Applicant Email (login required)
+        input#applicant_email type="email" placeholder="your@email.com"
+
+  .interview-body
+    .interview-card
+      h2 Interview Status
+      p#interview_status Ready to start.
+      .interview-progress
+        .interview-progress__bar
+          span#progress_bar
+      .interview-meta
+        span#progress_text 0%
+        span#question_count 0 / 0
+
+    .interview-card
+      h2 Question
+      .avatar
+        img#avatar_image src=asset_path('image.png') alt="Avatar"
+        .avatar__label AI Interviewer
+      p#question_text Click "Start Interview" to begin.
+      audio#question_audio controls=true
+      .mcq-options#mcq_options
+
+    .interview-card
+      h2 Your Answer
+      .field
+        label for="text_answer" Text Answer (optional)
+        input#text_answer type="text" placeholder="Optional text answer"
+
+      .recorder
+        .recorder__controls
+          button#record_start.btn-secondary Start Recording
+          button#record_stop.btn-secondary disabled=true Stop Recording
+          span#record_status Idle
+        audio#recorded_audio controls=true
+
+      .field
+        label for="audio_file" Upload Audio File
+        input#audio_file type="file" accept="audio/*"
+
+      .field
+        label for="video_file" Upload Video File (optional)
+        input#video_file type="file" accept="video/*"
+
+      .actions
+        button#submit_answer.btn-primary Submit Answer
+        button#complete_interview.btn-secondary Complete Interview
+
+  .interview-card
+    h2 Results
+    p#result_status Results will appear after completion.
+    .result-grid
+      .result-item
+        .label Status
+        .value#result_final_status -
+      .result-item
+        .label Average Score
+        .value#result_avg_score -
+      .result-item
+        .label Questions
+        .value#result_qs -
+
+    h3 Summary
+    p#result_summary -
+
+    h3 Strengths
+    ul#result_strengths
+
+    h3 Weaknesses
+    ul#result_weaknesses
+
+    h3 Recommendation
+    p#result_recommendation -
