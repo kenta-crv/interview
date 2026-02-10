@@ -48,6 +48,17 @@ class QuestionsController < ApplicationController
   end
 
   def question_params
-    params.require(:question).permit(:question_text, :question_type, :options, :order)
+    permitted = params.require(:question).permit(:question_text, :question_type, :options, :order)
+    parse_options_json(permitted)
+  end
+
+  def parse_options_json(permitted)
+    raw = permitted[:options]
+    return permitted if raw.blank? || !raw.is_a?(String)
+
+    permitted[:options] = JSON.parse(raw)
+    permitted
+  rescue JSON::ParserError
+    permitted
   end
 end

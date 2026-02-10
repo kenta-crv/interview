@@ -1,0 +1,23 @@
+h1 Interview Results (Admin)
+
+.table-wrapper
+  table
+    thead
+      tr
+        th ID
+        th Applicant
+        th Situation
+        th Status
+        th Average Score
+        th Created
+        th
+    tbody
+      - @results.each do |result|
+        tr
+          td= result.id
+          td= result.interview.user&.email
+          td= result.interview.situation&.title
+          td= result.final_status
+          td= result.average_score
+          td= l(result.created_at, format: :short)
+          td= link_to 'View', admin_interview_result_path(result)

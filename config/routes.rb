@@ -28,6 +28,7 @@ Rails.application.routes.draw do
   get 'app', to: 'tops#app'
   get 'ads', to: 'tops#ads'
   get 'bpo', to: 'tops#bpo'
+  get 'interview', to: 'tops#interview'
 
   # --- SEO用: ジャンル別コラム階層 (/genre/columns/:code) ---
   scope ':genre', constraints: { genre: /cargo|security|cleaning|app|construction|vender/ } do
@@ -69,5 +70,29 @@ Rails.application.routes.draw do
   require 'sidekiq/web'
   authenticate :admin do 
     mount Sidekiq::Web, at: "/sidekiq"
+  end
+
+  # --- AI Interview System API ---
+  namespace :api do
+    resources :interviews, only: [] do
+      member do
+        get :next_question
+        post :submit_answer
+        post :answer, action: :submit_answer
+        post :complete
+        get :status
+      end
+      collection do
+        post :start
+      end
+    end
+  end
+
+  namespace :admin do
+    resources :interview_results, only: [:index, :show]
+  end
+
+  namespace :client do
+    resources :interview_results, only: [:index, :show]
   end
 end

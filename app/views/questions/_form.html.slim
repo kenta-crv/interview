@@ -6,11 +6,11 @@
 
   .form-group
     = f.label :question_type, '質問タイプ'
-    = f.select :question_type, options_for_select([['テキスト', 'text'], ['選択肢', 'choice'], ['評価', 'rating']], @question.question_type), {}, class: 'form-control'
+    = f.select :question_type, options_for_select([['テキスト', 'text'], ['選択肢', 'choice']], @question.question_type), {}, class: 'form-control'
 
   .form-group
     = f.label :options, '選択肢（choice の場合のみ, JSON形式で入力）'
-    = f.text_area :options, class: 'form-control', rows: 2, placeholder: '["選択肢1", "選択肢2"]'
+    = f.text_area :options, class: 'form-control', rows: 2, placeholder: '{"choices":["選択肢1","選択肢2"],"correct":"選択肢1"}'
 
   .form-group
     = f.label :order, '表示順'

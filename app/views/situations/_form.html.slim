@@ -7,5 +7,13 @@
     = f.label :description
     = f.text_area :description
 
+  .field
+    = f.label :language
+    = f.select :language, options_for_select([['English', 'en'], ['日本語', 'ja']], @situation.language), {}, class: 'form-control'
+
+  .field
+    = f.label :archived
+    = f.check_box :archived
+
   .actions
     = f.submit "Save"
