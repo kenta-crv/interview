@@ -35,6 +35,7 @@ class InterviewSystemTester
     puts "\n▶ SETUP: Creating test data..."
 
     @user = User.find_or_create_by(email: "test_#{SecureRandom.hex(4)}@interview.com") do |u|
+      u.name = 'Test User'
       u.password = 'test1234'
       u.password_confirmation = 'test1234'
     end
@@ -166,6 +167,7 @@ class InterviewSystemTester
     )
 
     empty_user = User.create!(
+      name: 'Empty Test User',
       email: "empty_#{SecureRandom.hex(4)}@interview.com",
       password: 'test1234',
       password_confirmation: 'test1234'

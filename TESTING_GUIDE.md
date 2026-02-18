@@ -15,16 +15,31 @@
 
 ### For Immediate Testing (5 minutes)
 
+⚠️ **IMPORTANT: You need TWO terminal windows open at the same time**
+
+**Terminal 1: Start the Rails Server**
 ```bash
-# 1. Start the Rails server
 bundle exec rails s
+```
+Wait until you see: `Listening on tcp://127.0.0.1:3000` ✅
 
-# 2. In another terminal, run the complete test suite
+**Keep Terminal 1 open - DO NOT close it!**
+
+**Terminal 2: Run the Test (Open a NEW terminal window)**
+```bash
+# Wait 3 seconds for server to fully start
+sleep 3
+
+# Then run the complete test suite
 bundle exec rails runner test_complete_interview_system.rb
+```
 
-# 3. Or test specific endpoints with the shell script
+**Alternative:** Test specific endpoints with the shell script
+```bash
 bash test_endpoints.sh
 ```
+
+⚠️ **Common Mistake:** Running the test in the same terminal as the server will not work! The server must be running in the background in a separate terminal.
 
 ---
 
@@ -655,21 +670,86 @@ bundle exec sidekiq
 bundle exec rails active_job:wait_for_max_wait_time
 ```
 
+### Issue 6: "Failed to open TCP connection to localhost:3000" Error
+
+**What This Error Means:**
+The test script tried to connect to the Rails server but couldn't find it running on `localhost:3000`. This happens when:
+- ❌ The Rails server is NOT running
+- ❌ The server is running on a different port
+- ❌ The server crashed or stopped
+
+**How to Fix (3 Easy Steps):**
+
+**Step 1: Open TWO Terminal Windows**
+- Terminal 1: For the Rails server
+- Terminal 2: For running the test
+
+**Step 2: Start the Rails Server (Terminal 1)**
+```bash
+cd /Users/abdullahzulfiqar/Desktop/Abdullah/freelancingwork/interview
+bundle exec rails s
+```
+
+Wait until you see:
+```
+Listening on tcp://127.0.0.1:3000
+```
+
+⚠️ **KEEP THIS TERMINAL OPEN** - Do not close it!
+
+**Step 3: Run the Test (Terminal 2 - NEW TERMINAL)**
+```bash
+cd /Users/abdullahzulfiqar/Desktop/Abdullah/freelancingwork/interview
+bundle exec rails runner test_complete_interview_system.rb
+```
+
+**Important:** You MUST have Terminal 1 running the server while Terminal 2 runs the test. If you see this error, it means the server from Terminal 1 is not running.
+
+---
+
+### Issue 7: "Validation failed: Name can't be blank" Error
+
+**What This Error Means:**
+The test tried to create a User without a `name` attribute, but the User model requires it.
+
+**Status:** ✅ **FIXED** - This issue has been corrected in the test file.
+
+The test now includes the `name` attribute when creating users:
+```ruby
+@user = User.find_or_create_by(email: "test_#{SecureRandom.hex(4)}@interview.com") do |u|
+  u.name = 'Test User'  # ← Added this line
+  u.password = 'test1234'
+  u.password_confirmation = 'test1234'
+end
+```
+
+If you still see this error, it means you have an older version of the test file. Make sure you have the latest version.
+
 ---
 
 ## Complete Testing Workflow
 
 ### For Your First Test (10 minutes)
 
+⚠️ **CRITICAL: Open TWO separate terminal windows!**
+
+**Terminal 1 (Server - Keep Open):**
 ```bash
-# Terminal 1: Start Rails server
 cd /Users/abdullahzulfiqar/Desktop/Abdullah/freelancingwork/interview
 bundle exec rails s
+```
+✅ Wait for: `Listening on tcp://127.0.0.1:3000`  
+✅ **Keep this terminal running while you run the test**
 
-# Terminal 2: Wait 3 seconds for server startup, then run test
+**Terminal 2 (Test - New Window):**
+```bash
+cd /Users/abdullahzulfiqar/Desktop/Abdullah/freelancingwork/interview
 sleep 3
 bundle exec rails runner test_complete_interview_system.rb
 ```
+
+**⚠️ DO NOT RUN THE TEST IN THE SAME TERMINAL AS THE SERVER!**  
+If you do, you'll get the error: `Failed to open TCP connection to localhost:3000`
 
 ### Success Indicators ✅
 
