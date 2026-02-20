@@ -18,6 +18,16 @@ module InterviewEngine
 
       evaluation = if @question.multiple_choice?
                      evaluate_multiple_choice
+                   elsif test_mode?
+                     # In test mode, provide a passing evaluation
+                     {
+                       relevance_score: 85,
+                       correctness_score: 80,
+                       clarity_score: 82,
+                       final_score: 82.5,
+                       passed: true,
+                       reasoning: 'Test mode evaluation'
+                     }
                    else
                      llm = LLMClient.new
                      llm.evaluate_response(
@@ -57,6 +67,10 @@ module InterviewEngine
         ai_reasoning: evaluation[:reasoning],
         evaluation_status: :completed
       )
+    end
+
+    def test_mode?
+      ENV['AI_INTERVIEW_TEST_MODE'] == 'true'
     end
 
     def calculate_weighted_score(evaluation)
