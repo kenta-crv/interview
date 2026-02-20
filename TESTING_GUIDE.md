@@ -17,11 +17,13 @@
 
 ⚠️ **IMPORTANT: You need TWO terminal windows open at the same time**
 
-**Terminal 1: Start the Rails Server**
+**Terminal 1: Start the Rails Server with Test Mode**
 ```bash
-bundle exec rails s
+AI_INTERVIEW_TEST_MODE=true bundle exec rails s
 ```
 Wait until you see: `Listening on tcp://127.0.0.1:3000` ✅
+
+**Note:** The `AI_INTERVIEW_TEST_MODE=true` environment variable enables the API to work without authentication during testing.
 
 **Keep Terminal 1 open - DO NOT close it!**
 
@@ -687,7 +689,7 @@ The test script tried to connect to the Rails server but couldn't find it runnin
 **Step 2: Start the Rails Server (Terminal 1)**
 ```bash
 cd /Users/abdullahzulfiqar/Desktop/Abdullah/freelancingwork/interview
-bundle exec rails s
+AI_INTERVIEW_TEST_MODE=true bundle exec rails s
 ```
 
 Wait until you see:
@@ -703,7 +705,7 @@ cd /Users/abdullahzulfiqar/Desktop/Abdullah/freelancingwork/interview
 bundle exec rails runner test_complete_interview_system.rb
 ```
 
-**Important:** You MUST have Terminal 1 running the server while Terminal 2 runs the test. If you see this error, it means the server from Terminal 1 is not running.
+**Important:** You MUST have Terminal 1 running the server while Terminal 2 runs the test. If you see this error, it means the server from Terminal 1 is not running. Also ensure you started the server with `AI_INTERVIEW_TEST_MODE=true` to enable test mode.
 
 ---
 
@@ -736,7 +738,7 @@ If you still see this error, it means you have an older version of the test file
 **Terminal 1 (Server - Keep Open):**
 ```bash
 cd /Users/abdullahzulfiqar/Desktop/Abdullah/freelancingwork/interview
-bundle exec rails s
+AI_INTERVIEW_TEST_MODE=true bundle exec rails s
 ```
 ✅ Wait for: `Listening on tcp://127.0.0.1:3000`  
 ✅ **Keep this terminal running while you run the test**
