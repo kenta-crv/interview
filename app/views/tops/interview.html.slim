@@ -1,93 +1,124 @@
 / app/views/tops/interview.html.slim
 .section-interview
-  .interview-hero
-    .interview-hero__content
-      h1 AI Interview Portal
-      p Start your interview instantly. Answer questions with audio, or upload video/audio.
-      .interview-hero__actions
-        button#start_interview.btn-primary Start Interview
-        button#resume_interview.btn-secondary Resume Saved Interview
+  .interview-container
+    /! ステップインジケーター
+    .step-indicator
+      .step-indicator__item.active data-step="1"
+        .step-indicator__number 1
+        .step-indicator__label 面接選択
+      .step-indicator__item data-step="2"
+        .step-indicator__number 2
+        .step-indicator__label 面接実施
+      .step-indicator__item data-step="3"
+        .step-indicator__number 3
+        .step-indicator__label 結果確認
 
-    .interview-hero__panel
-      .field
-        label for="situation_id" Situation ID
-        input#situation_id type="number" min="1" placeholder="1"
-      .field
-        label for="language" Language
-        select#language
-          option value="en" English
-          option value="ja" 日本語
-      .field
-        label for="email" Applicant Email (login required)
-        input#applicant_email type="email" placeholder="your@email.com"
+    /! ===== Step 1: 面接選択 =====
+    #step-1.step.active
+      .interview-card.interview-card--hero
+        h1 AI面接インタビュー
+        p AIが面接官となり、あなたの回答をリアルタイムで評価します。面接フォームを選択して開始してください。
 
-  .interview-body
-    .interview-card
-      h2 Interview Status
-      p#interview_status Ready to start.
-      .interview-progress
-        .interview-progress__bar
-          span#progress_bar
-      .interview-meta
-        span#progress_text 0%
-        span#question_count 0 / 0
+        .form-group
+          label.form-label 面接フォーム
+          select#situation_id.form-input
+            option value="" -- 選択してください --
+            - @situations.each do |s|
+              option value=s.id #{s.title}
 
-    .interview-card
-      h2 Question
-      .avatar
-        img#avatar_image src=asset_path('image.png') alt="Avatar"
-        .avatar__label AI Interviewer
-      p#question_text Click "Start Interview" to begin.
-      audio#question_audio controls=true
-      .mcq-options#mcq_options
+        .form-group
+          label.form-label 回答言語
+          select#language.form-input
+            option value="ja" 日本語
+            option value="en" English
 
-    .interview-card
-      h2 Your Answer
-      .field
-        label for="text_answer" Text Answer (optional)
-        input#text_answer type="text" placeholder="Optional text answer"
+        .interview-actions
+          button#start_interview.btn-start 面接を開始する
+          button#resume_interview.btn-resume 前回の面接を再開
 
-      .recorder
-        .recorder__controls
-          button#record_start.btn-secondary Start Recording
-          button#record_stop.btn-secondary disabled=true Stop Recording
-          span#record_status Idle
-        audio#recorded_audio controls=true
+    /! ===== Step 2: 面接実施 =====
+    #step-2.step
+      /! ステータス・プログレス
+      .interview-card
+        .interview-header
+          h2 面接進行中
+          span#interview_status.status-badge 準備完了
+        .interview-progress
+          .interview-progress__bar
+            span#progress_bar
+        .interview-meta
+          span#progress_text 0%
+          span#question_count 0 / 0 問
 
-      .field
-        label for="audio_file" Upload Audio File
-        input#audio_file type="file" accept="audio/*"
+      /! 質問表示
+      .interview-card
+        h2 質問
+        .avatar
+          .avatar__icon
+          .avatar__label AIインタビュアー
+        p#question_text.question-display 「面接を開始する」をクリックしてください。
+        audio#question_audio controls=true
+        #mcq_options.mcq-options
 
-      .field
-        label for="video_file" Upload Video File (optional)
-        input#video_file type="file" accept="video/*"
+      /! 回答入力
+      .interview-card
+        h2 あなたの回答
+        .form-group
+          label.form-label テキストで回答
+          textarea#text_answer.form-input rows="3" placeholder="回答を入力してください..."
 
-      .actions
-        button#submit_answer.btn-primary Submit Answer
-        button#complete_interview.btn-secondary Complete Interview
+        .recorder
+          label.form-label 音声で回答
+          .recorder__controls
+            button#record_start.btn-record 録音開始
+            button#record_stop.btn-record.btn-record--stop disabled=true 録音停止
+            span#record_status.record-status 待機中
+          audio#recorded_audio controls=true
 
-  .interview-card
-    h2 Results
-    p#result_status Results will appear after completion.
-    .result-grid
-      .result-item
-        .label Status
-        .value#result_final_status -
-      .result-item
-        .label Average Score
-        .value#result_avg_score -
-      .result-item
-        .label Questions
-        .value#result_qs -
+        .form-group
+          label.form-label 音声ファイルをアップロード
+          input#audio_file.form-file type="file" accept="audio/*"
 
-    h3 Summary
-    p#result_summary -
+        .form-group
+          label.form-label 動画ファイルをアップロード（任意）
+          input#video_file.form-file type="file" accept="video/*"
 
-    h3 Strengths
-    ul#result_strengths
+        .interview-actions
+          button#submit_answer.btn-start 回答を送信
+          button#complete_interview.btn-complete style="display:none" 面接を完了する
 
-    h3 Weaknesses
-    ul#result_weaknesses
+    /! ===== Step 3: 結果確認 =====
+    #step-3.step
+      .interview-card.interview-card--result
+        h2 面接結果
+        p#result_status.result-message 結果を読み込み中...
 
-    h3 Recommendation
-    p#result_recommendation -
+        .result-grid
+          .result-item
+            .result-item__label 判定
+            .result-item__value#result_final_status -
+          .result-item
+            .result-item__label 平均スコア
+            .result-item__value#result_avg_score -
+          .result-item
+            .result-item__label 回答数
+            .result-item__value#result_qs -
+
+      .interview-card
+        h3 総評
+        p#result_summary -
+
+      .interview-card
+        h3 強み
+        ul#result_strengths
+
+      .interview-card
+        h3 改善点
+        ul#result_weaknesses
+
+      .interview-card
+        h3 推薦コメント
+        p#result_recommendation -
+
+      .interview-actions.interview-actions--center
+        button#back_to_start.btn-resume トップに戻る

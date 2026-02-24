@@ -34,6 +34,7 @@ class TopsController < ApplicationController
   end
 
   def interview
+    @situations = Situation.where(archived: false).order(:title)
   end
   private
 
