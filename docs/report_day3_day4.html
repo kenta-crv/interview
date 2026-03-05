@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>AI面接インタビューシステム — Day 3・Day 4 報告書</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 15mm 18mm 15mm;
+    /* ブラウザのヘッダー・フッターを非表示 */
+    @top-left { content: none; }
+    @top-center { content: none; }
+    @top-right { content: none; }
+    @bottom-left { content: none; }
+    @bottom-center { content: none; }
+    @bottom-right { content: none; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Meiryo", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.7;
+    color: #1a1a1a;
+    background: #fff;
+    padding: 0;
+  }
+
+  /* ── Cover ── */
+  .cover {
+    text-align: center;
+    padding: 80px 20px 40px;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 90vh;
+  }
+  .cover h1 {
+    font-size: 26pt;
+    color: #1a365d;
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+  }
+  .cover .subtitle {
+    font-size: 16pt;
+    color: #2b6cb0;
+    margin-bottom: 40px;
+    font-weight: 600;
+  }
+  .cover .meta {
+    font-size: 11pt;
+    color: #555;
+    line-height: 2.2;
+  }
+  .cover .meta strong { color: #1a1a1a; }
+  .cover .logo-box {
+    width: 100px; height: 100px;
+    margin: 0 auto 30px;
+    background: linear-gradient(135deg, #2b6cb0, #4299e1);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 36pt;
+    font-weight: 700;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    page-break-after: always;
+    padding-top: 20px;
+  }
+  .toc h2 {
+    font-size: 16pt;
+    color: #1a365d;
+    border-bottom: 3px solid #2b6cb0;
+    padding-bottom: 8px;
+    margin-bottom: 24px;
+  }
+  .toc ul { list-style: none; padding: 0; }
+  .toc li {
+    padding: 8px 0;
+    border-bottom: 1px dotted #ccc;
+    font-size: 11pt;
+  }
+  .toc li.day-header {
+    font-weight: 700;
+    font-size: 12pt;
+    color: #2b6cb0;
+    border-bottom: none;
+    padding-top: 18px;
+  }
+  .toc li span.page { float: right; color: #888; }
+
+  /* ── Headings ── */
+  h2.day-title {
+    font-size: 18pt;
+    color: #fff;
+    background: linear-gradient(135deg, #1a365d, #2b6cb0);
+    padding: 14px 20px;
+    border-radius: 6px;
+    margin: 30px 0 20px;
+    page-break-before: always;
+  }
+  h3 {
+    font-size: 13pt;
+    color: #1a365d;
+    border-left: 4px solid #4299e1;
+    padding-left: 12px;
+    margin: 24px 0 12px;
+  }
+  h4 {
+    font-size: 11pt;
+    color: #2b6cb0;
+    margin: 16px 0 8px;
+    font-weight: 600;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 18px;
+    font-size: 9.5pt;
+  }
+  th {
+    background: #edf2f7;
+    color: #1a365d;
+    font-weight: 700;
+    padding: 8px 10px;
+    text-align: left;
+    border: 1px solid #cbd5e0;
+  }
+  td {
+    padding: 7px 10px;
+    border: 1px solid #cbd5e0;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f7fafc; }
+  .highlight-cell { background: #ebf8ff !important; font-weight: 600; }
+
+  /* ── Diagrams ── */
+  .diagram-box {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 12px;
+    margin: 14px 0 20px;
+    overflow: hidden;
+    page-break-inside: avoid;
+  }
+  .diagram-title {
+    font-size: 10pt;
+    font-weight: 700;
+    color: #2b6cb0;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  /* SVG diagram styles */
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: "Meiryo", sans-serif; }
+  .svg-box { fill: #fff; stroke: #2b6cb0; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-green { fill: #f0fff4; stroke: #38a169; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-orange { fill: #fffaf0; stroke: #dd6b20; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-red { fill: #fff5f5; stroke: #e53e3e; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-gray { fill: #f7fafc; stroke: #a0aec0; stroke-width: 1.5; rx: 6; ry: 6; }
+  .svg-diamond { fill: #fffff0; stroke: #d69e2e; stroke-width: 2; }
+  .svg-arrow { stroke: #4a5568; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+  .svg-label { font-size: 10px; fill: #1a365d; font-weight: 700; text-anchor: middle; }
+  .svg-label-sm { font-size: 8.5px; fill: #4a5568; text-anchor: middle; }
+  .svg-label-left { font-size: 9px; fill: #4a5568; text-anchor: start; }
+
+  /* ── Code / JSON ── */
+  .code-block {
+    background: #1a202c;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 10px 0 16px;
+    font-family: "Consolas", "Source Code Pro", monospace;
+    font-size: 9pt;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .key { color: #90cdf4; }
+  .code-block .str { color: #9ae6b4; }
+  .code-block .num { color: #fbd38d; }
+  .code-block .comment { color: #718096; }
+
+  /* ── Info boxes ── */
+  .info-box {
+    border-left: 4px solid #4299e1;
+    background: #ebf8ff;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10pt;
+  }
+  .warn-box {
+    border-left: 4px solid #ed8936;
+    background: #fffaf0;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10pt;
+  }
+  .success-box {
+    border-left: 4px solid #38a169;
+    background: #f0fff4;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10pt;
+  }
+
+  /* ── Misc ── */
+  p { margin: 6px 0; }
+  ul, ol { padding-left: 22px; margin: 6px 0 12px; }
+  li { margin: 3px 0; }
+  strong { color: #1a365d; }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #fff;
+  }
+  .badge-blue { background: #2b6cb0; }
+  .badge-green { background: #38a169; }
+  .badge-orange { background: #dd6b20; }
+  .badge-red { background: #e53e3e; }
+
+  .cost-compare {
+    display: flex;
+    gap: 20px;
+    margin: 14px 0;
+    align-items: center;
+    justify-content: center;
+  }
+  .cost-card {
+    text-align: center;
+    padding: 16px 24px;
+    border-radius: 10px;
+    min-width: 140px;
+  }
+  .cost-card.before { background: #fff5f5; border: 2px solid #fc8181; }
+  .cost-card.after { background: #f0fff4; border: 2px solid #68d391; }
+  .cost-card .amount { font-size: 22pt; font-weight: 800; }
+  .cost-card.before .amount { color: #e53e3e; }
+  .cost-card.after .amount { color: #38a169; }
+  .cost-card .label { font-size: 9pt; color: #718096; margin-top: 4px; }
+  .cost-arrow { font-size: 24pt; color: #4299e1; font-weight: 700; }
+
+  .file-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .file-item {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 9pt;
+  }
+  .file-item .fname { font-family: monospace; font-weight: 700; color: #2b6cb0; font-size: 8.5pt; }
+  .file-item .fdesc { color: #4a5568; margin-top: 2px; }
+
+  footer {
+    text-align: center;
+    font-size: 9pt;
+    color: #a0aec0;
+    margin-top: 40px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  @media print {
+    body { padding: 0; margin: 0; }
+    .cover { min-height: 100vh; }
+    h2.day-title { page-break-before: always; }
+    .diagram-box { page-break-inside: avoid; }
+    .code-block { page-break-inside: avoid; }
+    .info-box, .success-box, .warn-box { page-break-inside: avoid; }
+    .cost-compare { page-break-inside: avoid; }
+    table { page-break-inside: avoid; }
+    h3, h4 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== COVER ========== -->
+<div class="cover">
+  <div class="logo-box">AI</div>
+  <h1>AI面接インタビューシステム</h1>
+  <div class="subtitle">Day 3・Day 4 報告書</div>
+  <div class="meta">
+    <strong>作成日:</strong> 2026年3月6日<br>
+    <strong>リポジトリ:</strong> tianzhongyoushi178/AI_Interviewer<br>
+    <strong>ブランチ:</strong> master<br>
+    <strong>フレームワーク:</strong> Rails 6.1.7 / Ruby 3.1.6
+  </div>
+</div>
+
+<!-- ========== TOC ========== -->
+<div class="toc">
+  <h2>目次</h2>
+  <ul>
+    <li class="day-header">Day 3 — 技術仕様・API設計書の策定</li>
+    <li>1. LLM制御方針（プロンプトテンプレート + バリデーション設計）</li>
+    <li>2. 外部API一覧と月額コスト最適化</li>
+    <li>3. DB設計書（ER図）最終版</li>
+    <li>4. 内部API設計書</li>
+    <li class="day-header">Day 4 — 質問分岐エンジンの構築</li>
+    <li>5. 概要と追加機能</li>
+    <li>6. DB変更（マイグレーション）</li>
+    <li>7. 分岐ルール設計と評価フロー</li>
+    <li>8. 変更ファイル一覧</li>
+    <li>9. 使用例と後方互換性</li>
+  </ul>
+</div>
+
+<!-- ==================== DAY 3 ==================== -->
+<h2 class="day-title">Day 3 — 技術仕様・API設計書の策定</h2>
+
+<h3>1. LLM制御方針</h3>
+
+<h4>基本原則：自由生成の排除</h4>
+<p>本システムではLLMの出力を<strong>構造化JSON</strong>に限定し、ハルシネーションリスクを排除する。</p>
+
+<table>
+  <tr><th>制御項目</th><th>方針</th></tr>
+  <tr><td>出力形式</td><td><strong>JSON Only</strong> — プロンプトで <code>Return ONLY valid JSON</code> を明示</td></tr>
+  <tr><td>Temperature</td><td>0.3（評価）/ 0.4（記事生成）— 低温で決定的出力を強制</td></tr>
+  <tr><td>Max Tokens</td><td>500（評価・要約）— 不必要な長文出力を防止</td></tr>
+  <tr><td>System Prompt</td><td>役割限定 + 会話禁止ルール</td></tr>
+  <tr><td>レスポンス検証</td><td>JSONパース + 必須キー確認 + フォールバック</td></tr>
+</table>
+
+<h4>プロンプトテンプレート概要</h4>
+
+<!-- Prompt template diagram -->
+<div class="diagram-box">
+  <div class="diagram-title">プロンプトテンプレート構成</div>
+  <svg viewBox="0 0 700 200">
+    <defs>
+      <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+    <!-- Template A -->
+    <rect x="10" y="20" width="200" height="70" class="svg-box"/>
+    <text x="110" y="45" class="svg-label">A. 回答評価プロンプト</text>
+    <text x="110" y="63" class="svg-label-sm">GPT-4 → GPT-4o-mini推奨</text>
+    <text x="110" y="78" class="svg-label-sm">Temperature: 0.3 / 500 tokens</text>
+    <!-- Template B -->
+    <rect x="250" y="20" width="200" height="70" class="svg-box"/>
+    <text x="350" y="45" class="svg-label">B. 面接要約プロンプト</text>
+    <text x="350" y="63" class="svg-label-sm">GPT-4 → GPT-4o推奨</text>
+    <text x="350" y="78" class="svg-label-sm">Temperature: 0.3 / 500 tokens</text>
+    <!-- Template C -->
+    <rect x="490" y="20" width="200" height="70" class="svg-box-green"/>
+    <text x="590" y="45" class="svg-label">C. MCQ評価</text>
+    <text x="590" y="63" class="svg-label-sm">LLM不使用</text>
+    <text x="590" y="78" class="svg-label-sm">正解=100 / 不正解=0</text>
+    <!-- Output schemas -->
+    <line x1="110" y1="90" x2="110" y2="115" class="svg-arrow"/>
+    <line x1="350" y1="90" x2="350" y2="115" class="svg-arrow"/>
+    <line x1="590" y1="90" x2="590" y2="115" class="svg-arrow"/>
+    <rect x="10" y="115" width="200" height="65" class="svg-box-gray"/>
+    <text x="110" y="135" class="svg-label-sm">relevance_score: 0-100</text>
+    <text x="110" y="148" class="svg-label-sm">correctness_score: 0-100</text>
+    <text x="110" y="161" class="svg-label-sm">clarity_score: 0-100</text>
+    <text x="110" y="174" class="svg-label-sm">final_score / passed / reasoning</text>
+    <rect x="250" y="115" width="200" height="65" class="svg-box-gray"/>
+    <text x="350" y="135" class="svg-label-sm">summary (5文以内)</text>
+    <text x="350" y="148" class="svg-label-sm">strengths[]</text>
+    <text x="350" y="161" class="svg-label-sm">weaknesses[]</text>
+    <text x="350" y="174" class="svg-label-sm">recommendation</text>
+    <rect x="490" y="115" width="200" height="65" class="svg-box-gray"/>
+    <text x="590" y="135" class="svg-label-sm">同一スキーマで返却</text>
+    <text x="590" y="155" class="svg-label-sm">全スコア = 100 or 0</text>
+    <text x="590" y="174" class="svg-label-sm">即時判定（API呼び出しなし）</text>
+  </svg>
+</div>
+
+<h4>バリデーション・フォールバックフロー</h4>
+
+<div class="diagram-box">
+  <div class="diagram-title">LLMレスポンス検証フロー</div>
+  <svg viewBox="0 0 680 180">
+    <defs>
+      <marker id="ah2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+    <!-- Step 1 -->
+    <rect x="10" y="30" width="130" height="45" class="svg-box"/>
+    <text x="75" y="50" class="svg-label" style="font-size:9px">LLMレスポンス</text>
+    <text x="75" y="65" class="svg-label-sm">受信</text>
+    <line x1="140" y1="52" x2="175" y2="52" class="svg-arrow" marker-end="url(#ah2)"/>
+    <!-- Step 2 - Diamond -->
+    <polygon points="235,20 290,52 235,84 180,52" class="svg-diamond"/>
+    <text x="235" y="49" class="svg-label" style="font-size:8px">JSONパース</text>
+    <text x="235" y="62" class="svg-label-sm">試行</text>
+    <!-- Success path -->
+    <line x1="290" y1="52" x2="330" y2="52" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="310" y="45" class="svg-label-sm" style="fill:#38a169">成功</text>
+    <rect x="330" y="30" width="120" height="45" class="svg-box-green"/>
+    <text x="390" y="50" class="svg-label" style="font-size:9px">必須キー確認</text>
+    <text x="390" y="65" class="svg-label-sm">→ 使用</text>
+    <!-- Fail path -->
+    <line x1="235" y1="84" x2="235" y2="110" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="252" y="100" class="svg-label-sm" style="fill:#e53e3e">失敗</text>
+    <rect x="170" y="110" width="130" height="45" class="svg-box-orange"/>
+    <text x="235" y="130" class="svg-label" style="font-size:8.5px">正規表現で</text>
+    <text x="235" y="145" class="svg-label" style="font-size:8.5px">JSON抽出</text>
+    <!-- Regex success -->
+    <line x1="300" y1="132" x2="350" y2="132" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="325" y="125" class="svg-label-sm" style="fill:#38a169">成功</text>
+    <rect x="350" y="110" width="110" height="45" class="svg-box-green"/>
+    <text x="405" y="130" class="svg-label" style="font-size:9px">再パース</text>
+    <text x="405" y="145" class="svg-label-sm">→ 使用</text>
+    <!-- Regex fail -->
+    <line x1="235" y1="155" x2="235" y2="168" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="252" y="166" class="svg-label-sm" style="fill:#e53e3e">失敗</text>
+    <!-- Default response (move below) -->
+    <rect x="490" y="110" width="170" height="45" class="svg-box-red"/>
+    <text x="575" y="130" class="svg-label" style="font-size:9px">デフォルトエラー</text>
+    <text x="575" y="145" class="svg-label-sm">レスポンス返却</text>
+    <line x1="300" y1="165" x2="490" y2="135" class="svg-arrow" marker-end="url(#ah2)" style="stroke-dasharray:4"/>
+  </svg>
+</div>
+
+<!-- ── Section 2: External APIs ── -->
+<h3>2. 外部API一覧と月額コスト最適化</h3>
+
+<table>
+  <tr><th>#</th><th>API</th><th>用途</th><th>現在モデル</th><th>推奨モデル</th></tr>
+  <tr><td>1</td><td>OpenAI Chat</td><td>回答評価</td><td>gpt-4</td><td class="highlight-cell">gpt-4o-mini</td></tr>
+  <tr><td>2</td><td>OpenAI Chat</td><td>面接要約</td><td>gpt-4</td><td class="highlight-cell">gpt-4o</td></tr>
+  <tr><td>3</td><td>Anthropic Messages</td><td>評価（代替）</td><td>claude-3-sonnet</td><td>claude-3.5-haiku</td></tr>
+  <tr><td>4</td><td>OpenAI Whisper</td><td>音声→テキスト（STT）</td><td>whisper-1</td><td>現状維持</td></tr>
+  <tr><td>5</td><td>OpenAI TTS</td><td>テキスト→音声</td><td>tts-1</td><td>現状維持</td></tr>
+  <tr><td>6</td><td>OpenAI Chat</td><td>記事本文生成</td><td>gpt-4o-mini</td><td>現状維持</td></tr>
+  <tr><td>7</td><td>Google Gemini</td><td>記事メタ生成</td><td>gemini-2.0-flash</td><td>現状維持</td></tr>
+  <tr><td>8</td><td>ffmpeg（ローカル）</td><td>動画→音声抽出</td><td>—</td><td>現状維持</td></tr>
+</table>
+
+<h4>月額コスト比較（100面接/月）</h4>
+
+<div class="cost-compare">
+  <div class="cost-card before">
+    <div class="label">現在の構成</div>
+    <div class="amount">~$65</div>
+    <div class="label">/月</div>
+  </div>
+  <div class="cost-arrow">→</div>
+  <div class="cost-card after">
+    <div class="label">推奨構成</div>
+    <div class="amount">~$5</div>
+    <div class="label">/月</div>
+  </div>
+</div>
+
+<div class="success-box">
+  <strong>92%のコスト削減</strong> — LLMモデルの変更のみで実現可能（コード変更は環境変数のみ）
+</div>
+
+<!-- ── Section 3: ER Diagram ── -->
+<h3>3. DB設計書（ER図）最終版</h3>
+
+<div class="diagram-box">
+  <div class="diagram-title">ER図 — 面接システムのデータモデル</div>
+  <svg viewBox="0 0 700 450">
+    <defs>
+      <marker id="ah3" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+
+    <!-- Admin -->
+    <rect x="10" y="10" width="130" height="40" class="svg-box-gray"/>
+    <text x="75" y="28" class="svg-label" style="font-size:10px">Admin</text>
+    <text x="75" y="43" class="svg-label-sm">email, encrypted_pw</text>
+
+    <!-- Client -->
+    <rect x="10" y="70" width="150" height="55" class="svg-box"/>
+    <text x="85" y="90" class="svg-label" style="font-size:11px">Client</text>
+    <text x="85" y="106" class="svg-label-sm">email, encrypted_pw</text>
+    <text x="85" y="118" class="svg-label-sm">id (PK)</text>
+
+    <!-- Arrow: Client → Situation -->
+    <line x1="160" y1="97" x2="210" y2="97" class="svg-arrow" marker-end="url(#ah3)"/>
+    <text x="185" y="90" class="svg-label-sm" style="fill:#e53e3e">1:N</text>
+
+    <!-- Situation -->
+    <rect x="210" y="60" width="170" height="80" class="svg-box"/>
+    <text x="295" y="82" class="svg-label" style="font-size:11px">Situation</text>
+    <text x="295" y="98" class="svg-label-sm">title, description</text>
+    <text x="295" y="112" class="svg-label-sm">client_id (FK), language</text>
+    <text x="295" y="126" class="svg-label-sm">archived</text>
+
+    <!-- Arrow: Situation → Question -->
+    <line x1="380" y1="97" x2="430" y2="97" class="svg-arrow" marker-end="url(#ah3)"/>
+    <text x="405" y="90" class="svg-label-sm" style="fill:#e53e3e">1:N</text>
+
+    <!-- Question -->
+    <rect x="430" y="55" width="170" height="95" class="svg-box" style="stroke:#38a169;"/>
+    <text x="515" y="77" class="svg-label" style="font-size:11px;fill:#276749">Question</text>
+    <text x="515" y="93" class="svg-label-sm">question_text, question_type</text>
+    <text x="515" y="106" class="svg-label-sm">options (JSON), order</text>
+    <text x="515" y="119" class="svg-label-sm" style="fill:#38a169;font-weight:700">+ required, category</text>
+    <text x="515" y="132" class="svg-label-sm" style="fill:#38a169;font-weight:700">+ branching_rules (JSON)</text>
+
+    <!-- Arrow: Question → QuestionAudio -->
+    <line x1="600" y1="150" x2="600" y2="175" class="svg-arrow" marker-end="url(#ah3)"/>
+    <text x="615" y="165" class="svg-label-sm" style="fill:#e53e3e">1:N</text>
+
+    <!-- QuestionAudio -->
+    <rect x="510" y="175" width="170" height="45" class="svg-box-gray"/>
+    <text x="595" y="195" class="svg-label" style="font-size:10px">QuestionAudio</text>
+    <text x="595" y="210" class="svg-label-sm">language, audio (Storage)</text>
+
+    <!-- User -->
+    <rect x="10" y="240" width="150" height="55" class="svg-box"/>
+    <text x="85" y="260" class="svg-label" style="font-size:11px">User</text>
+    <text x="85" y="276" class="svg-label-sm">email, name</text>
+    <text x="85" y="289" class="svg-label-sm">encrypted_pw</text>
+
+    <!-- Arrow: Situation → Interview -->
+    <line x1="295" y1="140" x2="295" y2="260" class="svg-arrow" marker-end="url(#ah3)"/>
+    <text x="308" y="205" class="svg-label-sm" style="fill:#e53e3e">1:N</text>
+
+    <!-- Arrow: User → Interview -->
+    <line x1="160" y1="268" x2="210" y2="278" class="svg-arrow" marker-end="url(#ah3)"/>
+    <text x="185" y="264" class="svg-label-sm" style="fill:#e53e3e">1:N</text>
+
+    <!-- Interview -->
+    <rect x="210" y="255" width="170" height="75" class="svg-box"/>
+    <text x="295" y="275" class="svg-label" style="font-size:11px">Interview</text>
+    <text x="295" y="291" class="svg-label-sm">user_id (FK), situation_id (FK)</text>
+    <text x="295" y="305" class="svg-label-sm">status (enum 0-4), language</text>
+    <text x="295" y="319" class="svg-label-sm">UNIQUE(user, situation)</text>
+
+    <!-- Arrow: Interview → Response -->
+    <line x1="250" y1="330" x2="190" y2="370" class="svg-arrow" marker-end="url(#ah3)"/>
+    <text x="210" y="350" class="svg-label-sm" style="fill:#e53e3e">1:N</text>
+
+    <!-- Arrow: Interview → Result -->
+    <line x1="340" y1="330" x2="440" y2="370" class="svg-arrow" marker-end="url(#ah3)"/>
+    <text x="400" y="350" class="svg-label-sm" style="fill:#e53e3e">1:1</text>
+
+    <!-- InterviewResponse -->
+    <rect x="20" y="370" width="240" height="75" class="svg-box"/>
+    <text x="140" y="390" class="svg-label" style="font-size:10px">InterviewResponse</text>
+    <text x="140" y="405" class="svg-label-sm">interview_id (FK), question_id (FK)</text>
+    <text x="140" y="418" class="svg-label-sm">audio_transcript, evaluation_data (JSON)</text>
+    <text x="140" y="431" class="svg-label-sm">answer_audio/video (Storage)</text>
+
+    <!-- InterviewResult -->
+    <rect x="380" y="370" width="240" height="65" class="svg-box"/>
+    <text x="500" y="390" class="svg-label" style="font-size:10px">InterviewResult</text>
+    <text x="500" y="405" class="svg-label-sm">interview_id (FK, UNIQUE)</text>
+    <text x="500" y="418" class="svg-label-sm">final_status (enum), results_data (JSON)</text>
+    <text x="500" y="431" class="svg-label-sm">summary, strengths, weaknesses</text>
+  </svg>
+</div>
+
+<div class="info-box">
+  <strong>Day 4 で追加されたカラム</strong>（緑色で表示）: <code>required</code> (boolean), <code>category</code> (string), <code>branching_rules</code> (json)
+</div>
+
+<h4>推奨スキーマ変更（未適用）</h4>
+<table>
+  <tr><th>対象</th><th>追加内容</th></tr>
+  <tr><td>カラム</td><td>situations に <code>min_score_required</code>, <code>fail_policy</code></td></tr>
+  <tr><td>インデックス</td><td>interviews(status,created_at), questions(situation_id,order), situations(client_id,archived)</td></tr>
+  <tr><td>FK制約</td><td>situations→clients, answers→users</td></tr>
+</table>
+
+<!-- ── Section 4: Internal API ── -->
+<h3>4. 内部API設計書</h3>
+
+<table>
+  <tr><th>メソッド</th><th>パス</th><th>機能</th><th>主なエラー</th></tr>
+  <tr><td><span class="badge badge-green">POST</span></td><td>/api/interviews/start</td><td>面接開始</td><td>422: バリデーション失敗</td></tr>
+  <tr><td><span class="badge badge-blue">GET</span></td><td>/api/interviews/:id/next_question</td><td>次の質問取得</td><td>—</td></tr>
+  <tr><td><span class="badge badge-green">POST</span></td><td>/api/interviews/:id/submit_answer</td><td>回答送信</td><td>400: 回答なし/重複/STT失敗</td></tr>
+  <tr><td><span class="badge badge-green">POST</span></td><td>/api/interviews/:id/complete</td><td>面接完了</td><td>400: 未評価回答あり</td></tr>
+  <tr><td><span class="badge badge-blue">GET</span></td><td>/api/interviews/:id/status</td><td>状態取得</td><td>—</td></tr>
+</table>
+
+<div class="diagram-box">
+  <div class="diagram-title">面接APIフロー</div>
+  <svg viewBox="0 0 680 140">
+    <defs>
+      <marker id="ah4" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+    <!-- Start -->
+    <rect x="10" y="35" width="100" height="45" class="svg-box-green"/>
+    <text x="60" y="55" class="svg-label" style="font-size:9px">POST</text>
+    <text x="60" y="70" class="svg-label" style="font-size:8px">/start</text>
+    <line x1="110" y1="57" x2="150" y2="57" class="svg-arrow" marker-end="url(#ah4)"/>
+    <!-- Next Question -->
+    <rect x="150" y="35" width="120" height="45" class="svg-box"/>
+    <text x="210" y="55" class="svg-label" style="font-size:9px">GET</text>
+    <text x="210" y="70" class="svg-label" style="font-size:8px">/next_question</text>
+    <line x1="270" y1="57" x2="310" y2="57" class="svg-arrow" marker-end="url(#ah4)"/>
+    <!-- Submit Answer -->
+    <rect x="310" y="35" width="120" height="45" class="svg-box-orange"/>
+    <text x="370" y="55" class="svg-label" style="font-size:9px">POST</text>
+    <text x="370" y="70" class="svg-label" style="font-size:8px">/submit_answer</text>
+    <!-- Loop arrow -->
+    <path d="M370,80 L370,110 L210,110 L210,80" class="svg-arrow" marker-end="url(#ah4)" style="stroke-dasharray:4"/>
+    <text x="290" y="125" class="svg-label-sm">質問ループ（全問完了まで）</text>
+    <line x1="430" y1="57" x2="470" y2="57" class="svg-arrow" marker-end="url(#ah4)"/>
+    <!-- Complete -->
+    <rect x="470" y="35" width="100" height="45" class="svg-box-green"/>
+    <text x="520" y="55" class="svg-label" style="font-size:9px">POST</text>
+    <text x="520" y="70" class="svg-label" style="font-size:8px">/complete</text>
+    <line x1="570" y1="57" x2="610" y2="57" class="svg-arrow" marker-end="url(#ah4)"/>
+    <!-- Result -->
+    <rect x="610" y="35" width="65" height="45" rx="20" ry="20" style="fill:#f0fff4;stroke:#38a169;stroke-width:2"/>
+    <text x="643" y="62" class="svg-label" style="font-size:9px;fill:#276749">結果</text>
+  </svg>
+</div>
+
+<!-- ==================== DAY 4 ==================== -->
+<h2 class="day-title">Day 4 — 質問分岐エンジンの構築</h2>
+
+<h3>5. 概要と追加機能</h3>
+
+<p>従来の<strong>線形出題</strong>（order昇順で全問出題）を拡張し、前の回答に応じた<strong>動的な質問選択</strong>を実現する分岐エンジンを構築した。</p>
+
+<table>
+  <tr><th>機能</th><th>説明</th></tr>
+  <tr><td><span class="badge badge-blue">必須/任意フラグ</span></td><td>質問ごとに <code>required</code> を設定。任意質問は低スコアでも面接を fail にしない</td></tr>
+  <tr><td><span class="badge badge-green">カテゴリ分類</span></td><td>質問を「技術」「コミュニケーション」等のカテゴリで分類可能</td></tr>
+  <tr><td><span class="badge badge-orange">分岐ルール</span></td><td>JSON形式で条件付き出題ルールを定義。条件不一致の質問を自動スキップ</td></tr>
+</table>
+
+<h3>6. DB変更（マイグレーション）</h3>
+
+<p><code>db/migrate/20260306120000_add_branching_to_questions.rb</code></p>
+
+<table>
+  <tr><th>カラム</th><th>型</th><th>デフォルト</th><th>説明</th></tr>
+  <tr><td><code>required</code></td><td>boolean</td><td>true</td><td>必須質問フラグ</td></tr>
+  <tr><td><code>category</code></td><td>string</td><td>null</td><td>質問カテゴリ</td></tr>
+  <tr><td><code>branching_rules</code></td><td>json</td><td>null</td><td>分岐条件（JSON）</td></tr>
+</table>
+
+<div class="success-box">
+  <strong>後方互換</strong>: 既存の質問は <code>required=true</code>, <code>branching_rules=null</code> となり、従来通り無条件で出題される。
+</div>
+
+<h3>7. 分岐ルール設計と評価フロー</h3>
+
+<h4>branching_rules のJSON構造</h4>
+
+<div class="code-block"><span class="comment">// 例: 質問1で「Python」を選択した場合のみ出題</span>
+{
+  <span class="key">"conditions"</span>: [
+    {
+      <span class="key">"source_question_order"</span>: <span class="num">1</span>,
+      <span class="key">"type"</span>: <span class="str">"selected_option"</span>,
+      <span class="key">"value"</span>: <span class="str">"Python"</span>,
+      <span class="key">"action"</span>: <span class="str">"include"</span>
+    }
+  ],
+  <span class="key">"default_action"</span>: <span class="str">"skip"</span>
+}</div>
+
+<h4>条件タイプとアクション</h4>
+
+<table>
+  <tr><th>type</th><th>説明</th><th>判定方法</th></tr>
+  <tr><td><code>selected_option</code></td><td>MCQ選択肢一致</td><td>回答テキスト == value（大文字小文字無視）</td></tr>
+  <tr><td><code>score_above</code></td><td>スコアが指定値以上</td><td>final_score &gt;= value</td></tr>
+  <tr><td><code>score_below</code></td><td>スコアが指定値未満</td><td>final_score &lt; value</td></tr>
+  <tr><td><code>answered</code></td><td>回答済みかどうか</td><td>InterviewResponse の存在確認</td></tr>
+</table>
+
+<table>
+  <tr><th>action</th><th>説明</th></tr>
+  <tr><td><code>include</code></td><td>条件一致時に出題する</td></tr>
+  <tr><td><code>skip</code></td><td>条件一致時にスキップする</td></tr>
+</table>
+
+<h4>分岐評価フロー</h4>
+
+<div class="diagram-box">
+  <div class="diagram-title">QuestionSelector — 分岐ルール評価フロー</div>
+  <svg viewBox="0 0 700 310">
+    <defs>
+      <marker id="ah5" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+
+    <!-- Start -->
+    <rect x="250" y="5" width="200" height="35" class="svg-box"/>
+    <text x="350" y="27" class="svg-label" style="font-size:10px">get_next_question 呼び出し</text>
+
+    <line x1="350" y1="40" x2="350" y2="60" class="svg-arrow" marker-end="url(#ah5)"/>
+
+    <!-- Get unanswered -->
+    <rect x="240" y="60" width="220" height="35" class="svg-box-gray"/>
+    <text x="350" y="82" class="svg-label" style="font-size:9px">未回答の質問を order 順に取得</text>
+
+    <line x1="350" y1="95" x2="350" y2="120" class="svg-arrow" marker-end="url(#ah5)"/>
+
+    <!-- Check branching rules -->
+    <polygon points="350,120 430,155 350,190 270,155" class="svg-diamond"/>
+    <text x="350" y="150" class="svg-label" style="font-size:8.5px">branching_rules</text>
+    <text x="350" y="165" class="svg-label-sm">あり？</text>
+
+    <!-- null path -->
+    <line x1="270" y1="155" x2="130" y2="155" class="svg-arrow" marker-end="url(#ah5)"/>
+    <text x="200" y="148" class="svg-label-sm" style="fill:#38a169;font-weight:700">null</text>
+    <rect x="20" y="135" width="110" height="40" class="svg-box-green"/>
+    <text x="75" y="153" class="svg-label" style="font-size:9px">無条件で</text>
+    <text x="75" y="168" class="svg-label" style="font-size:9px">出題</text>
+
+    <!-- Has rules path -->
+    <line x1="350" y1="190" x2="350" y2="215" class="svg-arrow" marker-end="url(#ah5)"/>
+    <text x="365" y="205" class="svg-label-sm" style="fill:#dd6b20;font-weight:700">あり</text>
+
+    <!-- Evaluate conditions -->
+    <rect x="240" y="215" width="220" height="35" class="svg-box-orange"/>
+    <text x="350" y="237" class="svg-label" style="font-size:9px">conditions を順番に評価</text>
+
+    <line x1="350" y1="250" x2="350" y2="270" class="svg-arrow" marker-end="url(#ah5)"/>
+
+    <!-- Condition match diamond -->
+    <polygon points="350,270 410,290 350,310 290,290" class="svg-diamond"/>
+    <text x="350" y="294" class="svg-label-sm">一致？</text>
+
+    <!-- Match path -->
+    <line x1="410" y1="290" x2="530" y2="290" class="svg-arrow" marker-end="url(#ah5)"/>
+    <text x="470" y="283" class="svg-label-sm" style="fill:#38a169">一致</text>
+    <rect x="530" y="270" width="150" height="40" class="svg-box-green"/>
+    <text x="605" y="294" class="svg-label" style="font-size:9px">action に従い</text>
+    <text x="605" y="308" class="svg-label" style="font-size:8px">include / skip</text>
+
+    <!-- No match path -->
+    <line x1="290" y1="290" x2="130" y2="290" class="svg-arrow" marker-end="url(#ah5)"/>
+    <text x="210" y="283" class="svg-label-sm" style="fill:#e53e3e">不一致</text>
+    <rect x="20" y="270" width="110" height="40" class="svg-box"/>
+    <text x="75" y="288" class="svg-label" style="font-size:8.5px">default_action</text>
+    <text x="75" y="303" class="svg-label" style="font-size:8px">に従う</text>
+  </svg>
+</div>
+
+<!-- ── Section 8: Changed Files ── -->
+<h3>8. 変更ファイル一覧</h3>
+
+<div class="file-list">
+  <div class="file-item">
+    <div class="fname">db/migrate/20260306120000_*.rb</div>
+    <div class="fdesc"><span class="badge badge-green" style="font-size:7.5pt">新規</span> required, category, branching_rules カラム追加</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/models/question.rb</div>
+    <div class="fdesc"><span class="badge badge-blue" style="font-size:7.5pt">変更</span> スコープ・メソッド追加</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/.../question_selector.rb</div>
+    <div class="fdesc"><span class="badge badge-orange" style="font-size:7.5pt">変更</span> 分岐エンジン実装（5メソッド追加）</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/.../response_evaluator.rb</div>
+    <div class="fdesc"><span class="badge badge-blue" style="font-size:7.5pt">変更</span> 任意質問の即fail防止</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/controllers/questions_controller.rb</div>
+    <div class="fdesc"><span class="badge badge-blue" style="font-size:7.5pt">変更</span> strong params + JSON パース追加</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/views/questions/_form.html.slim</div>
+    <div class="fdesc"><span class="badge badge-blue" style="font-size:7.5pt">変更</span> 管理画面フォーム拡張</div>
+  </div>
+</div>
+
+<h4>QuestionSelector — 追加メソッド</h4>
+<table>
+  <tr><th>メソッド</th><th>説明</th></tr>
+  <tr><td><code>eligible_questions</code></td><td>未回答 + 分岐条件を満たす質問を抽出</td></tr>
+  <tr><td><code>total_eligible_count</code></td><td>回答済み + 出題対象の合計数</td></tr>
+  <tr><td><code>evaluate_branching_rules(q)</code></td><td>質問の分岐ルール全体を評価</td></tr>
+  <tr><td><code>evaluate_condition(cond)</code></td><td>個別条件を type 別に判定</td></tr>
+  <tr><td><code>find_response_for_question_order(n)</code></td><td>order番号から InterviewResponse を検索</td></tr>
+</table>
+
+<!-- ── Section 9: Examples & Compatibility ── -->
+<h3>9. 使用例と後方互換性</h3>
+
+<h4>使用例</h4>
+
+<div class="diagram-box">
+  <div class="diagram-title">例: MCQ回答による質問分岐</div>
+  <svg viewBox="0 0 680 220">
+    <defs>
+      <marker id="ah6" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+
+    <!-- Q1 -->
+    <rect x="10" y="50" width="160" height="55" class="svg-box"/>
+    <text x="90" y="72" class="svg-label" style="font-size:9.5px">Q1: 使用言語は？</text>
+    <text x="90" y="88" class="svg-label-sm">[Python / Java / Go]</text>
+    <text x="90" y="100" class="svg-label-sm" style="fill:#e53e3e">MCQ（必須）</text>
+
+    <!-- Arrow to Q2 (always) -->
+    <line x1="170" y1="65" x2="240" y2="32" class="svg-arrow" marker-end="url(#ah6)"/>
+    <text x="210" y="35" class="svg-label-sm" style="fill:#38a169">全員</text>
+
+    <!-- Q2 -->
+    <rect x="240" y="10" width="160" height="50" class="svg-box"/>
+    <text x="320" y="30" class="svg-label" style="font-size:9.5px">Q2: 経験年数は？</text>
+    <text x="320" y="45" class="svg-label-sm">テキスト回答（必須・分岐なし）</text>
+
+    <!-- Arrow to Q3 (Python only) -->
+    <line x1="170" y1="88" x2="240" y2="100" class="svg-arrow" marker-end="url(#ah6)"/>
+    <text x="190" y="102" class="svg-label-sm" style="fill:#dd6b20">Python</text>
+    <text x="190" y="114" class="svg-label-sm" style="fill:#dd6b20">選択時のみ</text>
+
+    <!-- Q3 -->
+    <rect x="240" y="80" width="160" height="50" class="svg-box-orange"/>
+    <text x="320" y="100" class="svg-label" style="font-size:9.5px">Q3: Django経験は？</text>
+    <text x="320" y="115" class="svg-label-sm" style="fill:#dd6b20">テキスト回答（条件付き）</text>
+
+    <!-- Arrow to Q4 (high score only) -->
+    <line x1="170" y1="100" x2="240" y2="165" class="svg-arrow" marker-end="url(#ah6)" style="stroke-dasharray:4"/>
+    <text x="180" y="148" class="svg-label-sm" style="fill:#2b6cb0">Q1スコア</text>
+    <text x="180" y="160" class="svg-label-sm" style="fill:#2b6cb0">≥90のみ</text>
+
+    <!-- Q4 -->
+    <rect x="240" y="145" width="160" height="50" class="svg-box" style="stroke:#2b6cb0"/>
+    <text x="320" y="165" class="svg-label" style="font-size:9.5px">Q4: 設計パターン</text>
+    <text x="320" y="180" class="svg-label-sm" style="fill:#2b6cb0">上級質問（任意）score_above:90</text>
+
+    <!-- Final -->
+    <line x1="400" y1="35" x2="470" y2="85" class="svg-arrow" marker-end="url(#ah6)"/>
+    <line x1="400" y1="105" x2="470" y2="100" class="svg-arrow" marker-end="url(#ah6)"/>
+    <line x1="400" y1="170" x2="470" y2="115" class="svg-arrow" marker-end="url(#ah6)"/>
+
+    <rect x="470" y="72" width="190" height="55" rx="25" ry="25" style="fill:#f0fff4;stroke:#38a169;stroke-width:2"/>
+    <text x="565" y="95" class="svg-label" style="font-size:10px;fill:#276749">面接完了</text>
+    <text x="565" y="113" class="svg-label-sm">出題対象のみカウント</text>
+  </svg>
+</div>
+
+<h4>後方互換性</h4>
+
+<table>
+  <tr><th>項目</th><th>既存データへの影響</th></tr>
+  <tr><td><code>branching_rules = null</code></td><td>従来通り無条件で出題（挙動変更なし）</td></tr>
+  <tr><td><code>required = true</code>（デフォルト）</td><td>既存質問は全て必須扱い（挙動変更なし）</td></tr>
+  <tr><td><code>category = null</code></td><td>動作に影響なし（表示・分類用途のみ）</td></tr>
+  <tr><td>APIレスポンス</td><td><code>required</code> フィールドが追加されるのみ</td></tr>
+</table>
+
+<div class="info-box">
+  <strong>既存の面接フローは一切影響を受けません。</strong> 新カラムは全てデフォルト値が設定されており、マイグレーション適用のみで既存データとの互換性が維持されます。
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+  AI面接インタビューシステム — Day 3・Day 4 報告書 | 2026-03-06 | master ブランチ
+</footer>
+
+</body>
+</html>
