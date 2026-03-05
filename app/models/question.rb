@@ -8,6 +8,21 @@ class Question < ApplicationRecord
   validate :options_required_for_multiple_choice
 
   scope :ordered, -> { order(:order) }
+  scope :required_only, -> { where(required: true) }
+
+  def has_branching_rules?
+    branching_rules.present?
+  end
+
+  def parsed_branching_rules
+    return nil unless has_branching_rules?
+
+    rules = branching_rules
+    rules = JSON.parse(rules) if rules.is_a?(String)
+    rules.deep_symbolize_keys
+  rescue JSON::ParserError
+    nil
+  end
 
   def multiple_choice?
     %w[choice multiple_choice mcq].include?(question_type)

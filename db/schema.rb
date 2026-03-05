@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_02_08_122000) do
+ActiveRecord::Schema.define(version: 2026_03_06_120000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -178,6 +178,9 @@ ActiveRecord::Schema.define(version: 2026_02_08_122000) do
     t.integer "order"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.boolean "required", default: true, null: false
+    t.string "category"
+    t.json "branching_rules"
     t.index ["situation_id"], name: "index_questions_on_situation_id"
   end
 

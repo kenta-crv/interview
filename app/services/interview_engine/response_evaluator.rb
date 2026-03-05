@@ -91,6 +91,9 @@ module InterviewEngine
     end
 
     def check_interview_continuation
+      # Optional questions (required: false) do not fail the interview
+      return unless @question.required?
+
       # If response failed (score < threshold), fail the entire interview
       if @response.final_score < PASS_THRESHOLD
         SessionManager.new(@interview.user, @interview.situation)
