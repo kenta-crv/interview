@@ -1,97 +1,48 @@
 # app/services/interview_engine/llm_client.rb
+require 'net/http'
+require 'json'
+
 module InterviewEngine
   class LLMClient
-    require 'net/http'
-    require 'json'
 
-    OPENAI_API_KEY = ENV['OPENAI_API_KEY']
+    MAX_RETRIES = 3
+    RETRY_DELAY_BASE = 1 # seconds (exponential backoff: 1, 1, 1)
+    REQUEST_TIMEOUT = 30 # seconds
+
     OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
-    
-    CLAUDE_API_KEY = ENV['CLAUDE_API_KEY']
     CLAUDE_URL = 'https://api.anthropic.com/v1/messages'
 
-    def initialize(model: 'openai')
-      @model = model
+    class LLMError < StandardError; end
+    class LLMTimeoutError < LLMError; end
+    class LLMResponseError < LLMError; end
+    class LLMValidationError < LLMError; end
+
+    def initialize(model: nil)
+      @model = model || ENV.fetch('LLM_MODEL', 'openai')
     end
 
-    # Evaluate interview response with strict JSON output
-    def evaluate_response(question_text, user_answer, language: 'en')
-      prompt = build_evaluation_prompt(question_text, user_answer, language)
-      
-      case @model
-      when 'openai'
-        evaluate_with_openai(prompt)
-      when 'claude'
-        evaluate_with_claude(prompt)
-      else
-        raise ArgumentError, "Unknown model: #{@model}"
-      end
-    rescue => e
+    # 回答評価（バリデーション・リトライ付き）
+    def evaluate_response(question_text, user_answer, language: 'en', question_type: 'open')
+      prompt = PromptTemplate.evaluation(
+        question_text: question_text,
+        user_answer: user_answer,
+        language: language,
+        question_type: question_type
+      )
+
+      result = call_with_retry(prompt, :evaluation)
+      ResponseValidator.validate_evaluation!(result)
+    rescue ResponseValidator::InvalidResponseError => e
+      Rails.logger.error("LLM Evaluation Validation Error: #{e.message}")
+      default_error_response
+    rescue LLMError => e
       Rails.logger.error("LLM Evaluation Error: #{e.message}")
       default_error_response
     end
 
-    # Generate interview summary and feedback
+    # 面接サマリー生成（バリデーション・リトライ付き）
     def summarize_interview(responses, language: 'en')
-      prompt = build_summary_prompt(responses, language)
-
-      case @model
-      when 'openai'
-        evaluate_with_openai(prompt)
-      when 'claude'
-        evaluate_with_claude(prompt)
-      else
-        raise ArgumentError, "Unknown model: #{@model}"
-      end
-    rescue => e
-      Rails.logger.error("LLM Summary Error: #{e.message}")
-      default_summary_response
-    end
-
-    private
-
-    def build_evaluation_prompt(question_text, user_answer, language)
-      language_instruction = language == 'ja' ? '日本語で出力してください。' : 'Respond in English.'
-      
-      <<~PROMPT
-        You are a strict interview evaluator. Evaluate the candidate's response ONLY based on the provided criteria.
-        
-        #{language_instruction}
-        
-        INTERVIEW QUESTION:
-        "#{question_text}"
-        
-        CANDIDATE'S ANSWER:
-        "#{user_answer}"
-        
-        EVALUATION CRITERIA:
-        1. Relevance (0-100): Does the answer address the question?
-        2. Correctness (0-100): Is the information accurate?
-        3. Clarity (0-100): Is the answer clear and well-structured?
-        
-        IMPORTANT RULES:
-        - Do NOT engage in conversation
-        - Do NOT ask follow-up questions
-        - Provide ONLY JSON output
-        - No explanations outside JSON
-        - All scores must be 0-100
-        - If answer is completely irrelevant, set all scores to 0
-        
-        Return ONLY valid JSON in this format:
-        {
-          "relevance_score": <0-100>,
-          "correctness_score": <0-100>,
-          "clarity_score": <0-100>,
-          "final_score": <0-100>,
-          "passed": <true|false>,
-          "reasoning": "<brief explanation>"
-        }
-      PROMPT
-    end
-
-    def build_summary_prompt(responses, language)
-      language_instruction = language == 'ja' ? '日本語で出力してください。' : 'Respond in English.'
-      serialized = responses.map do |r|
+      responses_data = responses.map do |r|
         {
           question: r.question.question_text,
           answer: r.audio_transcript,
@@ -99,97 +50,162 @@ module InterviewEngine
         }
       end
 
-      <<~PROMPT
-        You are a strict interview summarizer. Produce a concise summary and structured feedback.
+      prompt = PromptTemplate.summary(
+        responses_data: responses_data,
+        language: language
+      )
 
-        #{language_instruction}
-
-        RESPONSES (JSON):
-        #{serialized.to_json}
-
-        IMPORTANT RULES:
-        - Do NOT engage in conversation
-        - Provide ONLY JSON output
-        - No explanations outside JSON
-        - Keep summary under 5 sentences
-
-        Return ONLY valid JSON in this format:
-        {
-          "summary": "<short summary>",
-          "strengths": ["<strength 1>", "<strength 2>"],
-          "weaknesses": ["<weakness 1>", "<weakness 2>"],
-          "recommendation": "<hire/no hire or next step>"
-        }
-      PROMPT
+      result = call_with_retry(prompt, :summary)
+      ResponseValidator.validate_summary!(result)
+    rescue ResponseValidator::InvalidResponseError => e
+      Rails.logger.error("LLM Summary Validation Error: #{e.message}")
+      default_summary_response
+    rescue LLMError => e
+      Rails.logger.error("LLM Summary Error: #{e.message}")
+      default_summary_response
     end
 
-    def evaluate_with_openai(prompt)
+    private
+
+    # リトライ付きLLM呼び出し
+    def call_with_retry(prompt, validation_type)
+      last_error = nil
+
+      MAX_RETRIES.times do |attempt|
+        begin
+          raw_response = call_llm(prompt)
+          result = ResponseValidator.extract_json(raw_response)
+
+          if result
+            Rails.logger.info("LLM call succeeded on attempt #{attempt + 1}")
+            return result
+          end
+
+          last_error = "Failed to extract valid JSON (attempt #{attempt + 1})"
+          Rails.logger.warn(last_error)
+        rescue LLMTimeoutError, LLMResponseError => e
+          last_error = e.message
+          Rails.logger.warn("LLM retryable error (attempt #{attempt + 1}): #{e.message}")
+        end
+
+        sleep(RETRY_DELAY_BASE ** (attempt + 1)) if attempt < MAX_RETRIES - 1
+      end
+
+      raise LLMValidationError, "All #{MAX_RETRIES} attempts failed: #{last_error}"
+    end
+
+    # LLM API呼び出し（モデル切替）
+    def call_llm(prompt)
+      case @model
+      when 'openai'
+        call_openai(prompt)
+      when 'claude'
+        call_claude(prompt)
+      else
+        raise LLMError, "Unknown model: #{@model}"
+      end
+    end
+
+    # OpenAI API呼び出し
+    def call_openai(prompt)
+      api_key = ENV['OPENAI_API_KEY']
+      raise LLMError, "OPENAI_API_KEY is not set" if api_key.blank?
+
       uri = URI(OPENAI_URL)
-      http = Net::HTTP.new(uri.hostname, uri.port)
-      http.use_ssl = true
+      http = build_http(uri)
 
       request = Net::HTTP::Post.new(uri.path)
-      request['Authorization'] = "Bearer #{OPENAI_API_KEY}"
+      request['Authorization'] = "Bearer #{api_key}"
       request['Content-Type'] = 'application/json'
 
       body = {
-        model: 'gpt-4',
+        model: ENV.fetch('OPENAI_MODEL', 'gpt-4'),
         messages: [
-          { role: 'system', content: 'You are an interview evaluator. Return ONLY valid JSON.' },
-          { role: 'user', content: prompt }
+          { role: 'system', content: prompt[:system] },
+          { role: 'user', content: prompt[:user] }
         ],
-        temperature: 0.3,
-        max_tokens: 500
+        temperature: 0.2,
+        max_tokens: 600,
+        response_format: { type: 'json_object' }
       }
 
       request.body = body.to_json
       response = http.request(request)
-      parse_llm_response(response.body)
+
+      handle_api_response(response, 'OpenAI')
+
+      parsed = JSON.parse(response.body)
+      content = parsed.dig('choices', 0, 'message', 'content')
+      raise LLMResponseError, "Empty content from OpenAI" if content.blank?
+
+      content
+    rescue Net::OpenTimeout, Net::ReadTimeout => e
+      raise LLMTimeoutError, "OpenAI request timed out: #{e.message}"
+    rescue JSON::ParserError => e
+      raise LLMResponseError, "Failed to parse OpenAI response: #{e.message}"
     end
 
-    def evaluate_with_claude(prompt)
+    # Claude API呼び出し
+    def call_claude(prompt)
+      api_key = ENV['CLAUDE_API_KEY']
+      raise LLMError, "CLAUDE_API_KEY is not set" if api_key.blank?
+
       uri = URI(CLAUDE_URL)
-      http = Net::HTTP.new(uri.hostname, uri.port)
-      http.use_ssl = true
+      http = build_http(uri)
 
       request = Net::HTTP::Post.new(uri.path)
-      request['x-api-key'] = CLAUDE_API_KEY
+      request['x-api-key'] = api_key
       request['anthropic-version'] = '2023-06-01'
       request['Content-Type'] = 'application/json'
 
       body = {
-        model: 'claude-3-sonnet-20240229',
-        max_tokens: 500,
+        model: ENV.fetch('CLAUDE_MODEL', 'claude-sonnet-4-20250514'),
+        max_tokens: 600,
+        system: prompt[:system],
         messages: [
-          { role: 'user', content: prompt }
+          { role: 'user', content: prompt[:user] }
         ]
       }
 
       request.body = body.to_json
       response = http.request(request)
-      parse_llm_response(response.body)
+
+      handle_api_response(response, 'Claude')
+
+      parsed = JSON.parse(response.body)
+      content = parsed.dig('content', 0, 'text')
+      raise LLMResponseError, "Empty content from Claude" if content.blank?
+
+      content
+    rescue Net::OpenTimeout, Net::ReadTimeout => e
+      raise LLMTimeoutError, "Claude request timed out: #{e.message}"
+    rescue JSON::ParserError => e
+      raise LLMResponseError, "Failed to parse Claude response: #{e.message}"
     end
 
-    def parse_llm_response(response_body)
-      parsed = JSON.parse(response_body)
-      
-      # Extract text content
-      content = if parsed['choices']&.first&.dig('message', 'content')
-                  parsed['choices'].first['message']['content']
-                elsif parsed['content']&.first&.dig('text')
-                  parsed['content'].first['text']
-                else
-                  raise "Invalid LLM response structure"
-                end
+    # HTTP接続のビルド（タイムアウト設定付き）
+    def build_http(uri)
+      http = Net::HTTP.new(uri.hostname, uri.port)
+      http.use_ssl = uri.scheme == 'https'
+      http.open_timeout = REQUEST_TIMEOUT
+      http.read_timeout = REQUEST_TIMEOUT
+      http
+    end
 
-      # Extract JSON from response
-      json_match = content.match(/\{[\s\S]*\}/)
-      raise "No JSON found in LLM response" unless json_match
-
-      JSON.parse(json_match[0]).with_indifferent_access
-    rescue JSON::ParserError => e
-      Rails.logger.error("Failed to parse LLM response: #{e.message}")
-      default_error_response
+    # APIレスポンスのHTTPステータスチェック
+    def handle_api_response(response, provider)
+      case response.code.to_i
+      when 200..299
+        # OK
+      when 429
+        raise LLMResponseError, "#{provider} rate limit exceeded"
+      when 401, 403
+        raise LLMError, "#{provider} authentication failed (#{response.code})"
+      when 500..599
+        raise LLMResponseError, "#{provider} server error (#{response.code})"
+      else
+        raise LLMError, "#{provider} unexpected response (#{response.code}): #{response.body.truncate(200)}"
+      end
     end
 
     def default_error_response
@@ -200,7 +216,7 @@ module InterviewEngine
         final_score: 0,
         passed: false,
         reasoning: 'Evaluation failed - please retry'
-      }
+      }.with_indifferent_access
     end
 
     def default_summary_response
@@ -209,7 +225,7 @@ module InterviewEngine
         strengths: [],
         weaknesses: [],
         recommendation: 'Review required'
-      }
+      }.with_indifferent_access
     end
   end
 end

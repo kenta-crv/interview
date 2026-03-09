@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_03_06_120000) do
+ActiveRecord::Schema.define(version: 2026_03_08_120000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -156,6 +156,11 @@ ActiveRecord::Schema.define(version: 2026_03_06_120000) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "language", default: "en", null: false
+    t.string "access_token"
+    t.datetime "last_activity_at"
+    t.datetime "resumed_at"
+    t.integer "resume_count", default: 0, null: false
+    t.index ["access_token"], name: "index_interviews_on_access_token", unique: true
     t.index ["situation_id"], name: "index_interviews_on_situation_id"
     t.index ["user_id", "situation_id"], name: "index_interviews_on_user_and_situation", unique: true
     t.index ["user_id"], name: "index_interviews_on_user_id"
@@ -192,6 +197,9 @@ ActiveRecord::Schema.define(version: 2026_03_06_120000) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "language", default: "en", null: false
     t.boolean "archived", default: false, null: false
+    t.integer "session_timeout_minutes", default: 60, null: false
+    t.boolean "allow_resume", default: true, null: false
+    t.integer "max_resume_count", default: 3, null: false
     t.index ["client_id"], name: "index_situations_on_client_id"
   end
 

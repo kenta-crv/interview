@@ -81,9 +81,11 @@ Rails.application.routes.draw do
         post :answer, action: :submit_answer
         post :complete
         get :status
+        post :resume
       end
       collection do
         post :start
+        post :start_by_token
       end
     end
   end

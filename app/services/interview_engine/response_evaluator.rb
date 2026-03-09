@@ -19,29 +19,15 @@ module InterviewEngine
       evaluation = if @question.multiple_choice?
                      evaluate_multiple_choice
                    elsif test_mode?
-                     # In test mode, provide a passing evaluation
-                     {
-                       relevance_score: 85,
-                       correctness_score: 80,
-                       clarity_score: 82,
-                       final_score: 82.5,
-                       passed: true,
-                       reasoning: 'Test mode evaluation'
-                     }
+                     test_mode_evaluation
                    else
-                     llm = LLMClient.new
-                     llm.evaluate_response(
-                       @question.question_text,
-                       @response.audio_transcript,
-                       language: @language
-                     )
+                     llm_evaluate
                    end
 
-      # Store evaluation results
-      update_response_with_evaluation(evaluation)
-
-      # Check if interview should continue
-      check_interview_continuation
+      ActiveRecord::Base.transaction do
+        update_response_with_evaluation(evaluation)
+        check_interview_continuation
+      end
 
       @response
     rescue => e
@@ -53,7 +39,9 @@ module InterviewEngine
     private
 
     def update_response_with_evaluation(evaluation)
-      # Calculate final score based on criteria weights
+      # 意図的にLLMが返すfinal_scoreを無視し、加重平均で再計算する。
+      # LLMのfinal_scoreは各基準スコアと整合しない場合があるため、
+      # サーバー側で一貫した算出ロジックを適用する。
       final_score = calculate_weighted_score(evaluation)
 
       passed = final_score >= PASS_THRESHOLD
@@ -71,6 +59,27 @@ module InterviewEngine
 
     def test_mode?
       ENV['AI_INTERVIEW_TEST_MODE'] == 'true'
+    end
+
+    def test_mode_evaluation
+      {
+        relevance_score: 85,
+        correctness_score: 80,
+        clarity_score: 82,
+        final_score: 82.5,
+        passed: true,
+        reasoning: 'Test mode evaluation'
+      }.with_indifferent_access
+    end
+
+    def llm_evaluate
+      llm = LLMClient.new
+      llm.evaluate_response(
+        @question.question_text,
+        @response.audio_transcript,
+        language: @language,
+        question_type: 'open'
+      )
     end
 
     def calculate_weighted_score(evaluation)
@@ -95,7 +104,7 @@ module InterviewEngine
       return unless @question.required?
 
       # If response failed (score < threshold), fail the entire interview
-      if @response.final_score < PASS_THRESHOLD
+      if @response.final_score.to_f < PASS_THRESHOLD
         SessionManager.new(@interview.user, @interview.situation)
           .fail_interview(@interview.id, "Failed at question: #{@question.question_text}")
       end
@@ -119,7 +128,7 @@ module InterviewEngine
         final_score: score,
         passed: passed,
         reasoning: passed ? 'Correct option selected' : 'Incorrect option selected'
-      }
+      }.with_indifferent_access
     end
 
     def resolve_correct_choice(correct, choices)
