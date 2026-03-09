@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>AI面接インタビューシステム — Day 5・Day 6 報告書</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 15mm 18mm 15mm;
+    @top-left { content: none; }
+    @top-center { content: none; }
+    @top-right { content: none; }
+    @bottom-left { content: none; }
+    @bottom-center { content: none; }
+    @bottom-right { content: none; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Meiryo", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.7;
+    color: #1a1a1a;
+    background: #fff;
+    padding: 0;
+  }
+
+  /* ── Cover ── */
+  .cover {
+    text-align: center;
+    padding: 80px 20px 40px;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 90vh;
+  }
+  .cover h1 {
+    font-size: 26pt;
+    color: #1a365d;
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+  }
+  .cover .subtitle {
+    font-size: 16pt;
+    color: #2b6cb0;
+    margin-bottom: 40px;
+    font-weight: 600;
+  }
+  .cover .meta {
+    font-size: 11pt;
+    color: #555;
+    line-height: 2.2;
+  }
+  .cover .meta strong { color: #1a1a1a; }
+  .cover .logo-box {
+    width: 100px; height: 100px;
+    margin: 0 auto 30px;
+    background: linear-gradient(135deg, #2b6cb0, #4299e1);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 36pt;
+    font-weight: 700;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    page-break-after: always;
+    padding-top: 20px;
+  }
+  .toc h2 {
+    font-size: 16pt;
+    color: #1a365d;
+    border-bottom: 3px solid #2b6cb0;
+    padding-bottom: 8px;
+    margin-bottom: 24px;
+  }
+  .toc ul { list-style: none; padding: 0; }
+  .toc li {
+    padding: 8px 0;
+    border-bottom: 1px dotted #ccc;
+    font-size: 11pt;
+  }
+  .toc li.day-header {
+    font-weight: 700;
+    font-size: 12pt;
+    color: #2b6cb0;
+    border-bottom: none;
+    padding-top: 18px;
+  }
+  .toc li span.page { float: right; color: #888; }
+
+  /* ── Headings ── */
+  h2.day-title {
+    font-size: 18pt;
+    color: #fff;
+    background: linear-gradient(135deg, #1a365d, #2b6cb0);
+    padding: 14px 20px;
+    border-radius: 6px;
+    margin: 30px 0 20px;
+    page-break-before: always;
+  }
+  h3 {
+    font-size: 13pt;
+    color: #1a365d;
+    border-left: 4px solid #4299e1;
+    padding-left: 12px;
+    margin: 24px 0 12px;
+  }
+  h4 {
+    font-size: 11pt;
+    color: #2b6cb0;
+    margin: 16px 0 8px;
+    font-weight: 600;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 18px;
+    font-size: 9.5pt;
+  }
+  th {
+    background: #edf2f7;
+    color: #1a365d;
+    font-weight: 700;
+    padding: 8px 10px;
+    text-align: left;
+    border: 1px solid #cbd5e0;
+  }
+  td {
+    padding: 7px 10px;
+    border: 1px solid #cbd5e0;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f7fafc; }
+  .highlight-cell { background: #ebf8ff !important; font-weight: 600; }
+
+  /* ── Diagrams ── */
+  .diagram-box {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 12px;
+    margin: 14px 0 20px;
+    overflow: hidden;
+    page-break-inside: avoid;
+  }
+  .diagram-title {
+    font-size: 10pt;
+    font-weight: 700;
+    color: #2b6cb0;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  /* SVG diagram styles */
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: "Meiryo", sans-serif; }
+  .svg-box { fill: #fff; stroke: #2b6cb0; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-green { fill: #f0fff4; stroke: #38a169; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-orange { fill: #fffaf0; stroke: #dd6b20; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-red { fill: #fff5f5; stroke: #e53e3e; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-gray { fill: #f7fafc; stroke: #a0aec0; stroke-width: 1.5; rx: 6; ry: 6; }
+  .svg-diamond { fill: #fffff0; stroke: #d69e2e; stroke-width: 2; }
+  .svg-arrow { stroke: #4a5568; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+  .svg-label { font-size: 10px; fill: #1a365d; font-weight: 700; text-anchor: middle; }
+  .svg-label-sm { font-size: 8.5px; fill: #4a5568; text-anchor: middle; }
+  .svg-label-left { font-size: 9px; fill: #4a5568; text-anchor: start; }
+
+  /* ── Code / JSON ── */
+  .code-block {
+    background: #1a202c;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 10px 0 16px;
+    font-family: "Consolas", "Source Code Pro", monospace;
+    font-size: 9pt;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .key { color: #90cdf4; }
+  .code-block .str { color: #9ae6b4; }
+  .code-block .num { color: #fbd38d; }
+  .code-block .comment { color: #718096; }
+
+  /* ── Info boxes ── */
+  .info-box {
+    border-left: 4px solid #4299e1;
+    background: #ebf8ff;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10pt;
+  }
+  .warn-box {
+    border-left: 4px solid #ed8936;
+    background: #fffaf0;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10pt;
+  }
+  .success-box {
+    border-left: 4px solid #38a169;
+    background: #f0fff4;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10pt;
+  }
+
+  /* ── Misc ── */
+  p { margin: 6px 0; }
+  ul, ol { padding-left: 22px; margin: 6px 0 12px; }
+  li { margin: 3px 0; }
+  strong { color: #1a365d; }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #fff;
+  }
+  .badge-blue { background: #2b6cb0; }
+  .badge-green { background: #38a169; }
+  .badge-orange { background: #dd6b20; }
+  .badge-red { background: #e53e3e; }
+
+  .file-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .file-item {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 9pt;
+  }
+  .file-item .fname { font-family: monospace; font-weight: 700; color: #2b6cb0; font-size: 8.5pt; }
+  .file-item .fdesc { color: #4a5568; margin-top: 2px; }
+
+  footer {
+    text-align: center;
+    font-size: 9pt;
+    color: #a0aec0;
+    margin-top: 40px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  @media print {
+    body { padding: 0; margin: 0; }
+    .cover { min-height: 100vh; }
+    h2.day-title { page-break-before: always; }
+    .diagram-box { page-break-inside: avoid; }
+    .code-block { page-break-inside: avoid; }
+    .info-box, .success-box, .warn-box { page-break-inside: avoid; }
+    table { page-break-inside: avoid; }
+    h3, h4 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== COVER ========== -->
+<div class="cover">
+  <div class="logo-box">AI</div>
+  <h1>AI面接インタビューシステム</h1>
+  <div class="subtitle">Day 5・Day 6 報告書</div>
+  <div class="meta">
+    <strong>作成日:</strong> 2026年3月8日<br>
+    <strong>リポジトリ:</strong> tianzhongyoushi178/AI_Interviewer<br>
+    <strong>ブランチ:</strong> master<br>
+    <strong>フレームワーク:</strong> Rails 6.1.7 / Ruby 3.1.6
+  </div>
+</div>
+
+<!-- ========== TOC ========== -->
+<div class="toc">
+  <h2>目次</h2>
+  <ul>
+    <li class="day-header">Day 5 — LLM制御レイヤーの実装</li>
+    <li>1. 概要とアーキテクチャ</li>
+    <li>2. プロンプトテンプレート管理</li>
+    <li>3. レスポンスバリデーション</li>
+    <li>4. LLMClient 強化（リトライ機構）</li>
+    <li>5. ResponseEvaluator 改修</li>
+    <li>6. コードレビュー結果</li>
+    <li>7. 変更ファイル一覧</li>
+    <li class="day-header">Day 6 — 面接セッション管理</li>
+    <li>8. 概要</li>
+    <li>9. DB変更（マイグレーション）</li>
+    <li>10. URL即時開始（トークンベース認証）</li>
+    <li>11. セッションタイムアウト</li>
+    <li>12. 中断復帰</li>
+    <li>13. 状態遷移バリデーション</li>
+    <li>14. セキュリティ対策</li>
+    <li>15. コードレビュー結果</li>
+    <li>16. 変更ファイル一覧</li>
+    <li>付録: 全APIエンドポイント一覧（Day 6時点）</li>
+  </ul>
+</div>
+
+<!-- ==================== DAY 5 ==================== -->
+<h2 class="day-title">Day 5 — LLM制御レイヤーの実装</h2>
+
+<h3>1. 概要とアーキテクチャ</h3>
+
+<p>LLMの出力を厳密に制御する3層構造を構築した。従来は <code>LLMClient</code> にプロンプト生成・API呼び出し・レスポンス解析が混在していたが、責務を分離し、プロンプトテンプレート管理・レスポンスバリデーション・リトライ機構を独立したクラスとして実装した。</p>
+
+<div class="diagram-box">
+  <div class="diagram-title">LLM制御レイヤー 3層アーキテクチャ</div>
+  <svg viewBox="0 0 700 280">
+    <defs>
+      <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+    <!-- ResponseEvaluator -->
+    <rect x="220" y="10" width="260" height="45" class="svg-box"/>
+    <text x="350" y="30" class="svg-label" style="font-size:11px">ResponseEvaluator</text>
+    <text x="350" y="45" class="svg-label-sm">評価オーケストレーション</text>
+    <line x1="350" y1="55" x2="350" y2="75" class="svg-arrow"/>
+
+    <!-- LLMClient -->
+    <rect x="220" y="75" width="260" height="45" class="svg-box-green"/>
+    <text x="350" y="95" class="svg-label" style="font-size:11px">LLMClient</text>
+    <text x="350" y="110" class="svg-label-sm">API呼び出し + リトライ（最大3回）</text>
+
+    <!-- Left branch: PromptTemplate -->
+    <line x1="270" y1="120" x2="130" y2="150" class="svg-arrow"/>
+    <rect x="20" y="150" width="220" height="120" class="svg-box"/>
+    <text x="130" y="172" class="svg-label" style="font-size:10px">PromptTemplate</text>
+    <text x="130" y="192" class="svg-label-sm">system/user メッセージ分離</text>
+    <text x="130" y="208" class="svg-label-sm">日本語/英語テンプレート</text>
+    <text x="130" y="224" class="svg-label-sm">ユーザー入力サニタイズ</text>
+    <text x="130" y="240" class="svg-label-sm">JSONスキーマ定義</text>
+    <text x="130" y="256" class="svg-label-sm">delimiter方式で注入防止</text>
+
+    <!-- Right branch: ResponseValidator -->
+    <line x1="430" y1="120" x2="570" y2="150" class="svg-arrow"/>
+    <rect x="460" y="150" width="220" height="120" class="svg-box-orange"/>
+    <text x="570" y="172" class="svg-label" style="font-size:10px">ResponseValidator</text>
+    <text x="570" y="192" class="svg-label-sm">JSON抽出（多段フォールバック）</text>
+    <text x="570" y="208" class="svg-label-sm">スキーマバリデーション</text>
+    <text x="570" y="224" class="svg-label-sm">スコアクランプ（0-100整数）</text>
+    <text x="570" y="240" class="svg-label-sm">boolean強制変換</text>
+    <text x="570" y="256" class="svg-label-sm">配列長制限</text>
+  </svg>
+</div>
+
+<!-- ── Section 2: Prompt Template ── -->
+<h3>2. プロンプトテンプレート管理</h3>
+
+<p><strong>ファイル:</strong> <code>app/services/interview_engine/prompt_template.rb</code></p>
+
+<h4>設計方針</h4>
+<table>
+  <tr><th>項目</th><th>方針</th></tr>
+  <tr><td>メッセージ構造</td><td><strong>system</strong>（ロール制限）+ <strong>user</strong>（タスク指示）の分離</td></tr>
+  <tr><td>言語対応</td><td>en / ja を <code>normalize_language</code> で安全に切替</td></tr>
+  <tr><td>自由生成排除</td><td>system promptに「JSON出力のみ・会話禁止・追加質問禁止」を明示</td></tr>
+  <tr><td>プロンプトインジェクション対策</td><td>delimiter方式（<code>---BEGIN USER INPUT---</code> / <code>---END USER INPUT---</code>）</td></tr>
+</table>
+
+<h4>テンプレート一覧</h4>
+<table>
+  <tr><th>テンプレート</th><th>メソッド</th><th>出力スキーマ</th></tr>
+  <tr><td>回答評価（記述式）</td><td><code>evaluation(question_type: 'open')</code></td><td><code>{relevance_score, correctness_score, clarity_score, final_score, passed, reasoning}</code></td></tr>
+  <tr><td>回答評価（選択式）</td><td><code>evaluation(question_type: 'choice')</code></td><td>同上</td></tr>
+  <tr><td>面接サマリー</td><td><code>summary(responses_data:)</code></td><td><code>{summary, strengths[], weaknesses[], recommendation}</code></td></tr>
+</table>
+
+<h4>サニタイズ処理</h4>
+<div class="code-block"><span class="comment"># ユーザー入力のサニタイズ（プロンプトインジェクション防止）</span>
+<span class="key">def</span> sanitize(text)
+  sanitized = text.to_s
+    .gsub(<span class="str">/```/</span>, <span class="str">"'''"</span>)    <span class="comment"># コードブロック記法のエスケープ</span>
+    .strip
+    .truncate(<span class="num">2000</span>)              <span class="comment"># 長文制限</span>
+  <span class="str">"---BEGIN USER INPUT---\n#{sanitized}\n---END USER INPUT---"</span>
+<span class="key">end</span></div>
+
+<div class="info-box">
+  <strong>delimiter方式を採用した理由:</strong> 当初は <code>{}</code> のエスケープ方式を検討したが、技術系の回答でJSON記法やハッシュ構文を含む正当な入力を破壊するリスクがあったため、入力領域を明示的に区切るdelimiter方式に変更した。
+</div>
+
+<!-- ── Section 3: Response Validator ── -->
+<h3>3. レスポンスバリデーション</h3>
+
+<p><strong>ファイル:</strong> <code>app/services/interview_engine/response_validator.rb</code></p>
+
+<h4>JSON抽出フロー（多段フォールバック）</h4>
+
+<div class="diagram-box">
+  <div class="diagram-title">LLMレスポンス JSON抽出フロー</div>
+  <svg viewBox="0 0 700 200">
+    <defs>
+      <marker id="ah2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+    <!-- Step 1: Raw parse -->
+    <rect x="10" y="20" width="140" height="50" class="svg-box"/>
+    <text x="80" y="40" class="svg-label" style="font-size:9px">1. 全体をJSON</text>
+    <text x="80" y="55" class="svg-label-sm">パース試行</text>
+    <line x1="150" y1="45" x2="180" y2="45" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="165" y="38" class="svg-label-sm" style="fill:#e53e3e">失敗</text>
+
+    <!-- Step 2: Code block -->
+    <rect x="180" y="20" width="150" height="50" class="svg-box-orange"/>
+    <text x="255" y="40" class="svg-label" style="font-size:9px">2. ```json...```</text>
+    <text x="255" y="55" class="svg-label-sm">ブロック抽出</text>
+    <line x1="330" y1="45" x2="360" y2="45" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="345" y="38" class="svg-label-sm" style="fill:#e53e3e">失敗</text>
+
+    <!-- Step 3: Regex -->
+    <rect x="360" y="20" width="150" height="50" class="svg-box-orange"/>
+    <text x="435" y="40" class="svg-label" style="font-size:9px">3. { ... } を正規表現</text>
+    <text x="435" y="55" class="svg-label-sm">で抽出しパース</text>
+    <line x1="510" y1="45" x2="540" y2="45" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="525" y="38" class="svg-label-sm" style="fill:#e53e3e">失敗</text>
+
+    <!-- Step 4: nil -->
+    <rect x="540" y="20" width="140" height="50" class="svg-box-red"/>
+    <text x="610" y="40" class="svg-label" style="font-size:9px">4. nil 返却</text>
+    <text x="610" y="55" class="svg-label-sm">リトライへ</text>
+
+    <!-- Success paths -->
+    <line x1="80" y1="70" x2="80" y2="100" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="97" y="88" class="svg-label-sm" style="fill:#38a169">成功</text>
+    <line x1="255" y1="70" x2="255" y2="100" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="272" y="88" class="svg-label-sm" style="fill:#38a169">成功</text>
+    <line x1="435" y1="70" x2="435" y2="100" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="452" y="88" class="svg-label-sm" style="fill:#38a169">成功</text>
+
+    <!-- Validation -->
+    <rect x="120" y="100" width="270" height="50" class="svg-box-green"/>
+    <text x="255" y="120" class="svg-label" style="font-size:10px">スキーマバリデーション</text>
+    <text x="255" y="138" class="svg-label-sm">必須キー確認 + スコアクランプ + 型変換</text>
+
+    <!-- Final -->
+    <line x1="390" y1="125" x2="440" y2="125" class="svg-arrow" marker-end="url(#ah2)"/>
+    <rect x="440" y="100" width="140" height="50" rx="20" ry="20" style="fill:#f0fff4;stroke:#38a169;stroke-width:2"/>
+    <text x="510" y="122" class="svg-label" style="font-size:10px;fill:#276749">検証済みデータ</text>
+    <text x="510" y="138" class="svg-label-sm">使用可能</text>
+  </svg>
+</div>
+
+<h4>バリデーション処理一覧</h4>
+<table>
+  <tr><th>処理</th><th>対象</th><th>内容</th></tr>
+  <tr><td>スキーマ検証</td><td>評価/サマリー共通</td><td>必須キーの存在チェック（<code>data.key?</code> で JSON null も許容）</td></tr>
+  <tr><td>スコアクランプ</td><td>評価のみ</td><td>0-100範囲に制限、整数に丸め（<code>.to_f.round</code>）</td></tr>
+  <tr><td>型変換</td><td>評価のみ</td><td><code>passed</code> を boolean に強制変換</td></tr>
+  <tr><td>配列制限</td><td>サマリーのみ</td><td>strengths/weaknesses を最大5項目・各200文字に制限</td></tr>
+</table>
+
+<div class="warn-box">
+  <strong>レビュー修正:</strong> 当初 <code>data[key].nil?</code> で必須キーチェックを行っていたが、LLMがJSON <code>null</code> を返した場合に「キーが存在しない」と誤判定される問題があった。<code>data.key?(key)</code> に変更し、null値を持つキーも正しく認識するようにした。
+</div>
+
+<!-- ── Section 4: LLMClient ── -->
+<h3>4. LLMClient 強化（リトライ機構）</h3>
+
+<p><strong>ファイル:</strong> <code>app/services/interview_engine/llm_client.rb</code></p>
+
+<h4>リトライ設定</h4>
+<table>
+  <tr><th>設定</th><th>値</th></tr>
+  <tr><td>最大リトライ回数</td><td>3回</td></tr>
+  <tr><td>バックオフ</td><td>指数（1秒ベース）</td></tr>
+  <tr><td>リクエストタイムアウト</td><td>30秒（接続/読取り）</td></tr>
+</table>
+
+<h4>エラー分類とリトライ判定</h4>
+
+<div class="diagram-box">
+  <div class="diagram-title">エラー分類とリトライ判定フロー</div>
+  <svg viewBox="0 0 700 200">
+    <defs>
+      <marker id="ah3" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+    <!-- API Call -->
+    <rect x="10" y="60" width="120" height="45" class="svg-box"/>
+    <text x="70" y="80" class="svg-label" style="font-size:10px">API呼び出し</text>
+    <text x="70" y="95" class="svg-label-sm">LLMClient#call</text>
+
+    <!-- Branch arrows -->
+    <line x1="130" y1="70" x2="190" y2="30" class="svg-arrow" marker-end="url(#ah3)"/>
+    <line x1="130" y1="82" x2="190" y2="82" class="svg-arrow" marker-end="url(#ah3)"/>
+    <line x1="130" y1="95" x2="190" y2="135" class="svg-arrow" marker-end="url(#ah3)"/>
+    <line x1="130" y1="100" x2="190" y2="175" class="svg-arrow" marker-end="url(#ah3)"/>
+
+    <!-- Timeout -->
+    <rect x="190" y="10" width="180" height="40" class="svg-box-orange"/>
+    <text x="280" y="28" class="svg-label" style="font-size:9px">LLMTimeoutError</text>
+    <text x="280" y="42" class="svg-label-sm">接続/読取りタイムアウト</text>
+    <line x1="370" y1="30" x2="530" y2="30" class="svg-arrow" marker-end="url(#ah3)"/>
+
+    <!-- Response Error -->
+    <rect x="190" y="60" width="180" height="40" class="svg-box-orange"/>
+    <text x="280" y="78" class="svg-label" style="font-size:9px">LLMResponseError</text>
+    <text x="280" y="92" class="svg-label-sm">429 Rate Limit / 500番台</text>
+    <line x1="370" y1="80" x2="530" y2="55" class="svg-arrow" marker-end="url(#ah3)"/>
+
+    <!-- Retry box -->
+    <rect x="530" y="20" width="150" height="50" class="svg-box-green"/>
+    <text x="605" y="42" class="svg-label" style="font-size:11px;fill:#276749">リトライする</text>
+    <text x="605" y="58" class="svg-label-sm">指数バックオフ</text>
+
+    <!-- Auth Error -->
+    <rect x="190" y="115" width="180" height="40" class="svg-box-red"/>
+    <text x="280" y="133" class="svg-label" style="font-size:9px">LLMError</text>
+    <text x="280" y="147" class="svg-label-sm">401/403 認証失敗</text>
+    <line x1="370" y1="135" x2="530" y2="120" class="svg-arrow" marker-end="url(#ah3)"/>
+
+    <!-- Validation Error -->
+    <rect x="190" y="160" width="180" height="40" class="svg-box-red"/>
+    <text x="280" y="178" class="svg-label" style="font-size:9px">LLMValidationError</text>
+    <text x="280" y="192" class="svg-label-sm">全リトライ失敗後</text>
+    <line x1="370" y1="180" x2="530" y2="150" class="svg-arrow" marker-end="url(#ah3)"/>
+
+    <!-- No retry box -->
+    <rect x="530" y="105" width="150" height="50" class="svg-box-red"/>
+    <text x="605" y="127" class="svg-label" style="font-size:11px;fill:#c53030">リトライしない</text>
+    <text x="605" y="143" class="svg-label-sm">即座にraise</text>
+  </svg>
+</div>
+
+<h4>モデル設定（環境変数）</h4>
+<table>
+  <tr><th>環境変数</th><th>デフォルト</th><th>説明</th></tr>
+  <tr><td><code>LLM_MODEL</code></td><td><code>openai</code></td><td>使用モデルプロバイダ（openai/claude）</td></tr>
+  <tr><td><code>OPENAI_MODEL</code></td><td><code>gpt-4</code></td><td>OpenAI モデル名</td></tr>
+  <tr><td><code>CLAUDE_MODEL</code></td><td><code>claude-sonnet-4-20250514</code></td><td>Claude モデル名</td></tr>
+</table>
+
+<h4>OpenAI固有の制御</h4>
+<ul>
+  <li><code>response_format: { type: 'json_object' }</code> -- JSON出力を強制</li>
+  <li><code>temperature: 0.2</code> -- 出力の安定性を重視</li>
+  <li><code>http.use_ssl = uri.scheme == 'https'</code> -- 動的SSL判定（テスト環境対応）</li>
+</ul>
+
+<!-- ── Section 5: ResponseEvaluator ── -->
+<h3>5. ResponseEvaluator 改修</h3>
+
+<p><strong>ファイル:</strong> <code>app/services/interview_engine/response_evaluator.rb</code></p>
+
+<table>
+  <tr><th>変更</th><th>詳細</th></tr>
+  <tr><td>LLM呼び出し分離</td><td><code>llm_evaluate</code> メソッドに抽出</td></tr>
+  <tr><td>トランザクション制御</td><td>評価結果保存 + 面接継続判定を <code>ActiveRecord::Base.transaction</code> で保護</td></tr>
+  <tr><td>スコア再計算の明示</td><td>LLMの <code>final_score</code> を無視し、加重平均で再計算する理由をコメントで明記</td></tr>
+  <tr><td>型安全性</td><td><code>@response.final_score.to_f</code> でJSON store経由の文字列型に対応</td></tr>
+  <tr><td>戻り値統一</td><td>全評価パスで <code>with_indifferent_access</code> を使用</td></tr>
+</table>
+
+<h4>スコア計算式</h4>
+<div class="code-block"><span class="comment"># 加重平均によるfinal_score計算</span>
+<span class="comment"># LLMが返すfinal_scoreは信頼性が不安定なため、サーバー側で再計算</span>
+final_score = (relevance * <span class="num">0.4</span>) + (correctness * <span class="num">0.4</span>) + (clarity * <span class="num">0.2</span>)
+passed = final_score >= <span class="num">70</span></div>
+
+<!-- ── Section 6: Code Review Day5 ── -->
+<h3>6. コードレビュー結果</h3>
+
+<table>
+  <tr><th>重要度</th><th>件数</th><th>主な内容</th></tr>
+  <tr><td><span class="badge badge-red">Critical</span></td><td>5</td><td>JSON store型問題、リトライ対象漏れ、キーチェック方式、sanitize方式、メインスレッドsleep</td></tr>
+  <tr><td><span class="badge badge-orange">Warning</span></td><td>10</td><td>N+1クエリ、スコア丸め、トランザクション分断、戻り値型不統一</td></tr>
+  <tr><td><span class="badge badge-blue">Info</span></td><td>4</td><td>require配置、DI検討、設計メモ</td></tr>
+</table>
+
+<h4>Critical修正の詳細</h4>
+<table>
+  <tr><th>#</th><th>問題</th><th>修正内容</th></tr>
+  <tr><td>1</td><td>JSON storeの <code>final_score</code> が文字列で返される可能性</td><td><code>.to_f</code> で明示的に数値変換</td></tr>
+  <tr><td>2</td><td>429/5xxエラーがリトライ対象外だった</td><td><code>LLMResponseError</code> を追加し <code>call_with_retry</code> で捕捉</td></tr>
+  <tr><td>3</td><td><code>data[key].nil?</code> がJSON nullを未存在と誤判定</td><td><code>data.key?(key)</code> に変更</td></tr>
+  <tr><td>4</td><td><code>sanitize</code> が <code>{}</code> 置換で技術回答を破壊</td><td>delimiter方式に変更</td></tr>
+  <tr><td>5</td><td>メインスレッドでの <code>sleep</code> 懸念</td><td>RETRY_DELAY_BASE を2秒→1秒に短縮（Sidekiqジョブ内で実行前提）</td></tr>
+</table>
+
+<!-- ── Section 7: File List Day5 ── -->
+<h3>7. 変更ファイル一覧</h3>
+
+<div class="file-list">
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/prompt_template.rb</div>
+    <div class="fdesc"><span class="badge badge-green">新規</span> プロンプトテンプレート管理（EN/JA対応、スキーマ定義、サニタイズ）</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/response_validator.rb</div>
+    <div class="fdesc"><span class="badge badge-green">新規</span> LLM出力バリデーション（JSON抽出、スキーマ検証、クランプ）</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/llm_client.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> リトライ機構、タイムアウト、エラー分類、モデル設定柔軟化</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/response_evaluator.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> トランザクション、型安全性、メソッド分離</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/session_manager.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> N+1修正（includes）、キーアクセス統一</div>
+  </div>
+</div>
+
+<!-- ==================== DAY 6 ==================== -->
+<h2 class="day-title">Day 6 — 面接セッション管理</h2>
+
+<h3>8. 概要</h3>
+
+<p>3つの機能を実装し、面接セッションのライフサイクルを完全に管理できるようにした。</p>
+
+<table>
+  <tr><th>機能</th><th>説明</th></tr>
+  <tr><td class="highlight-cell">URL即時開始</td><td>トークンベース認証により、Deviseログイン不要で面接を開始可能</td></tr>
+  <tr><td class="highlight-cell">セッションタイムアウト</td><td>一定時間操作がない面接を自動的にabandon状態に遷移</td></tr>
+  <tr><td class="highlight-cell">中断復帰</td><td>abandoned状態の面接を再開し、中断した箇所から続行</td></tr>
+</table>
+
+<!-- ── Section 9: Migration ── -->
+<h3>9. DB変更（マイグレーション）</h3>
+
+<p><strong>ファイル:</strong> <code>db/migrate/20260308120000_add_session_management_to_interviews.rb</code></p>
+
+<h4>interviews テーブル</h4>
+<table>
+  <tr><th>カラム</th><th>型</th><th>デフォルト</th><th>説明</th></tr>
+  <tr><td><code>access_token</code></td><td>string</td><td>null</td><td>URL即時開始用トークン（UNIQUE INDEX）</td></tr>
+  <tr><td><code>last_activity_at</code></td><td>datetime</td><td>null</td><td>最終操作時刻</td></tr>
+  <tr><td><code>resumed_at</code></td><td>datetime</td><td>null</td><td>最終復帰時刻</td></tr>
+  <tr><td><code>resume_count</code></td><td>integer</td><td>0</td><td>復帰回数</td></tr>
+</table>
+
+<h4>situations テーブル</h4>
+<table>
+  <tr><th>カラム</th><th>型</th><th>デフォルト</th><th>説明</th></tr>
+  <tr><td><code>session_timeout_minutes</code></td><td>integer</td><td>60</td><td>セッションタイムアウト（分）</td></tr>
+  <tr><td><code>allow_resume</code></td><td>boolean</td><td>true</td><td>中断復帰を許可するか</td></tr>
+  <tr><td><code>max_resume_count</code></td><td>integer</td><td>3</td><td>最大復帰回数</td></tr>
+</table>
+
+<div class="success-box">
+  <strong>後方互換性:</strong> 既存データはデフォルト値が適用され、既存の面接フローに影響なし。マイグレーション適用のみで互換性が維持される。
+</div>
+
+<!-- ── Section 10: Token Auth ── -->
+<h3>10. URL即時開始（トークンベース認証）</h3>
+
+<h4>トークン生成</h4>
+<div class="code-block"><span class="comment"># Interview 作成時に自動生成（before_create コールバック）</span>
+<span class="key">def</span> generate_access_token
+  <span class="key">self</span>.access_token = <span class="key">loop</span> <span class="key">do</span>
+    token = SecureRandom.urlsafe_base64(<span class="num">32</span>)  <span class="comment"># 43文字のURL-safeトークン</span>
+    <span class="key">break</span> token <span class="key">unless</span> Interview.exists?(access_token: token)
+  <span class="key">end</span>
+<span class="key">end</span></div>
+
+<h4>認証フロー</h4>
+
+<div class="diagram-box">
+  <div class="diagram-title">統合認証フロー（authenticate_by_token_or_user!）</div>
+  <svg viewBox="0 0 700 200">
+    <defs>
+      <marker id="ah4" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+    <!-- Request -->
+    <rect x="10" y="70" width="120" height="50" class="svg-box"/>
+    <text x="70" y="90" class="svg-label" style="font-size:10px">リクエスト</text>
+    <text x="70" y="105" class="svg-label-sm">受信</text>
+
+    <!-- Diamond: Token? -->
+    <line x1="130" y1="95" x2="170" y2="95" class="svg-arrow" marker-end="url(#ah4)"/>
+    <polygon points="230,65 280,95 230,125 180,95" class="svg-diamond"/>
+    <text x="230" y="92" class="svg-label" style="font-size:8px">Token</text>
+    <text x="230" y="104" class="svg-label-sm">あり?</text>
+
+    <!-- Token found -->
+    <line x1="280" y1="95" x2="320" y2="50" class="svg-arrow" marker-end="url(#ah4)"/>
+    <text x="300" y="62" class="svg-label-sm" style="fill:#38a169">Yes</text>
+    <rect x="320" y="25" width="160" height="50" class="svg-box-green"/>
+    <text x="400" y="45" class="svg-label" style="font-size:9px">Interview検索</text>
+    <text x="400" y="60" class="svg-label-sm">@current_user = interview.user</text>
+
+    <!-- Token not found / Test mode -->
+    <line x1="230" y1="125" x2="230" y2="145" class="svg-arrow" marker-end="url(#ah4)"/>
+    <text x="247" y="138" class="svg-label-sm" style="fill:#e53e3e">No</text>
+    <polygon points="230,145 270,165 230,185 190,165" class="svg-diamond"/>
+    <text x="230" y="162" class="svg-label" style="font-size:7px">TestMode</text>
+    <text x="230" y="174" class="svg-label-sm">?</text>
+
+    <!-- Test mode -->
+    <line x1="270" y1="165" x2="320" y2="135" class="svg-arrow" marker-end="url(#ah4)"/>
+    <text x="295" y="140" class="svg-label-sm" style="fill:#38a169">Yes</text>
+    <rect x="320" y="110" width="160" height="50" class="svg-box-orange"/>
+    <text x="400" y="130" class="svg-label" style="font-size:9px">テストユーザー</text>
+    <text x="400" y="145" class="svg-label-sm">開発環境のみ有効</text>
+
+    <!-- Devise fallback -->
+    <line x1="190" y1="165" x2="140" y2="165" class="svg-arrow" marker-end="url(#ah4)"/>
+    <text x="155" y="158" class="svg-label-sm" style="fill:#e53e3e">No</text>
+    <rect x="10" y="140" width="130" height="50" class="svg-box"/>
+    <text x="75" y="160" class="svg-label" style="font-size:9px">Devise認証</text>
+    <text x="75" y="175" class="svg-label-sm">authenticate_user!</text>
+
+    <!-- All paths to authenticated -->
+    <line x1="480" y1="50" x2="550" y2="95" class="svg-arrow" marker-end="url(#ah4)"/>
+    <line x1="480" y1="135" x2="550" y2="100" class="svg-arrow" marker-end="url(#ah4)"/>
+    <rect x="550" y="72" width="140" height="50" rx="20" ry="20" style="fill:#f0fff4;stroke:#38a169;stroke-width:2"/>
+    <text x="620" y="95" class="svg-label" style="font-size:10px;fill:#276749">認証完了</text>
+    <text x="620" y="110" class="svg-label-sm">処理続行</text>
+  </svg>
+</div>
+
+<h4>新エンドポイント</h4>
+<table>
+  <tr><th>メソッド</th><th>パス</th><th>認証</th><th>説明</th></tr>
+  <tr><td>POST</td><td><code>/api/interviews/start_by_token</code></td><td>トークンのみ</td><td>URL即時開始/自動復帰</td></tr>
+</table>
+
+<h4>レスポンス例</h4>
+<div class="code-block">{
+  <span class="key">"success"</span>: <span class="num">true</span>,
+  <span class="key">"interview_id"</span>: <span class="num">42</span>,
+  <span class="key">"status"</span>: <span class="str">"in_progress"</span>,
+  <span class="key">"total_questions"</span>: <span class="num">10</span>,
+  <span class="key">"language"</span>: <span class="str">"ja"</span>,
+  <span class="key">"progress"</span>: <span class="num">30.0</span>,
+  <span class="key">"answered_questions"</span>: <span class="num">3</span>,
+  <span class="key">"session_timeout_minutes"</span>: <span class="num">60</span>,
+  <span class="key">"remaining_seconds"</span>: <span class="num">3420</span>,
+  <span class="key">"resume_count"</span>: <span class="num">0</span>
+}</div>
+
+<h4>運用想定</h4>
+<ol>
+  <li>Client が Situation を作成</li>
+  <li><code>POST /api/interviews/start</code> でInterviewを作成（<code>access_token</code> が返却される）</li>
+  <li>受験者に <code>https://example.com/interview?token=XXXXX</code> のURLを送付</li>
+  <li>フロントエンドが <code>start_by_token</code> を呼び出し、認証不要で面接開始</li>
+</ol>
+
+<!-- ── Section 11: Session Timeout ── -->
+<h3>11. セッションタイムアウト</h3>
+
+<h4>設計</h4>
+<table>
+  <tr><th>項目</th><th>内容</th></tr>
+  <tr><td>タイムアウト基準</td><td><code>last_activity_at</code> からの経過時間（アイドルタイムアウト方式）</td></tr>
+  <tr><td>設定単位</td><td>Situation単位（Client が設定可能、1-180分）</td></tr>
+  <tr><td>チェックタイミング</td><td><code>next_question</code> / <code>submit_answer</code> の before_action</td></tr>
+  <tr><td>タイムアウト時の遷移</td><td><code>in_progress</code> → <code>abandoned</code>（410 Gone レスポンス）</td></tr>
+</table>
+
+<h4>タイムアウト判定</h4>
+<div class="code-block"><span class="key">def</span> timed_out?
+  <span class="key">return</span> <span class="num">false</span> <span class="key">unless</span> in_progress? && last_activity_at.present?
+  timeout = situation.session_timeout_minutes.minutes
+  last_activity_at < timeout.ago
+<span class="key">end</span></div>
+
+<h4>アクティビティ更新タイミング</h4>
+<ul>
+  <li><code>start!</code> -- 面接開始時</li>
+  <li><code>next_question</code> -- 質問取得時</li>
+  <li><code>submit_answer</code> -- 回答送信時</li>
+  <li><code>resume!</code> -- 面接再開時</li>
+  <li><code>start_by_token</code> -- トークン認証開始時</li>
+</ul>
+
+<h4>タイムアウト時のAPIレスポンス</h4>
+<div class="code-block">{
+  <span class="key">"success"</span>: <span class="num">false</span>,
+  <span class="key">"error"</span>: <span class="str">"Interview session has timed out"</span>,
+  <span class="key">"reason"</span>: <span class="str">"timeout"</span>,
+  <span class="key">"resumable"</span>: <span class="num">true</span>
+}</div>
+
+<h4>バッチ処理（一括期限切れ）</h4>
+<div class="code-block"><span class="comment"># Sidekiq cronやRakeタスクから呼び出し</span>
+InterviewEngine::SessionManager.expire_timed_out_sessions!</div>
+
+<div class="info-box">
+  <strong>SQLite互換性:</strong> 当初SQLのWHERE句でタイムアウト判定を行うスコープを実装していたが、SQLite固有の日時関数に依存するためレビューで指摘を受け、Ruby側の <code>timed_out?</code> メソッドのみで判定する方式に変更した。
+</div>
+
+<!-- ── Section 12: Resume ── -->
+<h3>12. 中断復帰</h3>
+
+<h4>復帰可能条件</h4>
+<div class="code-block"><span class="key">def</span> resumable?
+  <span class="key">return</span> <span class="num">false</span> <span class="key">unless</span> abandoned? || (in_progress? && timed_out?)
+  <span class="key">return</span> <span class="num">false</span> <span class="key">unless</span> situation.allow_resume?
+  <span class="key">return</span> <span class="num">false</span> <span class="key">if</span> resume_count >= situation.max_resume_count
+  <span class="num">true</span>
+<span class="key">end</span></div>
+
+<h4>復帰フロー</h4>
+
+<div class="diagram-box">
+  <div class="diagram-title">面接中断復帰フロー</div>
+  <svg viewBox="0 0 700 180">
+    <defs>
+      <marker id="ah5" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+    <!-- Start -->
+    <rect x="10" y="60" width="120" height="50" class="svg-box-red"/>
+    <text x="70" y="80" class="svg-label" style="font-size:10px">abandoned</text>
+    <text x="70" y="95" class="svg-label-sm">面接中断状態</text>
+
+    <!-- Check 1 -->
+    <line x1="130" y1="85" x2="160" y2="85" class="svg-arrow" marker-end="url(#ah5)"/>
+    <polygon points="220,55 270,85 220,115 170,85" class="svg-diamond"/>
+    <text x="220" y="82" class="svg-label" style="font-size:7.5px">allow_resume</text>
+    <text x="220" y="94" class="svg-label-sm">?</text>
+
+    <!-- No -->
+    <line x1="220" y1="115" x2="220" y2="145" class="svg-arrow" marker-end="url(#ah5)"/>
+    <text x="237" y="133" class="svg-label-sm" style="fill:#e53e3e">No</text>
+    <rect x="160" y="145" width="120" height="30" class="svg-box-red"/>
+    <text x="220" y="165" class="svg-label" style="font-size:8px">復帰不可</text>
+
+    <!-- Check 2 -->
+    <line x1="270" y1="85" x2="310" y2="85" class="svg-arrow" marker-end="url(#ah5)"/>
+    <text x="290" y="78" class="svg-label-sm" style="fill:#38a169">Yes</text>
+    <polygon points="370,55 420,85 370,115 320,85" class="svg-diamond"/>
+    <text x="370" y="78" class="svg-label" style="font-size:7px">resume_count</text>
+    <text x="370" y="90" class="svg-label" style="font-size:7px">< max?</text>
+
+    <!-- No -->
+    <line x1="370" y1="115" x2="370" y2="145" class="svg-arrow" marker-end="url(#ah5)"/>
+    <text x="387" y="133" class="svg-label-sm" style="fill:#e53e3e">No</text>
+    <rect x="310" y="145" width="120" height="30" class="svg-box-red"/>
+    <text x="370" y="165" class="svg-label" style="font-size:8px">上限到達</text>
+
+    <!-- Resume -->
+    <line x1="420" y1="85" x2="470" y2="85" class="svg-arrow" marker-end="url(#ah5)"/>
+    <text x="445" y="78" class="svg-label-sm" style="fill:#38a169">Yes</text>
+    <rect x="470" y="55" width="210" height="60" class="svg-box-green"/>
+    <text x="575" y="75" class="svg-label" style="font-size:10px;fill:#276749">in_progress に復帰</text>
+    <text x="575" y="92" class="svg-label-sm">resumed_at = now</text>
+    <text x="575" y="105" class="svg-label-sm">resume_count += 1, ended_at = nil</text>
+  </svg>
+</div>
+
+<h4>新エンドポイント</h4>
+<table>
+  <tr><th>メソッド</th><th>パス</th><th>認証</th><th>説明</th></tr>
+  <tr><td>POST</td><td><code>/api/interviews/:id/resume</code></td><td>トークン or Devise</td><td>中断面接の再開</td></tr>
+</table>
+
+<h4>自動復帰パス</h4>
+<p>以下のケースでは明示的な <code>resume</code> 呼び出し不要:</p>
+<table>
+  <tr><th>呼び出し元</th><th>条件</th><th>動作</th></tr>
+  <tr><td><code>start_interview</code></td><td>abandoned面接が存在 &amp; resumable</td><td>自動resume</td></tr>
+  <tr><td><code>start_interview</code></td><td>in_progress面接が存在</td><td>touch_activity して返却</td></tr>
+  <tr><td><code>start_by_token</code></td><td>abandonedのトークン</td><td>自動resume</td></tr>
+</table>
+
+<!-- ── Section 13: State Machine ── -->
+<h3>13. 状態遷移バリデーション</h3>
+
+<p>不正な状態遷移をモデルレベルで防止する。</p>
+
+<div class="diagram-box">
+  <div class="diagram-title">面接状態遷移図</div>
+  <svg viewBox="0 0 700 180">
+    <defs>
+      <marker id="ah6" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+    <!-- not_started -->
+    <rect x="10" y="65" width="120" height="45" class="svg-box-gray"/>
+    <text x="70" y="85" class="svg-label" style="font-size:10px">not_started</text>
+    <text x="70" y="100" class="svg-label-sm">初期状態</text>
+
+    <!-- in_progress -->
+    <line x1="130" y1="87" x2="180" y2="87" class="svg-arrow" marker-end="url(#ah6)"/>
+    <rect x="180" y="65" width="130" height="45" class="svg-box-green"/>
+    <text x="245" y="85" class="svg-label" style="font-size:10px">in_progress</text>
+    <text x="245" y="100" class="svg-label-sm">面接進行中</text>
+
+    <!-- completed -->
+    <line x1="310" y1="75" x2="380" y2="35" class="svg-arrow" marker-end="url(#ah6)"/>
+    <rect x="380" y="10" width="130" height="45" class="svg-box-green"/>
+    <text x="445" y="30" class="svg-label" style="font-size:10px">completed</text>
+    <text x="445" y="45" class="svg-label-sm">正常完了</text>
+
+    <!-- failed -->
+    <line x1="310" y1="87" x2="380" y2="87" class="svg-arrow" marker-end="url(#ah6)"/>
+    <rect x="380" y="65" width="130" height="45" class="svg-box-red"/>
+    <text x="445" y="85" class="svg-label" style="font-size:10px">failed</text>
+    <text x="445" y="100" class="svg-label-sm">失敗</text>
+
+    <!-- abandoned -->
+    <line x1="310" y1="100" x2="380" y2="140" class="svg-arrow" marker-end="url(#ah6)"/>
+    <rect x="380" y="120" width="130" height="45" class="svg-box-orange"/>
+    <text x="445" y="140" class="svg-label" style="font-size:10px">abandoned</text>
+    <text x="445" y="155" class="svg-label-sm">中断/タイムアウト</text>
+
+    <!-- Resume arrow: abandoned -> in_progress -->
+    <path d="M 445 120 C 445 80, 350 60, 310 75" style="stroke:#38a169;stroke-width:2;fill:none;stroke-dasharray:5" marker-end="url(#ah6)"/>
+    <text x="365" y="75" class="svg-label-sm" style="fill:#38a169;font-size:8px">resume!</text>
+
+    <!-- Terminal markers -->
+    <text x="555" y="35" class="svg-label-sm" style="fill:#718096">終端</text>
+    <text x="555" y="90" class="svg-label-sm" style="fill:#718096">終端</text>
+  </svg>
+</div>
+
+<h4>実装</h4>
+<div class="code-block">VALID_TRANSITIONS = {
+  not_started: [<span class="str">:in_progress</span>],
+  in_progress: [<span class="str">:completed</span>, <span class="str">:failed</span>, <span class="str">:abandoned</span>],
+  abandoned:   [<span class="str">:in_progress</span>],
+  completed:   [],
+  failed:      []
+}.freeze
+
+<span class="key">validate</span> <span class="str">:valid_status_transition</span>, <span class="key">if:</span> <span class="str">:status_changed?</span></div>
+
+<!-- ── Section 14: Security ── -->
+<h3>14. セキュリティ対策</h3>
+
+<table>
+  <tr><th>対策</th><th>内容</th></tr>
+  <tr><td>トークン強度</td><td><code>SecureRandom.urlsafe_base64(32)</code> -- 256bit entropy</td></tr>
+  <tr><td>トークン一意性</td><td>DB UNIQUE INDEX + ループ生成で衝突回避</td></tr>
+  <tr><td>認可統合</td><td>トークン認証 → Devise認証のフォールバック</td></tr>
+  <tr><td>テストモード保護</td><td><code>Rails.env.production?</code> でテストモードの本番有効化を防止</td></tr>
+  <tr><td>認可チェック強化</td><td><code>@current_user</code> + <code>user_id</code> 比較 + nil ガード</td></tr>
+  <tr><td>レースコンディション</td><td>DB UNIQUE制約 + <code>RecordNotUnique</code> 捕捉（409 Conflict）</td></tr>
+  <tr><td>状態遷移保護</td><td><code>VALID_TRANSITIONS</code> バリデーションで不正遷移を防止</td></tr>
+  <tr><td>レート制限</td><td>Day 15セキュリティ強化フェーズで <code>Rack::Attack</code> を追加予定</td></tr>
+</table>
+
+<!-- ── Section 15: Code Review Day6 ── -->
+<h3>15. コードレビュー結果</h3>
+
+<table>
+  <tr><th>重要度</th><th>件数</th><th>主な内容</th></tr>
+  <tr><td><span class="badge badge-red">Critical</span></td><td>4</td><td>SQLite固有スコープ、認可バイパス、二重DB検索、レート制限欠如</td></tr>
+  <tr><td><span class="badge badge-orange">Warning</span></td><td>8</td><td>レースコンディション、テストモード漏洩、状態遷移バリデーション、ロジック重複</td></tr>
+  <tr><td><span class="badge badge-blue">Info</span></td><td>4</td><td>マイグレーションバージョン、タイムアウト基準確認、CSRF保護範囲</td></tr>
+</table>
+
+<h4>Critical修正の詳細</h4>
+<table>
+  <tr><th>#</th><th>問題</th><th>修正内容</th></tr>
+  <tr><td>1</td><td>SQLite固有の日時関数を使用した <code>timed_out</code> スコープ</td><td>スコープ削除、Ruby側の <code>timed_out?</code> メソッドのみで判定</td></tr>
+  <tr><td>2</td><td><code>authorize_interview!</code> が <code>current_user</code>（nil）を使用</td><td><code>@current_user</code> + nil ガードに変更</td></tr>
+  <tr><td>3</td><td><code>validate_interview_exists</code> と <code>set_interview</code> の二重DB検索</td><td>単一の <code>set_interview</code> に統合（<code>find_by</code> + nil チェック）</td></tr>
+  <tr><td>4</td><td><code>start_by_token</code> にレート制限なし</td><td>Day 15で <code>Rack::Attack</code> による制限を追加予定（TODOコメント追加）</td></tr>
+</table>
+
+<!-- ── Section 16: File List Day6 ── -->
+<h3>16. 変更ファイル一覧</h3>
+
+<div class="file-list">
+  <div class="file-item">
+    <div class="fname">db/migrate/20260308120000_add_session_management_to_interviews.rb</div>
+    <div class="fdesc"><span class="badge badge-green">新規</span> access_token, last_activity_at, resumed_at, resume_count + Situation設定</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/models/interview.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> トークン生成、タイムアウト判定、中断復帰、状態遷移バリデーション</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/models/situation.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> セッション設定バリデーション</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/session_manager.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> トークン認証開始、復帰ロジック、タイムアウト一括処理</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/controllers/api/interviews_controller.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> 統合認証、新エンドポイント、タイムアウトチェック、セキュリティ修正</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">config/routes.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> start_by_token, resume ルート追加</div>
+  </div>
+</div>
+
+<!-- ── Appendix: API List ── -->
+<h3>付録: 全APIエンドポイント一覧（Day 6時点）</h3>
+
+<table>
+  <tr><th>メソッド</th><th>パス</th><th>認証</th><th>概要</th></tr>
+  <tr><td>POST</td><td><code>/api/interviews/start</code></td><td>Devise/Token</td><td>面接開始（既存面接の自動復帰対応）</td></tr>
+  <tr><td>POST</td><td><code>/api/interviews/start_by_token</code></td><td>Token のみ</td><td>URL即時開始/自動復帰</td></tr>
+  <tr><td>GET</td><td><code>/api/interviews/:id/next_question</code></td><td>Devise/Token</td><td>次の質問取得（タイムアウトチェック付き）</td></tr>
+  <tr><td>POST</td><td><code>/api/interviews/:id/submit_answer</code></td><td>Devise/Token</td><td>回答送信（タイムアウトチェック付き）</td></tr>
+  <tr><td>POST</td><td><code>/api/interviews/:id/complete</code></td><td>Devise/Token</td><td>面接完了</td></tr>
+  <tr><td>GET</td><td><code>/api/interviews/:id/status</code></td><td>Devise/Token</td><td>状態取得（remaining_seconds, resumable含む）</td></tr>
+  <tr><td>POST</td><td><code>/api/interviews/:id/resume</code></td><td>Devise/Token</td><td>中断面接の再開</td></tr>
+</table>
+
+<!-- ── Footer ── -->
+<footer>
+  AI面接インタビューシステム — Day 5・Day 6 報告書 | 2026-03-08 | master ブランチ
+</footer>
+
+</body>
+</html>
