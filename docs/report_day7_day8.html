@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>AI面接インタビューシステム — Day 7・Day 8 報告書</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 15mm 18mm 15mm;
+    @top-left { content: none; }
+    @top-center { content: none; }
+    @top-right { content: none; }
+    @bottom-left { content: none; }
+    @bottom-center { content: none; }
+    @bottom-right { content: none; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Meiryo", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.7;
+    color: #1a1a1a;
+    background: #fff;
+    padding: 0;
+  }
+
+  .cover {
+    text-align: center;
+    padding: 80px 20px 40px;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 90vh;
+  }
+  .cover h1 { font-size: 26pt; color: #1a365d; margin-bottom: 12px; letter-spacing: 2px; }
+  .cover .subtitle { font-size: 16pt; color: #2b6cb0; margin-bottom: 40px; font-weight: 600; }
+  .cover .meta { font-size: 11pt; color: #555; line-height: 2.2; }
+  .cover .meta strong { color: #1a1a1a; }
+  .cover .logo-box {
+    width: 100px; height: 100px; margin: 0 auto 30px;
+    background: linear-gradient(135deg, #2b6cb0, #4299e1);
+    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 36pt; font-weight: 700;
+  }
+
+  .toc { page-break-after: always; padding-top: 20px; }
+  .toc h2 { font-size: 16pt; color: #1a365d; border-bottom: 3px solid #2b6cb0; padding-bottom: 8px; margin-bottom: 24px; }
+  .toc ul { list-style: none; padding: 0; }
+  .toc li { padding: 8px 0; border-bottom: 1px dotted #ccc; font-size: 11pt; }
+  .toc li.day-header { font-weight: 700; font-size: 12pt; color: #2b6cb0; border-bottom: none; padding-top: 18px; }
+
+  h2.day-title {
+    font-size: 18pt; color: #fff;
+    background: linear-gradient(135deg, #1a365d, #2b6cb0);
+    padding: 14px 20px; border-radius: 6px; margin: 30px 0 20px;
+    page-break-before: always;
+  }
+  h3 { font-size: 13pt; color: #1a365d; border-left: 4px solid #4299e1; padding-left: 12px; margin: 24px 0 12px; }
+  h4 { font-size: 11pt; color: #2b6cb0; margin: 16px 0 8px; font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; font-size: 9.5pt; }
+  th { background: #edf2f7; color: #1a365d; font-weight: 700; padding: 8px 10px; text-align: left; border: 1px solid #cbd5e0; }
+  td { padding: 7px 10px; border: 1px solid #cbd5e0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7fafc; }
+  .highlight-cell { background: #ebf8ff !important; font-weight: 600; }
+
+  .diagram-box {
+    background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 8px;
+    padding: 14px 12px; margin: 14px 0 20px; overflow: hidden; page-break-inside: avoid;
+  }
+  .diagram-title { font-size: 10pt; font-weight: 700; color: #2b6cb0; margin-bottom: 12px; text-align: center; }
+
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: "Meiryo", sans-serif; }
+  .svg-box { fill: #fff; stroke: #2b6cb0; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-green { fill: #f0fff4; stroke: #38a169; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-orange { fill: #fffaf0; stroke: #dd6b20; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-red { fill: #fff5f5; stroke: #e53e3e; stroke-width: 2; rx: 8; ry: 8; }
+  .svg-box-gray { fill: #f7fafc; stroke: #a0aec0; stroke-width: 1.5; rx: 6; ry: 6; }
+  .svg-diamond { fill: #fffff0; stroke: #d69e2e; stroke-width: 2; }
+  .svg-arrow { stroke: #4a5568; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+  .svg-label { font-size: 10px; fill: #1a365d; font-weight: 700; text-anchor: middle; }
+  .svg-label-sm { font-size: 8.5px; fill: #4a5568; text-anchor: middle; }
+
+  .code-block {
+    background: #1a202c; color: #e2e8f0; border-radius: 6px;
+    padding: 14px 16px; margin: 10px 0 16px;
+    font-family: "Consolas", "Source Code Pro", monospace;
+    font-size: 9pt; line-height: 1.6; overflow-x: auto; white-space: pre;
+  }
+  .code-block .key { color: #90cdf4; }
+  .code-block .str { color: #9ae6b4; }
+  .code-block .num { color: #fbd38d; }
+  .code-block .comment { color: #718096; }
+
+  .info-box { border-left: 4px solid #4299e1; background: #ebf8ff; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 10pt; }
+  .warn-box { border-left: 4px solid #ed8936; background: #fffaf0; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 10pt; }
+  .success-box { border-left: 4px solid #38a169; background: #f0fff4; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 10pt; }
+
+  p { margin: 6px 0; }
+  ul, ol { padding-left: 22px; margin: 6px 0 12px; }
+  li { margin: 3px 0; }
+  strong { color: #1a365d; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 8.5pt; font-weight: 700; color: #fff; }
+  .badge-blue { background: #2b6cb0; }
+  .badge-green { background: #38a169; }
+  .badge-orange { background: #dd6b20; }
+  .badge-red { background: #e53e3e; }
+
+  .file-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+  .file-item { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 9pt; }
+  .file-item .fname { font-family: monospace; font-weight: 700; color: #2b6cb0; font-size: 8.5pt; }
+  .file-item .fdesc { color: #4a5568; margin-top: 2px; }
+
+  footer { text-align: center; font-size: 9pt; color: #a0aec0; margin-top: 40px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+
+  @media print {
+    body { padding: 0; margin: 0; }
+    .cover { min-height: 100vh; }
+    h2.day-title { page-break-before: always; }
+    .diagram-box, .code-block, .info-box, .success-box, .warn-box, table { page-break-inside: avoid; }
+    h3, h4 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== COVER ========== -->
+<div class="cover">
+  <div class="logo-box">AI</div>
+  <h1>AI面接インタビューシステム</h1>
+  <div class="subtitle">Day 7・Day 8 報告書</div>
+  <div class="meta">
+    <strong>作成日:</strong> 2026年3月10日<br>
+    <strong>リポジトリ:</strong> tianzhongyoushi178/AI_Interviewer<br>
+    <strong>ブランチ:</strong> master<br>
+    <strong>フレームワーク:</strong> Rails 6.1.7 / Ruby 3.1.6
+  </div>
+</div>
+
+<!-- ========== TOC ========== -->
+<div class="toc">
+  <h2>目次</h2>
+  <ul>
+    <li class="day-header">Day 7 — 自動リジェクト判定ロジック</li>
+    <li>1. 概要</li>
+    <li>2. DB変更（マイグレーション）</li>
+    <li>3. リジェクト判定サービス（RejectJudge）</li>
+    <li>4. リアルタイム判定フロー</li>
+    <li>5. 完了時最終判定</li>
+    <li>6. 既存コード改修</li>
+    <li>7. コードレビュー結果</li>
+    <li>8. 変更ファイル一覧</li>
+    <li class="day-header">Day 8 — 音声AI面接の基盤実装</li>
+    <li>9. 概要</li>
+    <li>10. STTClient 強化（音声認識）</li>
+    <li>11. TTSClient 強化（音声合成）</li>
+    <li>12. MediaProcessor 強化</li>
+    <li>13. AudioInterviewService（統合サービス）</li>
+    <li>14. コントローラー統合</li>
+    <li>15. 運用ツール（Rakeタスク）</li>
+    <li>16. コードレビュー結果</li>
+    <li>17. 変更ファイル一覧</li>
+    <li>付録: 全APIエンドポイント一覧（Day 8時点）</li>
+  </ul>
+</div>
+
+<!-- ==================== DAY 7 ==================== -->
+<h2 class="day-title">Day 7 — 自動リジェクト判定ロジック</h2>
+
+<h3>1. 概要</h3>
+
+<p>面接中のリアルタイムリジェクト判定と、面接完了時の最終合否判定をClient設定ベースで制御する仕組みを実装した。従来のハードコード閾値（70点固定）をSituation単位の設定に置き換え、柔軟なリジェクト条件を定義可能にした。</p>
+
+<table>
+  <tr><th>機能</th><th>説明</th></tr>
+  <tr><td class="highlight-cell">Client設定ベース閾値</td><td>Situation単位で合格基準・必須質問閾値・連続不合格上限を設定可能</td></tr>
+  <tr><td class="highlight-cell">リアルタイム判定</td><td>各回答評価後に即座にリジェクト判定。必須質問不合格 / 連続不合格で即終了</td></tr>
+  <tr><td class="highlight-cell">完了時最終判定</td><td>面接完了時に平均スコアで最終合否を判定</td></tr>
+  <tr><td class="highlight-cell">悲観的ロック</td><td>非同期評価ジョブとの競合を防止する排他制御</td></tr>
+</table>
+
+<!-- ── Section 2: Migration ── -->
+<h3>2. DB変更（マイグレーション）</h3>
+
+<p><strong>ファイル:</strong> <code>db/migrate/20260310120000_add_auto_reject_to_situations.rb</code></p>
+
+<h4>situations テーブル</h4>
+<table>
+  <tr><th>カラム</th><th>型</th><th>デフォルト</th><th>説明</th></tr>
+  <tr><td><code>passing_score</code></td><td>integer</td><td>70</td><td>面接全体の合格基準（平均スコア）</td></tr>
+  <tr><td><code>auto_reject_enabled</code></td><td>boolean</td><td>true</td><td>自動リジェクト機能の有効/無効</td></tr>
+  <tr><td><code>reject_on_required_fail</code></td><td>boolean</td><td>true</td><td>必須質問不合格で即リジェクト</td></tr>
+  <tr><td><code>min_required_score</code></td><td>integer</td><td>70</td><td>個別回答の合格閾値</td></tr>
+  <tr><td><code>max_consecutive_fails</code></td><td>integer</td><td>0</td><td>連続不合格の上限（0=無効）</td></tr>
+  <tr><td><code>reject_notify_method</code></td><td>string</td><td>in_app</td><td>通知方法（in_app / email / none）</td></tr>
+</table>
+
+<h4>interviews テーブル</h4>
+<table>
+  <tr><th>カラム</th><th>型</th><th>デフォルト</th><th>説明</th></tr>
+  <tr><td><code>rejection_reason</code></td><td>string</td><td>null</td><td>リジェクト理由</td></tr>
+  <tr><td><code>rejected_at</code></td><td>datetime</td><td>null</td><td>リジェクト日時</td></tr>
+</table>
+
+<h4>interview_results テーブル</h4>
+<table>
+  <tr><th>カラム</th><th>型</th><th>デフォルト</th><th>説明</th></tr>
+  <tr><td><code>rejection_details</code></td><td>json</td><td>{}</td><td>リジェクト判定の詳細（reason_code, score, threshold等）</td></tr>
+</table>
+
+<div class="success-box">
+  <strong>後方互換性:</strong> 全カラムにデフォルト値が設定されており、既存データは従来と同じ70点基準で動作する。<code>max_consecutive_fails = 0</code> で連続不合格チェックは無効。
+</div>
+
+<!-- ── Section 3: RejectJudge ── -->
+<h3>3. リジェクト判定サービス（RejectJudge）</h3>
+
+<p><strong>ファイル:</strong> <code>app/services/interview_engine/reject_judge.rb</code></p>
+
+<h4>設計方針</h4>
+<table>
+  <tr><th>項目</th><th>方針</th></tr>
+  <tr><td>責務</td><td>リジェクト判定ロジックの一元管理（判定 + 適用）</td></tr>
+  <tr><td>判定結果</td><td><code>RejectDecision</code> Struct（rejected, reason, details）で構造化返却</td></tr>
+  <tr><td>排他制御</td><td><code>with_lock</code> でinterviewの悲観的ロックを取得後にステータス再確認</td></tr>
+  <tr><td>閾値分離</td><td><code>min_required_score</code>（個別回答）と <code>passing_score</code>（面接全体）を分離</td></tr>
+</table>
+
+<h4>リジェクト条件一覧</h4>
+<table>
+  <tr><th>reason_code</th><th>判定タイミング</th><th>条件</th></tr>
+  <tr><td><code>required_question_failed</code></td><td>リアルタイム</td><td>必須質問のスコア &lt; <code>min_required_score</code></td></tr>
+  <tr><td><code>consecutive_fails</code></td><td>リアルタイム</td><td>連続不合格数 &gt;= <code>max_consecutive_fails</code></td></tr>
+  <tr><td><code>below_passing_score</code></td><td>面接完了時</td><td>平均スコア &lt; <code>passing_score</code></td></tr>
+</table>
+
+<!-- ── Section 4: Realtime Flow ── -->
+<h3>4. リアルタイム判定フロー</h3>
+
+<div class="diagram-box">
+  <div class="diagram-title">回答評価後のリジェクト判定フロー</div>
+  <svg viewBox="0 0 700 220">
+    <defs>
+      <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+    <!-- Evaluate -->
+    <rect x="10" y="20" width="130" height="45" class="svg-box"/>
+    <text x="75" y="38" class="svg-label" style="font-size:9px">ResponseEvaluator</text>
+    <text x="75" y="53" class="svg-label-sm">回答評価完了</text>
+    <line x1="140" y1="42" x2="175" y2="42" class="svg-arrow"/>
+
+    <!-- reload + check -->
+    <rect x="175" y="20" width="110" height="45" class="svg-box-gray"/>
+    <text x="230" y="38" class="svg-label" style="font-size:9px">interview.reload</text>
+    <text x="230" y="53" class="svg-label-sm">in_progress?</text>
+    <line x1="285" y1="42" x2="320" y2="42" class="svg-arrow"/>
+
+    <!-- Diamond: auto_reject? -->
+    <polygon points="380,12 430,42 380,72 330,42" class="svg-diamond"/>
+    <text x="380" y="39" class="svg-label" style="font-size:7.5px">auto_reject</text>
+    <text x="380" y="51" class="svg-label-sm">enabled?</text>
+
+    <!-- No -->
+    <line x1="380" y1="72" x2="380" y2="100" class="svg-arrow"/>
+    <text x="395" y="88" class="svg-label-sm" style="fill:#718096">No</text>
+    <rect x="330" y="100" width="100" height="35" class="svg-box-gray"/>
+    <text x="380" y="122" class="svg-label-sm">スキップ</text>
+
+    <!-- Yes -->
+    <line x1="430" y1="42" x2="470" y2="42" class="svg-arrow"/>
+    <text x="450" y="35" class="svg-label-sm" style="fill:#38a169">Yes</text>
+
+    <!-- Check 1: required fail -->
+    <rect x="470" y="10" width="210" height="30" class="svg-box-orange"/>
+    <text x="575" y="30" class="svg-label" style="font-size:8.5px">必須質問 score &lt; min_required_score?</text>
+    <line x1="575" y1="40" x2="575" y2="55" class="svg-arrow"/>
+
+    <!-- Check 2: consecutive -->
+    <rect x="470" y="55" width="210" height="30" class="svg-box-orange"/>
+    <text x="575" y="75" class="svg-label" style="font-size:8.5px">連続不合格 >= max_consecutive_fails?</text>
+
+    <!-- Reject path -->
+    <line x1="575" y1="85" x2="575" y2="110" class="svg-arrow"/>
+    <text x="560" y="100" class="svg-label-sm" style="fill:#e53e3e">Yes</text>
+
+    <!-- apply_rejection -->
+    <rect x="470" y="110" width="210" height="50" class="svg-box-red"/>
+    <text x="575" y="130" class="svg-label" style="font-size:9px">apply_rejection!</text>
+    <text x="575" y="145" class="svg-label-sm">with_lock + fail! + InterviewResult</text>
+
+    <!-- notify -->
+    <line x1="575" y1="160" x2="575" y2="185" class="svg-arrow"/>
+    <rect x="490" y="185" width="170" height="30" class="svg-box-gray"/>
+    <text x="575" y="205" class="svg-label-sm">notify_rejection（トランザクション外）</text>
+  </svg>
+</div>
+
+<h4>悲観的ロックによる排他制御</h4>
+<div class="code-block"><span class="key">def</span> apply_rejection!(decision)
+  <span class="key">return unless</span> decision.rejected?
+
+  @interview.with_lock <span class="key">do</span>
+    <span class="comment"># ロック取得後にステータスを再確認（非同期ジョブとの競合防止）</span>
+    <span class="key">unless</span> @interview.in_progress?
+      Rails.logger.info(<span class="str">"Skipping rejection: already #{@interview.status}"</span>)
+      <span class="key">return</span>
+    <span class="key">end</span>
+
+    @interview.update!(rejection_reason: decision.reason, rejected_at: Time.current)
+    @interview.fail!
+    InterviewResult.create!(interview: @interview, final_status: <span class="str">:failed</span>, ...)
+  <span class="key">end</span>
+<span class="key">end</span></div>
+
+<!-- ── Section 5: Completion Judge ── -->
+<h3>5. 完了時最終判定</h3>
+
+<p><code>SessionManager#complete_interview</code> から <code>RejectJudge#judge_on_completion</code> を呼び出し、平均スコアが <code>passing_score</code> 未満の場合にリジェクトする。</p>
+
+<div class="code-block"><span class="key">def</span> judge_on_completion(responses)
+  <span class="key">return</span> not_rejected <span class="key">unless</span> @situation.auto_reject_enabled?
+
+  scores = responses.map(&amp;<span class="str">:score</span>).compact
+  average_score = (scores.sum.to_f / scores.count).round(<span class="num">2</span>)
+
+  <span class="key">if</span> average_score < @situation.passing_score
+    reject(<span class="str">"below_passing_score"</span>, <span class="str">"平均スコアが合格基準未達"</span>, ...)
+  <span class="key">else</span>
+    not_rejected
+  <span class="key">end</span>
+<span class="key">end</span></div>
+
+<!-- ── Section 6: Existing Code Changes ── -->
+<h3>6. 既存コード改修</h3>
+
+<table>
+  <tr><th>ファイル</th><th>変更内容</th></tr>
+  <tr><td><code>response_evaluator.rb</code></td><td>ハードコード <code>PASS_THRESHOLD</code> → <code>min_required_score</code> に置換。<code>check_interview_continuation</code> → <code>check_rejection</code> に変更（<code>RejectJudge</code> 委譲）。トランザクション外でリジェクト判定実行。</td></tr>
+  <tr><td><code>session_manager.rb</code></td><td><code>generate_interview_result</code> に <code>RejectJudge</code> 統合。<code>fail_interview</code> に <code>with_lock</code> + 重複防止チェック追加。<code>passing_score</code> を結果データに含める。通知メソッド追加。</td></tr>
+  <tr><td><code>situation.rb</code></td><td>リジェクト設定のバリデーション追加（<code>passing_score</code> 0-100, <code>reject_notify_method</code> in_app/email/none）</td></tr>
+  <tr><td><code>interview.rb</code></td><td><code>rejected?</code> メソッド追加</td></tr>
+  <tr><td><code>interview_result.rb</code></td><td><code>rejection_details</code> JSONカラム直接アクセス、<code>rejected?</code> メソッド追加</td></tr>
+  <tr><td><code>interviews_controller.rb</code></td><td><code>status</code> / <code>complete</code> レスポンスにリジェクト情報追加</td></tr>
+</table>
+
+<!-- ── Section 7: Code Review Day7 ── -->
+<h3>7. コードレビュー結果</h3>
+
+<table>
+  <tr><th>重要度</th><th>件数</th><th>主な内容</th></tr>
+  <tr><td><span class="badge badge-red">Critical</span></td><td>4</td><td>トランザクション不整合、レースコンディション、JSON型/store不整合、InterviewResult重複作成</td></tr>
+  <tr><td><span class="badge badge-orange">Warning</span></td><td>5</td><td>N+1（consecutive_fails）、passing_score二重利用、循環依存、レスポンス型不整合</td></tr>
+  <tr><td><span class="badge badge-blue">Info</span></td><td>4</td><td>auto_reject_enabledデフォルト値、truncate_text重複、二重判定防止</td></tr>
+</table>
+
+<h4>Critical修正の詳細</h4>
+<table>
+  <tr><th>#</th><th>問題</th><th>修正内容</th></tr>
+  <tr><td>1</td><td><code>apply_rejection!</code> のトランザクション不整合</td><td><code>with_lock</code> で <code>fail!</code> + <code>InterviewResult.create!</code> を一括実行。通知はロック外</td></tr>
+  <tr><td>2</td><td>非同期ジョブと <code>complete</code> の競合</td><td><code>apply_rejection!</code> / <code>complete_interview</code> 双方で悲観的ロック取得。<code>interview.reload</code> でステータス再確認</td></tr>
+  <tr><td>3</td><td><code>rejection_details</code> の <code>store</code> + JSON型の二重エンコード</td><td><code>store</code> 宣言を削除、JSONカラムとして直接アクセス</td></tr>
+  <tr><td>4</td><td>リジェクト後の <code>complete</code> で <code>InterviewResult</code> 重複作成</td><td><code>generate_interview_result</code> / <code>fail_interview</code> 冒頭で既存チェック</td></tr>
+</table>
+
+<!-- ── Section 8: File List Day7 ── -->
+<h3>8. 変更ファイル一覧</h3>
+
+<div class="file-list">
+  <div class="file-item">
+    <div class="fname">db/migrate/20260310120000_add_auto_reject_to_situations.rb</div>
+    <div class="fdesc"><span class="badge badge-green">新規</span> リジェクト設定カラム（situations/interviews/interview_results）</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/reject_judge.rb</div>
+    <div class="fdesc"><span class="badge badge-green">新規</span> リジェクト判定サービス（リアルタイム + 完了時判定、悲観的ロック）</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/response_evaluator.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> ハードコード閾値撤廃、RejectJudge統合、トランザクション外判定</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/session_manager.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> RejectJudge統合、with_lock、重複防止、通知メソッド</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/models/situation.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> リジェクト設定バリデーション、predicate メソッド</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/models/interview.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> rejected? メソッド追加</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/models/interview_result.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> rejection_details直接アクセス、rejected? メソッド</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/controllers/api/interviews_controller.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> status/completeにリジェクト情報追加</div>
+  </div>
+</div>
+
+<!-- ==================== DAY 8 ==================== -->
+<h2 class="day-title">Day 8 — 音声AI面接の基盤実装</h2>
+
+<h3>9. 概要</h3>
+
+<p>既存のSTT/TTS/MediaProcessorを強化し、音声面接のEnd-to-Endフローを統合する <code>AudioInterviewService</code> を新規作成した。タイムアウト・リトライ・バリデーション・セキュリティを全面的に強化した。</p>
+
+<table>
+  <tr><th>コンポーネント</th><th>API/ツール</th><th>強化内容</th></tr>
+  <tr><td class="highlight-cell">STTClient（音声認識）</td><td>OpenAI Whisper</td><td>リトライ、ファイルバリデーション、タイムアウト、FDリーク修正</td></tr>
+  <tr><td class="highlight-cell">TTSClient（音声合成）</td><td>OpenAI TTS</td><td>リトライ、テキスト長制限、ボイスマップ、タイムアウト</td></tr>
+  <tr><td class="highlight-cell">MediaProcessor</td><td>ffmpeg</td><td>ffmpegチェック、タイムアウト、音声長バリデーション、正規化</td></tr>
+  <tr><td class="highlight-cell">AudioInterviewService</td><td>--</td><td>音声フロー統合、一時ファイル管理、事前生成バッチ</td></tr>
+</table>
+
+<!-- ── Section 10: STT ── -->
+<h3>10. STTClient 強化（音声認識）</h3>
+
+<p><strong>ファイル:</strong> <code>app/services/interview_engine/stt_client.rb</code></p>
+
+<h4>追加機能</h4>
+<table>
+  <tr><th>機能</th><th>設定</th><th>説明</th></tr>
+  <tr><td>ファイルバリデーション</td><td>MAX_FILE_SIZE: 25MB</td><td>Whisper API上限に準拠。サイズ・形式・空ファイルチェック</td></tr>
+  <tr><td>対応形式</td><td>.mp3, .mp4, .mpeg, .mpga, .m4a, .wav, .webm</td><td>Whisper APIの受付形式に限定</td></tr>
+  <tr><td>リトライ</td><td>MAX_RETRIES: 2, DELAY: 指数</td><td>429/5xx/タイムアウトでリトライ</td></tr>
+  <tr><td>タイムアウト</td><td>60秒（接続/読取り）</td><td>長時間音声のSTT処理に対応</td></tr>
+  <tr><td>FDリーク修正</td><td>--</td><td><code>File.open</code> ブロック形式でファイルハンドルを確実にクローズ</td></tr>
+</table>
+
+<h4>エラー分類</h4>
+<table>
+  <tr><th>エラー</th><th>HTTPコード</th><th>リトライ</th></tr>
+  <tr><td><code>STTTimeoutError</code></td><td>429, 500-599, timeout</td><td>する（最大2回）</td></tr>
+  <tr><td><code>STTError</code></td><td>400-428, 430-499</td><td>しない</td></tr>
+</table>
+
+<!-- ── Section 11: TTS ── -->
+<h3>11. TTSClient 強化（音声合成）</h3>
+
+<p><strong>ファイル:</strong> <code>app/services/interview_engine/tts_client.rb</code></p>
+
+<h4>追加機能</h4>
+<table>
+  <tr><th>機能</th><th>設定</th><th>説明</th></tr>
+  <tr><td>テキスト長制限</td><td>MAX_TEXT_LENGTH: 4096</td><td>OpenAI TTS入力上限に準拠</td></tr>
+  <tr><td>ボイスマップ</td><td>ja: nova, en: nova</td><td>言語ごとの推奨ボイス（拡張可能）</td></tr>
+  <tr><td>リトライ</td><td>MAX_RETRIES: 2, DELAY: 指数</td><td>429/5xx/タイムアウトでリトライ</td></tr>
+  <tr><td>タイムアウト</td><td>30秒（接続/読取り）</td><td></td></tr>
+  <tr><td>ファイル名衝突回避</td><td><code>SecureRandom.hex(8)</code></td><td>タイムスタンプ方式から変更</td></tr>
+</table>
+
+<!-- ── Section 12: MediaProcessor ── -->
+<h3>12. MediaProcessor 強化</h3>
+
+<p><strong>ファイル:</strong> <code>app/services/interview_engine/media_processor.rb</code></p>
+
+<h4>追加メソッド</h4>
+<table>
+  <tr><th>メソッド</th><th>説明</th></tr>
+  <tr><td><code>audio_duration(path)</code></td><td>ffprobeで音声の長さ（秒）を取得</td></tr>
+  <tr><td><code>validate_audio_duration!(path)</code></td><td>音声長のバリデーション（0.5秒-600秒）</td></tr>
+  <tr><td><code>normalize_audio(path)</code></td><td>音声をWAV 16kHz monoに正規化（STT最適化）</td></tr>
+</table>
+
+<h4>セキュリティ強化</h4>
+<table>
+  <tr><th>対策</th><th>内容</th></tr>
+  <tr><td>ffmpegチェック</td><td><code>ensure_ffmpeg!</code> でインストール確認（false時は毎回再チェック）</td></tr>
+  <tr><td>ファイルサイズ</td><td>MAX_VIDEO_SIZE: 500MB</td></tr>
+  <tr><td>タイムアウト</td><td>FFMPEG_TIMEOUT: 120秒（<code>Open3.capture3</code> + <code>Timeout</code>）</td></tr>
+  <tr><td>private化</td><td><code>private_class_method</code> で内部メソッドを隠蔽</td></tr>
+</table>
+
+<!-- ── Section 13: AudioInterviewService ── -->
+<h3>13. AudioInterviewService（統合サービス）</h3>
+
+<p><strong>ファイル:</strong> <code>app/services/interview_engine/audio_interview_service.rb</code></p>
+
+<div class="diagram-box">
+  <div class="diagram-title">音声面接 End-to-End フロー</div>
+  <svg viewBox="0 0 700 300">
+    <defs>
+      <marker id="ah2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+      </marker>
+    </defs>
+
+    <!-- Title: Question Flow -->
+    <text x="170" y="15" class="svg-label" style="font-size:11px">質問生成フロー</text>
+
+    <rect x="10" y="25" width="120" height="40" class="svg-box"/>
+    <text x="70" y="42" class="svg-label" style="font-size:9px">GET next_question</text>
+    <text x="70" y="55" class="svg-label-sm">コントローラー</text>
+    <line x1="130" y1="45" x2="160" y2="45" class="svg-arrow" marker-end="url(#ah2)"/>
+
+    <rect x="160" y="25" width="120" height="40" class="svg-box"/>
+    <text x="220" y="42" class="svg-label" style="font-size:9px">QuestionSelector</text>
+    <text x="220" y="55" class="svg-label-sm">次の質問取得</text>
+    <line x1="280" y1="45" x2="310" y2="45" class="svg-arrow" marker-end="url(#ah2)"/>
+
+    <rect x="310" y="25" width="110" height="40" class="svg-box-green"/>
+    <text x="365" y="42" class="svg-label" style="font-size:9px">TTSClient</text>
+    <text x="365" y="55" class="svg-label-sm">テキスト→音声</text>
+    <line x1="420" y1="45" x2="450" y2="45" class="svg-arrow" marker-end="url(#ah2)"/>
+
+    <rect x="450" y="25" width="120" height="40" class="svg-box-gray"/>
+    <text x="510" y="42" class="svg-label" style="font-size:9px">QuestionAudio</text>
+    <text x="510" y="55" class="svg-label-sm">キャッシュ保存</text>
+    <line x1="570" y1="45" x2="600" y2="45" class="svg-arrow" marker-end="url(#ah2)"/>
+
+    <rect x="600" y="25" width="90" height="40" rx="15" ry="15" style="fill:#f0fff4;stroke:#38a169;stroke-width:2"/>
+    <text x="645" y="42" class="svg-label" style="font-size:9px;fill:#276749">audio_url</text>
+    <text x="645" y="55" class="svg-label-sm">返却</text>
+
+    <!-- Title: Answer Flow -->
+    <text x="170" y="100" class="svg-label" style="font-size:11px">回答処理フロー</text>
+
+    <rect x="10" y="110" width="120" height="40" class="svg-box"/>
+    <text x="70" y="127" class="svg-label" style="font-size:9px">POST submit_answer</text>
+    <text x="70" y="140" class="svg-label-sm">audio/video/text</text>
+    <line x1="130" y1="130" x2="160" y2="130" class="svg-arrow" marker-end="url(#ah2)"/>
+
+    <!-- Diamond: input type -->
+    <polygon points="220,105 265,130 220,155 175,130" class="svg-diamond"/>
+    <text x="220" y="127" class="svg-label" style="font-size:7px">入力形式</text>
+    <text x="220" y="139" class="svg-label-sm">?</text>
+
+    <!-- text path -->
+    <line x1="220" y1="155" x2="220" y2="180" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="237" y="170" class="svg-label-sm" style="fill:#38a169">text</text>
+    <rect x="170" y="180" width="100" height="30" class="svg-box-green"/>
+    <text x="220" y="200" class="svg-label-sm">そのまま使用</text>
+
+    <!-- audio path -->
+    <line x1="265" y1="120" x2="310" y2="120" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="287" y="113" class="svg-label-sm" style="fill:#2b6cb0">audio</text>
+    <rect x="310" y="105" width="100" height="30" class="svg-box"/>
+    <text x="360" y="125" class="svg-label" style="font-size:8px">validate_audio!</text>
+
+    <!-- video path -->
+    <line x1="265" y1="140" x2="310" y2="165" class="svg-arrow" marker-end="url(#ah2)"/>
+    <text x="287" y="158" class="svg-label-sm" style="fill:#dd6b20">video</text>
+    <rect x="310" y="150" width="100" height="30" class="svg-box-orange"/>
+    <text x="360" y="165" class="svg-label" style="font-size:8px">ffmpeg extract</text>
+    <text x="360" y="175" class="svg-label-sm">WAV 16kHz</text>
+
+    <!-- Both to duration check -->
+    <line x1="410" y1="120" x2="440" y2="130" class="svg-arrow" marker-end="url(#ah2)"/>
+    <line x1="410" y1="165" x2="440" y2="140" class="svg-arrow" marker-end="url(#ah2)"/>
+
+    <rect x="440" y="115" width="110" height="40" class="svg-box"/>
+    <text x="495" y="132" class="svg-label" style="font-size:8px">validate_duration!</text>
+    <text x="495" y="145" class="svg-label-sm">0.5s-600s</text>
+    <line x1="550" y1="135" x2="580" y2="135" class="svg-arrow" marker-end="url(#ah2)"/>
+
+    <!-- STT -->
+    <rect x="580" y="115" width="110" height="40" class="svg-box-green"/>
+    <text x="635" y="132" class="svg-label" style="font-size:9px">STTClient</text>
+    <text x="635" y="145" class="svg-label-sm">Whisper API</text>
+
+    <!-- All paths to transcript -->
+    <line x1="635" y1="155" x2="635" y2="195" class="svg-arrow" marker-end="url(#ah2)"/>
+    <line x1="270" y1="195" x2="555" y2="195" class="svg-arrow" marker-end="url(#ah2)"/>
+
+    <!-- Save + Evaluate -->
+    <rect x="555" y="180" width="135" height="40" class="svg-box"/>
+    <text x="622" y="197" class="svg-label" style="font-size:9px">InterviewResponse</text>
+    <text x="622" y="210" class="svg-label-sm">保存 + attach</text>
+    <line x1="622" y1="220" x2="622" y2="245" class="svg-arrow" marker-end="url(#ah2)"/>
+
+    <rect x="555" y="245" width="135" height="40" class="svg-box-green"/>
+    <text x="622" y="262" class="svg-label" style="font-size:9px">EvaluateJob</text>
+    <text x="622" y="275" class="svg-label-sm">非同期評価 + リジェクト判定</text>
+  </svg>
+</div>
+
+<h4>主要メソッド</h4>
+<table>
+  <tr><th>メソッド</th><th>説明</th></tr>
+  <tr><td><code>prepare_question(question)</code></td><td>質問の音声データ取得（TTS + キャッシュ）</td></tr>
+  <tr><td><code>process_answer_media(...)</code></td><td>音声/動画/テキストから回答テキストを取得</td></tr>
+  <tr><td><code>cleanup_temp_files(*paths)</code></td><td>一時ファイルのクリーンアップ</td></tr>
+  <tr><td><code>self.pregenerate_question_audio(situation)</code></td><td>全質問の音声を事前生成（バッチ用、N+1回避済み）</td></tr>
+</table>
+
+<!-- ── Section 14: Controller ── -->
+<h3>14. コントローラー統合</h3>
+
+<p><code>submit_answer</code> アクションを <code>AudioInterviewService</code> に統合し、以下を改善:</p>
+
+<table>
+  <tr><th>改善項目</th><th>内容</th></tr>
+  <tr><td>二重回答防止</td><td><code>with_lock</code> でinterviewロック後に重複チェック。ロック外で音声処理</td></tr>
+  <tr><td>一時ファイル管理</td><td><code>ensure</code> ブロックで例外時もクリーンアップ</td></tr>
+  <tr><td>エラーハンドリング</td><td><code>AudioError</code> / <code>STTError</code> / <code>MediaError</code> を個別に rescue</td></tr>
+  <tr><td>認可強化</td><td><code>secure_compare</code> でトークンのタイミングセーフ比較</td></tr>
+</table>
+
+<!-- ── Section 15: Rake Tasks ── -->
+<h3>15. 運用ツール（Rakeタスク）</h3>
+
+<p><strong>ファイル:</strong> <code>lib/tasks/audio.rake</code></p>
+
+<table>
+  <tr><th>タスク</th><th>説明</th></tr>
+  <tr><td><code>rake audio:pregenerate[SITUATION_ID]</code></td><td>指定Situationの全質問の音声を事前生成</td></tr>
+  <tr><td><code>rake audio:pregenerate_all</code></td><td>全アクティブSituationの音声を事前生成</td></tr>
+  <tr><td><code>rake audio:cleanup</code></td><td><code>tmp/interview_audio/</code> の24時間以上前のMP3を削除</td></tr>
+  <tr><td><code>rake audio:cleanup_tmpdir</code></td><td><code>Dir.tmpdir</code> の一時WAV/MP3を削除</td></tr>
+</table>
+
+<!-- ── Section 16: Code Review Day8 ── -->
+<h3>16. コードレビュー結果</h3>
+
+<table>
+  <tr><th>重要度</th><th>件数</th><th>主な内容</th></tr>
+  <tr><td><span class="badge badge-red">Critical</span></td><td>4</td><td>FDリーク、認可ロジック不備、二重回答でSTT二重課金、ffmpegキャッシュ問題</td></tr>
+  <tr><td><span class="badge badge-orange">Warning</span></td><td>7</td><td>429エラー種別、ディスク容量、cleanup漏れ、N+1、タイミングセーフ比較</td></tr>
+  <tr><td><span class="badge badge-blue">Info</span></td><td>5</td><td>リトライ重複、private_class_method、cleanup範囲、フロー統一</td></tr>
+</table>
+
+<h4>Critical修正の詳細</h4>
+<table>
+  <tr><th>#</th><th>問題</th><th>修正内容</th></tr>
+  <tr><td>1</td><td><code>File.new</code> でファイルハンドルがリーク</td><td><code>File.open</code> ブロック形式に変更（自動クローズ）</td></tr>
+  <tr><td>2</td><td><code>authorize_interview!</code> トークン不一致時のフォールスルー</td><td>トークン提供時は一致/不一致で完結。<code>secure_compare</code> 使用</td></tr>
+  <tr><td>3</td><td>二重回答送信でSTT二重課金</td><td><code>with_lock</code> で重複チェック後にロック外で音声処理</td></tr>
+  <tr><td>4</td><td>ffmpegチェックの<code>false</code>キャッシュ問題</td><td><code>false</code> 時は毎回再チェックするよう修正</td></tr>
+</table>
+
+<!-- ── Section 17: File List Day8 ── -->
+<h3>17. 変更ファイル一覧</h3>
+
+<div class="file-list">
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/stt_client.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> リトライ、バリデーション、タイムアウト、FDリーク修正</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/tts_client.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> リトライ、テキスト長制限、ボイスマップ、タイムアウト</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/media_processor.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> ffmpegチェック、タイムアウト、音声長バリデーション、正規化</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/services/interview_engine/audio_interview_service.rb</div>
+    <div class="fdesc"><span class="badge badge-green">新規</span> 音声面接フロー統合（STT/TTS/Media + 事前生成バッチ）</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">app/controllers/api/interviews_controller.rb</div>
+    <div class="fdesc"><span class="badge badge-blue">改修</span> AudioInterviewService統合、with_lock、ensure cleanup、secure_compare</div>
+  </div>
+  <div class="file-item">
+    <div class="fname">lib/tasks/audio.rake</div>
+    <div class="fdesc"><span class="badge badge-green">新規</span> 音声事前生成 / クリーンアップタスク</div>
+  </div>
+</div>
+
+<!-- ── Appendix: API List ── -->
+<h3>付録: 全APIエンドポイント一覧（Day 8時点）</h3>
+
+<table>
+  <tr><th>メソッド</th><th>パス</th><th>認証</th><th>概要</th></tr>
+  <tr><td>POST</td><td><code>/api/interviews/start</code></td><td>Devise/Token</td><td>面接開始（自動復帰対応）</td></tr>
+  <tr><td>POST</td><td><code>/api/interviews/start_by_token</code></td><td>Token のみ</td><td>URL即時開始/自動復帰</td></tr>
+  <tr><td>GET</td><td><code>/api/interviews/:id/next_question</code></td><td>Devise/Token</td><td>次の質問取得 + TTS音声URL（タイムアウトチェック付き）</td></tr>
+  <tr><td>POST</td><td><code>/api/interviews/:id/submit_answer</code></td><td>Devise/Token</td><td>回答送信（音声/動画/テキスト対応、STT自動変換、タイムアウトチェック付き）</td></tr>
+  <tr><td>POST</td><td><code>/api/interviews/:id/complete</code></td><td>Devise/Token</td><td>面接完了（リジェクト判定 + 結果生成）</td></tr>
+  <tr><td>GET</td><td><code>/api/interviews/:id/status</code></td><td>Devise/Token</td><td>状態取得（rejected, rejection_reason含む）</td></tr>
+  <tr><td>POST</td><td><code>/api/interviews/:id/resume</code></td><td>Devise/Token</td><td>中断面接の再開</td></tr>
+</table>
+
+<div class="info-box">
+  <strong>フェーズ2（Day 4-8）完了:</strong> 質問分岐エンジン、LLM制御レイヤー、セッション管理、自動リジェクト判定、音声AI面接基盤の全機能が実装完了。フェーズ3（Day 9-13: API設計・Rails連携・データ保存）に進む準備が整った。
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+  AI面接インタビューシステム — Day 7・Day 8 報告書 | 2026-03-10 | master ブランチ
+</footer>
+
+</body>
+</html>

@@ -119,7 +119,6 @@ module Api
       audio_file = params[:audio_file]
       video_file = params[:video_file]
       text_answer = params[:text_answer].presence || params[:selected_option].presence
-      language = params[:language].presence || @interview.language || 'en'
 
       unless question_id && (audio_file || video_file || text_answer.present?)
         return render json: {
@@ -133,42 +132,32 @@ module Api
         return render json: { success: false, error: 'Question not found' }, status: :not_found
       end
 
-      existing_response = @interview.interview_responses.find_by(question_id: question_id)
-      if existing_response
-        return render json: { success: false, error: 'Question already answered' }, status: :bad_request
-      end
-
-      transcript = text_answer.presence
-      extracted_audio_path = nil
-
-      if transcript.blank?
-        stt_client = InterviewEngine::STTClient.new
-
-        if audio_file
-          transcript = stt_client.transcribe(audio_file.path, language: language)
-        elsif video_file
-          extracted_audio_path = InterviewEngine::MediaProcessor.extract_audio_from_video(video_file.path)
-          transcript = stt_client.transcribe(extracted_audio_path, language: language)
+      # 二重回答防止: interviewレコードをロックして重複チェック
+      @interview.with_lock do
+        existing_response = @interview.interview_responses.find_by(question_id: question_id)
+        if existing_response
+          render json: { success: false, error: 'Question already answered' }, status: :bad_request
+          return
         end
       end
 
-      unless transcript
-        return render json: { success: false, error: 'Failed to transcribe audio' }, status: :bad_request
-      end
+      # ロック外で音声処理を実行（長時間処理のためロック外で行う）
+      audio_service = InterviewEngine::AudioInterviewService.new(@interview)
+      @_extracted_audio_path = nil
+      media_result = audio_service.process_answer_media(
+        audio_file: audio_file,
+        video_file: video_file,
+        text_answer: text_answer
+      )
+      @_extracted_audio_path = media_result[:extracted_audio_path]
 
       response = @interview.interview_responses.create!(
         question: question,
-        audio_transcript: transcript,
+        audio_transcript: media_result[:transcript],
         evaluation_status: :pending
       )
 
-      attach_media(response, audio_file, video_file, extracted_audio_path)
-
-      # NOTE: ActiveStorageがcloudサービス(S3等)の場合、attachは非同期になるため
-      # ファイル削除タイミングに注意。現状localサービス前提で同期処理。
-      if extracted_audio_path && File.exist?(extracted_audio_path)
-        File.delete(extracted_audio_path)
-      end
+      attach_media(response, audio_file, video_file, media_result[:extracted_audio_path])
 
       EvaluateInterviewResponseJob.perform_later(response.id)
       @interview.touch_activity!
@@ -179,12 +168,21 @@ module Api
         response_id: response.id,
         remaining_seconds: @interview.remaining_seconds
       }, status: :created
+    rescue InterviewEngine::AudioInterviewService::AudioError,
+           InterviewEngine::STTClient::STTError,
+           InterviewEngine::MediaProcessor::MediaError => e
+      render json: { success: false, error: e.message }, status: :bad_request
     rescue ActiveRecord::RecordNotUnique
       render json: { success: false, error: 'Question already answered' }, status: :conflict
     rescue ActiveRecord::RecordInvalid => e
       render json: { success: false, error: "Failed to save response: #{e.message}" }, status: :unprocessable_entity
     rescue => e
       render json: { success: false, error: e.message }, status: :bad_request
+    ensure
+      # 例外時でも一時ファイルをクリーンアップ
+      if @_extracted_audio_path
+        InterviewEngine::AudioInterviewService.new(@interview).cleanup_temp_files(@_extracted_audio_path)
+      end
     end
 
     # POST /api/interviews/:id/complete
@@ -196,6 +194,8 @@ module Api
       session_manager = InterviewEngine::SessionManager.new(@interview.user, @interview.situation)
       result = session_manager.complete_interview(@interview.id)
 
+      @interview.reload
+
       render json: {
         success: true,
         message: 'Interview completed',
@@ -203,8 +203,11 @@ module Api
           interview_id: @interview.id,
           final_status: result.final_status,
           average_score: result.results_data&.dig('average_score'),
+          passing_score: result.results_data&.dig('passing_score'),
           total_questions: result.results_data&.dig('total_questions'),
-          answered_questions: result.results_data&.dig('answered_questions')
+          answered_questions: result.results_data&.dig('answered_questions'),
+          rejected: @interview.rejected?,
+          rejection_reason: @interview.rejection_reason
         }
       }
     rescue => e
@@ -216,9 +219,15 @@ module Api
       session_manager = InterviewEngine::SessionManager.new(@interview.user, @interview.situation)
       state = session_manager.get_interview_state(@interview.id)
 
+      state_with_rejection = state.merge(
+        language: @interview.language,
+        rejected: @interview.rejected?,
+        rejection_reason: @interview.rejection_reason
+      )
+
       render json: {
         success: true,
-        state: state.merge(language: @interview.language)
+        state: state_with_rejection
       }
     rescue => e
       render json: { success: false, error: e.message }, status: :bad_request
@@ -283,8 +292,15 @@ module Api
       return if test_mode?
 
       token = request.headers['X-Interview-Token'] || params[:access_token]
-      if token.present? && @interview.access_token == token
-        return
+      if token.present?
+        # トークンが提供された場合はトークンの一致/不一致で完結させる
+        if @interview.access_token.present? &&
+           ActiveSupport::SecurityUtils.secure_compare(token, @interview.access_token)
+          return
+        else
+          render json: { success: false, error: 'Unauthorized' }, status: :forbidden
+          return
+        end
       end
 
       unless @current_user && @interview.user_id == @current_user.id

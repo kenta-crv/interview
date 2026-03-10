@@ -1,59 +1,110 @@
 # app/services/interview_engine/stt_client.rb
+require 'net/http'
+require 'json'
+
 module InterviewEngine
   class STTClient
-    require 'net/http'
-    require 'json'
+    class STTError < StandardError; end
+    class STTTimeoutError < STTError; end
 
-    OPENAI_API_KEY = ENV['OPENAI_API_KEY']
-    OPENAI_URL = 'https://api.openai.com/v1/audio/transcriptions'
+    OPENAI_URL = 'https://api.openai.com/v1/audio/transcriptions'.freeze
+    MAX_FILE_SIZE = 25 * 1024 * 1024 # 25MB (Whisper API上限)
+    ALLOWED_FORMATS = %w[.mp3 .mp4 .mpeg .mpga .m4a .wav .webm].freeze
+    MAX_RETRIES = 2
+    RETRY_DELAY_BASE = 1
+    TIMEOUT_SECONDS = 60
 
     # Convert audio file to text transcript
     def transcribe(audio_file_path, language: 'en')
-      raise "Audio file not found: #{audio_file_path}" unless File.exist?(audio_file_path)
-      
-      response = send_to_openai(audio_file_path, language)
-      extract_transcript(response)
-    rescue => e
-      Rails.logger.error("STT Error: #{e.message}")
-      nil
+      validate_file!(audio_file_path)
+
+      transcript = nil
+      retries = 0
+
+      begin
+        response = send_to_openai(audio_file_path, language)
+        transcript = handle_response(response)
+      rescue STTTimeoutError, Net::OpenTimeout, Net::ReadTimeout => e
+        retries += 1
+        if retries <= MAX_RETRIES
+          sleep(RETRY_DELAY_BASE * retries)
+          retry
+        end
+        Rails.logger.error("STT timeout after #{MAX_RETRIES} retries: #{e.message}")
+        raise STTError, "Transcription timed out"
+      end
+
+      transcript
     end
 
     private
 
-    def send_to_openai(audio_file_path, language)
-      uri = URI(OPENAI_URL)
-      http = Net::HTTP.new(uri.hostname, uri.port)
-      http.use_ssl = true
+    def validate_file!(path)
+      raise STTError, "Audio file not found: #{path}" unless File.exist?(path)
 
-      request = Net::HTTP::Post.new(uri.path)
-      request['Authorization'] = "Bearer #{OPENAI_API_KEY}"
+      size = File.size(path)
+      raise STTError, "Audio file too large (#{(size / 1024.0 / 1024).round(1)}MB, max #{MAX_FILE_SIZE / 1024 / 1024}MB)" if size > MAX_FILE_SIZE
+      raise STTError, "Audio file is empty" if size.zero?
 
-      form_data = [
-        ['file', File.new(audio_file_path, 'rb')],
-        ['model', 'whisper-1'],
-        ['language', language_code(language)]
-      ]
-
-      request.set_form form_data, 'multipart/form-data'
-      http.request(request)
-    end
-
-    def extract_transcript(response)
-      parsed = JSON.parse(response.body)
-      
-      if parsed['text']
-        parsed['text'].strip
-      else
-        raise "Invalid Whisper response"
+      ext = File.extname(path).downcase
+      unless ALLOWED_FORMATS.include?(ext)
+        raise STTError, "Unsupported audio format: #{ext} (allowed: #{ALLOWED_FORMATS.join(', ')})"
       end
     end
 
-    def language_code(language)
-      case language
+    def send_to_openai(audio_file_path, language)
+      uri = URI(OPENAI_URL)
+      http = Net::HTTP.new(uri.hostname, uri.port)
+      http.use_ssl = uri.scheme == 'https'
+      http.open_timeout = TIMEOUT_SECONDS
+      http.read_timeout = TIMEOUT_SECONDS
+
+      request = Net::HTTP::Post.new(uri.path)
+      request['Authorization'] = "Bearer #{api_key}"
+
+      File.open(audio_file_path, 'rb') do |file|
+        form_data = [
+          ['file', file],
+          ['model', 'whisper-1'],
+          ['language', normalize_language(language)],
+          ['response_format', 'json']
+        ]
+
+        request.set_form(form_data, 'multipart/form-data')
+        http.request(request)
+      end
+    end
+
+    def handle_response(response)
+      case response.code.to_i
+      when 200
+        parsed = JSON.parse(response.body)
+        text = parsed['text']&.strip
+        raise STTError, "Empty transcript returned" if text.blank?
+        text
+      when 429
+        # 429もリトライ対象: STTTimeoutError として上位の retry ロジックでリトライされる
+        raise STTTimeoutError, "Rate limit exceeded"
+      when 400..499
+        parsed = JSON.parse(response.body) rescue {}
+        raise STTError, "Whisper API error (#{response.code}): #{parsed['error']&.dig('message') || response.body.truncate(200)}"
+      when 500..599
+        raise STTTimeoutError, "Whisper API server error (#{response.code})"
+      else
+        raise STTError, "Unexpected response (#{response.code})"
+      end
+    end
+
+    def normalize_language(language)
+      case language.to_s
       when 'ja' then 'ja'
       when 'en' then 'en'
       else 'en'
       end
+    end
+
+    def api_key
+      ENV['OPENAI_API_KEY'] || raise(STTError, "OPENAI_API_KEY is not set")
     end
   end
 end

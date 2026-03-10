@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_03_08_120000) do
+ActiveRecord::Schema.define(version: 2026_03_10_120000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -142,6 +142,7 @@ ActiveRecord::Schema.define(version: 2026_03_08_120000) do
     t.json "results_data", default: {}
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.json "rejection_details", default: {}
     t.index ["final_status"], name: "index_interview_results_on_final_status"
     t.index ["interview_id"], name: "index_interview_results_on_interview_id"
     t.index ["interview_id"], name: "index_interview_results_on_interview_id_unique", unique: true
@@ -160,6 +161,8 @@ ActiveRecord::Schema.define(version: 2026_03_08_120000) do
     t.datetime "last_activity_at"
     t.datetime "resumed_at"
     t.integer "resume_count", default: 0, null: false
+    t.string "rejection_reason"
+    t.datetime "rejected_at"
     t.index ["access_token"], name: "index_interviews_on_access_token", unique: true
     t.index ["situation_id"], name: "index_interviews_on_situation_id"
     t.index ["user_id", "situation_id"], name: "index_interviews_on_user_and_situation", unique: true
@@ -200,6 +203,12 @@ ActiveRecord::Schema.define(version: 2026_03_08_120000) do
     t.integer "session_timeout_minutes", default: 60, null: false
     t.boolean "allow_resume", default: true, null: false
     t.integer "max_resume_count", default: 3, null: false
+    t.integer "passing_score", default: 70, null: false
+    t.boolean "auto_reject_enabled", default: true, null: false
+    t.boolean "reject_on_required_fail", default: true, null: false
+    t.integer "min_required_score", default: 70, null: false
+    t.integer "max_consecutive_fails", default: 0, null: false
+    t.string "reject_notify_method", default: "in_app", null: false
     t.index ["client_id"], name: "index_situations_on_client_id"
   end
 

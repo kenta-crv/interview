@@ -93,6 +93,10 @@ class Interview < ApplicationRecord
     )
   end
 
+  def rejected?
+    rejection_reason.present? && rejected_at.present?
+  end
+
   def duration
     return nil unless started_at && ended_at
     (ended_at - started_at).to_i

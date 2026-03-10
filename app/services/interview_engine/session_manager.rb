@@ -128,19 +128,33 @@ module InterviewEngine
       }
     end
 
-    # Mark interview as failed
-    def fail_interview(interview_id, reason)
+    # Mark interview as failed (with optional rejection details)
+    # 注意: リジェクト経由の場合は RejectJudge#apply_rejection! を使うこと。
+    # このメソッドは手動での不合格判定等に使用する。
+    def fail_interview(interview_id, reason, rejection_details: nil)
       interview = Interview.find(interview_id)
-      interview.fail!
 
-      InterviewResult.create!(
-        interview: interview,
-        final_status: :failed,
-        results_data: {
+      interview.with_lock do
+        # 既にInterviewResultが存在する場合はそれを返す
+        existing_result = interview.interview_result
+        return existing_result if existing_result
+
+        interview.fail!
+
+        result_data = {
           failure_reason: reason,
           completed_at: Time.current
         }
-      )
+
+        InterviewResult.create!(
+          interview: interview,
+          final_status: :failed,
+          results_data: result_data,
+          rejection_details: rejection_details || {}
+        )
+      end
+
+      notify_rejection(interview, reason) if rejection_details.present?
 
       true
     end
@@ -153,6 +167,7 @@ module InterviewEngine
       pending_responses = interview.interview_responses.where(evaluation_status: :pending)
       raise SessionError, "Cannot complete: #{pending_responses.count} responses still pending evaluation" if pending_responses.any?
 
+      interview.lock!
       interview.complete!
 
       generate_interview_result(interview)
@@ -174,6 +189,10 @@ module InterviewEngine
     private
 
     def generate_interview_result(interview)
+      # 既にInterviewResultが存在する場合はそれを返す（重複作成防止）
+      existing_result = interview.interview_result
+      return existing_result if existing_result
+
       responses = interview.interview_responses.includes(:question).in_order
 
       passed_responses = responses.passed_evaluation.count
@@ -181,7 +200,19 @@ module InterviewEngine
       scores = responses.evaluated.map(&:score).compact
 
       average_score = scores.empty? ? 0 : (scores.sum.to_f / scores.count).round(2)
-      final_status = average_score >= 70 ? :passed : :failed
+      passing_score = interview.situation.passing_score
+
+      # RejectJudge による最終判定
+      judge = RejectJudge.new(interview)
+      rejection = judge.judge_on_completion(responses)
+
+      final_status = if rejection.rejected?
+                       :failed
+                     elsif average_score >= passing_score
+                       :passed
+                     else
+                       :failed
+                     end
 
       summary_data = generate_summary(responses, interview.language)
       conversation_log = responses.map do |r|
@@ -197,6 +228,7 @@ module InterviewEngine
         answered_questions: total_responses,
         skipped_questions: interview.total_questions - total_responses,
         average_score: average_score,
+        passing_score: passing_score,
         passed_count: passed_responses,
         summary: summary_data[:summary],
         strengths: summary_data[:strengths],
@@ -212,11 +244,36 @@ module InterviewEngine
         }
       }
 
-      InterviewResult.create!(
+      rejection_details = rejection.rejected? ? rejection.details : {}
+
+      if rejection.rejected?
+        interview.update!(rejection_reason: rejection.reason, rejected_at: Time.current)
+      end
+
+      result = InterviewResult.create!(
         interview: interview,
         final_status: final_status,
-        results_data: result_data
+        results_data: result_data,
+        rejection_details: rejection_details
       )
+
+      notify_rejection(interview, rejection.reason) if rejection.rejected?
+
+      result
+    end
+
+    def notify_rejection(interview, reason)
+      method = interview.situation.reject_notify_method
+
+      case method
+      when 'email'
+        # Day 15以降でActionMailer統合予定
+        Rails.logger.info("Rejection notification (email): Interview ##{interview.id} - #{reason}")
+      when 'in_app'
+        Rails.logger.info("Rejection notification (in_app): Interview ##{interview.id} - #{reason}")
+      when 'none'
+        # 通知なし
+      end
     end
 
     def generate_summary(responses, language)

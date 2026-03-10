@@ -24,8 +24,15 @@ class InterviewResult < ApplicationRecord
     :recommendation
   ], coder: JSON
 
+  # rejection_details はJSONカラムとして直接アクセスする
+  # store を使わないことで、prefix による accessor 不整合を防ぐ
+
   def completion_percentage
     return 0 if total_questions.to_i.zero?
     ((answered_questions.to_i.to_f / total_questions.to_i) * 100).round(2)
+  end
+
+  def rejected?
+    rejection_details.present? && rejection_details != {}
   end
 end

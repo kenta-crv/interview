@@ -1,13 +1,14 @@
 # app/services/interview_engine/response_evaluator.rb
 module InterviewEngine
   class ResponseEvaluator
-    PASS_THRESHOLD = 70 # Minimum score to pass
+    DEFAULT_PASS_THRESHOLD = 70
 
     def initialize(interview_response, language: 'en')
       @response = interview_response
       @language = language
       @interview = interview_response.interview
       @question = interview_response.question
+      @situation = @interview.situation
     end
 
     # Evaluate a single response from user
@@ -26,8 +27,9 @@ module InterviewEngine
 
       ActiveRecord::Base.transaction do
         update_response_with_evaluation(evaluation)
-        check_interview_continuation
       end
+
+      check_rejection
 
       @response
     rescue => e
@@ -44,7 +46,8 @@ module InterviewEngine
       # サーバー側で一貫した算出ロジックを適用する。
       final_score = calculate_weighted_score(evaluation)
 
-      passed = final_score >= PASS_THRESHOLD
+      threshold = pass_threshold
+      passed = final_score >= threshold
 
       @response.update!(
         relevance_score: evaluation[:relevance_score],
@@ -99,15 +102,29 @@ module InterviewEngine
       [score, 100].min # Cap at 100
     end
 
-    def check_interview_continuation
-      # Optional questions (required: false) do not fail the interview
-      return unless @question.required?
+    def check_rejection
+      @interview.reload
+      return unless @interview.in_progress?
 
-      # If response failed (score < threshold), fail the entire interview
-      if @response.final_score.to_f < PASS_THRESHOLD
-        SessionManager.new(@interview.user, @interview.situation)
-          .fail_interview(@interview.id, "Failed at question: #{@question.question_text}")
+      judge = RejectJudge.new(@interview)
+      decision = judge.judge_after_response(@response)
+
+      if decision.rejected?
+        judge.apply_rejection!(decision)
+        # 通知はトランザクション外で実行
+        notify_rejection_via_session_manager(decision.reason)
       end
+    end
+
+    def notify_rejection_via_session_manager(reason)
+      SessionManager.new(@interview.user, @situation)
+                    .send(:notify_rejection, @interview, reason)
+    rescue => e
+      Rails.logger.error("Rejection notification failed: #{e.message}")
+    end
+
+    def pass_threshold
+      @situation&.min_required_score || DEFAULT_PASS_THRESHOLD
     end
 
     def evaluate_multiple_choice
