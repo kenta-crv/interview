@@ -60,10 +60,9 @@ Rails.application.routes.draw do
     end
   end
 
-  # --- 面接フォーム機能 ---
+  # --- 面接シナリオ管理 ---
   resources :situations do
     resources :questions, except: [:show]
-    resources :answers, only: [:new, :create, :show]
   end
 
   # --- Sidekiq Web UI ---

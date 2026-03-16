@@ -2,8 +2,10 @@
 module Api
   class InterviewsController < ApplicationController
     skip_before_action :verify_authenticity_token
-    # TODO: Day15セキュリティ強化フェーズでRack::Attackによるレート制限を追加する
+    include ApiErrorHandler
+    include FileUploadValidation
 
+    before_action :verify_content_type!, only: [:start, :start_by_token, :submit_answer, :complete, :resume]
     before_action :authenticate_by_token_or_user!, except: [:start_by_token]
     before_action :set_interview, only: [:next_question, :submit_answer, :complete, :status, :resume]
     before_action :check_session_timeout!, only: [:next_question, :submit_answer]
@@ -27,17 +29,14 @@ module Api
         remaining_seconds: interview.remaining_seconds
       }, status: :created
     rescue InterviewEngine::SessionManager::SessionError => e
-      render json: { success: false, error: e.message }, status: :unprocessable_entity
-    rescue => e
-      render json: { success: false, error: e.message }, status: :unprocessable_entity
+      render_api_error(e.message, status: :unprocessable_entity)
     end
 
     # POST /api/interviews/start_by_token
-    # URL即時開始（Devise認証不要、トークンのみで面接開始/復帰）
     def start_by_token
       access_token = params[:access_token]
       unless access_token.present?
-        return render json: { success: false, error: 'access_token is required' }, status: :bad_request
+        return render_api_error('access_token is required', status: :bad_request)
       end
 
       interview = InterviewEngine::SessionManager.start_by_token(access_token)
@@ -55,15 +54,14 @@ module Api
         resume_count: interview.resume_count
       }
     rescue InterviewEngine::SessionManager::TimeoutError => e
-      render json: { success: false, error: e.message, reason: 'timeout' }, status: :gone
+      render_api_error(e.message, status: :gone, reason: 'timeout')
     rescue InterviewEngine::SessionManager::ResumeError => e
-      render json: { success: false, error: e.message, reason: 'resume_limit' }, status: :forbidden
+      render_api_error(e.message, status: :forbidden, reason: 'resume_limit')
     rescue InterviewEngine::SessionManager::SessionError => e
-      render json: { success: false, error: e.message }, status: :unprocessable_entity
+      render_api_error(e.message, status: :unprocessable_entity)
     end
 
     # POST /api/interviews/:id/resume
-    # 中断した面接を再開
     def resume
       session_manager = InterviewEngine::SessionManager.new(@interview.user, @interview.situation)
       interview = session_manager.resume_interview(@interview.id)
@@ -79,13 +77,13 @@ module Api
         resume_count: interview.resume_count
       }
     rescue InterviewEngine::SessionManager::ResumeError => e
-      render json: { success: false, error: e.message }, status: :forbidden
+      render_api_error(e.message, status: :forbidden)
     end
 
     # GET /api/interviews/:id/next_question
     def next_question
       unless @interview.in_progress?
-        return render json: { success: false, error: 'Interview not in progress' }, status: :bad_request
+        return render_api_error('Interview not in progress', status: :bad_request)
       end
 
       selector = InterviewEngine::QuestionSelector.new(@interview)
@@ -109,8 +107,6 @@ module Api
         question: audio_data,
         remaining_seconds: @interview.remaining_seconds
       }
-    rescue => e
-      render json: { success: false, error: e.message }, status: :bad_request
     end
 
     # POST /api/interviews/:id/submit_answer
@@ -121,22 +117,23 @@ module Api
       text_answer = params[:text_answer].presence || params[:selected_option].presence
 
       unless question_id && (audio_file || video_file || text_answer.present?)
-        return render json: {
-          success: false,
-          error: 'Missing question_id or answer input'
-        }, status: :bad_request
+        return render_api_error('Missing question_id or answer input', status: :bad_request)
       end
+
+      # ファイルアップロードバリデーション
+      validate_audio_upload!(audio_file)
+      validate_video_upload!(video_file)
 
       question = Question.find_by(id: question_id, situation_id: @interview.situation_id)
       unless question
-        return render json: { success: false, error: 'Question not found' }, status: :not_found
+        return render_api_error('Question not found', status: :not_found)
       end
 
       # 二重回答防止: interviewレコードをロックして重複チェック
       @interview.with_lock do
         existing_response = @interview.interview_responses.find_by(question_id: question_id)
         if existing_response
-          render json: { success: false, error: 'Question already answered' }, status: :bad_request
+          render_api_error('Question already answered', status: :conflict)
           return
         end
       end
@@ -171,13 +168,7 @@ module Api
     rescue InterviewEngine::AudioInterviewService::AudioError,
            InterviewEngine::STTClient::STTError,
            InterviewEngine::MediaProcessor::MediaError => e
-      render json: { success: false, error: e.message }, status: :bad_request
-    rescue ActiveRecord::RecordNotUnique
-      render json: { success: false, error: 'Question already answered' }, status: :conflict
-    rescue ActiveRecord::RecordInvalid => e
-      render json: { success: false, error: "Failed to save response: #{e.message}" }, status: :unprocessable_entity
-    rescue => e
-      render json: { success: false, error: e.message }, status: :bad_request
+      render_api_error(e.message, status: :bad_request)
     ensure
       # 例外時でも一時ファイルをクリーンアップ
       if @_extracted_audio_path
@@ -188,7 +179,7 @@ module Api
     # POST /api/interviews/:id/complete
     def complete
       unless @interview.in_progress?
-        return render json: { success: false, error: 'Interview not in progress' }, status: :bad_request
+        return render_api_error('Interview not in progress', status: :bad_request)
       end
 
       session_manager = InterviewEngine::SessionManager.new(@interview.user, @interview.situation)
@@ -210,8 +201,8 @@ module Api
           rejection_reason: @interview.rejection_reason
         }
       }
-    rescue => e
-      render json: { success: false, error: e.message }, status: :unprocessable_entity
+    rescue InterviewEngine::SessionManager::SessionError => e
+      render_api_error(e.message, status: :unprocessable_entity)
     end
 
     # GET /api/interviews/:id/status
@@ -229,11 +220,23 @@ module Api
         success: true,
         state: state_with_rejection
       }
-    rescue => e
-      render json: { success: false, error: e.message }, status: :bad_request
     end
 
     private
+
+    # Content-Type検証（JSON/multipart以外を拒否）
+    def verify_content_type!
+      return if request.content_type.blank? # GETリクエスト等
+
+      allowed = ['application/json', 'multipart/form-data']
+      content_type = request.content_type&.split(';')&.first
+      unless allowed.include?(content_type)
+        render_api_error(
+          "Unsupported Content-Type: #{content_type}",
+          status: :unsupported_media_type
+        )
+      end
+    end
 
     # トークン or Devise認証の統合
     def authenticate_by_token_or_user!
@@ -262,7 +265,7 @@ module Api
     def set_interview
       @interview = Interview.find_by(id: params[:id])
       unless @interview
-        render json: { success: false, error: 'Interview not found' }, status: :not_found
+        render_api_error('Interview not found', status: :not_found)
         return
       end
       authorize_interview!
@@ -274,12 +277,12 @@ module Api
 
       if @interview.timed_out?
         @interview.abandon!
-        render json: {
-          success: false,
-          error: 'Interview session has timed out',
+        render_api_error(
+          'Interview session has timed out',
+          status: :gone,
           reason: 'timeout',
-          resumable: @interview.resumable?
-        }, status: :gone
+          details: { resumable: @interview.resumable? }
+        )
       end
     end
 
@@ -298,13 +301,13 @@ module Api
            ActiveSupport::SecurityUtils.secure_compare(token, @interview.access_token)
           return
         else
-          render json: { success: false, error: 'Unauthorized' }, status: :forbidden
+          render_api_error('Unauthorized', status: :forbidden)
           return
         end
       end
 
       unless @current_user && @interview.user_id == @current_user.id
-        render json: { success: false, error: 'Unauthorized' }, status: :forbidden
+        render_api_error('Unauthorized', status: :forbidden)
       end
     end
 
