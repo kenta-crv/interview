@@ -1,32 +1,36 @@
-# SQLite version 3.x
-#   gem install sqlite3
+# SQLite (development/test) + PostgreSQL (production)
 #
-#   Ensure the SQLite 3 gem is defined in your Gemfile
-#   gem 'sqlite3'
-#
+# 開発・テスト環境: SQLite3（セットアップ不要で手軽）
+# 本番環境: PostgreSQL（同時アクセス対応、データ整合性）
+
 default: &default
-  adapter: sqlite3
-  # スレッド数に合わせてプールを確保（ENVがなければ15程度がおすすめ）
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 15 } %>
-  # 10秒に延長
-  timeout: 10000
-  # WALモードと同期設定をデフォルトに含める（パフォーマンス向上）
+  timeout: 5000
+
+# --- 開発環境 ---
+development:
+  <<: *default
+  adapter: sqlite3
+  database: <%= Rails.root.join('db', 'development.sqlite3').to_s %>
   variables:
     journal_mode: WAL
     synchronous: NORMAL
 
-development:
-  <<: *default
-  database: <%= Rails.root.join('db', 'development.sqlite3').to_s %>
-
-# Warning: The database defined as "test" will be erased and
-# re-generated from your development database when you run "rake".
-# Do not set this db to the same as development or production.
+# --- テスト環境 ---
 test:
   <<: *default
+  adapter: sqlite3
   database: db/test.sqlite3
 
+# --- 本番環境 ---
+# DATABASE_URL が設定されている場合はそちらが優先される（Render/Heroku等）
 production:
-  <<: *default
-  # 修正案に基づき、developmentと同じDBを参照
-  database: <%= Rails.root.join('db', 'development.sqlite3').to_s %>
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 15 } %>
+  url: <%= ENV['DATABASE_URL'] %>
+  # DATABASE_URLが未設定の場合の個別設定
+  host: <%= ENV.fetch('DB_HOST', 'localhost') %>
+  database: <%= ENV.fetch('DB_NAME', 'ai_interviewer_production') %>
+  username: <%= ENV.fetch('DB_USERNAME', 'ai_interviewer') %>
+  password: <%= ENV['DB_PASSWORD'] %>

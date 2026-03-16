@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Render/Heroku等のデプロイ時に自動実行されるリリーススクリプト
+set -e
+
+echo "Running database migrations..."
+bundle exec rails db:migrate
+
+echo "Release tasks complete."
