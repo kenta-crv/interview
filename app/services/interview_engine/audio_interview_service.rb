@@ -111,7 +111,7 @@ module InterviewEngine
       raise AudioError, "Audio file not found" unless File.exist?(audio_path)
       raise AudioError, "Audio file is empty" if File.size(audio_path).zero?
 
-      max_size = STTClient::MAX_FILE_SIZE
+      max_size = Rails.application.config.interview.stt_max_file_size
       if File.size(audio_path) > max_size
         raise AudioError, "Audio file too large (max #{max_size / 1024 / 1024}MB)"
       end

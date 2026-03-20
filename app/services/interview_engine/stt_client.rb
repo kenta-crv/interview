@@ -8,11 +8,8 @@ module InterviewEngine
     class STTTimeoutError < STTError; end
 
     OPENAI_URL = 'https://api.openai.com/v1/audio/transcriptions'.freeze
-    MAX_FILE_SIZE = 25 * 1024 * 1024 # 25MB (Whisper API上限)
     ALLOWED_FORMATS = %w[.mp3 .mp4 .mpeg .mpga .m4a .wav .webm].freeze
-    MAX_RETRIES = 2
     RETRY_DELAY_BASE = 1
-    TIMEOUT_SECONDS = 60
 
     # Convert audio file to text transcript
     def transcribe(audio_file_path, language: 'en')
@@ -26,11 +23,11 @@ module InterviewEngine
         transcript = handle_response(response)
       rescue STTTimeoutError, Net::OpenTimeout, Net::ReadTimeout => e
         retries += 1
-        if retries <= MAX_RETRIES
+        if retries <= config.stt_max_retries
           sleep(RETRY_DELAY_BASE * retries)
           retry
         end
-        Rails.logger.error("STT timeout after #{MAX_RETRIES} retries: #{e.message}")
+        Rails.logger.error("STT timeout after #{config.stt_max_retries} retries: #{e.message}")
         raise STTError, "Transcription timed out"
       end
 
@@ -42,8 +39,9 @@ module InterviewEngine
     def validate_file!(path)
       raise STTError, "Audio file not found: #{path}" unless File.exist?(path)
 
+      max_size = config.stt_max_file_size
       size = File.size(path)
-      raise STTError, "Audio file too large (#{(size / 1024.0 / 1024).round(1)}MB, max #{MAX_FILE_SIZE / 1024 / 1024}MB)" if size > MAX_FILE_SIZE
+      raise STTError, "Audio file too large (#{(size / 1024.0 / 1024).round(1)}MB, max #{max_size / 1024 / 1024}MB)" if size > max_size
       raise STTError, "Audio file is empty" if size.zero?
 
       ext = File.extname(path).downcase
@@ -56,8 +54,8 @@ module InterviewEngine
       uri = URI(OPENAI_URL)
       http = Net::HTTP.new(uri.hostname, uri.port)
       http.use_ssl = uri.scheme == 'https'
-      http.open_timeout = TIMEOUT_SECONDS
-      http.read_timeout = TIMEOUT_SECONDS
+      http.open_timeout = config.stt_timeout
+      http.read_timeout = config.stt_timeout
 
       request = Net::HTTP::Post.new(uri.path)
       request['Authorization'] = "Bearer #{api_key}"
@@ -65,7 +63,7 @@ module InterviewEngine
       File.open(audio_file_path, 'rb') do |file|
         form_data = [
           ['file', file],
-          ['model', 'whisper-1'],
+          ['model', config.stt_model],
           ['language', normalize_language(language)],
           ['response_format', 'json']
         ]
@@ -105,6 +103,10 @@ module InterviewEngine
 
     def api_key
       ENV['OPENAI_API_KEY'] || raise(STTError, "OPENAI_API_KEY is not set")
+    end
+
+    def config
+      Rails.application.config.interview
     end
   end
 end

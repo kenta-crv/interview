@@ -29,7 +29,9 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+
+# Environment variables
 .env
-.env
-.env
-.env
+
+# curl が生成するCookieファイル
+cookies.txt

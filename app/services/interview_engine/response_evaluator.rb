@@ -1,7 +1,7 @@
 # app/services/interview_engine/response_evaluator.rb
 module InterviewEngine
   class ResponseEvaluator
-    DEFAULT_PASS_THRESHOLD = 70
+    # DEFAULT_PASS_THRESHOLD は config/initializers/interview_config.rb で管理
 
     def initialize(interview_response, language: 'en')
       @response = interview_response
@@ -86,11 +86,11 @@ module InterviewEngine
     end
 
     def calculate_weighted_score(evaluation)
-      # Weighted average: Relevance (40%), Correctness (40%), Clarity (20%)
+      cfg = Rails.application.config.interview
       weights = {
-        relevance: 0.4,
-        correctness: 0.4,
-        clarity: 0.2
+        relevance: cfg.eval_weight_relevance,
+        correctness: cfg.eval_weight_correctness,
+        clarity: cfg.eval_weight_clarity
       }
 
       score = (
@@ -124,7 +124,7 @@ module InterviewEngine
     end
 
     def pass_threshold
-      @situation&.min_required_score || DEFAULT_PASS_THRESHOLD
+      @situation&.min_required_score || Rails.application.config.interview.default_pass_threshold
     end
 
     def evaluate_multiple_choice

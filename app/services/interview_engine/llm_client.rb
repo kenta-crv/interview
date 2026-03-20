@@ -5,12 +5,9 @@ require 'json'
 module InterviewEngine
   class LLMClient
 
-    MAX_RETRIES = 3
-    RETRY_DELAY_BASE = 1 # seconds (exponential backoff: 1, 1, 1)
-    REQUEST_TIMEOUT = 30 # seconds
-
     OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
     CLAUDE_URL = 'https://api.anthropic.com/v1/messages'
+    RETRY_DELAY_BASE = 1 # seconds (exponential backoff)
 
     class LLMError < StandardError; end
     class LLMTimeoutError < LLMError; end
@@ -18,7 +15,7 @@ module InterviewEngine
     class LLMValidationError < LLMError; end
 
     def initialize(model: nil)
-      @model = model || ENV.fetch('LLM_MODEL', 'openai')
+      @model = model || config.llm_model
     end
 
     # 回答評価（バリデーション・リトライ付き）
@@ -71,7 +68,7 @@ module InterviewEngine
     def call_with_retry(prompt, validation_type)
       last_error = nil
 
-      MAX_RETRIES.times do |attempt|
+      config.llm_max_retries.times do |attempt|
         begin
           raw_response = call_llm(prompt)
           result = ResponseValidator.extract_json(raw_response)
@@ -88,10 +85,10 @@ module InterviewEngine
           Rails.logger.warn("LLM retryable error (attempt #{attempt + 1}): #{e.message}")
         end
 
-        sleep(RETRY_DELAY_BASE ** (attempt + 1)) if attempt < MAX_RETRIES - 1
+        sleep(RETRY_DELAY_BASE ** (attempt + 1)) if attempt < config.llm_max_retries - 1
       end
 
-      raise LLMValidationError, "All #{MAX_RETRIES} attempts failed: #{last_error}"
+      raise LLMValidationError, "All #{config.llm_max_retries} attempts failed: #{last_error}"
     end
 
     # LLM API呼び出し（モデル切替）
@@ -119,13 +116,13 @@ module InterviewEngine
       request['Content-Type'] = 'application/json'
 
       body = {
-        model: ENV.fetch('OPENAI_MODEL', 'gpt-4'),
+        model: config.openai_model,
         messages: [
           { role: 'system', content: prompt[:system] },
           { role: 'user', content: prompt[:user] }
         ],
-        temperature: 0.2,
-        max_tokens: 600,
+        temperature: config.llm_temperature,
+        max_tokens: config.llm_max_tokens,
         response_format: { type: 'json_object' }
       }
 
@@ -159,8 +156,8 @@ module InterviewEngine
       request['Content-Type'] = 'application/json'
 
       body = {
-        model: ENV.fetch('CLAUDE_MODEL', 'claude-sonnet-4-20250514'),
-        max_tokens: 600,
+        model: config.claude_model,
+        max_tokens: config.llm_max_tokens,
         system: prompt[:system],
         messages: [
           { role: 'user', content: prompt[:user] }
@@ -187,9 +184,13 @@ module InterviewEngine
     def build_http(uri)
       http = Net::HTTP.new(uri.hostname, uri.port)
       http.use_ssl = uri.scheme == 'https'
-      http.open_timeout = REQUEST_TIMEOUT
-      http.read_timeout = REQUEST_TIMEOUT
+      http.open_timeout = config.llm_request_timeout
+      http.read_timeout = config.llm_request_timeout
       http
+    end
+
+    def config
+      Rails.application.config.interview
     end
 
     # APIレスポンスのHTTPステータスチェック

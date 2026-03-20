@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_03_10_120000) do
+ActiveRecord::Schema.define(version: 2026_03_15_120000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -50,18 +50,6 @@ ActiveRecord::Schema.define(version: 2026_03_10_120000) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["email"], name: "index_admins_on_email", unique: true
     t.index ["reset_password_token"], name: "index_admins_on_reset_password_token", unique: true
-  end
-
-  create_table "answers", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "situation_id", null: false
-    t.json "responses", null: false
-    t.datetime "started_at"
-    t.datetime "finished_at"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.index ["situation_id"], name: "index_answers_on_situation_id"
-    t.index ["user_id"], name: "index_answers_on_user_id"
   end
 
   create_table "clients", force: :cascade do |t|
@@ -130,6 +118,7 @@ ActiveRecord::Schema.define(version: 2026_03_10_120000) do
     t.json "evaluation_data", default: {}
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["created_at"], name: "index_interview_responses_on_created_at"
     t.index ["evaluation_status"], name: "index_interview_responses_on_evaluation_status"
     t.index ["interview_id", "question_id"], name: "index_responses_on_interview_and_question", unique: true
     t.index ["interview_id"], name: "index_interview_responses_on_interview_id"
@@ -165,6 +154,7 @@ ActiveRecord::Schema.define(version: 2026_03_10_120000) do
     t.datetime "rejected_at"
     t.index ["access_token"], name: "index_interviews_on_access_token", unique: true
     t.index ["situation_id"], name: "index_interviews_on_situation_id"
+    t.index ["status", "created_at"], name: "index_interviews_on_status_and_created_at"
     t.index ["user_id", "situation_id"], name: "index_interviews_on_user_and_situation", unique: true
     t.index ["user_id"], name: "index_interviews_on_user_id"
   end
@@ -189,6 +179,7 @@ ActiveRecord::Schema.define(version: 2026_03_10_120000) do
     t.boolean "required", default: true, null: false
     t.string "category"
     t.json "branching_rules"
+    t.index ["situation_id", "order"], name: "index_questions_on_situation_id_and_order"
     t.index ["situation_id"], name: "index_questions_on_situation_id"
   end
 
@@ -209,6 +200,7 @@ ActiveRecord::Schema.define(version: 2026_03_10_120000) do
     t.integer "min_required_score", default: 70, null: false
     t.integer "max_consecutive_fails", default: 0, null: false
     t.string "reject_notify_method", default: "in_app", null: false
+    t.index ["client_id", "archived"], name: "index_situations_on_client_id_and_archived"
     t.index ["client_id"], name: "index_situations_on_client_id"
   end
 
@@ -227,7 +219,6 @@ ActiveRecord::Schema.define(version: 2026_03_10_120000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "answers", "situations"
   add_foreign_key "interview_responses", "interviews"
   add_foreign_key "interview_responses", "questions"
   add_foreign_key "interview_results", "interviews"
@@ -235,4 +226,5 @@ ActiveRecord::Schema.define(version: 2026_03_10_120000) do
   add_foreign_key "interviews", "users"
   add_foreign_key "question_audios", "questions"
   add_foreign_key "questions", "situations"
+  add_foreign_key "situations", "clients"
 end

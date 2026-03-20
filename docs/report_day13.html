@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>AI面接インタビューシステム — Day 13 報告書</title>
+<style>
+  @page { size: A4; margin: 18mm 15mm 18mm 15mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Meiryo", "Hiragino Sans", "Yu Gothic", sans-serif; font-size: 10.5pt; line-height: 1.7; color: #1a1a1a; background: #fff; }
+  .cover { text-align: center; padding: 80px 20px 40px; page-break-after: always; display: flex; flex-direction: column; justify-content: center; min-height: 90vh; }
+  .cover h1 { font-size: 26pt; color: #1a365d; margin-bottom: 12px; letter-spacing: 2px; }
+  .cover .subtitle { font-size: 16pt; color: #2b6cb0; margin-bottom: 40px; font-weight: 600; }
+  .cover .meta { font-size: 11pt; color: #555; line-height: 2.2; }
+  .cover .meta strong { color: #1a1a1a; }
+  .cover .logo-box { width: 100px; height: 100px; margin: 0 auto 30px; background: linear-gradient(135deg, #2b6cb0, #4299e1); border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 36pt; font-weight: 700; }
+  .toc { page-break-after: always; padding-top: 20px; }
+  .toc h2 { font-size: 16pt; color: #1a365d; border-bottom: 3px solid #2b6cb0; padding-bottom: 8px; margin-bottom: 24px; }
+  .toc ul { list-style: none; padding: 0; }
+  .toc li { padding: 8px 0; border-bottom: 1px dotted #ccc; font-size: 11pt; }
+  .toc li.day-header { font-weight: 700; font-size: 12pt; color: #2b6cb0; border-bottom: none; padding-top: 18px; }
+  h2.day-title { font-size: 18pt; color: #fff; background: linear-gradient(135deg, #1a365d, #2b6cb0); padding: 14px 20px; border-radius: 6px; margin: 30px 0 20px; page-break-before: always; }
+  h2.day-title:first-of-type { page-break-before: auto; }
+  h3 { font-size: 13pt; color: #1a365d; border-left: 4px solid #4299e1; padding-left: 12px; margin: 24px 0 12px; }
+  h4 { font-size: 11pt; color: #2b6cb0; margin: 16px 0 8px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; font-size: 9.5pt; }
+  th { background: #edf2f7; color: #1a365d; font-weight: 700; padding: 8px 10px; text-align: left; border: 1px solid #cbd5e0; }
+  td { padding: 7px 10px; border: 1px solid #cbd5e0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7fafc; }
+  .code-block { background: #1a202c; color: #e2e8f0; border-radius: 6px; padding: 14px 16px; margin: 10px 0 16px; font-family: "Consolas", "Source Code Pro", monospace; font-size: 9pt; line-height: 1.6; overflow-x: auto; white-space: pre; }
+  .info-box { border-left: 4px solid #4299e1; background: #ebf8ff; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 10pt; }
+  .success-box { border-left: 4px solid #38a169; background: #f0fff4; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 10pt; }
+  .warn-box { border-left: 4px solid #dd6b20; background: #fffaf0; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 10pt; }
+  p { margin: 6px 0; } ul, ol { padding-left: 22px; margin: 6px 0 12px; } li { margin: 3px 0; }
+  strong { color: #1a365d; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 8.5pt; font-weight: 700; color: #fff; }
+  .badge-blue { background: #2b6cb0; } .badge-green { background: #38a169; } .badge-orange { background: #dd6b20; }
+  .file-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+  .file-item { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 9pt; }
+  .file-item .fname { font-family: monospace; font-weight: 700; color: #2b6cb0; font-size: 8.5pt; }
+  .file-item .fdesc { color: #4a5568; margin-top: 2px; }
+  .stats-row { display: flex; gap: 12px; margin: 16px 0; }
+  .stat-box { flex: 1; text-align: center; background: linear-gradient(135deg, #ebf8ff, #bee3f8); border-radius: 8px; padding: 16px 8px; }
+  .stat-box .num { font-size: 28pt; font-weight: 700; color: #1a365d; }
+  .stat-box .lbl { font-size: 9pt; color: #4a5568; margin-top: 4px; }
+  .before-after { display: flex; gap: 12px; margin: 12px 0; }
+  .before-after > div { flex: 1; }
+  .before-after h4 { text-align: center; margin-bottom: 6px; }
+  footer { text-align: center; font-size: 9pt; color: #a0aec0; margin-top: 40px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+  @media print { body { padding: 0; margin: 0; } .cover { min-height: 100vh; } h2.day-title { page-break-before: always; } .code-block, .info-box, .success-box, .warn-box, table { page-break-inside: avoid; } h3, h4 { page-break-after: avoid; } }
+</style>
+</head>
+<body>
+
+<!-- ===== 表紙 ===== -->
+<div class="cover">
+  <div class="logo-box">AI</div>
+  <h1>AI面接インタビューシステム</h1>
+  <div class="subtitle">Day 13 報告書</div>
+  <div class="meta">
+    <strong>プロジェクト:</strong> AI面接インタビューシステム<br>
+    <strong>フェーズ:</strong> Phase 3 — 最終整備・Phase完了レビュー<br>
+    <strong>対象:</strong> Day 13（テスト修正・コードベース整理・Phase 3完了）<br>
+    <strong>作成日:</strong> 2026-03-18<br>
+    <strong>フレームワーク:</strong> Ruby on Rails 6.1.7 / Ruby 3.1.6
+  </div>
+</div>
+
+<!-- ===== 目次 ===== -->
+<div class="toc">
+  <h2>目次</h2>
+  <ul>
+    <li class="day-header">Day 13: 最終整備・テスト修正・コードベース整理</li>
+    <li>1. 概要</li>
+    <li>2. Gem依存関係の修正</li>
+    <li>3. マイグレーション適用</li>
+    <li>4. RSpecテスト修正（18件 → 0件の失敗）</li>
+    <li>5. コードベース整理</li>
+    <li>6. .gitignore改善</li>
+    <li class="day-header">Phase 3 完了レビュー</li>
+    <li>7. 技術負債 全件対応完了</li>
+    <li>8. プロジェクト品質サマリー</li>
+    <li>9. 残存課題（将来対応）</li>
+    <li class="day-header">まとめ</li>
+    <li>10. 変更ファイル一覧</li>
+    <li>11. セットアップ手順</li>
+  </ul>
+</div>
+
+<!-- ===== Day 13 ===== -->
+<h2 class="day-title">Day 13: 最終整備・テスト修正・コードベース整理</h2>
+
+<h3>1. 概要</h3>
+<p>Phase 3の最終日として、開発環境の完全動作確認・テスト全件パス・コードベースの整理を実施した。Gem依存関係の解決、未適用マイグレーションの適用、RSpecファクトリ・テストの修正（18件の失敗を全件解消）、レガシーファイルの整理を行い、全96テストが通る状態でPhase 3を完了した。</p>
+
+<div class="stats-row">
+  <div class="stat-box"><div class="num">96</div><div class="lbl">テスト全件パス</div></div>
+  <div class="stat-box"><div class="num">18→0</div><div class="lbl">失敗テスト修正</div></div>
+  <div class="stat-box"><div class="num">9</div><div class="lbl">scripts/に整理</div></div>
+  <div class="stat-box"><div class="num">16</div><div class="lbl">技術負債 全件解消</div></div>
+</div>
+
+<!-- Section 2 -->
+<h3>2. Gem依存関係の修正</h3>
+
+<h4>問題1: pg gemがWindows開発環境で未インストール</h4>
+<p><code>pg</code>（PostgreSQL）gemはproductionグループ限定だが、bundlerの設定で除外されておらず、全コマンドが実行不可だった。</p>
+
+<div class="code-block">bundle config set --local without production
+bundle install</div>
+
+<h4>問題2: chromedriver-helper gem非推奨</h4>
+<p><code>chromedriver-helper</code>は非推奨で、新しい<code>selenium-webdriver</code>と非互換。Rails起動時にエラーが発生。</p>
+
+<div class="code-block">NoMethodError: undefined method `driver_path=' for Selenium::WebDriver::Chrome:Module</div>
+
+<table>
+  <tr><th>修正前</th><th>修正後</th></tr>
+  <tr><td><code>gem 'chromedriver-helper'</code></td><td><code>gem 'webdrivers'</code></td></tr>
+</table>
+
+<!-- Section 3 -->
+<h3>3. マイグレーション適用</h3>
+<p>Day 9のマイグレーション <code>20260315120000_day9_security_and_db_improvements</code> が未適用（down状態）だった。development/test両環境に適用。</p>
+
+<table>
+  <tr><th>操作</th><th>内容</th></tr>
+  <tr><td>Answerテーブル削除</td><td>レガシーテーブルの完全除去</td></tr>
+  <tr><td>インデックス追加（4件）</td><td>interviews, interview_responses, questions, situations</td></tr>
+  <tr><td>FK制約追加</td><td>situations → clients</td></tr>
+</table>
+
+<div class="info-box">
+  <strong>schema.rb更新:</strong> バージョン <code>2026_03_10_120000</code> → <code>2026_03_15_120000</code> に更新。全マイグレーションがup状態。
+</div>
+
+<!-- Section 4 -->
+<h3>4. RSpecテスト修正（18件 → 0件の失敗）</h3>
+
+<h4>4.1 原因1: Factory traitのステータス遷移バリデーション違反（13件）</h4>
+<p>Interviewモデルの <code>valid_status_transition</code> バリデーションにより、<code>not_started → completed</code> 等の直接遷移が禁止されている。しかしFactoryの <code>:completed</code>, <code>:abandoned</code>, <code>:failed</code> トレイトは <code>status { :completed }</code> のようにステータスを直接設定していた。</p>
+
+<div class="before-after">
+  <div>
+    <h4>修正前</h4>
+    <div class="code-block">trait :completed do
+  status { :completed }
+  started_at { 1.hour.ago }
+  ended_at { Time.current }
+end</div>
+  </div>
+  <div>
+    <h4>修正後</h4>
+    <div class="code-block">trait :completed do
+  after(:create) do |interview|
+    interview.start!
+    interview.complete!
+  end
+end</div>
+  </div>
+</div>
+
+<p>同様に <code>:in_progress</code>, <code>:failed</code>, <code>:abandoned</code>, <code>:timed_out</code> トレイトも <code>after(:create)</code> コールバック方式に修正。正しいステータス遷移（<code>not_started → in_progress → completed/failed/abandoned</code>）を経由するようにした。</p>
+
+<h4>4.2 原因2: APIテストの認証設定不備（2件）</h4>
+
+<table>
+  <tr><th>テスト</th><th>問題</th><th>修正</th></tr>
+  <tr><td><code>POST /start</code></td><td><code>let(:user)</code> が遅延評価でユーザー未作成</td><td><code>let!(:user)</code> に変更</td></tr>
+  <tr><td><code>rejects invalid token</code></td><td>テストモードONで認証バイパス発生</td><td>テストモードを無効化、Devise応答を許容</td></tr>
+</table>
+
+<h4>4.3 修正結果</h4>
+
+<div class="success-box">
+  <strong>全96テストがパス</strong><br>
+  <code>96 examples, 0 failures — Finished in 6.92 seconds</code>
+</div>
+
+<!-- Section 5 -->
+<h3>5. コードベース整理</h3>
+
+<h4>5.1 test/ ディレクトリ削除</h4>
+<p>Day 11でRSpecに完全移行済みのため、旧Minitestの <code>test/</code> ディレクトリを削除。</p>
+<ul>
+  <li><code>test/test_helper.rb</code></li>
+  <li><code>test/controllers/</code> — 6ファイル（answers, columns, contracts, questions, situations, tops）</li>
+  <li><code>test/fixtures/</code> — 5ファイル（admins, clients, columns, contracts, users）</li>
+  <li><code>test/jobs/</code> — generate_column_body_job_test</li>
+  <li><code>test/integration/</code>, <code>test/mailers/</code>, <code>test/models/</code></li>
+  <li><code>test/application_system_test_case.rb</code></li>
+</ul>
+
+<h4>5.2 テストスクリプト整理</h4>
+<p>ルートディレクトリの開発用テストスクリプト9ファイルを <code>scripts/</code> ディレクトリに移動:</p>
+
+<div class="file-list">
+  <div class="file-item"><div class="fname">test_complete.rb</div><div class="fdesc">簡易テスト</div></div>
+  <div class="file-item"><div class="fname">test_complete_interview_system.rb</div><div class="fdesc">統合テスト</div></div>
+  <div class="file-item"><div class="fname">test_complete_interview_system_offline.rb</div><div class="fdesc">オフラインテスト</div></div>
+  <div class="file-item"><div class="fname">test_endpoints.sh</div><div class="fdesc">curlエンドポイントテスト</div></div>
+  <div class="file-item"><div class="fname">test_flow.py</div><div class="fdesc">Pythonフローテスト</div></div>
+  <div class="file-item"><div class="fname">test_setup.rb</div><div class="fdesc">セットアップ検証</div></div>
+  <div class="file-item"><div class="fname">setup_test.rb</div><div class="fdesc">環境セットアップ</div></div>
+  <div class="file-item"><div class="fname">validate_interview_system.rb</div><div class="fdesc">システム検証</div></div>
+  <div class="file-item"><div class="fname">create_test_data.rb</div><div class="fdesc">テストデータ生成</div></div>
+</div>
+
+<!-- Section 6 -->
+<h3>6. .gitignore改善</h3>
+
+<table>
+  <tr><th>修正内容</th><th>詳細</th></tr>
+  <tr><td><code>.env</code> 重複削除</td><td>4行の重複を1行に統合</td></tr>
+  <tr><td><code>cookies.txt</code> 追加</td><td>curl自動生成のCookieファイルを除外</td></tr>
+</table>
+
+<!-- ===== Phase 3 完了レビュー ===== -->
+<h2 class="day-title">Phase 3 完了レビュー</h2>
+
+<h3>7. 技術負債 全件対応完了</h3>
+<p>Day 1で特定された全16件の技術負債が対応完了。</p>
+
+<table>
+  <tr><th>#</th><th>課題</th><th>対応Day</th><th>状態</th></tr>
+  <tr><td>1</td><td>テストモード認証バイパス（本番）</td><td>Day 6</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>2</td><td>CSRF保護なし</td><td>Day 9</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>3</td><td>ファイルアップロード検証なし</td><td>Day 9</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>4</td><td>APIキー起動時検証なし</td><td>Day 9</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>5</td><td>本番エラー詳細露出</td><td>Day 9</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>6</td><td>本番SQLite → PostgreSQL</td><td>Day 10</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>7</td><td>インデックス不足</td><td>Day 9</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>8</td><td>FK制約不足</td><td>Day 9</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>9</td><td>APIエラーレスポンス不統一</td><td>Day 9</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>10</td><td>レガシーAnswerテーブル</td><td>Day 9</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>11</td><td>RSpecテスト導入</td><td>Day 11</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>12</td><td>ハードコード値のENV化</td><td>Day 12</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>13</td><td>Puma/Sidekiq強化</td><td>Day 10</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>14</td><td>Gemfile重複</td><td>Day 10</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>15</td><td>テスト全件パス確認</td><td>Day 13</td><td><span class="badge badge-green">完了</span></td></tr>
+  <tr><td>16</td><td>コードベース整理</td><td>Day 13</td><td><span class="badge badge-green">完了</span></td></tr>
+</table>
+
+<!-- Section 8 -->
+<h3>8. プロジェクト品質サマリー</h3>
+
+<div class="stats-row">
+  <div class="stat-box"><div class="num">9/10</div><div class="lbl">コード品質</div></div>
+  <div class="stat-box"><div class="num">9/10</div><div class="lbl">テスト体制</div></div>
+  <div class="stat-box"><div class="num">9/10</div><div class="lbl">アーキテクチャ</div></div>
+  <div class="stat-box"><div class="num">9/10</div><div class="lbl">環境整備</div></div>
+</div>
+
+<div class="success-box">
+  <strong>Phase 3 完了:</strong> Day 9-13の全作業が完了。セキュリティ強化、DB改善、API品質統一、本番インフラ整備、テスト基盤導入、設定値一元管理、コードベース整理を経て、<strong>本番デプロイ可能な状態</strong>に到達。
+</div>
+
+<!-- Section 9 -->
+<h3>9. 残存課題（将来対応）</h3>
+
+<table>
+  <tr><th>課題</th><th>優先度</th><th>備考</th></tr>
+  <tr><td>メール通知機能</td><td><span class="badge badge-orange">低</span></td><td>SessionManagerにスケルトンのみ</td></tr>
+  <tr><td>Rails 7.0+アップグレード</td><td><span class="badge badge-orange">低</span></td><td>Rails 6.1は2025年10月EOL</td></tr>
+  <tr><td>フロントエンド統合</td><td>—</td><td>別プロジェクトとして実装</td></tr>
+</table>
+
+<!-- ===== まとめ ===== -->
+<h2 class="day-title">まとめ</h2>
+
+<h3>10. 変更ファイル一覧</h3>
+
+<h4>修正ファイル</h4>
+<table>
+  <tr><th>ファイル</th><th>変更内容</th></tr>
+  <tr><td><code>Gemfile</code></td><td><code>chromedriver-helper</code> → <code>webdrivers</code> に置換</td></tr>
+  <tr><td><code>spec/factories/interviews.rb</code></td><td>ステータス直接設定 → <code>after(:create)</code> 遷移コールバック</td></tr>
+  <tr><td><code>spec/requests/api/interviews_spec.rb</code></td><td><code>let!(:user)</code> に変更、認証テスト修正</td></tr>
+  <tr><td><code>.gitignore</code></td><td><code>.env</code> 重複削除、<code>cookies.txt</code> 追加</td></tr>
+  <tr><td><code>db/schema.rb</code></td><td>最新マイグレーション適用後にダンプ更新</td></tr>
+</table>
+
+<h4>削除</h4>
+<table>
+  <tr><th>対象</th><th>理由</th></tr>
+  <tr><td><code>test/</code> ディレクトリ全体</td><td>RSpec移行完了</td></tr>
+</table>
+
+<h4>移動</h4>
+<table>
+  <tr><th>移動元</th><th>移動先</th></tr>
+  <tr><td>ルートの開発用スクリプト9ファイル</td><td><code>scripts/</code> ディレクトリ</td></tr>
+</table>
+
+<!-- Section 11 -->
+<h3>11. セットアップ手順</h3>
+
+<div class="code-block"># 1. Gem インストール（production除外）
+bundle config set --local without production
+bundle install
+
+# 2. DB作成・マイグレーション
+bundle exec rails db:create
+bundle exec rails db:migrate
+
+# 3. テスト用DB
+RAILS_ENV=test bundle exec rails db:create db:migrate
+
+# 4. テスト実行（96テスト全件パス）
+bundle exec rspec</div>
+
+<footer>
+  AI面接インタビューシステム — Day 13 報告書 | 2026-03-18
+</footer>
+
+</body>
+</html>

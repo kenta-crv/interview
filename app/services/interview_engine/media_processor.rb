@@ -6,10 +6,13 @@ module InterviewEngine
   class MediaProcessor
     class MediaError < StandardError; end
 
-    MAX_VIDEO_SIZE = 500 * 1024 * 1024 # 500MB
-    FFMPEG_TIMEOUT = 120 # 秒
-    MIN_AUDIO_DURATION = 0.5 # 最小音声長（秒）
-    MAX_AUDIO_DURATION = 600 # 最大音声長（秒）= 10分
+    class << self
+      private
+
+      def config
+        Rails.application.config.interview
+      end
+    end
 
     # 動画から音声を抽出（WAV 16kHz mono）
     def self.extract_audio_from_video(video_path)
@@ -69,12 +72,12 @@ module InterviewEngine
       duration = audio_duration(audio_path)
       return if duration.nil? # ffprobeが使えない場合はスキップ
 
-      if duration < MIN_AUDIO_DURATION
-        raise MediaError, "Audio too short (#{duration.round(1)}s, min #{MIN_AUDIO_DURATION}s)"
+      if duration < config.min_audio_duration
+        raise MediaError, "Audio too short (#{duration.round(1)}s, min #{config.min_audio_duration}s)"
       end
 
-      if duration > MAX_AUDIO_DURATION
-        raise MediaError, "Audio too long (#{duration.round(0)}s, max #{MAX_AUDIO_DURATION}s)"
+      if duration > config.max_audio_duration
+        raise MediaError, "Audio too long (#{duration.round(0)}s, max #{config.max_audio_duration}s)"
       end
     end
 
@@ -102,14 +105,13 @@ module InterviewEngine
       output_path
     end
 
-    private_class_method :validate_input!, :ensure_ffmpeg!, :execute_with_timeout
-
     def self.validate_input!(path)
       raise MediaError, "Video file not found: #{path}" unless File.exist?(path)
 
       size = File.size(path)
       raise MediaError, "Video file is empty" if size.zero?
-      raise MediaError, "Video file too large (#{(size / 1024.0 / 1024).round(1)}MB, max #{MAX_VIDEO_SIZE / 1024 / 1024}MB)" if size > MAX_VIDEO_SIZE
+      max_size = config.max_video_size
+      raise MediaError, "Video file too large (#{(size / 1024.0 / 1024).round(1)}MB, max #{max_size / 1024 / 1024}MB)" if size > max_size
     end
 
     def self.ensure_ffmpeg!
@@ -121,9 +123,11 @@ module InterviewEngine
     end
 
     def self.execute_with_timeout(cmd)
-      Open3.capture3(*cmd, timeout: FFMPEG_TIMEOUT)
+      Open3.capture3(*cmd, timeout: config.ffmpeg_timeout)
     rescue Timeout::Error
-      raise MediaError, "ffmpeg timed out after #{FFMPEG_TIMEOUT}s"
+      raise MediaError, "ffmpeg timed out after #{config.ffmpeg_timeout}s"
     end
+
+    private_class_method :validate_input!, :ensure_ffmpeg!, :execute_with_timeout
   end
 end
