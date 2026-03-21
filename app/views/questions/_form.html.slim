@@ -16,4 +16,19 @@
     = f.label :order, '表示順'
     = f.number_field :order, class: 'form-control'
 
+  .form-group
+    .form-check
+      = f.check_box :required, class: 'form-check-input'
+      = f.label :required, '必須質問', class: 'form-check-label'
+
+  .form-group
+    = f.label :category, 'カテゴリ'
+    = f.text_field :category, class: 'form-control', placeholder: '例: 技術, コミュニケーション, リーダーシップ'
+
+  .form-group
+    = f.label :branching_rules, '分岐ルール（JSON形式）'
+    = f.text_area :branching_rules, class: 'form-control', rows: 4, placeholder: '{"conditions":[{"source_question_order":1,"type":"selected_option","value":"Python","action":"include"}],"default_action":"skip"}'
+    small.form-text.text-muted
+      | type: selected_option / score_above / score_below / answered　action: include / skip
+
   = f.submit class: 'btn btn-primary'

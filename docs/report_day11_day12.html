@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>AI面接インタビューシステム — Day 11・Day 12 報告書</title>
+<style>
+  @page { size: A4; margin: 18mm 15mm 18mm 15mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Meiryo", "Hiragino Sans", "Yu Gothic", sans-serif; font-size: 10.5pt; line-height: 1.7; color: #1a1a1a; background: #fff; }
+  .cover { text-align: center; padding: 80px 20px 40px; page-break-after: always; display: flex; flex-direction: column; justify-content: center; min-height: 90vh; }
+  .cover h1 { font-size: 26pt; color: #1a365d; margin-bottom: 12px; letter-spacing: 2px; }
+  .cover .subtitle { font-size: 16pt; color: #2b6cb0; margin-bottom: 40px; font-weight: 600; }
+  .cover .meta { font-size: 11pt; color: #555; line-height: 2.2; }
+  .cover .meta strong { color: #1a1a1a; }
+  .cover .logo-box { width: 100px; height: 100px; margin: 0 auto 30px; background: linear-gradient(135deg, #2b6cb0, #4299e1); border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 36pt; font-weight: 700; }
+  .toc { page-break-after: always; padding-top: 20px; }
+  .toc h2 { font-size: 16pt; color: #1a365d; border-bottom: 3px solid #2b6cb0; padding-bottom: 8px; margin-bottom: 24px; }
+  .toc ul { list-style: none; padding: 0; }
+  .toc li { padding: 8px 0; border-bottom: 1px dotted #ccc; font-size: 11pt; }
+  .toc li.day-header { font-weight: 700; font-size: 12pt; color: #2b6cb0; border-bottom: none; padding-top: 18px; }
+  h2.day-title { font-size: 18pt; color: #fff; background: linear-gradient(135deg, #1a365d, #2b6cb0); padding: 14px 20px; border-radius: 6px; margin: 30px 0 20px; page-break-before: always; }
+  h3 { font-size: 13pt; color: #1a365d; border-left: 4px solid #4299e1; padding-left: 12px; margin: 24px 0 12px; }
+  h4 { font-size: 11pt; color: #2b6cb0; margin: 16px 0 8px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; font-size: 9.5pt; }
+  th { background: #edf2f7; color: #1a365d; font-weight: 700; padding: 8px 10px; text-align: left; border: 1px solid #cbd5e0; }
+  td { padding: 7px 10px; border: 1px solid #cbd5e0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7fafc; }
+  .code-block { background: #1a202c; color: #e2e8f0; border-radius: 6px; padding: 14px 16px; margin: 10px 0 16px; font-family: "Consolas", "Source Code Pro", monospace; font-size: 9pt; line-height: 1.6; overflow-x: auto; white-space: pre; }
+  .info-box { border-left: 4px solid #4299e1; background: #ebf8ff; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 10pt; }
+  .success-box { border-left: 4px solid #38a169; background: #f0fff4; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 10pt; }
+  p { margin: 6px 0; } ul, ol { padding-left: 22px; margin: 6px 0 12px; } li { margin: 3px 0; }
+  strong { color: #1a365d; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 8.5pt; font-weight: 700; color: #fff; }
+  .badge-blue { background: #2b6cb0; } .badge-green { background: #38a169; } .badge-orange { background: #dd6b20; }
+  .file-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+  .file-item { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 9pt; }
+  .file-item .fname { font-family: monospace; font-weight: 700; color: #2b6cb0; font-size: 8.5pt; }
+  .file-item .fdesc { color: #4a5568; margin-top: 2px; }
+  .stats-row { display: flex; gap: 12px; margin: 16px 0; }
+  .stat-box { flex: 1; text-align: center; background: linear-gradient(135deg, #ebf8ff, #bee3f8); border-radius: 8px; padding: 16px 8px; }
+  .stat-box .num { font-size: 28pt; font-weight: 700; color: #1a365d; }
+  .stat-box .lbl { font-size: 9pt; color: #4a5568; margin-top: 4px; }
+  .before-after { display: flex; gap: 12px; margin: 12px 0; }
+  .before-after > div { flex: 1; }
+  .before-after h4 { text-align: center; margin-bottom: 6px; }
+  footer { text-align: center; font-size: 9pt; color: #a0aec0; margin-top: 40px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+  @media print { body { padding: 0; margin: 0; } .cover { min-height: 100vh; } h2.day-title { page-break-before: always; } .code-block, .info-box, .success-box, table { page-break-inside: avoid; } h3, h4 { page-break-after: avoid; } }
+</style>
+</head>
+<body>
+
+<!-- ===== 表紙 ===== -->
+<div class="cover">
+  <div class="logo-box">AI</div>
+  <h1>AI面接インタビューシステム</h1>
+  <div class="subtitle">Day 11・Day 12 報告書</div>
+  <div class="meta">
+    <strong>プロジェクト:</strong> AI面接インタビューシステム<br>
+    <strong>フェーズ:</strong> Phase 3 — API堅牢化・Rails統合・データ保存改善<br>
+    <strong>対象:</strong> Day 11（RSpecテスト基盤導入）・Day 12（ハードコード値の環境変数化）<br>
+    <strong>作成日:</strong> 2026-03-16<br>
+    <strong>フレームワーク:</strong> Ruby on Rails 6.1.7 / Ruby 3.1.6
+  </div>
+</div>
+
+<!-- ===== 目次 ===== -->
+<div class="toc">
+  <h2>目次</h2>
+  <ul>
+    <li class="day-header">Day 11: RSpecテスト基盤導入</li>
+    <li>1. テストフレームワーク導入</li>
+    <li>2. Factory定義（7ファイル）</li>
+    <li>3. モデルスペック（5ファイル）</li>
+    <li>4. リクエストスペック（1ファイル）</li>
+    <li>5. テスト数サマリー</li>
+    <li class="day-header">Day 12: ハードコード値の環境変数化</li>
+    <li>6. 設定管理イニシャライザ</li>
+    <li>7. サービスクラスの環境変数化</li>
+    <li>8. 設定値一覧（27項目）</li>
+    <li>9. Before / After 比較</li>
+    <li>10. 設計判断</li>
+    <li class="day-header">まとめ</li>
+    <li>11. 変更ファイル一覧</li>
+    <li>12. セットアップ手順</li>
+    <li>13. 次のステップ</li>
+  </ul>
+</div>
+
+<!-- ===== Day 11 ===== -->
+<h2 class="day-title">Day 11: RSpecテスト基盤導入</h2>
+
+<h3>1. テストフレームワーク導入</h3>
+<p>既存のMinitest空ファイル（test/ディレクトリ）に代わり、RSpecベースのテスト基盤を構築した。</p>
+
+<div class="stats-row">
+  <div class="stat-box"><div class="num">6</div><div class="lbl">スペックファイル</div></div>
+  <div class="stat-box"><div class="num">7</div><div class="lbl">ファクトリ</div></div>
+  <div class="stat-box"><div class="num">~57</div><div class="lbl">テストケース</div></div>
+  <div class="stat-box"><div class="num">4</div><div class="lbl">新規Gem</div></div>
+</div>
+
+<h4>追加Gem</h4>
+<table>
+  <tr><th>Gem</th><th>バージョン</th><th>用途</th></tr>
+  <tr><td><code>rspec-rails</code></td><td>~&gt; 5.1</td><td>Rails対応RSpec</td></tr>
+  <tr><td><code>factory_bot_rails</code></td><td>~&gt; 6.2</td><td>テストデータ生成</td></tr>
+  <tr><td><code>shoulda-matchers</code></td><td>~&gt; 5.0</td><td>バリデーション簡潔テスト</td></tr>
+  <tr><td><code>database_cleaner-active_record</code></td><td>~&gt; 2.1</td><td>テストDB状態管理</td></tr>
+</table>
+
+<h4>設定ファイル</h4>
+<table>
+  <tr><th>ファイル</th><th>内容</th></tr>
+  <tr><td><code>.rspec</code></td><td>デフォルトオプション（documentation形式、カラー表示）</td></tr>
+  <tr><td><code>spec/spec_helper.rb</code></td><td>RSpec基本設定（モンキーパッチ無効化、ランダム順序）</td></tr>
+  <tr><td><code>spec/rails_helper.rb</code></td><td>Rails統合設定（FactoryBot、Shoulda Matchers、Devise統合）</td></tr>
+</table>
+
+<h3>2. Factory定義（7ファイル）</h3>
+<table>
+  <tr><th>Factory</th><th>トレイト</th><th>用途</th></tr>
+  <tr><td><code>users</code></td><td>—</td><td>テストユーザー（Devise対応）</td></tr>
+  <tr><td><code>clients</code></td><td>—</td><td>テストクライアント（Devise対応）</td></tr>
+  <tr><td><code>situations</code></td><td><code>:with_questions</code> <code>:no_resume</code> <code>:short_timeout</code></td><td>面接シナリオ</td></tr>
+  <tr><td><code>questions</code></td><td><code>:multiple_choice</code> <code>:with_branching</code> <code>:optional</code></td><td>質問</td></tr>
+  <tr><td><code>interviews</code></td><td><code>:in_progress</code> <code>:completed</code> <code>:failed</code> <code>:abandoned</code> <code>:timed_out</code> <code>:rejected</code></td><td>面接セッション</td></tr>
+  <tr><td><code>interview_responses</code></td><td><code>:evaluated</code> <code>:failed_evaluation</code></td><td>回答・評価データ</td></tr>
+  <tr><td><code>interview_results</code></td><td><code>:failed</code> <code>:with_rejection</code></td><td>面接結果</td></tr>
+</table>
+
+<h3>3. モデルスペック（5ファイル）</h3>
+
+<h4>Interview（interview_spec.rb）</h4>
+<ul>
+  <li><strong>アソシエーション:</strong> user, situation, interview_responses, interview_result</li>
+  <li><strong>バリデーション:</strong> presence（user_id, situation_id, language）、uniqueness（user_id + situation_id）</li>
+  <li><strong>ステータス遷移:</strong> start!, complete!, fail!, abandon! の正常遷移、不正遷移の拒否（completed→in_progress等）</li>
+  <li><strong>ビジネスロジック:</strong> timed_out?, resumable?, resume!, rejected?, duration, progress_percentage</li>
+  <li><strong>カスタムバリデーション:</strong> ensure_situation_has_questions, ensure_no_previous_interview</li>
+  <li><strong>access_token:</strong> 自動生成・ユニーク性検証</li>
+</ul>
+
+<h4>InterviewResponse（interview_response_spec.rb）</h4>
+<ul>
+  <li><strong>evaluation_data:</strong> score, passed_evaluation?, evaluated?</li>
+  <li><strong>storeアクセサ:</strong> relevance_score, correctness_score, clarity_score, evaluation_feedback</li>
+</ul>
+
+<h4>Question（question_spec.rb）</h4>
+<ul>
+  <li><strong>型判定:</strong> multiple_choice? (choice/multiple_choice/mcq), descriptive?</li>
+  <li><strong>分岐ルール:</strong> has_branching_rules?, parsed_branching_rules</li>
+  <li><strong>オプション:</strong> parsed_options, options_required_for_multiple_choice バリデーション</li>
+  <li><strong>スコープ:</strong> ordered</li>
+</ul>
+
+<h4>InterviewResult（interview_result_spec.rb）</h4>
+<ul>
+  <li><strong>completion_percentage:</strong> 正常計算、ゼロ除算防止、nil安全性</li>
+  <li><strong>rejected?:</strong> rejection_details判定</li>
+  <li><strong>ユニーク制約:</strong> 同一interview_idの重複防止</li>
+</ul>
+
+<h4>Situation（situation_spec.rb）</h4>
+<ul>
+  <li><strong>numericality:</strong> session_timeout_minutes (1-180), max_resume_count (0-10), passing_score (0-100)</li>
+  <li><strong>inclusion:</strong> reject_notify_method (in_app/email/none)</li>
+  <li><strong>スコープ:</strong> active（非アーカイブ）</li>
+</ul>
+
+<h3>4. リクエストスペック（1ファイル）</h3>
+<table>
+  <tr><th>エンドポイント</th><th>テスト内容</th><th>期待ステータス</th></tr>
+  <tr><td>POST /api/interviews/start</td><td>正常開始</td><td>201 Created</td></tr>
+  <tr><td>POST /api/interviews/start</td><td>存在しないsituation</td><td>404 Not Found</td></tr>
+  <tr><td>GET /api/interviews/:id/status</td><td>ステータス取得</td><td>200 OK</td></tr>
+  <tr><td>POST /api/interviews/:id/submit_answer</td><td>パラメータ不足</td><td>400 Bad Request</td></tr>
+  <tr><td>POST /api/interviews/:id/complete</td><td>非in_progress状態</td><td>400 Bad Request</td></tr>
+  <tr><td>認証テスト</td><td>無効トークン</td><td>403 Forbidden</td></tr>
+  <tr><td>Content-Type検証</td><td>未対応Content-Type</td><td>415 Unsupported</td></tr>
+</table>
+
+<h3>5. テスト数サマリー</h3>
+<table>
+  <tr><th>カテゴリ</th><th>ファイル数</th><th>テストケース数</th></tr>
+  <tr><td>モデルスペック</td><td>5</td><td>約50</td></tr>
+  <tr><td>リクエストスペック</td><td>1</td><td>7</td></tr>
+  <tr><td><strong>合計</strong></td><td><strong>6</strong></td><td><strong>約57</strong></td></tr>
+</table>
+
+<!-- ===== Day 12 ===== -->
+<h2 class="day-title">Day 12: ハードコード値の環境変数化</h2>
+
+<h3>6. 設定管理イニシャライザ</h3>
+<p><code>config/initializers/interview_config.rb</code> を新規作成し、全サービスクラスの設定値を <code>Rails.application.config.interview</code> に集約した。</p>
+
+<div class="stats-row">
+  <div class="stat-box"><div class="num">27</div><div class="lbl">設定項目</div></div>
+  <div class="stat-box"><div class="num">6</div><div class="lbl">変更ファイル</div></div>
+  <div class="stat-box"><div class="num">5</div><div class="lbl">カテゴリ</div></div>
+  <div class="stat-box"><div class="num">1</div><div class="lbl">新規ファイル</div></div>
+</div>
+
+<table>
+  <tr><th>カテゴリ</th><th>項目数</th><th>環境変数例</th></tr>
+  <tr><td>LLM設定</td><td>7</td><td><code>OPENAI_MODEL</code>, <code>LLM_TEMPERATURE</code>, <code>LLM_MAX_TOKENS</code></td></tr>
+  <tr><td>STT設定</td><td>4</td><td><code>STT_MODEL</code>, <code>STT_TIMEOUT</code>, <code>STT_MAX_FILE_SIZE_MB</code></td></tr>
+  <tr><td>TTS設定</td><td>7</td><td><code>TTS_MODEL</code>, <code>TTS_DEFAULT_VOICE</code>, <code>TTS_VOICE_JA</code></td></tr>
+  <tr><td>メディア処理</td><td>5</td><td><code>MAX_VIDEO_SIZE_MB</code>, <code>FFMPEG_TIMEOUT</code>, <code>MAX_AUDIO_DURATION</code></td></tr>
+  <tr><td>評価設定</td><td>4</td><td><code>DEFAULT_PASS_THRESHOLD</code>, <code>EVAL_WEIGHT_RELEVANCE</code></td></tr>
+</table>
+
+<h3>7. サービスクラスの環境変数化</h3>
+<table>
+  <tr><th>ファイル</th><th>削除した定数</th><th>置換先</th></tr>
+  <tr><td><code>llm_client.rb</code></td><td>MAX_RETRIES, REQUEST_TIMEOUT</td><td><code>config.llm_max_retries</code>, <code>config.llm_request_timeout</code></td></tr>
+  <tr><td></td><td>model名, temperature, max_tokens</td><td><code>config.openai_model</code>, <code>config.llm_temperature</code>, <code>config.llm_max_tokens</code></td></tr>
+  <tr><td><code>stt_client.rb</code></td><td>MAX_FILE_SIZE, MAX_RETRIES, TIMEOUT_SECONDS</td><td><code>config.stt_max_file_size</code>, <code>config.stt_max_retries</code>, <code>config.stt_timeout</code></td></tr>
+  <tr><td></td><td>model名 'whisper-1'</td><td><code>config.stt_model</code></td></tr>
+  <tr><td><code>tts_client.rb</code></td><td>MAX_TEXT_LENGTH, MAX_RETRIES, TIMEOUT_SECONDS</td><td><code>config.tts_max_text_length</code>, <code>config.tts_max_retries</code>, <code>config.tts_timeout</code></td></tr>
+  <tr><td></td><td>model名 'tts-1', VOICE_MAP, DEFAULT_VOICE</td><td><code>config.tts_model</code>, <code>voice_for_language()</code></td></tr>
+  <tr><td><code>media_processor.rb</code></td><td>MAX_VIDEO_SIZE, FFMPEG_TIMEOUT</td><td><code>config.max_video_size</code>, <code>config.ffmpeg_timeout</code></td></tr>
+  <tr><td></td><td>MIN/MAX_AUDIO_DURATION</td><td><code>config.min_audio_duration</code>, <code>config.max_audio_duration</code></td></tr>
+  <tr><td><code>response_evaluator.rb</code></td><td>DEFAULT_PASS_THRESHOLD, 重み (0.4/0.4/0.2)</td><td><code>config.default_pass_threshold</code>, <code>config.eval_weight_*</code></td></tr>
+  <tr><td><code>file_upload_validation.rb</code></td><td>MAX_AUDIO_SIZE, MAX_VIDEO_SIZE</td><td><code>config.max_audio_size</code>, <code>config.max_video_size</code></td></tr>
+</table>
+
+<h3>8. 設定値一覧（27項目）</h3>
+
+<h4>LLM 設定</h4>
+<div class="code-block">LLM_MODEL=openai                # openai / claude
+OPENAI_MODEL=gpt-4              # OpenAI 評価モデル
+CLAUDE_MODEL=claude-sonnet-4-20250514
+LLM_TEMPERATURE=0.2             # 評価の再現性重視
+LLM_MAX_TOKENS=600
+LLM_MAX_RETRIES=3
+LLM_REQUEST_TIMEOUT=30          # 秒</div>
+
+<h4>STT (Speech-to-Text)</h4>
+<div class="code-block">STT_MODEL=whisper-1
+STT_MAX_FILE_SIZE_MB=25          # Whisper API上限
+STT_MAX_RETRIES=2
+STT_TIMEOUT=60                   # 音声ファイル転送含む</div>
+
+<h4>TTS (Text-to-Speech)</h4>
+<div class="code-block">TTS_MODEL=tts-1
+TTS_MAX_TEXT_LENGTH=4096         # OpenAI TTS入力上限
+TTS_MAX_RETRIES=2
+TTS_TIMEOUT=30                   # 秒
+TTS_DEFAULT_VOICE=nova
+TTS_VOICE_JA=nova               # 日本語ボイス
+TTS_VOICE_EN=nova               # 英語ボイス</div>
+
+<h4>メディア処理</h4>
+<div class="code-block">MAX_VIDEO_SIZE_MB=500
+MAX_AUDIO_SIZE_MB=25
+FFMPEG_TIMEOUT=120               # ffmpeg実行タイムアウト
+MIN_AUDIO_DURATION=0.5           # 最小音声長
+MAX_AUDIO_DURATION=600           # 最大音声長（10分）</div>
+
+<h4>評価設定</h4>
+<div class="code-block">DEFAULT_PASS_THRESHOLD=70        # デフォルト合格ライン
+EVAL_WEIGHT_RELEVANCE=0.4       # 関連性 40%
+EVAL_WEIGHT_CORRECTNESS=0.4     # 正確性 40%
+EVAL_WEIGHT_CLARITY=0.2         # 明瞭性 20%</div>
+
+<h3>9. Before / After 比較</h3>
+
+<div class="before-after">
+  <div>
+    <h4>Before（ハードコード）</h4>
+<div class="code-block" style="font-size:8.5pt"># llm_client.rb
+MAX_RETRIES = 3
+REQUEST_TIMEOUT = 30
+model: ENV.fetch('OPENAI_MODEL', 'gpt-4'),
+temperature: 0.2,
+max_tokens: 600,
+
+# tts_client.rb
+MAX_TEXT_LENGTH = 4096
+VOICE_MAP = { 'ja' => 'nova', 'en' => 'nova' }
+
+# response_evaluator.rb
+DEFAULT_PASS_THRESHOLD = 70
+weights = {
+  relevance: 0.4,
+  correctness: 0.4,
+  clarity: 0.2
+}</div>
+  </div>
+  <div>
+    <h4>After（config参照）</h4>
+<div class="code-block" style="font-size:8.5pt"># llm_client.rb
+config.llm_max_retries.times do
+config.llm_request_timeout
+model: config.openai_model,
+temperature: config.llm_temperature,
+max_tokens: config.llm_max_tokens,
+
+# tts_client.rb
+config.tts_max_text_length
+voice_for_language(language)
+
+# response_evaluator.rb
+config.default_pass_threshold
+weights = {
+  relevance: cfg.eval_weight_relevance,
+  correctness: cfg.eval_weight_correctness,
+  clarity: cfg.eval_weight_clarity
+}</div>
+  </div>
+</div>
+
+<h3>10. 設計判断</h3>
+
+<div class="info-box">
+  <strong>一元管理パターン</strong><br>
+  各サービスクラスで直接 <code>ENV.fetch</code> するのではなく、イニシャライザで一括パースし <code>Rails.application.config.interview</code> 経由でアクセス。型変換がイニシャライザ内で完結し、テスト時のオーバーライドも容易。
+</div>
+
+<div class="success-box">
+  <strong>後方互換性の保証</strong><br>
+  全27項目にデフォルト値を設定。環境変数を一切設定しなくても既存動作と完全に同一。既存のデプロイ環境への影響なし。
+</div>
+
+<div class="info-box">
+  <strong>API URL は定数のまま</strong><br>
+  <code>OPENAI_URL</code>, <code>CLAUDE_URL</code> 等のAPIエンドポイントURLはサービス仕様として固定であり、環境変数化のメリットが低いため定数のまま残している。
+</div>
+
+<!-- ===== まとめ ===== -->
+<h2 class="day-title">まとめ</h2>
+
+<h3>11. Day 11・12 変更ファイル一覧</h3>
+
+<h4>新規作成ファイル <span class="badge badge-green">17 files</span></h4>
+<div class="file-list">
+  <div class="file-item"><div class="fname">.rspec</div><div class="fdesc">RSpecデフォルト設定</div></div>
+  <div class="file-item"><div class="fname">spec/spec_helper.rb</div><div class="fdesc">RSpec基本設定</div></div>
+  <div class="file-item"><div class="fname">spec/rails_helper.rb</div><div class="fdesc">Rails統合設定</div></div>
+  <div class="file-item"><div class="fname">spec/factories/users.rb</div><div class="fdesc">Userファクトリ</div></div>
+  <div class="file-item"><div class="fname">spec/factories/clients.rb</div><div class="fdesc">Clientファクトリ</div></div>
+  <div class="file-item"><div class="fname">spec/factories/situations.rb</div><div class="fdesc">Situationファクトリ</div></div>
+  <div class="file-item"><div class="fname">spec/factories/questions.rb</div><div class="fdesc">Questionファクトリ</div></div>
+  <div class="file-item"><div class="fname">spec/factories/interviews.rb</div><div class="fdesc">Interviewファクトリ</div></div>
+  <div class="file-item"><div class="fname">spec/factories/interview_responses.rb</div><div class="fdesc">InterviewResponseファクトリ</div></div>
+  <div class="file-item"><div class="fname">spec/factories/interview_results.rb</div><div class="fdesc">InterviewResultファクトリ</div></div>
+  <div class="file-item"><div class="fname">spec/models/interview_spec.rb</div><div class="fdesc">Interviewモデルスペック</div></div>
+  <div class="file-item"><div class="fname">spec/models/interview_response_spec.rb</div><div class="fdesc">InterviewResponseモデルスペック</div></div>
+  <div class="file-item"><div class="fname">spec/models/question_spec.rb</div><div class="fdesc">Questionモデルスペック</div></div>
+  <div class="file-item"><div class="fname">spec/models/interview_result_spec.rb</div><div class="fdesc">InterviewResultモデルスペック</div></div>
+  <div class="file-item"><div class="fname">spec/models/situation_spec.rb</div><div class="fdesc">Situationモデルスペック</div></div>
+  <div class="file-item"><div class="fname">spec/requests/api/interviews_spec.rb</div><div class="fdesc">APIリクエストスペック</div></div>
+  <div class="file-item"><div class="fname">config/initializers/interview_config.rb</div><div class="fdesc">設定値一元管理（27項目）</div></div>
+</div>
+
+<h4>修正ファイル <span class="badge badge-blue">8 files</span></h4>
+<table>
+  <tr><th>ファイル</th><th>変更内容</th></tr>
+  <tr><td><code>Gemfile</code></td><td>rspec-rails, factory_bot_rails, shoulda-matchers, database_cleaner追加</td></tr>
+  <tr><td><code>app/services/interview_engine/llm_client.rb</code></td><td>ハードコード値 → config参照</td></tr>
+  <tr><td><code>app/services/interview_engine/stt_client.rb</code></td><td>ハードコード値 → config参照</td></tr>
+  <tr><td><code>app/services/interview_engine/tts_client.rb</code></td><td>ハードコード値 → config参照</td></tr>
+  <tr><td><code>app/services/interview_engine/media_processor.rb</code></td><td>ハードコード値 → config参照</td></tr>
+  <tr><td><code>app/services/interview_engine/response_evaluator.rb</code></td><td>ハードコード値 → config参照</td></tr>
+  <tr><td><code>app/controllers/concerns/file_upload_validation.rb</code></td><td>ハードコード値 → config参照</td></tr>
+  <tr><td><code>.env.example</code></td><td>27項目の環境変数テンプレート追加</td></tr>
+</table>
+
+<h3>12. セットアップ手順</h3>
+<div class="code-block"># 1. Gem インストール
+bundle install
+
+# 2. テスト用DB作成・マイグレーション
+RAILS_ENV=test bundle exec rails db:create db:migrate
+
+# 3. テスト実行
+bundle exec rspec
+
+# 4. 特定ファイル実行
+bundle exec rspec spec/models/interview_spec.rb
+
+# 5. 環境変数カスタマイズ（必要に応じて）
+cp .env.example .env
+# .env を編集して設定値を調整</div>
+
+<h3>13. 次のステップ（Day 13）</h3>
+<ul>
+  <li>最終整備（ドキュメント整理、残課題の棚卸し）</li>
+  <li>Phase 3 完了レビュー</li>
+</ul>
+
+<footer>
+  AI面接インタビューシステム — Day 11・Day 12 報告書 — 2026-03-16 作成
+</footer>
+
+</div>
+</body>
+</html>

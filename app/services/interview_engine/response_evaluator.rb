@@ -1,13 +1,14 @@
 # app/services/interview_engine/response_evaluator.rb
 module InterviewEngine
   class ResponseEvaluator
-    PASS_THRESHOLD = 70 # Minimum score to pass
+    # DEFAULT_PASS_THRESHOLD は config/initializers/interview_config.rb で管理
 
     def initialize(interview_response, language: 'en')
       @response = interview_response
       @language = language
       @interview = interview_response.interview
       @question = interview_response.question
+      @situation = @interview.situation
     end
 
     # Evaluate a single response from user
@@ -19,29 +20,16 @@ module InterviewEngine
       evaluation = if @question.multiple_choice?
                      evaluate_multiple_choice
                    elsif test_mode?
-                     # In test mode, provide a passing evaluation
-                     {
-                       relevance_score: 85,
-                       correctness_score: 80,
-                       clarity_score: 82,
-                       final_score: 82.5,
-                       passed: true,
-                       reasoning: 'Test mode evaluation'
-                     }
+                     test_mode_evaluation
                    else
-                     llm = LLMClient.new
-                     llm.evaluate_response(
-                       @question.question_text,
-                       @response.audio_transcript,
-                       language: @language
-                     )
+                     llm_evaluate
                    end
 
-      # Store evaluation results
-      update_response_with_evaluation(evaluation)
+      ActiveRecord::Base.transaction do
+        update_response_with_evaluation(evaluation)
+      end
 
-      # Check if interview should continue
-      check_interview_continuation
+      check_rejection
 
       @response
     rescue => e
@@ -53,10 +41,13 @@ module InterviewEngine
     private
 
     def update_response_with_evaluation(evaluation)
-      # Calculate final score based on criteria weights
+      # 意図的にLLMが返すfinal_scoreを無視し、加重平均で再計算する。
+      # LLMのfinal_scoreは各基準スコアと整合しない場合があるため、
+      # サーバー側で一貫した算出ロジックを適用する。
       final_score = calculate_weighted_score(evaluation)
 
-      passed = final_score >= PASS_THRESHOLD
+      threshold = pass_threshold
+      passed = final_score >= threshold
 
       @response.update!(
         relevance_score: evaluation[:relevance_score],
@@ -73,12 +64,33 @@ module InterviewEngine
       ENV['AI_INTERVIEW_TEST_MODE'] == 'true'
     end
 
+    def test_mode_evaluation
+      {
+        relevance_score: 85,
+        correctness_score: 80,
+        clarity_score: 82,
+        final_score: 82.5,
+        passed: true,
+        reasoning: 'Test mode evaluation'
+      }.with_indifferent_access
+    end
+
+    def llm_evaluate
+      llm = LLMClient.new
+      llm.evaluate_response(
+        @question.question_text,
+        @response.audio_transcript,
+        language: @language,
+        question_type: 'open'
+      )
+    end
+
     def calculate_weighted_score(evaluation)
-      # Weighted average: Relevance (40%), Correctness (40%), Clarity (20%)
+      cfg = Rails.application.config.interview
       weights = {
-        relevance: 0.4,
-        correctness: 0.4,
-        clarity: 0.2
+        relevance: cfg.eval_weight_relevance,
+        correctness: cfg.eval_weight_correctness,
+        clarity: cfg.eval_weight_clarity
       }
 
       score = (
@@ -90,12 +102,29 @@ module InterviewEngine
       [score, 100].min # Cap at 100
     end
 
-    def check_interview_continuation
-      # If response failed (score < threshold), fail the entire interview
-      if @response.final_score < PASS_THRESHOLD
-        SessionManager.new(@interview.user, @interview.situation)
-          .fail_interview(@interview.id, "Failed at question: #{@question.question_text}")
+    def check_rejection
+      @interview.reload
+      return unless @interview.in_progress?
+
+      judge = RejectJudge.new(@interview)
+      decision = judge.judge_after_response(@response)
+
+      if decision.rejected?
+        judge.apply_rejection!(decision)
+        # 通知はトランザクション外で実行
+        notify_rejection_via_session_manager(decision.reason)
       end
+    end
+
+    def notify_rejection_via_session_manager(reason)
+      SessionManager.new(@interview.user, @situation)
+                    .send(:notify_rejection, @interview, reason)
+    rescue => e
+      Rails.logger.error("Rejection notification failed: #{e.message}")
+    end
+
+    def pass_threshold
+      @situation&.min_required_score || Rails.application.config.interview.default_pass_threshold
     end
 
     def evaluate_multiple_choice
@@ -116,7 +145,7 @@ module InterviewEngine
         final_score: score,
         passed: passed,
         reasoning: passed ? 'Correct option selected' : 'Incorrect option selected'
-      }
+      }.with_indifferent_access
     end
 
     def resolve_correct_choice(correct, choices)

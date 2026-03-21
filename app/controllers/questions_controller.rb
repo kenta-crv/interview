@@ -48,8 +48,12 @@ class QuestionsController < ApplicationController
   end
 
   def question_params
-    permitted = params.require(:question).permit(:question_text, :question_type, :options, :order)
+    permitted = params.require(:question).permit(
+      :question_text, :question_type, :options, :order,
+      :required, :category, :branching_rules
+    )
     parse_options_json(permitted)
+    parse_branching_rules_json(permitted)
   end
 
   def parse_options_json(permitted)
@@ -57,6 +61,16 @@ class QuestionsController < ApplicationController
     return permitted if raw.blank? || !raw.is_a?(String)
 
     permitted[:options] = JSON.parse(raw)
+    permitted
+  rescue JSON::ParserError
+    permitted
+  end
+
+  def parse_branching_rules_json(permitted)
+    raw = permitted[:branching_rules]
+    return permitted if raw.blank? || !raw.is_a?(String)
+
+    permitted[:branching_rules] = JSON.parse(raw)
     permitted
   rescue JSON::ParserError
     permitted

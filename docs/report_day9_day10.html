@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>AI面接インタビューシステム — Day 9・Day 10 報告書</title>
+<style>
+  @page { size: A4; margin: 18mm 15mm 18mm 15mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Meiryo", "Hiragino Sans", "Yu Gothic", sans-serif; font-size: 10.5pt; line-height: 1.7; color: #1a1a1a; background: #fff; }
+  .cover { text-align: center; padding: 80px 20px 40px; page-break-after: always; display: flex; flex-direction: column; justify-content: center; min-height: 90vh; }
+  .cover h1 { font-size: 26pt; color: #1a365d; margin-bottom: 12px; letter-spacing: 2px; }
+  .cover .subtitle { font-size: 16pt; color: #2b6cb0; margin-bottom: 40px; font-weight: 600; }
+  .cover .meta { font-size: 11pt; color: #555; line-height: 2.2; }
+  .cover .meta strong { color: #1a1a1a; }
+  .cover .logo-box { width: 100px; height: 100px; margin: 0 auto 30px; background: linear-gradient(135deg, #2b6cb0, #4299e1); border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 36pt; font-weight: 700; }
+  .toc { page-break-after: always; padding-top: 20px; }
+  .toc h2 { font-size: 16pt; color: #1a365d; border-bottom: 3px solid #2b6cb0; padding-bottom: 8px; margin-bottom: 24px; }
+  .toc ul { list-style: none; padding: 0; }
+  .toc li { padding: 8px 0; border-bottom: 1px dotted #ccc; font-size: 11pt; }
+  .toc li.day-header { font-weight: 700; font-size: 12pt; color: #2b6cb0; border-bottom: none; padding-top: 18px; }
+  h2.day-title { font-size: 18pt; color: #fff; background: linear-gradient(135deg, #1a365d, #2b6cb0); padding: 14px 20px; border-radius: 6px; margin: 30px 0 20px; page-break-before: always; }
+  h3 { font-size: 13pt; color: #1a365d; border-left: 4px solid #4299e1; padding-left: 12px; margin: 24px 0 12px; }
+  h4 { font-size: 11pt; color: #2b6cb0; margin: 16px 0 8px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; font-size: 9.5pt; }
+  th { background: #edf2f7; color: #1a365d; font-weight: 700; padding: 8px 10px; text-align: left; border: 1px solid #cbd5e0; }
+  td { padding: 7px 10px; border: 1px solid #cbd5e0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7fafc; }
+  .highlight-cell { background: #ebf8ff !important; font-weight: 600; }
+  .code-block { background: #1a202c; color: #e2e8f0; border-radius: 6px; padding: 14px 16px; margin: 10px 0 16px; font-family: "Consolas", "Source Code Pro", monospace; font-size: 9pt; line-height: 1.6; overflow-x: auto; white-space: pre; }
+  .info-box { border-left: 4px solid #4299e1; background: #ebf8ff; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 10pt; }
+  .warn-box { border-left: 4px solid #ed8936; background: #fffaf0; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 10pt; }
+  .success-box { border-left: 4px solid #38a169; background: #f0fff4; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 10pt; }
+  p { margin: 6px 0; } ul, ol { padding-left: 22px; margin: 6px 0 12px; } li { margin: 3px 0; }
+  strong { color: #1a365d; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 8.5pt; font-weight: 700; color: #fff; }
+  .badge-blue { background: #2b6cb0; } .badge-green { background: #38a169; } .badge-orange { background: #dd6b20; } .badge-red { background: #e53e3e; }
+  .file-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+  .file-item { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 9pt; }
+  .file-item .fname { font-family: monospace; font-weight: 700; color: #2b6cb0; font-size: 8.5pt; }
+  .file-item .fdesc { color: #4a5568; margin-top: 2px; }
+  footer { text-align: center; font-size: 9pt; color: #a0aec0; margin-top: 40px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+  @media print { body { padding: 0; margin: 0; } .cover { min-height: 100vh; } h2.day-title { page-break-before: always; } .code-block, .info-box, .success-box, .warn-box, table { page-break-inside: avoid; } h3, h4 { page-break-after: avoid; } }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="logo-box">AI</div>
+  <h1>AI面接インタビューシステム</h1>
+  <div class="subtitle">Day 9・Day 10 報告書</div>
+  <div class="meta">
+    <strong>作成日:</strong> 2026年3月15日<br>
+    <strong>リポジトリ:</strong> tianzhongyoushi178/AI_Interviewer<br>
+    <strong>ブランチ:</strong> master<br>
+    <strong>フレームワーク:</strong> Rails 6.1.7 / Ruby 3.1.6
+  </div>
+</div>
+
+<div class="toc">
+  <h2>目次</h2>
+  <ul>
+    <li class="day-header">Day 9 — セキュリティ強化・DB改善・API品質統一・レガシー削除</li>
+    <li>1. 概要</li>
+    <li>2. production.rb セキュリティ修正</li>
+    <li>3. APIキー起動時検証</li>
+    <li>4. APIエラーレスポンス統一（ApiErrorHandler）</li>
+    <li>5. ファイルアップロードバリデーション（FileUploadValidation）</li>
+    <li>6. Content-Type検証</li>
+    <li>7. レガシーAnswerテーブル削除</li>
+    <li>8. DBインデックス追加・FK制約追加</li>
+    <li>9. コントローラー改修まとめ</li>
+    <li>10. Day 1課題の対応状況</li>
+    <li>11. 変更ファイル一覧</li>
+    <li class="day-header">Day 10 — 本番インフラ整備（PostgreSQL移行・Puma/Sidekiq強化）</li>
+    <li>12. 概要</li>
+    <li>13. SQLite → PostgreSQL 移行</li>
+    <li>14. Puma 本番設定強化</li>
+    <li>15. Sidekiq 本番設定</li>
+    <li>16. デプロイ基盤整備</li>
+    <li>17. Gemfile改善</li>
+    <li>18. 変更ファイル一覧</li>
+  </ul>
+</div>
+
+<!-- ==================== DAY 9 ==================== -->
+<h2 class="day-title">Day 9 — セキュリティ強化・DB改善・API品質統一・レガシー削除</h2>
+
+<h3>1. 概要</h3>
+<p>Day 1の現状分析で特定されたセキュリティ課題・パフォーマンス課題・保守性課題を一括修正した。</p>
+<table>
+  <tr><th>カテゴリ</th><th>対応内容</th></tr>
+  <tr><td class="highlight-cell">セキュリティ</td><td>本番エラー詳細露出の修正、SSL強制、ファイルアップロード検証、Content-Type検証、APIキー起動時チェック</td></tr>
+  <tr><td class="highlight-cell">API品質</td><td>エラーレスポンスの統一（ApiErrorHandler concern）、汎用rescueの排除</td></tr>
+  <tr><td class="highlight-cell">DB改善</td><td>4つの複合インデックス追加、FK制約追加（situations→clients）</td></tr>
+  <tr><td class="highlight-cell">レガシー削除</td><td>Answer テーブル・モデル・コントローラー・ビュー・ルーティングの完全削除</td></tr>
+</table>
+
+<h3>2. production.rb セキュリティ修正</h3>
+<p><strong>ファイル:</strong> <code>config/environments/production.rb</code></p>
+<table>
+  <tr><th>設定項目</th><th>修正前</th><th>修正後</th><th>理由</th></tr>
+  <tr><td><code>consider_all_requests_local</code></td><td><code>true</code></td><td><code>false</code></td><td>スタックトレースが本番で露出していた</td></tr>
+  <tr><td><code>force_ssl</code></td><td>コメントアウト</td><td><code>true</code></td><td>HTTPS未強制</td></tr>
+  <tr><td><code>log_level</code></td><td><code>:debug</code></td><td><code>:info</code></td><td>本番ログ肥大化防止</td></tr>
+  <tr><td><code>queue_adapter</code></td><td><code>:async</code></td><td><code>:sidekiq</code></td><td>本番で非同期ジョブが永続化されない問題</td></tr>
+</table>
+
+<h3>3. APIキー起動時検証</h3>
+<p><strong>ファイル:</strong> <code>config/initializers/api_key_validation.rb</code>（新規）</p>
+<table>
+  <tr><th>環境</th><th>動作</th></tr>
+  <tr><td>本番</td><td><code>OPENAI_API_KEY</code> 未設定時は例外で起動阻止</td></tr>
+  <tr><td>開発</td><td>警告ログのみ</td></tr>
+  <tr><td>テスト</td><td>スキップ</td></tr>
+</table>
+
+<h3>4. APIエラーレスポンス統一（ApiErrorHandler）</h3>
+<p><strong>ファイル:</strong> <code>app/controllers/concerns/api_error_handler.rb</code>（新規）</p>
+<h4>統一レスポンス形式</h4>
+<div class="code-block">{ "success": false, "error": "メッセージ", "reason": "種類", "details": {} }</div>
+<table>
+  <tr><th>例外</th><th>ステータス</th></tr>
+  <tr><td><code>RecordNotFound</code></td><td>404</td></tr>
+  <tr><td><code>RecordInvalid</code></td><td>422</td></tr>
+  <tr><td><code>RecordNotUnique</code></td><td>409</td></tr>
+  <tr><td><code>BadRequest</code></td><td>400</td></tr>
+</table>
+
+<h3>5. ファイルアップロードバリデーション</h3>
+<p><strong>ファイル:</strong> <code>app/controllers/concerns/file_upload_validation.rb</code>（新規）</p>
+<table>
+  <tr><th>項目</th><th>音声</th><th>動画</th></tr>
+  <tr><td>最大サイズ</td><td>25MB</td><td>500MB</td></tr>
+  <tr><td>Content-Type</td><td>audio/mpeg, wav, webm等</td><td>video/mp4, webm等</td></tr>
+</table>
+
+<h3>6. Content-Type検証</h3>
+<p>POST系エンドポイントで <code>application/json</code> と <code>multipart/form-data</code> 以外を415で拒否。CSRF保護の代替策。</p>
+
+<h3>7. レガシーAnswerテーブル削除</h3>
+<table>
+  <tr><th>削除対象</th><th>種別</th></tr>
+  <tr><td><code>app/models/answer.rb</code></td><td>モデル</td></tr>
+  <tr><td><code>app/controllers/answers_controller.rb</code></td><td>コントローラー</td></tr>
+  <tr><td><code>app/views/answers/new.html.slim</code></td><td>ビュー</td></tr>
+  <tr><td><code>config/routes.rb</code> / モデル内アソシエーション</td><td>ルーティング・参照</td></tr>
+  <tr><td><code>answers</code> テーブル</td><td>マイグレーション</td></tr>
+</table>
+
+<h3>8. DBインデックス追加・FK制約追加</h3>
+<p><strong>ファイル:</strong> <code>db/migrate/20260315120000_day9_security_and_db_improvements.rb</code></p>
+<table>
+  <tr><th>テーブル</th><th>インデックス</th><th>用途</th></tr>
+  <tr><td>interviews</td><td>(status, created_at)</td><td>管理画面一覧最適化</td></tr>
+  <tr><td>interview_responses</td><td>created_at</td><td>時系列検索</td></tr>
+  <tr><td>questions</td><td>(situation_id, order)</td><td>質問順序取得</td></tr>
+  <tr><td>situations</td><td>(client_id, archived)</td><td>アクティブ一覧</td></tr>
+</table>
+<p>FK制約: <code>situations.client_id → clients.id</code></p>
+
+<h3>9. コントローラー改修まとめ</h3>
+<table>
+  <tr><th>項目</th><th>修正前</th><th>修正後</th></tr>
+  <tr><td>エラーレスポンス</td><td>各アクション個別</td><td><code>render_api_error</code> に統一</td></tr>
+  <tr><td>汎用rescue</td><td>5箇所</td><td>0箇所（具体的例外のみ）</td></tr>
+  <tr><td>ファイル検証</td><td>なし</td><td>サイズ・Content-Typeチェック</td></tr>
+  <tr><td>Content-Type</td><td>チェックなし</td><td>before_actionで検証</td></tr>
+</table>
+
+<h3>10. Day 1課題の対応状況</h3>
+<table>
+  <tr><th>#</th><th>課題</th><th>優先度</th><th>状態</th></tr>
+  <tr><td>1</td><td>テストモード認証バイパス</td><td><span class="badge badge-red">高</span></td><td><span class="badge badge-green">既修正</span></td></tr>
+  <tr><td>2</td><td>CSRF保護なし</td><td><span class="badge badge-red">高</span></td><td><span class="badge badge-green">Day 9</span></td></tr>
+  <tr><td>3</td><td>ファイルアップロード検証なし</td><td><span class="badge badge-red">高</span></td><td><span class="badge badge-green">Day 9</span></td></tr>
+  <tr><td>4</td><td>APIキー起動時検証なし</td><td><span class="badge badge-red">高</span></td><td><span class="badge badge-green">Day 9</span></td></tr>
+  <tr><td>5</td><td>本番エラー詳細露出</td><td><span class="badge badge-red">高</span></td><td><span class="badge badge-green">Day 9</span></td></tr>
+  <tr><td>6</td><td>本番SQLite</td><td><span class="badge badge-orange">中</span></td><td><span class="badge badge-green">Day 10</span></td></tr>
+  <tr><td>7</td><td>不足インデックス</td><td><span class="badge badge-orange">中</span></td><td><span class="badge badge-green">Day 9</span></td></tr>
+  <tr><td>8</td><td>不足FK制約</td><td><span class="badge badge-orange">中</span></td><td><span class="badge badge-green">Day 9</span></td></tr>
+  <tr><td>9</td><td>APIエラーレスポンス不統一</td><td><span class="badge badge-orange">中</span></td><td><span class="badge badge-green">Day 9</span></td></tr>
+  <tr><td>10</td><td>レガシーAnswerテーブル</td><td><span class="badge badge-blue">低</span></td><td><span class="badge badge-green">Day 9</span></td></tr>
+  <tr><td>11</td><td>ジョブが非同期未使用</td><td><span class="badge badge-orange">中</span></td><td><span class="badge badge-green">Day 10</span></td></tr>
+  <tr><td>12</td><td>Puma 3.x (古い)</td><td><span class="badge badge-blue">低</span></td><td><span class="badge badge-green">Day 10</span></td></tr>
+  <tr><td>13</td><td>Gemfile重複</td><td><span class="badge badge-blue">低</span></td><td><span class="badge badge-green">Day 10</span></td></tr>
+</table>
+
+<h3>11. 変更ファイル一覧（Day 9）</h3>
+<div class="file-list">
+  <div class="file-item"><div class="fname">config/environments/production.rb</div><div class="fdesc"><span class="badge badge-blue">改修</span> エラー詳細非表示、SSL強制、ログレベル、queue_adapter</div></div>
+  <div class="file-item"><div class="fname">config/initializers/api_key_validation.rb</div><div class="fdesc"><span class="badge badge-green">新規</span> APIキー起動時検証</div></div>
+  <div class="file-item"><div class="fname">app/controllers/concerns/api_error_handler.rb</div><div class="fdesc"><span class="badge badge-green">新規</span> 統一エラーレスポンス</div></div>
+  <div class="file-item"><div class="fname">app/controllers/concerns/file_upload_validation.rb</div><div class="fdesc"><span class="badge badge-green">新規</span> アップロード検証</div></div>
+  <div class="file-item"><div class="fname">app/controllers/api/interviews_controller.rb</div><div class="fdesc"><span class="badge badge-blue">改修</span> concern統合・エラー統一</div></div>
+  <div class="file-item"><div class="fname">app/models/situation.rb / user.rb</div><div class="fdesc"><span class="badge badge-blue">改修</span> answers削除</div></div>
+  <div class="file-item"><div class="fname">config/routes.rb</div><div class="fdesc"><span class="badge badge-blue">改修</span> answers削除</div></div>
+  <div class="file-item"><div class="fname">db/migrate/20260315120000_...</div><div class="fdesc"><span class="badge badge-green">新規</span> インデックス・FK・Answer削除</div></div>
+  <div class="file-item"><div class="fname">answer.rb / answers_controller.rb / views</div><div class="fdesc"><span class="badge badge-red">削除</span> レガシー</div></div>
+</div>
+
+<!-- ==================== DAY 10 ==================== -->
+<h2 class="day-title">Day 10 — 本番インフラ整備（PostgreSQL移行・Puma/Sidekiq強化）</h2>
+
+<h3>12. 概要</h3>
+<p>本番環境のインフラ基盤を整備した。SQLiteからPostgreSQLへの移行準備、Pumaのクラスターモード化、Sidekiqの本番Redis接続設定、デプロイ基盤（Procfile・リリーススクリプト）を構築。</p>
+
+<table>
+  <tr><th>コンポーネント</th><th>修正前</th><th>修正後</th></tr>
+  <tr><td class="highlight-cell">データベース</td><td>SQLite3（開発/本番共通）</td><td>開発: SQLite3 / 本番: PostgreSQL</td></tr>
+  <tr><td class="highlight-cell">Webサーバー</td><td>Puma 3.x（シングルプロセス）</td><td>Puma 5.x（本番: クラスターモード）</td></tr>
+  <tr><td class="highlight-cell">ジョブキュー</td><td>:async（メモリ内、再起動で消失）</td><td>:sidekiq（Redis永続化）</td></tr>
+  <tr><td class="highlight-cell">デプロイ</td><td>手動</td><td>Procfile + bin/release</td></tr>
+</table>
+
+<h3>13. SQLite → PostgreSQL 移行</h3>
+
+<h4>Gemfile変更</h4>
+<div class="code-block"># 修正前
+gem 'sqlite3', '~> 1.6'
+
+# 修正後
+gem 'pg', '~> 1.5', group: :production
+gem 'sqlite3', '~> 1.6', groups: [:development, :test]</div>
+
+<h4>database.yml変更</h4>
+<table>
+  <tr><th>環境</th><th>アダプター</th><th>接続先</th></tr>
+  <tr><td>development</td><td>sqlite3</td><td><code>db/development.sqlite3</code>（変更なし）</td></tr>
+  <tr><td>test</td><td>sqlite3</td><td><code>db/test.sqlite3</code>（変更なし）</td></tr>
+  <tr><td>production</td><td>postgresql</td><td><code>DATABASE_URL</code> 環境変数（優先）または個別設定</td></tr>
+</table>
+
+<h4>本番PostgreSQL接続設定</h4>
+<div class="code-block">production:
+  adapter: postgresql
+  encoding: unicode
+  pool: &lt;%= ENV.fetch("RAILS_MAX_THREADS") { 15 } %&gt;
+  url: &lt;%= ENV['DATABASE_URL'] %&gt;
+  host: &lt;%= ENV.fetch('DB_HOST', 'localhost') %&gt;
+  database: &lt;%= ENV.fetch('DB_NAME', 'ai_interviewer_production') %&gt;
+  username: &lt;%= ENV.fetch('DB_USERNAME', 'ai_interviewer') %&gt;
+  password: &lt;%= ENV['DB_PASSWORD'] %&gt;</div>
+
+<div class="info-box">
+  <strong>移行手順:</strong> 開発環境はSQLiteのままなので、既存のワークフローに影響なし。本番デプロイ時にPostgreSQLを使用する。<code>DATABASE_URL</code> が設定されている場合（Render/Heroku等）、個別設定よりも優先される。
+</div>
+
+<h3>14. Puma 本番設定強化</h3>
+<p><strong>ファイル:</strong> <code>config/puma.rb</code></p>
+
+<table>
+  <tr><th>設定</th><th>修正前</th><th>修正後</th></tr>
+  <tr><td>バージョン</td><td>Puma 3.x</td><td>Puma 5.x</td></tr>
+  <tr><td>ワーカー数</td><td>未設定（シングルプロセス）</td><td>本番: <code>WEB_CONCURRENCY</code>（デフォルト2）</td></tr>
+  <tr><td>preload_app</td><td>無効</td><td>本番: 有効（メモリ効率化）</td></tr>
+  <tr><td>DB再接続</td><td>未設定</td><td><code>on_worker_boot</code> で <code>establish_connection</code></td></tr>
+  <tr><td>スレッド</td><td>最小=最大=5</td><td><code>RAILS_MIN_THREADS</code> / <code>RAILS_MAX_THREADS</code> で個別設定可</td></tr>
+</table>
+
+<div class="warn-box">
+  <strong>注意:</strong> Puma 3.x → 5.x のアップグレードにより、<code>bundle update puma</code> が必要。互換性のある変更だが、本番デプロイ前にステージング環境で動作確認を推奨。
+</div>
+
+<h3>15. Sidekiq 本番設定</h3>
+
+<h4>sidekiq.yml 改善</h4>
+<table>
+  <tr><th>設定</th><th>修正前</th><th>修正後</th></tr>
+  <tr><td>Redis接続</td><td>ハードコード（<code>redis://:password@hostname:6379/0</code>）</td><td><code>REDIS_URL</code> 環境変数</td></tr>
+  <tr><td>キュー構成</td><td>article_generation(5), default(1)</td><td>critical(10), default(5), article_generation(3), low(1)</td></tr>
+  <tr><td>同時実行数</td><td>ハードコード10</td><td><code>SIDEKIQ_CONCURRENCY</code> 環境変数</td></tr>
+</table>
+
+<h4>initializers/sidekiq.rb（新規）</h4>
+<div class="code-block">redis_url = ENV.fetch('REDIS_URL', 'redis://localhost:6379/0')
+
+Sidekiq.configure_server do |config|
+  config.redis = { url: redis_url }
+end
+
+Sidekiq.configure_client do |config|
+  config.redis = { url: redis_url }
+end</div>
+
+<h4>Active Job 本番設定</h4>
+<table>
+  <tr><th>設定</th><th>修正前</th><th>修正後</th><th>影響</th></tr>
+  <tr><td><code>queue_adapter</code></td><td><code>:async</code></td><td><code>:sidekiq</code></td><td>ジョブがRedisに永続化され、サーバー再起動でも消失しない</td></tr>
+</table>
+
+<h3>16. デプロイ基盤整備</h3>
+
+<h4>Procfile（新規）</h4>
+<div class="code-block">web: bundle exec puma -C config/puma.rb
+worker: bundle exec sidekiq -C config/sidekiq.yml</div>
+
+<h4>bin/release（新規）</h4>
+<p>Render/Heroku等のデプロイ時に自動実行されるリリーススクリプト。<code>rails db:migrate</code> を自動実行。</p>
+
+<h4>.env.example（新規）</h4>
+<p>本番環境に必要な全環境変数のテンプレート。新規メンバーのセットアップを効率化。</p>
+
+<table>
+  <tr><th>カテゴリ</th><th>環境変数</th></tr>
+  <tr><td>AI API</td><td><code>OPENAI_API_KEY</code>, <code>CLAUDE_API_KEY</code>, <code>GPT_API_KEY</code>, <code>GEMINI_API_KEY</code></td></tr>
+  <tr><td>DB</td><td><code>DATABASE_URL</code> or <code>DB_HOST</code>/<code>DB_NAME</code>/<code>DB_USERNAME</code>/<code>DB_PASSWORD</code></td></tr>
+  <tr><td>Redis</td><td><code>REDIS_URL</code></td></tr>
+  <tr><td>Rails</td><td><code>RAILS_MASTER_KEY</code>, <code>RAILS_ALLOWED_HOST</code>, <code>RAILS_SERVE_STATIC_FILES</code></td></tr>
+  <tr><td>サーバー</td><td><code>PORT</code>, <code>WEB_CONCURRENCY</code>, <code>RAILS_MAX_THREADS</code>, <code>SIDEKIQ_CONCURRENCY</code></td></tr>
+</table>
+
+<h3>17. Gemfile改善</h3>
+<table>
+  <tr><th>変更</th><th>修正前</th><th>修正後</th></tr>
+  <tr><td>DB gem</td><td><code>sqlite3</code> 全環境</td><td><code>pg</code> 本番 / <code>sqlite3</code> 開発・テスト</td></tr>
+  <tr><td>Puma</td><td><code>~&gt; 3.11</code></td><td><code>~&gt; 5.6</code></td></tr>
+  <tr><td>kramdown重複</td><td>2回定義</td><td>1回に修正</td></tr>
+</table>
+
+<h3>18. 変更ファイル一覧（Day 10）</h3>
+<div class="file-list">
+  <div class="file-item"><div class="fname">Gemfile</div><div class="fdesc"><span class="badge badge-blue">改修</span> pg追加、sqlite3をdev/test限定、Puma 5.x、kramdown重複修正</div></div>
+  <div class="file-item"><div class="fname">config/database.yml</div><div class="fdesc"><span class="badge badge-blue">改修</span> 本番PostgreSQL対応（DATABASE_URL優先）</div></div>
+  <div class="file-item"><div class="fname">config/puma.rb</div><div class="fdesc"><span class="badge badge-blue">改修</span> クラスターモード、preload_app、on_worker_boot</div></div>
+  <div class="file-item"><div class="fname">config/sidekiq.yml</div><div class="fdesc"><span class="badge badge-blue">改修</span> キュー優先度整理、ハードコードRedis URL削除</div></div>
+  <div class="file-item"><div class="fname">config/initializers/sidekiq.rb</div><div class="fdesc"><span class="badge badge-green">新規</span> Redis接続設定（REDIS_URL環境変数）</div></div>
+  <div class="file-item"><div class="fname">config/environments/production.rb</div><div class="fdesc"><span class="badge badge-blue">改修</span> queue_adapter: :sidekiq</div></div>
+  <div class="file-item"><div class="fname">Procfile</div><div class="fdesc"><span class="badge badge-green">新規</span> web + worker プロセス定義</div></div>
+  <div class="file-item"><div class="fname">bin/release</div><div class="fdesc"><span class="badge badge-green">新規</span> デプロイ時自動マイグレーション</div></div>
+  <div class="file-item"><div class="fname">.env.example</div><div class="fdesc"><span class="badge badge-green">新規</span> 環境変数テンプレート</div></div>
+</div>
+
+<div class="info-box">
+  <strong>フェーズ3 Day 9-10 完了:</strong> セキュリティ強化（5項目）、DB改善（インデックス4件+FK1件）、API品質統一、レガシー削除、本番インフラ整備（PostgreSQL/Puma/Sidekiq/デプロイ基盤）。Day 1で特定された全課題への対応が完了。
+</div>
+
+<footer>
+  AI面接インタビューシステム — Day 9・Day 10 報告書 | 2026-03-15 | master ブランチ
+</footer>
+
+</body>
+</html>
