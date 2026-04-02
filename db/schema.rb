@@ -115,7 +115,7 @@ ActiveRecord::Schema.define(version: 2026_03_15_120000) do
     t.integer "question_id", null: false
     t.text "audio_transcript", null: false
     t.integer "evaluation_status", default: 0
-    t.json "evaluation_data", default: {}
+    t.json "evaluation_data", default: "\"\\\"\\\\\\\"{}\\\\\\\"\\\"\""
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["created_at"], name: "index_interview_responses_on_created_at"
@@ -128,10 +128,10 @@ ActiveRecord::Schema.define(version: 2026_03_15_120000) do
   create_table "interview_results", force: :cascade do |t|
     t.integer "interview_id", null: false
     t.integer "final_status"
-    t.json "results_data", default: {}
+    t.json "results_data", default: "\"{}\""
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.json "rejection_details", default: {}
+    t.json "rejection_details", default: "\"{}\""
     t.index ["final_status"], name: "index_interview_results_on_final_status"
     t.index ["interview_id"], name: "index_interview_results_on_interview_id"
     t.index ["interview_id"], name: "index_interview_results_on_interview_id_unique", unique: true
