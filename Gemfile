@@ -43,7 +43,6 @@ group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'rspec-rails', '~> 5.1'
   gem 'factory_bot_rails', '~> 6.2'
-  gem 'bullet'
 end
 
 group :development do
@@ -77,7 +76,6 @@ gem 'omniauth-twitter'
 gem 'meta-tags'
 
 gem 'httparty'      # API呼び出し用
-gem 'rack-attack'   # APIレート制限
 gem 'dotenv-rails', groups: [:development, :test]
 gem 'kramdown'
 
