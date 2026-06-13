@@ -1,0 +1,41 @@
+.admin-container
+  h1.admin-title ユーザー進捗詳細
+  p.admin-subtitle = @deal.title
+
+  .admin-card
+    .user-info
+      .info-row
+        .info-label ユーザー名:
+        .info-value = @user_progress.user&.name
+      .info-row
+        .info-label 会社名:
+        .info-value = @user_progress.user&.company
+      .info-row
+        .info-label メール:
+        .info-value = @user_progress.user&.email
+      .info-row
+        .info-label 電話:
+        .info-value = @user_progress.user&.tel
+      .info-row
+        .info-label 住所:
+        .info-value = @user_progress.user&.address
+      .info-row
+        .info-label Webサイト:
+        .info-value = @user_progress.user&.url
+
+  .admin-card
+    h2.admin-card-title 進捗情報
+    .progress-info
+      .info-row
+        .info-label 検討フェーズ:
+        .info-value = @user_progress.consideration_phase&.humanize
+      .info-row
+        .info-label 導入予定日:
+        .info-value = @user_progress.planned_introduction_date&.strftime('%Y/%m/%d')
+      .info-row
+        .info-label 重要ポイント:
+        .info-value = simple_format(@user_progress.key_points_for_application)
+
+  .admin-actions
+    = link_to '一覧に戻る', client_deal_user_progresses_path(@deal), class: 'btn-secondary-custom'
+    = link_to '商談詳細に戻る', client_deal_path(@deal), class: 'btn-primary-custom'

@@ -1,0 +1,46 @@
+.admin-container
+  h1.admin-title 商談参加登録
+  p.admin-subtitle = @deal.title
+
+  .admin-card
+    = form_with url: create_user_info_public_deal_session_path(token: @deal.access_token), local: true do |f|
+      .form-group
+        = label_tag 'user[name]', 'お名前', class: 'form-label'
+        = text_field_tag 'user[name]', '', class: 'form-control', required: true
+
+      .form-group
+        = label_tag 'user[company]', '会社名', class: 'form-label'
+        = text_field_tag 'user[company]', '', class: 'form-control', required: true
+
+      .form-group
+        = label_tag 'user[email]', 'メールアドレス', class: 'form-label'
+        = email_field_tag 'user[email]', '', class: 'form-control', required: true
+
+      .form-group
+        = label_tag 'user[tel]', '電話番号', class: 'form-label'
+        = telephone_field_tag 'user[tel]', '', class: 'form-control'
+
+      .form-group
+        = label_tag 'user[address]', '住所', class: 'form-label'
+        = text_area_tag 'user[address]', '', class: 'form-control', rows: 3
+
+      .form-group
+        = label_tag 'user[url]', 'WebサイトURL', class: 'form-label'
+        = url_field_tag 'user[url]', '', class: 'form-control'
+
+      h3 商談進捗情報
+
+      .form-group
+        = label_tag :consideration_phase, '検討フェーズ', class: 'form-label'
+        = select_tag :consideration_phase, options_for_select(UserProgress.consideration_phases.map { |k, v| [k.humanize, k] }), class: 'form-control'
+
+      .form-group
+        = label_tag :planned_introduction_date, '導入予定日', class: 'form-label'
+        = date_field_tag :planned_introduction_date, class: 'form-control'
+
+      .form-group
+        = label_tag :key_points_for_application, '申し込みの重要ポイント', class: 'form-label'
+        = text_area_tag :key_points_for_application, '', class: 'form-control', rows: 4, placeholder: '申し込みを決める際に重視するポイントを教えてください'
+
+      .form-actions
+        = f.submit '登録してAI商談を開始', class: 'btn-primary-custom', name: 'commit'

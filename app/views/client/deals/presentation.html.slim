@@ -1,0 +1,81 @@
+.presentation-wrapper
+  .presentation-background
+
+  .presentation-content
+    .document-area
+      - if @deal_pages.any?
+        - @deal_pages.each_with_index do |page, index|
+          .document-slide id="slide-#{page.id}" data-page-number=page.page_number style="#{index == 0 ? 'display: block;' : 'display: none;'}"
+            - if page.deal_document.file.attached?
+              iframe src="#{Rails.application.routes.url_helpers.rails_blob_path(page.deal_document.file, only_path: true)}#page=#{page.page_number}" class="document-pdf"
+            - else
+              .document-placeholder PDFがありません
+      - else
+        .document-placeholder
+          p ページがありません。PDFをアップロードして処理してください。
+
+    .avatar-area
+      .avatar-image
+        .avatar-frame
+          = image_tag 'avatar_1.png', alt: 'アバター1', class: 'avatar-img avatar-img-1'
+          = image_tag 'avatar_2.png', alt: 'アバター2', class: 'avatar-img avatar-img-2'
+
+  .choice-modal
+    .modal-content
+      .modal-header
+        h3 選択肢
+      .modal-body
+        .choice-buttons
+          = button_tag 'サービス概要', class: 'btn-choice', data: { choice: 'overview' }
+          = button_tag '料金プラン', class: 'btn-choice', data: { choice: 'pricing' }
+          = button_tag 'トライアル', class: 'btn-choice', data: { choice: 'trial' }
+          = button_tag '契約フロー', class: 'btn-choice', data: { choice: 'contract' }
+
+  .admin-actions
+    = link_to '詳細に戻る', client_deal_path(@deal), class: 'btn-secondary-custom'
+
+javascript:
+  document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.document-slide');
+    const choiceButtons = document.querySelectorAll('.btn-choice');
+    let currentIndex = 0;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.style.display = i === index ? 'block' : 'none';
+      });
+    }
+
+    choiceButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const choice = this.dataset.choice;
+        // 選択肢に応じた処理
+        handleChoice(choice);
+      });
+    });
+
+    function handleChoice(choice) {
+      // 選択肢に応じてスライドを切り替え
+      switch(choice) {
+        case 'overview':
+          showSlide(0);
+          break;
+        case 'pricing':
+          showSlide(1);
+          break;
+        case 'trial':
+          showSlide(2);
+          break;
+        case 'contract':
+          showSlide(3);
+          break;
+        default:
+          showSlide(0);
+      }
+    }
+
+    // 初期スライドを表示
+    if (slides.length > 0) {
+      showSlide(currentIndex);
+    }
+  });

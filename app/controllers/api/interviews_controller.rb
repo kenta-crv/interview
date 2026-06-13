@@ -28,6 +28,14 @@ module Api
         session_timeout_minutes: situation.session_timeout_minutes,
         remaining_seconds: interview.remaining_seconds
       }, status: :created
+    rescue InterviewEngine::SessionManager::AlreadyCompletedError => e
+      # 1回のみ仕様: 受験済みは「エラー」ではなく「案内」として返す
+      render_api_error(
+        e.message,
+        status: :unprocessable_entity,
+        reason: 'already_completed',
+        details: { situation_id: params[:situation_id].to_i }
+      )
     rescue InterviewEngine::SessionManager::SessionError => e
       render_api_error(e.message, status: :unprocessable_entity)
     end
@@ -57,6 +65,8 @@ module Api
       render_api_error(e.message, status: :gone, reason: 'timeout')
     rescue InterviewEngine::SessionManager::ResumeError => e
       render_api_error(e.message, status: :forbidden, reason: 'resume_limit')
+    rescue InterviewEngine::SessionManager::AlreadyCompletedError => e
+      render_api_error(e.message, status: :unprocessable_entity, reason: 'already_completed')
     rescue InterviewEngine::SessionManager::SessionError => e
       render_api_error(e.message, status: :unprocessable_entity)
     end
@@ -262,6 +272,101 @@ module Api
       @current_user = current_user
     end
 
+<<<<<<< Updated upstream
+=======
+    # APIキーによる認証
+    def authenticate_by_api_key!
+      api_key = extract_api_key
+
+      configured_key = ENV['INTERVIEW_API_KEY']
+      if configured_key.blank?
+        render_api_error('API key authentication is not configured', status: :service_unavailable)
+        return
+      end
+
+      unless ActiveSupport::SecurityUtils.secure_compare(api_key, configured_key)
+        render_api_error('Invalid API key', status: :unauthorized)
+        return
+      end
+
+      # APIキー認証時はデフォルトAPIユーザーを使用
+      @current_user = User.find_by(email: 'api@interview.com') || User.first
+
+      unless @current_user
+        render_api_error('No user found. Create a user first.', status: :unprocessable_entity)
+      end
+    end
+
+    # start用: 認証済みユーザーがいればそのまま、いなければゲストユーザーを割り当て
+    def authenticate_or_create_guest!
+      # 既存の認証手段を試行（トークン、APIキー、テストモード、Devise）
+      token = request.headers['X-Interview-Token'] || params[:access_token]
+      if token.present?
+        interview = Interview.by_token(token).first
+        if interview
+          @current_user = interview.user
+          return
+        end
+      end
+
+      if extract_api_key.present?
+        authenticate_by_api_key!
+        return
+      end
+
+      if test_mode?
+        @current_user = User.find_by(email: 'test@interview.com') || User.first
+        return
+      end
+
+      # Deviseセッションがあればそれを使用
+      if user_signed_in?
+        @current_user = current_user
+        return
+      end
+
+      # 未認証ユーザーには「このブラウザ専用」のゲストを割り当てる。
+      # cookieに保存した一意IDをキーにし、別ユーザーと面接状態が混在するのを防ぐ。
+      @current_user = find_or_create_browser_guest_user
+    end
+
+    # ブラウザ単位で一意なゲストユーザーを払い出す（共有ゲスト問題の解消）
+    def find_or_create_browser_guest_user
+      guest_id = cookies.encrypted[:ai_interview_guest_id]
+      if guest_id.blank?
+        guest_id = SecureRandom.hex(16)
+        cookies.encrypted[:ai_interview_guest_id] = {
+          value: guest_id,
+          expires: 30.days.from_now,
+          httponly: true,
+          same_site: :lax,
+          secure: Rails.env.production?
+        }
+      end
+
+      email = "guest_#{guest_id}@interview.local"
+      # 同一ブラウザからの並列リクエスト時の RecordNotUnique を吸収する
+      begin
+        User.find_or_create_by!(email: email) do |u|
+          u.name = "Guest-#{guest_id[0, 6]}"
+          u.password = SecureRandom.hex(16)
+        end
+      rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
+        User.find_by!(email: email)
+      end
+    end
+
+    # Authorization: Bearer <key> または X-API-Key ヘッダーからAPIキーを抽出
+    def extract_api_key
+      auth_header = request.headers['Authorization']
+      if auth_header&.start_with?('Bearer ')
+        return auth_header.sub('Bearer ', '')
+      end
+
+      request.headers['X-API-Key']
+    end
+
+>>>>>>> Stashed changes
     def set_interview
       @interview = Interview.find_by(id: params[:id])
       unless @interview
@@ -294,9 +399,11 @@ module Api
     def authorize_interview!
       return if test_mode?
 
+      # 設計方針: URL招待が主動線。access_token を知っていることが本人性の証明。
+      # token が提示された場合は user_id 突合せ不要（招待URLを受け取った本人とみなす）。
+      # token なしの場合のみ Devise / ゲストCookie 由来の current_user で突合せる。
       token = request.headers['X-Interview-Token'] || params[:access_token]
       if token.present?
-        # トークンが提供された場合はトークンの一致/不一致で完結させる
         if @interview.access_token.present? &&
            ActiveSupport::SecurityUtils.secure_compare(token, @interview.access_token)
           return

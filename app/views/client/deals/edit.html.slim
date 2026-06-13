@@ -1,0 +1,25 @@
+.admin-container
+  h1.admin-title 商談編集
+  p.admin-subtitle = @deal.title
+
+  .admin-card
+    = form_with model: @deal, url: client_deal_path(@deal), local: true, method: :patch do |f|
+      .form-group
+        = f.label :title, 'タイトル', class: 'form-label'
+        = f.text_field :title, class: 'form-control', required: true
+
+      .form-group
+        = f.label :description, '説明', class: 'form-label'
+        = f.text_area :description, class: 'form-control', rows: 4
+
+      .form-group
+        = f.label :deal_date, '商談日', class: 'form-label'
+        = f.date_field :deal_date, class: 'form-control'
+
+      .form-group
+        = f.label :language, '言語', class: 'form-label'
+        = f.select :language, Deal.languages.map { |k, v| [k.upcase, v] }, {}, class: 'form-control'
+
+      .form-actions
+        = f.submit '更新', class: 'btn-primary-custom'
+        = link_to 'キャンセル', client_deal_path(@deal), class: 'btn-secondary-custom'

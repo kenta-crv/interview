@@ -1,0 +1,36 @@
+.admin-container
+  h1.admin-title ユーザー進捗一覧
+  p.admin-subtitle = @deal.title
+
+  .admin-card
+    - if @user_progresses.empty?
+      .empty-state
+        p まだ進捗情報がありません
+    - else
+      table.admin-table
+        thead
+          tr
+            th ID
+            th ユーザー名
+            th 会社名
+            th メール
+            th 検討フェーズ
+            th 導入予定日
+            th 重要ポイント
+            th 作成日
+        tbody
+          - @user_progresses.each do |progress|
+            tr
+              td= progress.id
+              td= progress.user&.name
+              td= progress.user&.company
+              td= progress.user&.email
+              td= progress.consideration_phase&.humanize
+              td= progress.planned_introduction_date&.strftime('%Y/%m/%d')
+              td= progress.key_points_for_application&.truncate(50)
+              td= l(progress.created_at, format: :short)
+              td
+                = link_to '詳細', client_deal_user_progress_path(@deal.id, progress.id), class: 'btn-primary-custom btn-sm'
+
+  .admin-actions
+    = link_to '商談詳細に戻る', client_deal_path(@deal), class: 'btn-secondary-custom'

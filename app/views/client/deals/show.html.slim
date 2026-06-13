@@ -1,0 +1,117 @@
+.admin-container
+  h1.admin-title 商談詳細
+  p.admin-subtitle = @deal.title
+
+  .admin-card
+    h2.admin-card-title 資料アップロード
+    = form_tag upload_documents_api_deal_path(@deal.id), multipart: true, id: 'documents-upload-form' do
+      .form-group
+        label.form-label 資料ファイル（PDF）
+        = file_field_tag 'files[]', multiple: true, accept: '.pdf', class: 'form-control'
+      .form-actions
+        = submit_tag '資料をアップロード', class: 'btn-primary-custom'
+
+  - if @deal.deal_documents.any?
+    .admin-card
+      h2.admin-card-title アップロード済み資料
+      .document-list
+        - @deal.deal_documents.each_with_index do |doc, index|
+          .document-item
+            .document-name = File.basename(doc.file.filename.to_s)
+            .document-size = number_to_human_size(doc.file_size)
+      .pdf-process-actions
+        button.btn-primary-custom#process-pdf-btn type="button" PDFを処理してスライドを作成
+        .loading-indicator#pdf-processing-loading style="display: none;"
+          p PDF処理中...
+
+  - if @deal.deal_transcript
+    .admin-card
+      h2.admin-card-title 文字起こし
+      .transcript-content
+        = simple_format(@deal.deal_transcript.full_transcript)
+
+  .admin-actions
+    = link_to 'プレゼンテーション', presentation_client_deal_path(@deal), class: 'btn-primary-custom'
+    = link_to '共有URL', '#', class: 'btn-secondary-custom', id: 'share-url-btn'
+    = link_to '一覧に戻る', client_deals_path, class: 'btn-secondary-custom'
+
+# 共有URLモーダル
+.modal id='share-url-modal' style='display: none;'
+  .modal-content
+    .modal-header
+      h2 共有URL
+      = button_tag '×', class: 'modal-close', id: 'close-share-modal'
+    .modal-body
+      .form-group
+        label.form-label 共有URL
+        input.form-control type='text' value="#{public_deal_session_url(@deal.access_token)}" readonly
+      .form-actions
+        = button_tag 'コピー', class: 'btn-primary-custom', id: 'copy-url-btn'
+
+javascript:
+  document.addEventListener('turbo:load', function() {
+    const processPdfBtn = document.getElementById('process-pdf-btn');
+    const pdfProcessingLoading = document.getElementById('pdf-processing-loading');
+    const dealId = #{@deal.id};
+    const shareUrlBtn = document.getElementById('share-url-btn');
+    const shareUrlModal = document.getElementById('share-url-modal');
+    const closeShareModal = document.getElementById('close-share-modal');
+    const copyUrlBtn = document.getElementById('copy-url-btn');
+
+    if (processPdfBtn) {
+      processPdfBtn.addEventListener('click', function() {
+        if (!confirm('PDFを処理してスライドを作成します。よろしいですか？')) return;
+
+        processPdfBtn.style.display = 'none';
+        if (pdfProcessingLoading) pdfProcessingLoading.style.display = 'block';
+
+        fetch(`/api/deals/${dealId}/process_pdf`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          },
+          credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.message) {
+            alert(data.message);
+            window.location.reload();
+          } else if (data.errors) {
+            alert('エラー: ' + data.errors.join(', '));
+            processPdfBtn.style.display = 'block';
+            if (pdfProcessingLoading) pdfProcessingLoading.style.display = 'none';
+          }
+        })
+        .catch(error => {
+          alert('PDFの処理に失敗しました。');
+          processPdfBtn.style.display = 'block';
+          if (pdfProcessingLoading) pdfProcessingLoading.style.display = 'none';
+        });
+      });
+    }
+
+    // 共有URLモーダル
+    if (shareUrlBtn) {
+      shareUrlBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        shareUrlModal.style.display = 'block';
+      });
+    }
+
+    if (closeShareModal) {
+      closeShareModal.addEventListener('click', function() {
+        shareUrlModal.style.display = 'none';
+      });
+    }
+
+    if (copyUrlBtn) {
+      copyUrlBtn.addEventListener('click', function() {
+        const urlInput = shareUrlModal.querySelector('input[type="text"]');
+        urlInput.select();
+        document.execCommand('copy');
+        alert('URLをコピーしました');
+      });
+    }
+  });

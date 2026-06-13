@@ -3,6 +3,7 @@ class Situation < ApplicationRecord
   has_many :questions, dependent: :destroy
   has_many :interviews, dependent: :destroy
   has_many :interview_results, through: :interviews
+  has_many :deal_presentations, dependent: :destroy
 
   validates :title, presence: true
   validates :session_timeout_minutes, numericality: { greater_than: 0, less_than_or_equal_to: 180 }

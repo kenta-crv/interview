@@ -155,7 +155,11 @@ module InterviewEngine
     end
 
     def avatar_url
-      ActionController::Base.helpers.asset_path('image.png')
+      begin
+        ActionController::Base.helpers.asset_path('image.png')
+      rescue Sprockets::Rails::Helper::AssetNotFound
+        nil
+      end
     end
   end
 end

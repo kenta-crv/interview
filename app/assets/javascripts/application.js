@@ -12,7 +12,6 @@
 //
 //= require rails-ujs
 //= require activestorage
-//= require turbolinks
 //= require_tree .
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -355,4 +354,25 @@ const mountDataTargetNav = () => {
   });
 };
 
-document.addEventListener('turbolinks:load', mountDataTargetNav);
+// ログインドロップダウン
+document.addEventListener('turbo:load', function() {
+  var toggleBtn = document.querySelector('[data-toggle-login]');
+  if (!toggleBtn) return;
+
+  var menu = toggleBtn.parentElement.querySelector('.dropdown-menu-login');
+  if (!menu) return;
+
+  toggleBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var isOpen = menu.style.display === 'block';
+    menu.style.display = isOpen ? 'none' : 'block';
+  });
+
+  document.addEventListener('click', function() {
+    menu.style.display = 'none';
+  });
+
+  menu.addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+});

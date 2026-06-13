@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_03_15_120000) do
+ActiveRecord::Schema.define(version: 2026_06_12_000000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -99,6 +99,128 @@ ActiveRecord::Schema.define(version: 2026_03_15_120000) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  create_table "deal_audios", force: :cascade do |t|
+    t.integer "deal_id", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.bigint "file_size"
+    t.integer "duration_seconds"
+    t.integer "segment_count", default: 0
+    t.json "metadata", default: {}
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_id"], name: "index_deal_audios_on_deal_id"
+  end
+
+  create_table "deal_documents", force: :cascade do |t|
+    t.integer "deal_id", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.bigint "file_size"
+    t.json "metadata", default: {}
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_id"], name: "index_deal_documents_on_deal_id"
+  end
+
+  create_table "deal_pages", force: :cascade do |t|
+    t.integer "deal_id", null: false
+    t.integer "deal_document_id", null: false
+    t.integer "page_number", null: false
+    t.text "script"
+    t.string "audio_url"
+    t.json "metadata", default: {}
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_document_id"], name: "index_deal_pages_on_deal_document_id"
+    t.index ["deal_id", "page_number"], name: "index_deal_pages_on_deal_id_and_page_number", unique: true
+    t.index ["deal_id"], name: "index_deal_pages_on_deal_id"
+  end
+
+  create_table "deal_presentations", force: :cascade do |t|
+    t.integer "deal_id", null: false
+    t.integer "situation_id", null: false
+    t.integer "status", default: 0
+    t.text "current_step"
+    t.json "user_choices", default: []
+    t.json "guidance_history", default: []
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_id"], name: "index_deal_presentations_on_deal_id"
+    t.index ["situation_id"], name: "index_deal_presentations_on_situation_id"
+  end
+
+  create_table "deal_segments", force: :cascade do |t|
+    t.integer "deal_audio_id", null: false
+    t.integer "segment_number", null: false
+    t.float "start_time"
+    t.float "end_time"
+    t.integer "duration_seconds"
+    t.string "audio_file_path"
+    t.integer "transcription_status", default: 0
+    t.text "transcript"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_audio_id", "segment_number"], name: "index_deal_segments_on_audio_and_number", unique: true
+    t.index ["deal_audio_id"], name: "index_deal_segments_on_deal_audio_id"
+    t.index ["transcription_status"], name: "index_deal_segments_on_transcription_status"
+  end
+
+  create_table "deal_speeches", force: :cascade do |t|
+    t.integer "deal_id", null: false
+    t.string "filename"
+    t.string "content_type"
+    t.bigint "file_size"
+    t.string "voice"
+    t.string "language"
+    t.json "metadata", default: {}
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_id"], name: "index_deal_speeches_on_deal_id"
+  end
+
+  create_table "deal_summaries", force: :cascade do |t|
+    t.integer "deal_id", null: false
+    t.text "summary", null: false
+    t.text "key_points"
+    t.text "action_items"
+    t.text "participants"
+    t.text "next_steps"
+    t.json "metadata", default: {}
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_id"], name: "index_deal_summaries_on_deal_id"
+  end
+
+  create_table "deal_transcripts", force: :cascade do |t|
+    t.integer "deal_id", null: false
+    t.text "full_transcript", null: false
+    t.integer "segment_count"
+    t.float "total_duration_seconds"
+    t.json "metadata", default: {}
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_id"], name: "index_deal_transcripts_on_deal_id"
+  end
+
+  create_table "deals", force: :cascade do |t|
+    t.integer "client_id", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.integer "status", default: 0
+    t.datetime "deal_date"
+    t.string "language", default: "ja"
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.string "access_token"
+    t.index ["access_token"], name: "index_deals_on_access_token", unique: true
+    t.index ["client_id", "status"], name: "index_deals_on_client_id_and_status"
+    t.index ["client_id"], name: "index_deals_on_client_id"
+    t.index ["status"], name: "index_deals_on_status"
+  end
+
   create_table "friendly_id_slugs", force: :cascade do |t|
     t.string "slug", null: false
     t.integer "sluggable_id", null: false
@@ -115,7 +237,7 @@ ActiveRecord::Schema.define(version: 2026_03_15_120000) do
     t.integer "question_id", null: false
     t.text "audio_transcript", null: false
     t.integer "evaluation_status", default: 0
-    t.json "evaluation_data", default: "\"\\\"\\\\\\\"{}\\\\\\\"\\\"\""
+    t.json "evaluation_data", default: {}
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["created_at"], name: "index_interview_responses_on_created_at"
@@ -128,10 +250,10 @@ ActiveRecord::Schema.define(version: 2026_03_15_120000) do
   create_table "interview_results", force: :cascade do |t|
     t.integer "interview_id", null: false
     t.integer "final_status"
-    t.json "results_data", default: "\"{}\""
+    t.json "results_data", default: {}
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.json "rejection_details", default: "\"{}\""
+    t.json "rejection_details", default: {}
     t.index ["final_status"], name: "index_interview_results_on_final_status"
     t.index ["interview_id"], name: "index_interview_results_on_interview_id"
     t.index ["interview_id"], name: "index_interview_results_on_interview_id_unique", unique: true
@@ -200,8 +322,24 @@ ActiveRecord::Schema.define(version: 2026_03_15_120000) do
     t.integer "min_required_score", default: 70, null: false
     t.integer "max_consecutive_fails", default: 0, null: false
     t.string "reject_notify_method", default: "in_app", null: false
+    t.integer "deal_id"
+    t.string "situation_type"
     t.index ["client_id", "archived"], name: "index_situations_on_client_id_and_archived"
     t.index ["client_id"], name: "index_situations_on_client_id"
+    t.index ["deal_id"], name: "index_situations_on_deal_id"
+  end
+
+  create_table "user_progresses", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "deal_id", null: false
+    t.string "consideration_phase"
+    t.date "planned_introduction_date"
+    t.text "key_points_for_application"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_id"], name: "index_user_progresses_on_deal_id"
+    t.index ["user_id", "deal_id"], name: "index_user_progresses_on_user_id_and_deal_id", unique: true
+    t.index ["user_id"], name: "index_user_progresses_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -213,12 +351,28 @@ ActiveRecord::Schema.define(version: 2026_03_15_120000) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "name"
+    t.string "company"
+    t.string "tel"
+    t.text "address"
+    t.string "url"
+    t.index ["company"], name: "index_users_on_company"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "deal_audios", "deals"
+  add_foreign_key "deal_documents", "deals"
+  add_foreign_key "deal_pages", "deal_documents"
+  add_foreign_key "deal_pages", "deals"
+  add_foreign_key "deal_presentations", "deals"
+  add_foreign_key "deal_presentations", "situations"
+  add_foreign_key "deal_segments", "deal_audios"
+  add_foreign_key "deal_speeches", "deals"
+  add_foreign_key "deal_summaries", "deals"
+  add_foreign_key "deal_transcripts", "deals"
+  add_foreign_key "deals", "clients"
   add_foreign_key "interview_responses", "interviews"
   add_foreign_key "interview_responses", "questions"
   add_foreign_key "interview_results", "interviews"
@@ -227,4 +381,7 @@ ActiveRecord::Schema.define(version: 2026_03_15_120000) do
   add_foreign_key "question_audios", "questions"
   add_foreign_key "questions", "situations"
   add_foreign_key "situations", "clients"
+  add_foreign_key "situations", "deals"
+  add_foreign_key "user_progresses", "deals"
+  add_foreign_key "user_progresses", "users"
 end

@@ -17,4 +17,10 @@ class ApplicationController < ActionController::Base
   def init_breadcrumbs
     @breadcrumbs = []
   end
+
+  def authenticate_client!
+    unless client_signed_in?
+      render json: { error: 'Unauthorized' }, status: :unauthorized
+    end
+  end
 end

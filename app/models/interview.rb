@@ -2,6 +2,7 @@
 class Interview < ApplicationRecord
   belongs_to :user
   belongs_to :situation
+  belongs_to :deal_stage, optional: true
   has_many :interview_responses, dependent: :destroy
   has_one :interview_result, dependent: :destroy
 

@@ -62,6 +62,11 @@ module InterviewEngine
       default_summary_response
     end
 
+    # 汎用チャットメソッド（要約生成などで使用）
+    def chat(prompt)
+      call_llm(prompt)
+    end
+
     private
 
     # リトライ付きLLM呼び出し
@@ -108,6 +113,9 @@ module InterviewEngine
       api_key = ENV['OPENAI_API_KEY']
       raise LLMError, "OPENAI_API_KEY is not set" if api_key.blank?
 
+      # prompt が単なる文字列で渡された場合のラッパー処理
+      formatted_prompt = prompt.is_a?(Hash) ? prompt : { system: 'You are a helpful assistant.', user: prompt.to_s }
+
       uri = URI(OPENAI_URL)
       http = build_http(uri)
 
@@ -118,8 +126,8 @@ module InterviewEngine
       body = {
         model: config.openai_model,
         messages: [
-          { role: 'system', content: prompt[:system] },
-          { role: 'user', content: prompt[:user] }
+          { role: 'system', content: formatted_prompt[:system] },
+          { role: 'user', content: formatted_prompt[:user] }
         ],
         temperature: config.llm_temperature,
         max_tokens: config.llm_max_tokens,
@@ -144,8 +152,11 @@ module InterviewEngine
 
     # Claude API呼び出し
     def call_claude(prompt)
-      api_key = ENV['CLAUDE_API_KEY']
-      raise LLMError, "CLAUDE_API_KEY is not set" if api_key.blank?
+      api_key = ENV['ANTHROPIC_API_KEY']
+      raise LLMError, "ANTHROPIC_API_KEY is not set" if api_key.blank?
+
+      # prompt が単なる文字列で渡された場合のラッパー処理
+      formatted_prompt = prompt.is_a?(Hash) ? prompt : { system: 'You are a helpful assistant.', user: prompt.to_s }
 
       uri = URI(CLAUDE_URL)
       http = build_http(uri)
@@ -155,12 +166,15 @@ module InterviewEngine
       request['anthropic-version'] = '2023-06-01'
       request['Content-Type'] = 'application/json'
 
+      # 2026年現在、完全に有効な現行の主要な3.5 Sonnetの固定バージョンID（claude-sonnet-4-5-20250929）に固定
+      claude_model_name = Rails.env.development? ? 'claude-sonnet-4-5-20250929' : config.claude_model
+
       body = {
-        model: config.claude_model,
-        max_tokens: config.llm_max_tokens,
-        system: prompt[:system],
+        model: claude_model_name,
+        max_tokens: config.llm_max_tokens || 4000,
+        system: formatted_prompt[:system],
         messages: [
-          { role: 'user', content: prompt[:user] }
+          { role: 'user', content: formatted_prompt[:user] }
         ]
       }
 

@@ -13,52 +13,10 @@ Rails.application.routes.draw do
     registrations: 'admins/registrations'
   }
   
-  root to: 'tops#index'
-
+  root to: 'tops#interview'
   # --- 各ジャンルLPの定義 ---
-  get 'cargo', to: 'tops#cargo'
-  get 'security', to: 'tops#security'
-  get 'construction', to: 'tops#construction'
-  get 'cleaning', to: 'tops#cleaning'
-  get 'event', to: 'tops#event'
-  get 'vender', to: 'tops#vender'
-  get 'logistics', to: 'tops#logistics'
-  get 'short', to: 'tops#short'
-  get 'recruit', to: 'tops#recruit'
-  get 'app', to: 'tops#app'
-  get 'ads', to: 'tops#ads'
-  get 'bpo', to: 'tops#bpo'
   get 'interview', to: 'tops#interview'
 
-  # --- SEO用: ジャンル別コラム階層 (/genre/columns/:code) ---
-  scope ':genre', constraints: { genre: /cargo|security|cleaning|app|construction|vender/ } do
-    resources :columns, only: [:index, :show], as: :nested_columns
-  end
-
-  get 'draft/progress', to: 'draft#progress'
-
-  resources :contracts
-
-  # --- 【重要修正】一括処理ルーティングを resources より上に定義 ---
-  # これにより /columns/generate_from_selected が ID 検索 (/:id) より先にマッチします
-  post 'columns/generate_from_selected', to: 'columns#generate_from_selected', as: :generate_from_selected_columns_fix
-  post 'columns/bulk_update_drafts', to: 'columns#bulk_update_drafts', as: :bulk_update_drafts_columns_fix
-
-  # --- 管理機能・汎用リソースとしてのコラム ---
-  resources :columns do
-    collection do
-      get :draft            # ドラフト一覧
-      post :generate_gemini # Gemini生成ボタンのPOST
-      post :generate_pillar # 親専用生成ボタン
-      # 以下の定義は resources 内部だと優先順位が低いため、上記の外出し定義が優先されます
-      post :generate_from_selected
-      match 'bulk_update_drafts', via: [:post, :patch]
-    end
-    member do
-      post :generate_from_pillar
-      patch :approve
-    end
-  end
 
   # --- 面接シナリオ管理 ---
   resources :situations do
@@ -87,7 +45,24 @@ Rails.application.routes.draw do
         post :start_by_token
       end
     end
+
+    # --- AI Deal System API ---
+    resources :deals, only: [:index, :show, :create] do
+      member do
+        post :upload_documents
+        post :upload_audio
+        post :generate_speech
+        post :start_presentation
+        post :submit_choice
+        post :process_pdf
+      end
+    end
   end
+
+
+  # GETで /api/interviews/start および start_by_token にアクセスされた場合は面接ページへリダイレクト
+  get '/api/interviews/start', to: redirect('/interview')
+  get '/api/interviews/start_by_token', to: redirect('/interview')
 
   namespace :admin do
     resources :interview_results, only: [:index, :show]
@@ -95,5 +70,22 @@ Rails.application.routes.draw do
 
   namespace :client do
     resources :interview_results, only: [:index, :show]
+    resources :deals do
+      resources :user_progresses, only: [:index, :show]
+      member do
+        get :presentation
+      end
+    end
+  end
+
+  # API for AI responses
+  post '/api/ai_response', to: 'api/ai_responses#create'
+
+  # Public Deal Sessions (for users accessing deals via access token)
+  namespace :public do
+    resource :deal_session, path: 'deal/:token', only: [:show], as: :deal_session do
+      post :create_user_info, on: :member
+      get :conversation, on: :member
+    end
   end
 end
