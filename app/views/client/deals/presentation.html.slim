@@ -1,38 +1,34 @@
 .presentation-wrapper
-  .presentation-background
-
-  .presentation-content
+  .presentation-main
     .document-area
       - if @deal_pages.any?
         - @deal_pages.each_with_index do |page, index|
-          .document-slide id="slide-#{page.id}" data-page-number=page.page_number style="#{index == 0 ? 'display: block;' : 'display: none;'}"
+          .document-slide id="slide-#{page.id}" data-page-number=page.page_number class="#{index == 0 ? 'active' : ''}"
             - if page.deal_document.file.attached?
-              iframe src="#{Rails.application.routes.url_helpers.rails_blob_path(page.deal_document.file, only_path: true)}#page=#{page.page_number}" class="document-pdf"
+              / ツールバー(toolbar=0)やスクロールバー(scrollbar=0)を無効化した上で、CSSのハックによりフチの黒ずみを完全に隠蔽して表示
+              object.document-pdf-clean data="#{Rails.application.routes.url_helpers.rails_blob_path(page.deal_document.file, only_path: true)}#toolbar=0&navpanes=0&scrollbar=0&view=Fit" type="application/pdf"
             - else
-              .document-placeholder PDFがありません
+              .document-placeholder 資料データがありません
       - else
         .document-placeholder
-          p ページがありません。PDFをアップロードして処理してください。
+          p ページがありません。資料をアップロードして処理してください。
 
-    .avatar-area
-      .avatar-image
+    .avatar-sidebar
+      / アバターのすぐ上へと配置し、全体の縦表示領域を最大化
+      = link_to 'AI商談を終了する', client_deal_path(@deal), class: 'btn-finish-presentation'
+      
+      .avatar-area
         .avatar-frame
-          = image_tag 'avatar_1.png', alt: 'アバター1', class: 'avatar-img avatar-img-1'
-          = image_tag 'avatar_2.png', alt: 'アバター2', class: 'avatar-img avatar-img-2'
+          / loading: 'eager' と decoding: 'sync' を追加して点灯（チラつき）を完全防止
+          = image_tag 'avatar_2.png', alt: 'アバター2', class: 'avatar-img-2', loading: 'eager', decoding: 'sync'
 
-  .choice-modal
-    .modal-content
-      .modal-header
-        h3 選択肢
-      .modal-body
-        .choice-buttons
-          = button_tag 'サービス概要', class: 'btn-choice', data: { choice: 'overview' }
-          = button_tag '料金プラン', class: 'btn-choice', data: { choice: 'pricing' }
-          = button_tag 'トライアル', class: 'btn-choice', data: { choice: 'trial' }
-          = button_tag '契約フロー', class: 'btn-choice', data: { choice: 'contract' }
-
-  .admin-actions
-    = link_to '詳細に戻る', client_deal_path(@deal), class: 'btn-secondary-custom'
+  .guidance-area
+    p.guidance-text ガイダンスがここに表示されます
+    .choice-buttons
+      = button_tag 'サービス概要', class: 'btn-choice', data: { choice: 'overview' }
+      = button_tag '料金プラン', class: 'btn-choice', data: { choice: 'pricing' }
+      = button_tag 'トライアル', class: 'btn-choice', data: { choice: 'trial' }
+      = button_tag '契約フロー', class: 'btn-choice', data: { choice: 'contract' }
 
 javascript:
   document.addEventListener('DOMContentLoaded', function() {
@@ -42,20 +38,22 @@ javascript:
 
     function showSlide(index) {
       slides.forEach((slide, i) => {
-        slide.style.display = i === index ? 'block' : 'none';
+        if (i === index) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
       });
     }
 
     choiceButtons.forEach(button => {
       button.addEventListener('click', function() {
         const choice = this.dataset.choice;
-        // 選択肢に応じた処理
         handleChoice(choice);
       });
     });
 
     function handleChoice(choice) {
-      // 選択肢に応じてスライドを切り替え
       switch(choice) {
         case 'overview':
           showSlide(0);
@@ -74,7 +72,6 @@ javascript:
       }
     }
 
-    // 初期スライドを表示
     if (slides.length > 0) {
       showSlide(currentIndex);
     }

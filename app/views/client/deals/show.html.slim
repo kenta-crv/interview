@@ -20,9 +20,32 @@
             .document-name = File.basename(doc.file.filename.to_s)
             .document-size = number_to_human_size(doc.file_size)
       .pdf-process-actions
-        button.btn-primary-custom#process-pdf-btn type="button" PDFを処理してスライドを作成
+        - if @deal.deal_pages.any?
+          p.text-success
+            | ✅ スライド処理済み（#{@deal.deal_pages.count}ページ）
+          button.btn-secondary-custom#process-pdf-btn type="button" 再処理する
+        - else
+          button.btn-primary-custom#process-pdf-btn type="button" PDFを処理してスライドを作成
         .loading-indicator#pdf-processing-loading style="display: none;"
           p PDF処理中...
+
+  - if @deal.deal_pages.any?
+    .admin-card
+      h2.admin-card-title スライド一覧（#{@deal.deal_pages.count}ページ）
+      .deal-pages-list
+        - @deal.deal_pages.order(:page_number).each do |page|
+          .deal-page-item
+            .deal-page-header
+              span.page-number ページ #{page.page_number}
+            - if page.script.present?
+              .deal-page-script
+                p.script-label スクリプト
+                p.script-text = page.script
+            - if page.audio_url.present?
+              .deal-page-audio
+                p.script-label 音声
+                audio controls=true style="width: 100%;"
+                  source src=page.audio_url type="audio/mpeg"
 
   - if @deal.deal_transcript
     .admin-card
@@ -35,7 +58,6 @@
     = link_to '共有URL', '#', class: 'btn-secondary-custom', id: 'share-url-btn'
     = link_to '一覧に戻る', client_deals_path, class: 'btn-secondary-custom'
 
-# 共有URLモーダル
 .modal id='share-url-modal' style='display: none;'
   .modal-content
     .modal-header
@@ -49,14 +71,10 @@
         = button_tag 'コピー', class: 'btn-primary-custom', id: 'copy-url-btn'
 
 javascript:
-  document.addEventListener('turbo:load', function() {
+  (function() {
     const processPdfBtn = document.getElementById('process-pdf-btn');
     const pdfProcessingLoading = document.getElementById('pdf-processing-loading');
     const dealId = #{@deal.id};
-    const shareUrlBtn = document.getElementById('share-url-btn');
-    const shareUrlModal = document.getElementById('share-url-modal');
-    const closeShareModal = document.getElementById('close-share-modal');
-    const copyUrlBtn = document.getElementById('copy-url-btn');
 
     if (processPdfBtn) {
       processPdfBtn.addEventListener('click', function() {
@@ -91,8 +109,14 @@ javascript:
         });
       });
     }
+  })();
 
-    // 共有URLモーダル
+  document.addEventListener('turbo:load', function() {
+    const shareUrlBtn = document.getElementById('share-url-btn');
+    const shareUrlModal = document.getElementById('share-url-modal');
+    const closeShareModal = document.getElementById('close-share-modal');
+    const copyUrlBtn = document.getElementById('copy-url-btn');
+
     if (shareUrlBtn) {
       shareUrlBtn.addEventListener('click', function(e) {
         e.preventDefault();

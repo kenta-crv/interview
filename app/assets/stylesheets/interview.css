@@ -11,94 +11,6 @@
   margin: 0 auto;
 }
 
-/* ===== Step Indicator ===== */
-.step-indicator {
-  display: flex;
-  justify-content: center;
-  gap: 0;
-  margin-bottom: 32px;
-  position: relative;
-}
-
-.step-indicator__item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  position: relative;
-}
-
-.step-indicator__item::after {
-  content: '';
-  position: absolute;
-  top: 18px;
-  left: 50%;
-  width: 100%;
-  height: 2px;
-  background: #d1d5db;
-  z-index: 0;
-}
-
-.step-indicator__item:last-child::after {
-  display: none;
-}
-
-.step-indicator__item.done::after {
-  background: #2563eb;
-}
-
-.step-indicator__number {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #e5e7eb;
-  color: #6b7280;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 15px;
-  position: relative;
-  z-index: 1;
-  transition: all 0.3s ease;
-}
-
-.step-indicator__item.active .step-indicator__number {
-  background: #2563eb;
-  color: #fff;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
-}
-
-.step-indicator__item.done .step-indicator__number {
-  background: #22c55e;
-  color: #fff;
-}
-
-.step-indicator__label {
-  margin-top: 8px;
-  font-size: 13px;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.step-indicator__item.active .step-indicator__label {
-  color: #2563eb;
-  font-weight: 700;
-}
-
-.step-indicator__item.done .step-indicator__label {
-  color: #22c55e;
-}
-
-/* ===== Steps Show/Hide ===== */
-.step {
-  display: none;
-  animation: fadeIn 0.4s ease;
-}
-
-.step.active {
-  display: block;
-}
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(12px); }
@@ -379,14 +291,8 @@
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.interview-card.question-fade-in {
-  animation: questionSlideIn 0.4s ease;
-}
 
-@keyframes questionSlideIn {
-  from { opacity: 0.3; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
+
 
 audio {
   width: 100%;
@@ -488,7 +394,7 @@ audio {
   color: #ef4444 !important;
 }
 
-/* ===== Responsive ===== */
+/* ===== Responsive (Interview UI) ===== */
 @media (max-width: 768px) {
   .section-interview {
     padding: 20px 12px 40px;
@@ -530,5 +436,275 @@ audio {
 
   .interview-actions button {
     width: 100%;
+  }
+}
+
+
+
+
+
+
+
+
+
+/* ===== Advanced AI Presentation Layout (Clean White Theme) ===== */
+
+/* 画面全体を管理する最外枠。クリーンな近未来ホワイト */
+.presentation-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  overflow: hidden !important;
+  background: #f8fafc !important; /* よりピュアで洗練されたライトグレー */
+  box-sizing: border-box;
+  padding: 24px !important; /* 空間的な広がりを持たせてAIらしさを演出 */
+  gap: 20px !important;
+}
+
+/* 上部メインエリア：ドキュメントと右側サイドバーのレイアウト */
+.presentation-main {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  gap: 20px !important;
+}
+
+/* 左側：ドキュメント表示エリア（ツール感、黒フチ、スクロールを完全抹殺） */
+.document-area {
+  flex: 1 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  position: relative !important;
+  background: #ffffff !important; /* ピュアホワイト */
+  border-radius: 24px !important; /* 滑らかで先進的な大きめの角丸 */
+  /* 高級感のある柔らかく深いレイヤーの影 */
+  box-shadow: 0 20px 25px -5px rgba(148, 163, 184, 0.1), 0 10px 10px -5px rgba(148, 163, 184, 0.04) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+/* スライド切り替え（資料を100%ではめ込み、スクロールを完全に禁止） */
+.document-slide {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  background: #ffffff !important;
+  overflow: hidden !important; /* スクロールを絶対に発生させない */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.document-slide.active {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* * ブラウザ標準のPDFの黒フチやツールバーを完全に消し去る特殊設定
+ * コンテナ(100%)に対して、PDF表示領域を上下左右に少しはみ出させることで、
+ * ブラウザが勝手につける外側の黒いフチ（余白）を画面外に隠し、純粋な白い資料だけを100%で見せます。
+ */
+.document-pdf-clean {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  display: block !important;
+  overflow: hidden !important;
+  object-fit: contain !important; /* 資料の比率を維持して100%表示 */
+  border-radius: 24px !important;
+  
+  /* 周辺の黒いフチやスクロールバーを完全にクリップして消滅させるためのハック（必要に応じて拡大率を調整） */
+  transform: scale(1.02) !important; 
+}
+
+.document-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #94a3b8;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* 右側サイドバー：終了ボタンとアバターを縦に配置 */
+.avatar-sidebar {
+  width: 200px !important;
+  height: 100% !important;
+  background: transparent !important; /* 完全透明 */
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+  padding: 4px 0 !important;
+  box-sizing: border-box;
+}
+
+/* アバター表示エリア（さらに右寄せ、中央少し下へ美しく配置） */
+.avatar-area {
+  width: 140px !important;
+  height: auto !important;
+  display: block !important;
+  position: relative !important;
+  margin-left: auto !important; /* 右端へ寄せる */
+  margin-top: 30px !important; /* 下部寄りに押し下げる */
+  margin-bottom: 25% !important; /* 中央少し下の位置に調整 */
+  filter: drop-shadow(0 15px 25px rgba(148, 163, 184, 0.2)) !important;
+}
+
+.avatar-frame {
+  width: 100% !important;
+  height: auto !important;
+}
+
+.avatar-img-2 {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  object-fit: contain;
+  transform: translateZ(0);
+  backface-visibility: hidden !important;
+  will-change: auto !important;
+}
+
+/* アバターの上に配置する「AI商談を終了する」ボタン（洗練されたフラット＆シャドウ） */
+.btn-finish-presentation {
+  display: block !important;
+  width: 100% !important;
+  padding: 14px 16px !important;
+  background: #fff5f5 !important; /* 優しい薄赤のベース */
+  color: #e11d48 !important; /* 洗練されたローズレッド */
+  text-align: center !important;
+  border-radius: 16px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  border: 1px solid #fecdd3 !important;
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.08) !important;
+  transition: all 0.25s ease !important;
+  box-sizing: border-box !important;
+  margin-bottom: 20px !important;
+  letter-spacing: 0.03em;
+}
+
+.btn-finish-presentation:hover {
+  background: #e11d48 !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(225, 29, 72, 0.3) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* 下部：ガイダンスエリア（浮き上がるようなスマートなフロートカード） */
+.guidance-area {
+  width: 100% !important;
+  flex-shrink: 0 !important;
+  background: #ffffff !important; /* 高級感のある白 */
+  border-radius: 24px !important; /* 統一した角丸 */
+  padding: 28px 24px !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  /* 柔らかく、かつしっかりと持ち上がっている広範囲の美麗な影 */
+  box-shadow: 0 25px 50px -12px rgba(148, 163, 184, 0.25) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+.guidance-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a; /* 深みのある黒 */
+  margin-bottom: 24px;
+  line-height: 1.6;
+  letter-spacing: 0.03em;
+}
+
+.choice-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 18px !important; /* ボタン同士の間隔を広げて個々の浮き上がりを強調 */
+  width: 100% !important;
+  overflow-x: auto !important;
+  padding: 12px 0 !important; /* ボタンの立体的な影が切れないように広めの余白 */
+  box-sizing: border-box !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* セレクトボタン：最先端AIツールを意識した、圧倒的におしゃれで立体的なデザイン */
+.btn-choice {
+  display: inline-block !important;
+  padding: 14px 32px !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  border-radius: 30px !important; /* 美しいカプセル型 */
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(8px) !important; /* ハイクオリティなガラスの質感 */
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #334155 !important; /* 上質なダークグレー */
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  
+  /* 多重シャドウによる、リアルで上質な浮き上がりエフェクト */
+  box-shadow: 0 10px 20px -4px rgba(148, 163, 184, 0.25), 
+              0 4px 6px -2px rgba(148, 163, 184, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important; /* 極めてなめらかなアニメーション */
+}
+
+.btn-choice:hover {
+  /* AIの先進性を感じる、鮮やかで品のある近未来ブルーのグラデーション */
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  
+  /* ホバー時はさらに高く美しく浮かび上がり、オーラのような光の影を放つ */
+  box-shadow: 0 20px 30px -8px rgba(37, 99, 235, 0.45), 
+              0 0 15px rgba(59, 130, 246, 0.2) !important;
+  transform: translateY(-6px) !important; /* 浮き上がり感をダイナミックに強化 */
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .presentation-wrapper {
+    padding: 12px !important;
+    gap: 16px !important;
+  }
+
+  .presentation-main {
+    gap: 12px !important;
+  }
+
+  .avatar-sidebar {
+    width: 90px !important;
+  }
+
+  .avatar-area {
+    width: 80px !important;
+    margin-bottom: 15px !important;
+  }
+
+  .btn-finish-presentation {
+    padding: 10px 4px !important;
+    font-size: 11px !important;
+    border-radius: 10px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .choice-buttons {
+    justify-content: flex-start !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    gap: 12px !important;
   }
 }

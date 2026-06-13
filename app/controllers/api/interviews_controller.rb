@@ -1,4 +1,3 @@
-# app/controllers/api/interviews_controller.rb
 module Api
   class InterviewsController < ApplicationController
     skip_before_action :verify_authenticity_token
@@ -6,7 +5,11 @@ module Api
     include FileUploadValidation
 
     before_action :verify_content_type!, only: [:start, :start_by_token, :submit_answer, :complete, :resume]
-    before_action :authenticate_by_token_or_user!, except: [:start_by_token]
+    
+    # 修正点1: startアクションを厳格認証から除外し、トークン未所持・ゲスト払い出し動線を確保する
+    before_action :authenticate_by_token_or_user!, except: [:start, :start_by_token]
+    before_action :authenticate_or_create_guest!, only: [:start]
+    
     before_action :set_interview, only: [:next_question, :submit_answer, :complete, :status, :resume]
     before_action :check_session_timeout!, only: [:next_question, :submit_answer]
 
@@ -130,7 +133,7 @@ module Api
         return render_api_error('Missing question_id or answer input', status: :bad_request)
       end
 
-      # ファイルアップロードバリデーション
+      // ファイルアップロードバリデーション
       validate_audio_upload!(audio_file)
       validate_video_upload!(video_file)
 
@@ -250,7 +253,6 @@ module Api
 
     # トークン or Devise認証の統合
     def authenticate_by_token_or_user!
-      # ヘッダーまたはパラメータからトークン取得
       token = request.headers['X-Interview-Token'] || params[:access_token]
 
       if token.present?
@@ -261,19 +263,23 @@ module Api
         end
       end
 
-      # テストモード
       if test_mode?
         @current_user = User.find_by(email: 'test@interview.com') || User.first
         return
       end
 
-      # Devise認証にフォールバック
-      authenticate_user!
-      @current_user = current_user
+      # 修正点2: Devise認証の生例外をラップし、直リンクアクセス時はJSONエラー画面に遷移させず、企業ログイン画面にリダイレクトさせる
+      unless client_signed_in? || user_signed_in? || admin_signed_in?
+        respond_to do |format|
+          format.json { render json: { error: 'Unauthorized' }, status: :unauthorized }
+          format.all  { redirect_to new_client_session_path, alert: 'セッションが終了しました。ログインしてください。' }
+        end
+        return
+      end
+
+      @current_user = current_client || current_user || current_admin
     end
 
-<<<<<<< Updated upstream
-=======
     # APIキーによる認証
     def authenticate_by_api_key!
       api_key = extract_api_key
@@ -299,7 +305,6 @@ module Api
 
     # start用: 認証済みユーザーがいればそのまま、いなければゲストユーザーを割り当て
     def authenticate_or_create_guest!
-      # 既存の認証手段を試行（トークン、APIキー、テストモード、Devise）
       token = request.headers['X-Interview-Token'] || params[:access_token]
       if token.present?
         interview = Interview.by_token(token).first
@@ -319,14 +324,17 @@ module Api
         return
       end
 
-      # Deviseセッションがあればそれを使用
-      if user_signed_in?
+      if client_signed_in?
+        @current_user = current_client
+        return
+      elsif user_signed_in?
         @current_user = current_user
+        return
+      elsif admin_signed_in?
+        @current_user = current_admin
         return
       end
 
-      # 未認証ユーザーには「このブラウザ専用」のゲストを割り当てる。
-      # cookieに保存した一意IDをキーにし、別ユーザーと面接状態が混在するのを防ぐ。
       @current_user = find_or_create_browser_guest_user
     end
 
@@ -345,7 +353,6 @@ module Api
       end
 
       email = "guest_#{guest_id}@interview.local"
-      # 同一ブラウザからの並列リクエスト時の RecordNotUnique を吸収する
       begin
         User.find_or_create_by!(email: email) do |u|
           u.name = "Guest-#{guest_id[0, 6]}"
@@ -366,7 +373,6 @@ module Api
       request.headers['X-API-Key']
     end
 
->>>>>>> Stashed changes
     def set_interview
       @interview = Interview.find_by(id: params[:id])
       unless @interview
@@ -399,9 +405,6 @@ module Api
     def authorize_interview!
       return if test_mode?
 
-      # 設計方針: URL招待が主動線。access_token を知っていることが本人性の証明。
-      # token が提示された場合は user_id 突合せ不要（招待URLを受け取った本人とみなす）。
-      # token なしの場合のみ Devise / ゲストCookie 由来の current_user で突合せる。
       token = request.headers['X-Interview-Token'] || params[:access_token]
       if token.present?
         if @interview.access_token.present? &&

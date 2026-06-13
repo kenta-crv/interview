@@ -1,9 +1,6 @@
 // app/assets/javascripts/interview.js
 (function() {
-  // グローバルを汚染せず、ページ遷移ごとに初期化状態を追従するための即時関数スコープ
-
   function initInterviewPortal() {
-    // 確実に要素が存在するかを毎回チェック
     const steps = document.querySelectorAll('.step');
     const stepIndicators = document.querySelectorAll('.step-indicator__item');
     if (!steps.length) return;
@@ -52,7 +49,6 @@
     // ===== API通信ヘルパー =====
     function authHeaders(extra) {
       var headers = extra || {};
-      // window オブジェクトまたは上位スコープの accessToken を参照
       if (typeof accessToken !== 'undefined' && accessToken) {
         headers['X-Interview-Token'] = accessToken;
       }
@@ -68,6 +64,15 @@
         res = await fetch(url, options);
       } catch (netErr) {
         throw new Error('\u30CD\u30C3\u30C8\u30EF\u30FC\u30AF\u30A8\u30E9\u30FC: ' + netErr.message);
+      }
+
+      // 認証エラー(401)またはレスポンスURLがログイン画面を指している場合、
+      // fetchの内部フリーズを回避してブラウザごと強制遷移させる
+      if (res.status === 401 || res.url.indexOf('/users/sign_in') !== -1) {
+        clearSavedInterview();
+        alert('\u30BB\u30C3\u30B7\u30E7\u30F3\u304C\u5207\u308C\u305F\u304B\u3001\u30ED\u30B0\u30A1\u30A2\u30A2\u30A6\u30C8\u3055\u308C\u3066\u3044\u307E\u3059\u3002\u30ED\u30B0\u30A4\u30F3\u753A\u9762\u3078\u79FB\u52D5\u3057\u307E\u3059\u3002');
+        window.location.href = '/users/sign_in';
+        return { status: res.status, ok: false, data: { success: false } };
       }
 
       var contentType = res.headers.get('content-type') || '';
@@ -161,11 +166,7 @@
         var data = result.data;
 
         if (data.__timeout || data.__unauthorized) {
-          alert('\u30BB\u30C3\u30B7\u30E7\u30F3\u304C\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8\u3057\u307E\u3057\u305F\u3002\u6700\u521D\u304B\u3089\u3084\u308A\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002');
-          showStep(1);
-          startBtn.disabled = false;
-          startBtn.textContent = '\u9762\u63A5\u3092\u958B\u59CB\u3059\u308B';
-          return;
+          return; // apiRequest内部でリダイレクトされるため処理を中断
         }
 
         if (data.reason === 'already_completed') {
@@ -218,11 +219,7 @@
         var statusResult = await apiRequest('/api/interviews/' + interviewId + '/status', {});
         var statusData = statusResult.data;
 
-        if (statusData.__timeout || statusData.__unauthorized) {
-          alert('\u30BB\u30C3\u30B7\u30E7\u30F3\u304C\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8\u3057\u307E\u3057\u305F\u3002\u6700\u521D\u304B\u3089\u3084\u308A\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002');
-          showStep(1);
-          return;
-        }
+        if (statusData.__timeout || statusData.__unauthorized) return;
 
         if (!statusData.success) {
           alert(statusData.error || '\u9762\u63A5\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002');
@@ -253,11 +250,8 @@
             headers: { 'Content-Type': 'application/json' }
           });
           var resumeData = resumeResult.data;
-          if (resumeData.__timeout || resumeData.__unauthorized) {
-            alert('\u30BB\u30C3\u30B7\u30E7\u30F3\u304C\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8\u3057\u307E\u3057\u305F\u3002\u6700\u521D\u304B\u3089\u3084\u308A\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002');
-            showStep(1);
-            return;
-          }
+          if (resumeData.__timeout || resumeData.__unauthorized) return;
+          
           if (!resumeData.success) {
             alert(resumeData.error || '\u9762\u63A5\u306E\u518D\u958B\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002');
             clearSavedInterview();
@@ -310,11 +304,8 @@
       try {
         var result = await apiRequest('/api/interviews/' + interviewId + '/status', {});
         var data = result.data;
-        if (data.__timeout || data.__unauthorized) {
-          alert('\u30BB\u30C3\u30B7\u30E7\u30F3\u304C\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8\u3057\u307E\u3057\u305F\u3002\u6700\u521D\u304B\u3089\u3084\u308A\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002');
-          showStep(1);
-          return;
-        }
+        if (data.__timeout || data.__unauthorized) return;
+        
         if (!data.success) {
           setStatus(data.error || '\u30B9\u30C6\u30FC\u30BF\u30B9\u53D6\u5F97\u5931\u6557');
           return;
@@ -347,78 +338,6 @@
       });
     }
 
-    function animateQuestionTransition(callback) {
-      var questionCard = questionText.closest('.interview-card');
-      if (questionCard) {
-        questionCard.classList.add('question-fade-out');
-        setTimeout(function() {
-          callback();
-          questionCard.classList.remove('question-fade-out');
-          questionCard.classList.add('question-fade-in');
-          setTimeout(function() {
-            questionCard.classList.remove('question-fade-in');
-          }, 400);
-          questionCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 250);
-      } else {
-        callback();
-      }
-    }
-
-    async function loadNextQuestion() {
-      try {
-        var result = await apiRequest('/api/interviews/' + interviewId + '/next_question', {});
-        var data = result.data;
-
-        if (data.__timeout || data.__unauthorized) {
-          alert('\u30BB\u30C3\u30B7\u30E7\u30F3\u304C\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8\u3057\u307E\u3057\u305F\u3002\u6700\u521D\u304B\u3089\u3084\u308A\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002');
-          showStep(1);
-          return;
-        }
-
-        if (!data.success) {
-          var transitioned = await transitionIfInterviewEnded();
-          if (transitioned) return;
-
-          setStatus(data.error || '\u8CEA\u554F\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002');
-          return;
-        }
-
-        if (data.interview_complete) {
-          setStatus('\u5168\u3066\u306E\u8CEA\u554F\u306B\u56DE\u7B54\u3057\u307E\u3057\u305F\u3002');
-          questionText.textContent = '\u5168\u3066\u306E\u8CEA\u554F\u306B\u56DE\u7B54\u6E08\u307F\u3067\u3059\u3002\u300C\u9762\u63A5\u3092\u5B8C\u4E86\u3059\u308B\u300D\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002';
-          submitBtn.style.display = 'none';
-          completeBtn.style.display = 'inline-block';
-          return;
-        }
-
-        currentQuestion = data.question;
-
-        animateQuestionTransition(function() {
-          questionText.textContent = currentQuestion.question_text;
-
-          if (currentQuestion.audio_url) {
-            questionAudio.src = currentQuestion.audio_url;
-            questionAudio.style.display = 'block';
-          } else {
-            questionAudio.style.display = 'none';
-          }
-
-          if (currentQuestion.options) {
-            renderOptions(currentQuestion.options);
-          } else {
-            mcqOptions.innerHTML = '';
-          }
-        });
-
-        submitBtn.style.display = 'inline-block';
-        completeBtn.style.display = 'none';
-        await refreshStatus();
-        setStatus('\u8CEA\u554F\u3092\u8868\u793A\u4E2D');
-      } catch (e) {
-        setStatus('\u30A8\u30E9\u30FC: ' + e.message);
-      }
-    }
 
     async function submitAnswer() {
       if (isSubmitting) return;
@@ -471,11 +390,7 @@
         });
         var data = result.data;
 
-        if (data.__timeout || data.__unauthorized) {
-          alert('\u30BB\u30C3\u30B7\u30E7\u30F3\u304C\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8\u3057\u307E\u3057\u305F\u3002\u6700\u521D\u304B\u3089\u3084\u308A\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002');
-          showStep(1);
-          return;
-        }
+        if (data.__timeout || data.__unauthorized) return;
 
         if (!data.success) {
           alert(data.error || '\u56DE\u7B54\u306E\u9001\u4FE1\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002');
@@ -512,13 +427,7 @@
         });
         var data = result.data;
 
-        if (data.__timeout || data.__unauthorized) {
-          alert('\u30BB\u30C3\u30B7\u30E7\u30F3\u304C\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8\u3057\u307E\u3057\u305F\u3002\u6700\u521D\u304B\u3089\u3084\u308A\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002');
-          showStep(1);
-          completeBtn.disabled = false;
-          completeBtn.textContent = '\u9762\u63A5\u3092\u5B8C\u4E86\u3059\u308B';
-          return;
-        }
+        if (data.__timeout || data.__unauthorized) return;
 
         if (!data.success) {
           alert(data.error || '\u9762\u63A5\u306E\u5B8C\u4E86\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002');
@@ -582,7 +491,7 @@
 
         if (state.recommendation) resultRecommendation.textContent = state.recommendation;
       } catch (e) {
-        // Handle failed fetches quietly
+        // Quiet catch
       }
     }
 
@@ -691,13 +600,46 @@
     })();
   }
 
-  // Turbo（Turbolinks）環境に完全追従するための安全なイベントバインド
-  if (document.readyState !== 'loading') {
-    initInterviewPortal();
-  } else {
-    document.addEventListener('DOMContentLoaded', initInterviewPortal);
+  // グローバルドロップダウンおよび共通制御（多重発火・Turbo耐性を完全に保証）
+  function initGlobalNavScripts() {
+    // ログインドロップダウン
+    const toggleBtn = document.querySelector('[data-toggle-login]');
+    const menu = document.querySelector('.dropdown-menu-login');
+
+    if (toggleBtn && menu) {
+      toggleBtn.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const isOpen = menu.style.display === 'block';
+        menu.style.display = isOpen ? 'none' : 'block';
+      };
+
+      // 画面外クリックで閉じる処理の統合
+      const closeDropdown = function() {
+        menu.style.display = 'none';
+      };
+      
+      document.removeEventListener('click', closeDropdown);
+      document.addEventListener('click', closeDropdown);
+
+      menu.onclick = function(e) {
+        e.stopPropagation();
+      };
+    }
   }
 
-  // Turbo対応
-  document.addEventListener('turbo:load', initInterviewPortal);
+  if (document.readyState !== 'loading') {
+    initInterviewPortal();
+    initGlobalNavScripts();
+  } else {
+    document.addEventListener('DOMContentLoaded', function() {
+      initInterviewPortal();
+      initGlobalNavScripts();
+    });
+  }
+
+  document.addEventListener('turbo:load', function() {
+    initInterviewPortal();
+    initGlobalNavScripts();
+  });
 })();

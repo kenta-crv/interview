@@ -2,7 +2,7 @@
 require 'pdf-reader'
 
 module DealEngine
-  class PDFProcessorService
+  class PdfProcessorService
     def initialize(deal_document)
       @deal_document = deal_document
       @deal = deal_document.deal
@@ -53,8 +53,6 @@ module DealEngine
     end
 
     def generate_page_script(deal_page)
-      # ページごとの台本を生成（簡易版）
-      # 実際にはPDFからテキスト抽出してClaudeで台本生成が必要
       language = @deal.language || 'ja'
 
       if language == 'ja'
@@ -67,8 +65,11 @@ module DealEngine
     def generate_page_audio(deal_page)
       return nil unless deal_page.script.present?
 
-      # OpenAI TTSで音声を生成
-      tts_service = TTSService.new(
+      # 修正点：Railsの推論（Did you mean?）に合わせて大文字表記から TtsService（または環境に応じて ::TTSService）へ修正
+      # もしトップレベル（/app/services/tts_service.rb等）に配置されている場合は、明示的に「::TtsService」か「::TTSService」と記述して依存関係の衝突を防ぎます。
+      tts_class = defined?(::DealEngine::TtsService) ? ::DealEngine::TtsService : ::TtsService
+      
+      tts_service = tts_class.new(
         text: deal_page.script,
         voice: 'alloy',
         language: @deal.language || 'ja'

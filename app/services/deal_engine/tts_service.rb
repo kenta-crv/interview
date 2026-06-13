@@ -2,7 +2,7 @@
 require 'openai'
 
 module DealEngine
-  class TTSService
+  class TtsService
     OPENAI_TTS_URL = 'https://api.openai.com/v1/audio/speech'
 
     def initialize(text:, voice: 'alloy', language: 'en')

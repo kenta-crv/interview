@@ -82,7 +82,7 @@ module Api
         @deal.deal_documents.each do |document|
           next unless document.content_type&.include?('pdf')
 
-          processor = DealEngine::PDFProcessorService.new(document)
+          processor = DealEngine::PdfProcessorService.new(document)
           processor.process!
         end
 

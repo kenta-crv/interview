@@ -188,9 +188,7 @@
 }
 
 .avatar-img-2 {
-  opacity: 0;
-  animation: speakAnimation 1s infinite alternate-reverse;
-  animation-delay: 0.5s;
+  opacity: 1;
 }
 
 @keyframes speakAnimation {
