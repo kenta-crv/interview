@@ -1,0 +1,694 @@
+/* =========================================================================
+   全体レイアウト（2カラム構造・スクロール制御修正）
+   ========================================================================= */
+.dashboard-v2-container {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  background-color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #334155;
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard-v2-container *,
+.dashboard-v2-container *::before,
+.dashboard-v2-container *::after {
+  box-sizing: border-box;
+}
+
+/* =========================================================================
+   左側：サイドバー スタイリング（左固定・スクロールなし仕様）
+   ========================================================================= */
+.dashboard-v2-container .db-v2-sidebar {
+  width: 260px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #031530; /* 深いネイビーのグラデーションベース */
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* 上部メニューと下部ログアウトを分離 */
+  padding: 24px 16px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.dashboard-v2-container .db-v2-sidebar__inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.dashboard-v2-container .db-v2-sidebar__logo-area {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.dashboard-v2-container .db-v2-sidebar__logo {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.05em;
+}
+
+.dashboard-v2-container .db-v2-sidebar__logo-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* キャラクターイラスト領域 */
+.dashboard-v2-container .db-v2-sidebar__avatar-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.dashboard-v2-container .db-v2-sidebar__avatar-img {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: #3b82f6;
+  border: 1px solid #1e40af;
+}
+
+/* メニューリンク */
+.dashboard-v2-container .db-v2-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-v2-container .db-v2-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.dashboard-v2-container .db-v2-sidebar__link i {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.dashboard-v2-container .db-v2-sidebar__link:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+/* アクティブなメニュー（例：ログイン中・選択中） */
+.dashboard-v2-container .db-v2-sidebar__link--active {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+/* ログアウト専用スタイル（ホバー時に赤く変化する等） */
+.dashboard-v2-container .db-v2-sidebar__link--logout:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+
+.dashboard-v2-container .db-v2-sidebar__footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 16px;
+}
+
+/* =========================================================================
+   右側：メインコンテンツ スタイリング（固定サイドバーの幅だけずらす）
+   ========================================================================= */
+.dashboard-v2-container .db-v2-main-content {
+  flex: 1;
+  padding: 32px;
+  margin-left: 260px; /* 固定サイドバーの幅分のマージンを確保 */
+  min-width: 0;      /* レスポンシブ、Gridの崩れ防止 */
+}
+
+/* --- 上部ヘッダー関係 --- */
+.dashboard-v2-container .db-v2-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dashboard-v2-container .db-v2-header__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.dashboard-v2-container .db-v2-header__subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.dashboard-v2-container .db-v2-header__date-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: #475569;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+/* --- 4連トップ集計カード --- */
+.dashboard-v2-container .db-v2-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.dashboard-v2-container .db-v2-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.dashboard-v2-container .db-v2-summary-card__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 20px;
+}
+
+.dashboard-v2-container .db-v2-summary-card__icon-wrap--blue { background-color: #eff6ff; color: #2563eb; }
+.dashboard-v2-container .db-v2-summary-card__icon-wrap--green { background-color: #f0fdf4; color: #16a34a; }
+.dashboard-v2-container .db-v2-summary-card__icon-wrap--purple { background-color: #faf5ff; color: #9333ea; }
+.dashboard-v2-container .db-v2-summary-card__icon-wrap--gold { background-color: #fefce8; color: #ca8a04; }
+
+.dashboard-v2-container .db-v2-summary-card__content {
+  flex: 1;
+}
+
+.dashboard-v2-container .db-v2-summary-card__label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.dashboard-v2-container .db-v2-summary-card__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.dashboard-v2-container .db-v2-summary-card__trend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.dashboard-v2-container .db-v2-summary-card__trend-label {
+  color: #94a3b8;
+}
+
+.dashboard-v2-container .db-v2-summary-card__trend-status--up {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* --- 中段＆下段共有カードシステム --- */
+.dashboard-v2-container .db-v2-main-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.dashboard-v2-container .db-v2-chart-card--span-2 {
+  grid-column: span 2;
+}
+
+.dashboard-v2-container .db-v2-chart-card,
+.dashboard-v2-container .db-v2-bottom-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-v2-container .db-v2-chart-card__header,
+.dashboard-v2-container .db-v2-bottom-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-v2-container .db-v2-chart-card__title,
+.dashboard-v2-container .db-v2-bottom-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.dashboard-v2-container .db-v2-chart-card__select {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.dashboard-v2-container .db-v2-chart-card__body,
+.dashboard-v2-container .db-v2-bottom-card__body {
+  flex: 1;
+}
+
+.dashboard-v2-container .db-v2-chart-card__body--flex,
+.dashboard-v2-container .db-v2-bottom-card__body--flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* --- 折れ線グラフ再現 --- */
+.dashboard-v2-container .db-v2-line-chart-mock {
+  width: 100%;
+  position: relative;
+}
+
+.dashboard-v2-container .db-v2-line-chart-mock svg {
+  width: 100%;
+  height: 160px;
+}
+
+.dashboard-v2-container .db-v2-line-chart-mock__labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px 0 10px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* --- ドーナツチャート再現 --- */
+.dashboard-v2-container .db-v2-donut-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 20px;
+}
+
+.dashboard-v2-container .db-v2-donut-chart-mock {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: conic-gradient(#2563eb 0% 32.8%, #2dd4bf 32.8% 75%, #f59e0b 75% 89.1%, #94a3b8 89.1% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-v2-container .db-v2-donut-chart-mock__inner {
+  width: 80px;
+  height: 80px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-v2-container .db-v2-donut-chart-mock__center {
+  text-align: center;
+}
+
+.dashboard-v2-container .db-v2-donut-chart-mock__number {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.dashboard-v2-container .db-v2-donut-chart-mock__label {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.dashboard-v2-container .db-v2-donut-legends {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.dashboard-v2-container .db-v2-donut-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-v2-container .db-v2-donut-legend__badge {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dashboard-v2-container .db-v2-donut-legend__badge--blue { background-color: #2563eb; }
+.dashboard-v2-container .db-v2-donut-legend__badge--teal { background-color: #2dd4bf; }
+.dashboard-v2-container .db-v2-donut-legend__badge--orange { background-color: #f59e0b; }
+.dashboard-v2-container .db-v2-donut-legend__badge--gray { background-color: #94a3b8; }
+
+.dashboard-v2-container .db-v2-donut-legend__text {
+  font-size: 12px;
+  color: #475569;
+}
+
+/* --- 水平バーグラフ（業界別） --- */
+.dashboard-v2-container .db-v2-bar-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard-v2-container .db-v2-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboard-v2-container .db-v2-bar-row__label {
+  font-size: 12px;
+  color: #475569;
+  width: 70px;
+  text-align: left;
+}
+
+.dashboard-v2-container .db-v2-bar-row__track {
+  flex: 1;
+  height: 12px;
+  background-color: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.dashboard-v2-container .db-v2-bar-row__fill {
+  height: 100%;
+  background-color: #3b82f6;
+  border-radius: 999px;
+}
+
+.dashboard-v2-container .db-v2-bar-row__value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  width: 20px;
+  text-align: right;
+}
+
+/* --- 下段3列グリッドレイアウト --- */
+.dashboard-v2-container .db-v2-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* AI対応スコア円形サークル */
+.dashboard-v2-container .db-v2-score-circle {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+
+.dashboard-v2-container .db-v2-score-circle__center {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-v2-container .db-v2-score-circle__num {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.dashboard-v2-container .db-v2-score-circle__total {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.dashboard-v2-container .db-v2-score-metrics {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-v2-container .db-v2-score-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  border-bottom: 1px dashed #f1f5f9;
+  padding-bottom: 4px;
+}
+
+.dashboard-v2-container .db-v2-score-metric__label {
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dashboard-v2-container .db-v2-score-metric__label i {
+  color: #94a3b8;
+  width: 14px;
+}
+
+.dashboard-v2-container .db-v2-score-metric__value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* 最近のアクティビティリスト */
+.dashboard-v2-container .db-v2-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dashboard-v2-container .db-v2-activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.dashboard-v2-container .db-v2-activity-item__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-v2-container .db-v2-activity-item__left i {
+  font-size: 14px;
+}
+
+.dashboard-v2-container .db-v2-activity-item__icon--blue { color: #3b82f6; }
+.dashboard-v2-container .db-v2-activity-item__icon--purple { color: #a855f7; }
+.dashboard-v2-container .db-v2-activity-item__icon--green { color: #10b981; }
+.dashboard-v2-container .db-v2-activity-item__icon--link { color: #6366f1; }
+
+.dashboard-v2-container .db-v2-activity-item__text {
+  color: #334155;
+}
+
+.dashboard-v2-container .db-v2-activity-item__time {
+  color: #94a3b8;
+}
+
+/* 今月の目標達成サークル＆構成 */
+.dashboard-v2-container .db-v2-target-circle {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+
+.dashboard-v2-container .db-v2-target-circle__center {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-v2-container .db-v2-target-circle__percentage {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dashboard-v2-container .db-v2-target-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dashboard-v2-container .db-v2-target-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.dashboard-v2-container .db-v2-target-row__label {
+  color: #64748b;
+}
+
+.dashboard-v2-container .db-v2-target-row__value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.dashboard-v2-container .db-v2-target-row__value--done { color: #0f172a; }
+.dashboard-v2-container .db-v2-target-row__value--remain { color: #64748b; }
+
+.dashboard-v2-container .db-v2-target-link {
+  display: inline-block;
+  font-size: 11px;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.dashboard-v2-container .db-v2-target-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================================
+   レスポンシブ対応
+   ========================================================================= */
+@media (max-width: 1200px) {
+  .dashboard-v2-container {
+    flex-direction: column;
+  }
+  .dashboard-v2-container .db-v2-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+  }
+  .dashboard-v2-container .db-v2-main-content {
+    margin-left: 0;
+  }
+  .dashboard-v2-container .db-v2-sidebar__avatar-wrap,
+  .dashboard-v2-container .db-v2-sidebar__logo-sub,
+  .dashboard-v2-container .db-v2-sidebar__footer {
+    display: none;
+  }
+  .dashboard-v2-container .db-v2-sidebar__nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboard-v2-container .db-v2-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dashboard-v2-container .db-v2-main-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dashboard-v2-container .db-v2-chart-card--span-2 {
+    grid-column: span 2;
+  }
+  .dashboard-v2-container .db-v2-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-v2-container .db-v2-sidebar__nav {
+    display: none; /* スマホ時はハンバーガーメニュー等に退避を推奨 */
+  }
+  .dashboard-v2-container .db-v2-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .dashboard-v2-container .db-v2-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-v2-container .db-v2-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-v2-container .db-v2-chart-card--span-2 {
+    grid-column: span 1;
+  }
+  .dashboard-v2-container .db-v2-main-content {
+    padding: 16px;
+  }
+}
+
+
+/* =========================================================================
+   サイドバー ロゴ画像追加用スタイル（他の要素へ影響なし）
+   ========================================================================= */
+.dashboard-v2-container .db-v2-sidebar__logo-area img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 180px; /* 横に広がりすぎないための上限ガード */
+  margin: 0 auto;
+  object-fit: contain;
+}

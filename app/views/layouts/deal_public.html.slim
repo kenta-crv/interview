@@ -1,0 +1,7 @@
+doctype html
+html lang="ja"
+  head
+    = render "layouts/head"
+  body.deal-public-body data-turbo="false"
+    = yield
+    = javascript_include_tag "application", "data-turbolinks-track": "reload"

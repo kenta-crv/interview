@@ -9,6 +9,7 @@ class Deal < ApplicationRecord
   has_one :deal_transcript, dependent: :destroy
   has_one :deal_summary, dependent: :destroy
   has_many :user_progresses, dependent: :destroy
+  has_many :deal_evaluations, dependent: :destroy
 
   enum status: {
     uploading: 0,
@@ -33,6 +34,111 @@ class Deal < ApplicationRecord
   scope :by_token, ->(token) { where(access_token: token) }
 
   before_create :generate_access_token
+
+  DEFAULT_CONVERSATION_TOPICS = [
+    { 'key' => 'overview', 'label' => 'サービス概要', 'page_number' => 1 },
+    { 'key' => 'pricing', 'label' => '料金プラン', 'page_number' => 2 },
+    { 'key' => 'trial', 'label' => 'トライアル', 'page_number' => 3 },
+    { 'key' => 'contract', 'label' => '契約フロー', 'page_number' => 4 }
+  ].freeze
+
+  def menu_items_for_conversation
+    items = menu_items_list
+    items.any? ? items : DEFAULT_CONVERSATION_TOPICS
+  end
+
+  def presentation_menu_items
+    pages = deal_pages.order(:page_number)
+    return [] if pages.empty?
+
+    items = menu_items_list
+    source = items.any? ? items : pages_for_menu(pages)
+
+    source.filter_map do |item|
+      page_number = item['page_number'].to_i
+      page = pages.find { |p| p.page_number == page_number }
+      next unless page
+      next if cover_page?(page)
+
+      label = item['label'] || item[:label]
+      label = page.title if generic_menu_label?(label)
+
+      {
+        'key' => (item['key'] || item[:key] || "page_#{page.page_number}").to_s,
+        'label' => label.presence || page.title.presence || "スライド #{page.page_number}",
+        'page_number' => page.page_number
+      }
+    end
+  end
+
+  def presentation_opening_payload
+    {
+      'greeting_audio' => opening_speech_url('greeting'),
+      'company_overview_audio' => opening_speech_url('company_overview'),
+      'company_page' => 1
+    }
+  end
+
+  def conversation_opening_messages
+    [
+      {
+        content: greeting_script.presence || default_greeting_text,
+        audio_url: opening_speech_url('greeting')
+      },
+      {
+        content: company_overview_script.presence || default_company_overview_text,
+        audio_url: opening_speech_url('company_overview')
+      },
+      {
+        content: usage_guide_script.presence || default_usage_guide_text,
+        audio_url: opening_speech_url('usage_guide')
+      }
+    ]
+  end
+
+  def default_greeting_text
+    language == 'ja' ? "こんにちは。#{title}のAI商談アシスタントです。本日はお時間をいただきありがとうございます。" : "Hello! I'm the AI assistant for #{title}."
+  end
+
+  def default_company_overview_text
+    deal_summary&.summary.presence || description.presence || (language == 'ja' ? '資料に基づき、サービス内容をご案内します。' : 'I will guide you through our proposal.')
+  end
+
+  def default_usage_guide_text
+    language == 'ja' ? '知りたいトピックをメニューからお選びください。自由にご質問いただくこともできます。' : 'Please select a topic or ask a question freely.'
+  end
+
+  def opening_speech_url(kind)
+    speech = deal_speeches.find_by(voice: kind.to_s)
+    return nil unless speech&.audio_file&.attached?
+
+    Rails.application.routes.url_helpers.rails_blob_path(speech.audio_file, only_path: true)
+  end
+
+  def menu_items_list
+    items = parse_stored_menu_items
+    return items if items.any?
+
+    pages_for_menu(deal_pages.order(:page_number))
+  end
+
+  def playback_payload
+    {
+      greeting: { text: greeting_script, audio_url: opening_speech_url('greeting') },
+      company_overview: { text: company_overview_script, audio_url: opening_speech_url('company_overview') },
+      usage_guide: { text: usage_guide_script, audio_url: opening_speech_url('usage_guide') },
+      menu_items: menu_items_list,
+      pages: deal_pages.order(:page_number).map do |page|
+        {
+          page_number: page.page_number,
+          title: page.title,
+          script: page.script,
+          audio_url: page.page_audio.attached? ? Rails.application.routes.url_helpers.rails_blob_path(page.page_audio, only_path: true) : page.audio_url
+        }
+      end,
+      playback_ready: playback_ready
+    }
+  end
 
   # Deal methods
   def start_processing!
@@ -102,6 +208,50 @@ class Deal < ApplicationRecord
   end
 
   private
+
+  def pages_for_menu(pages)
+    pages.reject { |page| cover_page?(page) }.first(6).map do |page|
+      {
+        'key' => "page_#{page.page_number}",
+        'label' => page.title.presence || "スライド #{page.page_number}",
+        'page_number' => page.page_number
+      }
+    end
+  end
+
+  def parse_stored_menu_items
+    raw = menu_items
+    list = case raw
+           when Array then raw
+           when Hash
+             raw['menu_items'] || raw[:menu_items] || [raw]
+           else
+             []
+           end
+
+    list.filter_map { |item| normalize_menu_item_entry(item) }
+  end
+
+  def normalize_menu_item_entry(item)
+    return nil unless item.is_a?(Hash)
+
+    page_number = item['page_number'] || item[:page_number]
+    return nil if page_number.blank?
+
+    {
+      'key' => (item['key'] || item[:key] || "page_#{page_number}").to_s,
+      'label' => (item['label'] || item[:label]).to_s,
+      'page_number' => page_number.to_i
+    }
+  end
+
+  def cover_page?(page)
+    page.page_number == 1 && page.title.to_s.match?(/表紙|挨拶|cover/i)
+  end
+
+  def generic_menu_label?(label)
+    label.to_s.match?(/前半|中盤|後半|提案内容/)
+  end
 
   def collect_documents
     deal_documents.filter_map do |doc|

@@ -1,0 +1,217 @@
+class Dashboard::DealsController < ApplicationController
+  include FileUploadValidation
+
+  before_action :authenticate_client!
+  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :upload_documents, :processing_status]
+  before_action :load_deal_associations, only: [:show, :presentation]
+
+  layout 'presentation', only: [:presentation]
+
+  def index
+    @deals = current_client.deals.includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
+  end
+
+  def show
+    @deal_audio = @deal.deal_audios.first
+    @segments = @deal_audio&.deal_segments&.in_order || []
+    @situations = current_client.situations.active
+    @deal_pages = @deal.deal_pages.order(:page_number)
+  end
+
+  def presentation
+    @deal_pages = @deal.deal_pages.order(:page_number)
+    @menu_items = @deal.presentation_menu_items
+    @opening_payload = @deal.presentation_opening_payload
+  end
+
+  def update_content
+    @deal.update!(deal_content_params) if params[:deal].present?
+
+    if params[:pages].present?
+      params[:pages].each do |page_id, page_params|
+        page = @deal.deal_pages.find_by(id: page_id)
+        next unless page
+
+        page.update!(page_params.permit(:title, :script))
+      end
+    end
+
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), notice: '商談コンテンツを更新しました'
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => e
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: e.message
+  end
+
+  def ai_rewrite
+    target = params[:target]
+    instruction = params[:instruction]
+    generator = DealEngine::ScriptGeneratorService.new(@deal)
+
+    case target
+    when 'greeting', 'company_overview', 'usage_guide'
+      field = "#{target}_script"
+      original = @deal.public_send(field).presence || @deal.public_send("default_#{target}_text")
+      rewritten = generator.rewrite_script(original, instruction: instruction)
+      @deal.update!(field => rewritten)
+      DealEngine::AudioGeneratorService.new(@deal).generate_opening_audios!
+    when 'page'
+      page = @deal.deal_pages.find_by(id: params[:page_id])
+      unless page
+        redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: 'ページが見つかりません'
+        return
+      end
+      original = page.script.presence || page.page_text.presence
+      if original.blank?
+        redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: '台本が空のためAI改善できません。先に台本を入力するか、PDFを再処理してください。'
+        return
+      end
+      rewritten = generator.rewrite_script(original, instruction: instruction)
+      page.update!(script: rewritten)
+      DealEngine::AudioGeneratorService.new(@deal).generate_for_page!(page)
+    when 'menu'
+      generator.generate_menu_items!
+    else
+      redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: '不明な対象です'
+      return
+    end
+
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), notice: 'AIで書き直しました'
+  rescue => e
+    Rails.logger.error("ai_rewrite failed: #{e.message}")
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: "AI改善に失敗しました: #{e.message}"
+  end
+
+  def regenerate_audio
+    if params[:page_id].present?
+      page = @deal.deal_pages.find(params[:page_id])
+      DealEngine::AudioGeneratorService.new(@deal).generate_for_page!(page)
+    else
+      DealEngine::AudioGeneratorService.new(@deal).generate_all!
+    end
+
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), notice: '音声を再生成しました'
+  rescue => e
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: "音声生成に失敗しました: #{e.message}"
+  end
+
+  def processing_status
+    render json: {
+      status: @deal.status,
+      pages_count: @deal.deal_pages.count,
+      playback_ready: @deal.playback_ready,
+      failed: @deal.failed?,
+      processing: @deal.processing?
+    }
+  end
+
+  def reprocess
+    if @deal.deal_documents.empty?
+      redirect_to dashboard_deal_path(@deal), alert: '資料がありません。先にPDFをアップロードしてください'
+      return
+    end
+
+    if @deal.processing?
+      redirect_to dashboard_deal_path(@deal), alert: 'AI処理中です。完了までお待ちください'
+      return
+    end
+
+    @deal.start_processing!
+    ProcessDealJob.perform_later(@deal.id)
+    redirect_to dashboard_deal_path(@deal), notice: 'AI処理を開始しました。完了まで数分かかる場合があります'
+  end
+
+  def upload_documents
+    if params[:files].blank?
+      redirect_to dashboard_deal_path(@deal), alert: 'ファイルが選択されていません'
+      return
+    end
+
+    if @deal.processing?
+      redirect_to dashboard_deal_path(@deal), alert: 'AI処理中です。完了までお待ちください'
+      return
+    end
+
+    ActiveRecord::Base.transaction do
+      params[:files].each do |file|
+        document = @deal.deal_documents.create!(
+          filename: file.original_filename,
+          content_type: file.content_type,
+          file_size: file.size
+        )
+        document.file.attach(file)
+      end
+    end
+
+    @deal.start_processing!
+    ProcessDealJob.perform_later(@deal.id)
+
+    redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました。AI処理をバックグラウンドで開始しています'
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to dashboard_deal_path(@deal), alert: e.message
+  rescue ActiveRecord::StatementInvalid => e
+    if e.cause.is_a?(SQLite3::BusyException)
+      redirect_to dashboard_deal_path(@deal), alert: 'データベースが混雑しています。数秒待ってから再度お試しください'
+    else
+      redirect_to dashboard_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"
+    end
+  rescue StandardError => e
+    redirect_to dashboard_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"
+  end
+
+  def publish
+    if @deal.deal_pages.empty?
+      redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: 'スライドが未生成です。先にPDFをアップロードしてください'
+      return
+    end
+
+    @deal.update!(playback_ready: true, status: :completed)
+    redirect_to dashboard_deal_path(@deal), notice: '商談URLを公開しました'
+  end
+
+  def new
+    @deal = current_client.deals.build
+  end
+
+  def create
+    @deal = current_client.deals.build(deal_params)
+
+    if @deal.save
+      redirect_to dashboard_deal_path(@deal), notice: '商談を作成しました'
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    if @deal.update(deal_params)
+      redirect_to dashboard_deal_path(@deal), notice: '商談を更新しました'
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @deal.destroy
+    redirect_to dashboard_deals_path, notice: '商談を削除しました'
+  end
+
+  private
+
+  def set_deal
+    @deal = current_client.deals.find(params[:id])
+  end
+
+  def load_deal_associations
+    @deal = Deal.includes(:deal_summary, :deal_speeches, :deal_pages).find(@deal.id)
+  end
+
+  def deal_params
+    params.require(:deal).permit(:title, :description, :deal_date, :language)
+  end
+
+  def deal_content_params
+    params.require(:deal).permit(:greeting_script, :company_overview_script, :usage_guide_script)
+  end
+end

@@ -11,7 +11,15 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: 'localhost:3000' }
   # Show full error reports.
   config.consider_all_requests_local = true
-  config.active_job.queue_adapter = :inline
+
+  # Sidekiqが使えない場合はasync（スレッド）でバックグラウンド実行
+  config.active_job.queue_adapter = begin
+    Redis.new(url: ENV.fetch('REDIS_URL', 'redis://127.0.0.1:6379/0')).ping
+    :sidekiq
+  rescue StandardError
+    Rails.logger.warn('[meetia] Redis/Sidekiq unavailable — using :async job adapter')
+    :async
+  end
   # Enable/disable caching. By default caching is disabled.
   # Run rails dev:cache to toggle caching.
   if Rails.root.join('tmp', 'caching-dev.txt').exist?

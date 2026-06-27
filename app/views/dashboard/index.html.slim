@@ -1,0 +1,241 @@
+.dashboard-v2-container
+  / =========================================================================
+  / 左側：サイドバー領域（パーシャルとして呼び出し）
+  / =========================================================================
+  = render "/dashboard/sidebar"
+
+  / =========================================================================
+  / 右側：メインコンテンツ領域
+  / =========================================================================
+  .db-v2-main-content
+    / --- 上部ヘッダー ---
+    .db-v2-header
+      .db-v2-header__left
+        h1.db-v2-header__title こんにちは、ユーザーさん！
+        p.db-v2-header__subtitle 本日の概要を確認しましょう。
+      .db-v2-header__right
+        .db-v2-header__date-selector
+          span 2025/05/15 - 2025/05/21
+          i.fas.fa-chevron-down
+
+    / --- 4連トップ集計カード ---
+    .db-v2-summary-grid
+      .db-v2-summary-card
+        .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--blue
+          i.fas.fa-users
+        .db-v2-summary-card__content
+          .db-v2-summary-card__label 総商談数
+          .db-v2-summary-card__value 128
+          .db-v2-summary-card__trend
+            span.db-v2-summary-card__trend-label 前週比
+            span.db-v2-summary-card__trend-status.db-v2-summary-card__trend-status--up
+              i.fas.fa-arrow-up
+              |  12.4%
+
+      .db-v2-summary-card
+        .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--green
+          i.fas.fa-check-circle
+        .db-v2-summary-card__content
+          .db-v2-summary-card__label アポイント獲得数
+          .db-v2-summary-card__value 42
+          .db-v2-summary-card__trend
+            span.db-v2-summary-card__trend-label 前週比
+            span.db-v2-summary-card__trend-status.db-v2-summary-card__trend-status--up
+              i.fas.fa-arrow-up
+              |  15.6%
+
+      .db-v2-summary-card
+        .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--purple
+          i.fas.fa-bullseye
+        .db-v2-summary-card__content
+          .db-v2-summary-card__label 成約率
+          .db-v2-summary-card__value 32.8%
+          .db-v2-summary-card__trend
+            span.db-v2-summary-card__trend-label 前週比
+            span.db-v2-summary-card__trend-status.db-v2-summary-card__trend-status--up
+              i.fas.fa-arrow-up
+              |  5.3%
+
+      .db-v2-summary-card
+        .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--gold
+          i.fas.fa-yen-sign
+        .db-v2-summary-card__content
+          .db-v2-summary-card__label 売上貢献額
+          .db-v2-summary-card__value ¥12,560,000
+          .db-v2-summary-card__trend
+            span.db-v2-summary-card__trend-label 前週比
+            span.db-v2-summary-card__trend-status.db-v2-summary-card__trend-status--up
+              i.fas.fa-arrow-up
+              |  18.7%
+
+    / --- 中段メイングラフ＆ステータスグリッド ---
+    .db-v2-main-grid
+      .db-v2-chart-card.db-v2-chart-card--span-2
+        .db-v2-chart-card__header
+          h2.db-v2-chart-card__title 商談数の推移
+          .db-v2-chart-card__action
+            .db-v2-chart-card__select
+              span 過去7日間
+              i.fas.fa-chevron-down
+        .db-v2-chart-card__body
+          .db-v2-line-chart-mock
+            svg viewBox="0 0 700 200" preserveAspectRatio="none"
+              defs
+                linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1"
+                  stop offset="0%" stop-color="#2563eb" stop-opacity="0.15"
+                  stop offset="100%" stop-color="#2563eb" stop-opacity="0.0"
+              path d="M 50 150 Q 150 90, 250 120 T 450 70 T 650 90" fill="none" stroke="#2563eb" stroke-width="3"
+              path d="M 50 150 Q 150 90, 250 120 T 450 70 T 650 90 L 650 200 L 50 200 Z" fill="url(#chartGradient)"
+              circle cx="50" cy="150" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"
+              circle cx="150" cy="115" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"
+              circle cx="250" cy="120" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"
+              circle cx="350" cy="95" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"
+              circle cx="450" cy="70" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"
+              circle cx="550" cy="80" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"
+              circle cx="650" cy="90" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"
+            .db-v2-line-chart-mock__labels
+              span 5/15
+              span 5/16
+              span 5/17
+              span 5/18
+              span 5/19
+              span 5/20
+              span 5/21
+
+      .db-v2-chart-card
+        .db-v2-chart-card__header
+          h2.db-v2-chart-card__title 商談ステータス
+        .db-v2-chart-card__body.db-v2-chart-card__body--flex
+          .db-v2-donut-wrapper
+            .db-v2-donut-chart-mock
+              .db-v2-donut-chart-mock__inner
+                .db-v2-donut-chart-mock__center
+                  span.db-v2-donut-chart-mock__number 128
+                  span.db-v2-donut-chart-mock__label 合計
+            .db-v2-donut-legends
+              .db-v2-donut-legend
+                span.db-v2-donut-legend__badge.db-v2-donut-legend__badge--blue
+                span.db-v2-donut-legend__text アポイント獲得 42 (32.8%)
+              .db-v2-donut-legend
+                span.db-v2-donut-legend__badge.db-v2-donut-legend__badge--teal
+                span.db-v2-donut-legend__text 商談中 54 (42.2%)
+              .db-v2-donut-legend
+                span.db-v2-donut-legend__badge.db-v2-donut-legend__badge--orange
+                span.db-v2-donut-legend__text フォロー中 18 (14.1%)
+              .db-v2-donut-legend
+                span.db-v2-donut-legend__badge.db-v2-donut-legend__badge--gray
+                span.db-v2-donut-legend__text 見込みなし 14 (10.9%)
+
+      .db-v2-chart-card
+        .db-v2-chart-card__header
+          h2.db-v2-chart-card__title 業界別 商談数TOP5
+        .db-v2-chart-card__body
+          .db-v2-bar-rows
+            .db-v2-bar-row
+              span.db-v2-bar-row__label IT・通信
+              .db-v2-bar-row__track
+                .db-v2-bar-row__fill style="width: 70%;"
+              span.db-v2-bar-row__value 42
+            .db-v2-bar-row
+              span.db-v2-bar-row__label 製造業
+              .db-v2-bar-row__track
+                .db-v2-bar-row__fill style="width: 52%;"
+              span.db-v2-bar-row__value 31
+            .db-v2-bar-row
+              span.db-v2-bar-row__label 小売・EC
+              .db-v2-bar-row__track
+                .db-v2-bar-row__fill style="width: 30%;"
+              span.db-v2-bar-row__value 18
+            .db-v2-bar-row
+              span.db-v2-bar-row__label 金融・保険
+              .db-v2-bar-row__track
+                .db-v2-bar-row__fill style="width: 25%;"
+              span.db-v2-bar-row__value 15
+            .db-v2-bar-row
+              span.db-v2-bar-row__label その他
+              .db-v2-bar-row__track
+                .db-v2-bar-row__fill style="width: 37%;"
+              span.db-v2-bar-row__value 22
+
+    / --- 下段スコア＆アクティビティ＆目標設定グリッド ---
+    .db-v2-bottom-grid
+      .db-v2-bottom-card
+        .db-v2-bottom-card__header
+          h2.db-v2-bottom-card__title AI対応スコア
+        .db-v2-bottom-card__body.db-v2-bottom-card__body--flex
+          .db-v2-score-circle
+            svg viewBox="0 0 100 100"
+              circle cx="50" cy="50" r="40" stroke="#f1f5f9" stroke-width="8" fill="none"
+              circle cx="50" cy="50" r="40" stroke="#2563eb" stroke-width="8" fill="none" stroke-dasharray="251.2" stroke-dashoffset="32.6" stroke-linecap="round"
+            .db-v2-score-circle__center
+              span.db-v2-score-circle__num 87
+              span.db-v2-score-circle__total | /100
+          .db-v2-score-metrics
+            .db-v2-score-metric
+              span.db-v2-score-metric__label
+                i.fas.fa-user
+                |  話し方・トーン
+              span.db-v2-score-metric__value 90/100
+            .db-v2-score-metric
+              span.db-v2-score-metric__label
+                i.fas.fa-headset
+                |  ヒアリング力
+              span.db-v2-score-metric__value 85/100
+            .db-v2-score-metric
+              span.db-v2-score-metric__label
+                i.fas.fa-lightbulb
+                |  提案力
+              span.db-v2-score-metric__value 88/100
+            .db-v2-score-metric
+              span.db-v2-score-metric__label
+                i.fas.fa-handshake
+                |  クロージング力
+              span.db-v2-score-metric__value 85/100
+
+      .db-v2-bottom-card
+        .db-v2-bottom-card__header
+          h2.db-v2-bottom-card__title 最近のアクティビティ
+        .db-v2-bottom-card__body
+          .db-v2-activity-list
+            .db-v2-activity-item
+              .db-v2-activity-item__left
+                i.fas.fa-file-upload.db-v2-activity-item__icon--blue
+                span.db-v2-activity-item__text 新しい資料をアップロードしました
+              span.db-v2-activity-item__time 2時間前
+            .db-v2-activity-item
+              .db-v2-activity-item__left
+                i.fas.fa-microphone.db-v2-activity-item__icon--purple
+                span.db-v2-activity-item__text 音声モデルを生成しました
+              span.db-v2-activity-item__time 5時間前
+            .db-v2-activity-item
+              .db-v2-activity-item__left
+                i.fas.fa-laptop-code.db-v2-activity-item__icon--green
+                span.db-v2-activity-item__text シミュレーションテストを完了しました
+              span.db-v2-activity-item__time 1日前
+            .db-v2-activity-item
+              .db-v2-activity-item__left
+                i.fas.fa-link.db-v2-activity-item__icon--link
+                span.db-v2-activity-item__text 埋込URLを発行しました
+              span.db-v2-activity-item__time 2日前
+
+      .db-v2-bottom-card
+        .db-v2-bottom-card__header
+          h2.db-v2-bottom-card__title 今月の目標達成状況
+        .db-v2-bottom-card__body.db-v2-bottom-card__body--flex
+          .db-v2-target-circle
+            svg viewBox="0 0 100 100"
+              circle cx="50" cy="50" r="45" stroke="#eff6ff" stroke-width="6" fill="none"
+              circle cx="50" cy="50" r="45" stroke="#3b82f6" stroke-width="6" fill="none" stroke-dasharray="282.6" stroke-dashoffset="90.4" stroke-linecap="round"
+            .db-v2-target-circle__center
+              span.db-v2-target-circle__percentage 68%
+          .db-v2-target-details
+            .db-v2-target-row
+              span.db-v2-target-row__label 目標商談数
+              span.db-v2-target-row__value 300 件
+            .db-v2-target-row
+              span.db-v2-target-row__label 達成済み
+              span.db-v2-target-row__value.db-v2-target-row__value--done 204 件
+            .db-v2-target-row
+              span.db-v2-target-row__label 残り
+              span.db-v2-target-row__value.db-v2-target-row__value--remain 96 件
+            = link_to "目標設定を変更する", "#", class: "db-v2-target-link"

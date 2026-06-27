@@ -3,6 +3,12 @@ class ApplicationController < ActionController::Base
 
   before_action :init_breadcrumbs
   helper_method :breadcrumbs
+  before_action :check_trial_expiration
+
+  def check_trial_expiration
+    return unless current_client.present?
+    current_client.check_and_upgrade_expired_trial
+  end
 
   def breadcrumbs
     @breadcrumbs
@@ -11,7 +17,19 @@ class ApplicationController < ActionController::Base
   def add_breadcrumb(label, path = nil)
     @breadcrumbs << { label: label, path: path }
   end
+  protected
 
+  def after_sign_in_path_for(resource)
+    case resource
+    when Admin
+      dashboard_root_path
+    when Client
+      dashboard_root_path
+    else
+      root_path
+    end
+  end
+  
   private
 
   def init_breadcrumbs

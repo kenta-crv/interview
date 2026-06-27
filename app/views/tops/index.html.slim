@@ -1,0 +1,249 @@
+.meetia-modern-lp
+  / ナビゲーションバー
+  header.meetia-nav
+    .meetia-nav__inner
+      .meetia-nav__logo
+        span.meetia-nav__logo-text Meetia.
+        span.meetia-nav__logo-kana ミーティア
+      nav.meetia-nav__menu
+        a.meetia-nav__item href="#problems" お悩み
+        a.meetia-nav__item href="#overview" 概要
+        a.meetia-nav__item href="#features" 機能
+        a.meetia-nav__item href="#pricing" 料金
+        a.meetia-nav__item href="#cases" 事例
+        a.meetia-nav__item href="#faq" FAQ
+      .meetia-nav__actions
+        a.meetia-btn.meetia-btn--ghost href="#login" ログイン
+        a.meetia-btn.meetia-btn--glass href="#trial" 無料で試す
+
+  / 1. トップLP（ヒーローセクション）
+  section.meetia-hero
+    .meetia-hero__inner
+      .meetia-hero__content
+        .meetia-hero__badge
+          span.meetia-hero__badge-dot
+          | Next-Gen AI Sales Agent
+        h1.meetia-hero__title
+          | AIが、商談をもっと
+          br
+          span.meetia-text-gradient スマートに。
+        p.meetia-hero__lead
+          | AIアバター「ミーティア」が商談に同席し、議事録の作成・情報の整理・提案のサポートまでを自動で行います。あなたのビジネスに、いつでも頼れるパートナーを。
+        .meetia-hero__actions
+          a.meetia-btn.meetia-btn--primary href="#trial" 無料で試してみる
+          a.meetia-btn.meetia-btn--secondary href="#download" 資料をダウンロード
+        p.meetia-hero__caption クレジットカード登録不要・すぐに始められます
+
+    / リアルタイムUIコンポーネントの浮遊エフェクト（絶対配置を効かせるため、親要素であるmeetia-heroの直下に正しく内包）
+    /.meetia-glass-card.meetia-glass-card--summary
+      .meetia-glass-card__header 商談サマリー
+      ul.meetia-glass-card__list
+        li
+          span.meetia-glass-card__label 課題
+          span : 業務の属人化
+        li
+          span.meetia-glass-card__label 提案
+          span : 業務自動化ツールの導入
+        li
+          span.meetia-glass-card__label 次回アクション
+          span : デモのご案内
+        
+    /.meetia-glass-card.meetia-glass-card--stream
+      .meetia-glass-card__header リアルタイム文字起こし
+      .meetia-glass-card__stream-item
+        span.meetia-glass-card__time 10:15
+        span.meetia-glass-card__msg 山田様：現在の業務フローについて…
+      .meetia-glass-card__stream-item
+        span.meetia-glass-card__time 10:18
+        span.meetia-glass-card__msg.meetia-glass-card__msg--ai ミーティア：要点を整理しますね。
+
+  / 企業ロゴエリア
+  .meetia-logos
+    p.meetia-logos__title 多くの企業様にご利用いただいています
+    .meetia-logos__wrapper
+      span.meetia-logos__item SoftBank
+      span.meetia-logos__item Cybozu
+      span.meetia-logos__item Money Forward
+      span.meetia-logos__item kaonavi
+      span.meetia-logos__item SmartHR
+      span.meetia-logos__item sansan
+      span.meetia-logos__item Chatwork
+
+  / 2. こんなお悩みありませんか
+  section#problems.meetia-section.meetia-problems
+    .meetia-section__inner
+      span.meetia-section__subtitle CHALLENGES
+      h2.meetia-section__title こんなお悩みありませんか
+      .meetia-problems__grid
+        .meetia-problems__card
+          .meetia-problems__icon-wrap ✕
+          h3 営業リソースの枯渇
+          p 営業人員が不足しており、コア業務や新規開拓へのリソースが十分に割けない
+        .meetia-problems__card
+          .meetia-problems__icon-wrap ✕
+          h3 商談データのブラックボックス化
+          p 議事録の作成や情報の整理が追いつかず、チーム内でのナレッジ共有が進まない
+        .meetia-problems__card
+          .meetia-problems__icon-wrap ✕
+          h3 提案の質のバラつき
+          p 各メンバーで提案内容の精度に差があり、成約率の安定化に課題を抱えている
+
+  / 3. サービス概要
+  section#overview.meetia-section.meetia-overview
+    .meetia-section__inner
+      span.meetia-section__subtitle ABOUT MEETIA
+      h2.meetia-section__title サービス概要
+      p.meetia-section__lead Meetia（ミーティア）は、最先端のAIアバターが実際の商談にシームレスに同席し、対話から深いビジネスコンテキストを理解するAI商談エージェントです。
+
+      .meetia-flow
+        h3.meetia-flow__title サービスの流れ
+        .meetia-flow__grid
+          .meetia-flow__card
+            .meetia-flow__num 01
+            h4 商談にAIアバターが同席
+            p 会話内容をリアルタイムで自然に把握・インプットします。
+          .meetia-flow__card
+            .meetia-flow__num 02
+            h4 議事録を自動作成・整理
+            p 会話をもとに重要ポイントやネクストタスクを瞬時に構造化。
+          .meetia-flow__card
+            .meetia-flow__num 03
+            h4 提案・分析を高度にサポート
+            p 蓄積されたデータに基づき、最適な提案資料やレポートを生成。
+          .meetia-flow__card
+            .meetia-flow__num 04
+            h4 次のアクションをスマート通知
+            p フォローアップ事項を自動抽出し、関係者へSlack等でリマインド。
+
+  / 4. このサービスでできること
+  section#features.meetia-section.meetia-features
+    .meetia-section__inner
+      span.meetia-section__subtitle FEATURES
+      h2.meetia-section__title このサービスでできること
+      .meetia-features__grid
+        .meetia-features__card
+          .meetia-features__image-box
+            img.meetia-features__thumb src="54700e4b-2e32-4b11-b9ed-f85040c7a72f.png" alt="アバター同席"
+          .meetia-features__info
+            span.meetia-features__tag 01
+            h3 リアルタイム文字起こし・同席
+            p 商談中の会話を極めて高精度にテキスト化。聞き逃し或いはメモ取りの手間をなくし、対話に集中できます。
+        .meetia-features__card
+          .meetia-features__info
+            span.meetia-features__tag 02
+            h3 議事録の自動作成・要約
+            p 商談終了と同時に、構造化された要約とネクストアクションを即時生成。共有フローを10倍高速化します。
+        .meetia-features__card
+          .meetia-features__info
+            span.meetia-features__tag 03
+            h3 提案・分析サポート
+            p 過去の勝ちパターンナレッジを活用し、顧客の課題に応じた最適なアプローチや提案資料作成を強力に支援。
+        .meetia-features__card
+          .meetia-features__info
+            span.meetia-features__tag 04
+            h3 タスク管理・自動リマインド
+            p 決定事項や宿題を自動で抽出し、連携された外部ツールへ自動でタスク登録およびリマインドを送信。
+
+      / 連携ツール
+      .meetia-integrations
+        h3.meetia-integrations__title さまざまな営業ツールとシームレスに連携
+        .meetia-integrations__list
+          span Google Meet
+          span Zoom
+          span Microsoft Teams
+          span Slack
+          span Salesforce
+          span HubSpot
+          span その他多数
+
+  / 5. 料金プラン
+  section#pricing.meetia-section.meetia-pricing
+    .meetia-section__inner
+      span.meetia-section__subtitle PRICING
+      h2.meetia-section__title 料金プラン
+      .meetia-pricing__grid
+        .meetia-pricing__card
+          h3.meetia-pricing__plan ライト
+          .meetia-pricing__price
+            span.meetia-pricing__currency ¥
+            span.meetia-pricing__amount 30,000
+            span.meetia-pricing__period
+              |  / 月
+          p.meetia-pricing__desc 基本的な文字起こし、自動議事録要約をスムーズに開始したいチーム向け。
+        .meetia-pricing__card.meetia-pricing__card--featured
+          .meetia-pricing__badge RECOMMENDED
+          h3.meetia-pricing__plan スタンダード
+          .meetia-pricing__price
+            span.meetia-pricing__currency ¥
+            span.meetia-pricing__amount 50,000
+            span.meetia-pricing__period
+              |  / 月
+          p.meetia-pricing__desc アバター同席、高度な提案分析サポート、外部ツール連携を含む標準プラン。
+        .meetia-pricing__card
+          h3.meetia-pricing__plan プレミアム
+          .meetia-pricing__price
+            span.meetia-pricing__amount カスタム
+          p.meetia-pricing__desc 専用AIモデルのチューニング、社内データベースとのセキュアな密連携に対応。
+
+  / 6. 導入フロー
+  section.meetia-section.meetia-flow-section
+    .meetia-section__inner
+      span.meetia-section__subtitle ONBOARDING
+      h2.meetia-section__title 導入フロー
+      .meetia-timeline
+        .meetia-timeline__step
+          .meetia-timeline__num 01
+          h3 アカウント発行
+          p 最短即日に専用環境をご用意。
+        .meetia-timeline__step
+          .meetia-timeline__num 02
+          h3 外部システム連携
+          p 普段お使いの会議ツールやSlackと連携。
+        .meetia-timeline__step
+          .meetia-timeline__num 03
+          h3 ナレッジ読み込み
+          p サービス資料等をインプットしAIを最適化。
+        .meetia-timeline__step
+          .meetia-timeline__num 04
+          h3 運用開始
+          p 次の商談からミーティアが同席します。
+
+  / 7. 導入事例
+  section#cases.meetia-section.meetia-cases
+    .meetia-section__inner
+      span.meetia-section__subtitle CASE STUDIES
+      h2.meetia-section__title 導入事例
+      .meetia-cases__grid
+        .meetia-cases__card
+          .meetia-cases__meta SaaSソリューション企業
+          h3 商談後の作業時間を完全にゼロ化
+          p 「ミーティアがすべての要約とSlack共有を自動化してくれたため、インサイドセールスの工数が劇的に削減され、商談そのもののクオリティ向上に注力できるようになりました。」
+        .meetia-cases__card
+          .meetia-cases__meta コンサルティングファーム
+          h3 次回商談の獲得率が35%向上
+          p 「AIによるリアルタイムの提案示唆により、顧客の潜在ニーズに対する切り返しがスムーズになり、精度の高いネクストアクションへ繋げることができています。」
+
+  / 8. FAQ
+  section#faq.meetia-section.meetia-faq
+    .meetia-section__inner
+      span.meetia-section__subtitle FAQ
+      h2.meetia-section__title よくあるご質問
+      .meetia-faq__list
+        .meetia-faq__item
+          h3.meetia-faq__q Q. どのWeb会議ツールに対応していますか？
+          p.meetia-faq__a A. Google Meet、Zoom、Microsoft Teamsに対応しています。会議URLを連携するだけで自動同席が可能です。
+        .meetia-faq__item
+          h3.meetia-faq__q Q. AIが読み込むデータのセキュリティは安全ですか？
+          p.meetia-faq__a A. はい。すべての通信および対話データは暗号化され、ISO27001に準拠した最高水準のセキュアな環境下で管理されます。
+
+  / 9. まずはトライアル
+  section#trial.meetia-trial
+    .meetia-trial__inner
+      .meetia-trial__blur-bg
+      .meetia-trial__content
+        img.meetia-trial__avatar src="a441aacd-6cf4-4eea-a4a0-817c75cdab3c.png" alt="AIアバター"
+        .meetia-trial__text-block
+          h2.meetia-trial__title AIアバター「ミーティア」が、あなたの営業を加速する。
+          p.meetia-trial__lead 14日間の無料トライアルで、最先端の商談体験を。
+          .meetia-trial__actions
+            a.meetia-btn.meetia-btn--primary.meetia-btn--lg href="#contact" 無料トライアルを開始

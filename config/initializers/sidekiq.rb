@@ -5,6 +5,11 @@ redis_url = ENV.fetch('REDIS_URL', 'redis://localhost:6379/0')
 Sidekiq.configure_server do |config|
   config.redis = { url: redis_url }
 
+  # SQLite 開発環境では DB ロックを避けるため並列度を 1 に制限
+  if Rails.env.development?
+    config.concurrency = ENV.fetch('SIDEKIQ_CONCURRENCY', 1).to_i
+  end
+
   # sidekiq-cron による定期ジョブのロード（serverプロセスでのみ）
   schedule_file = Rails.root.join('config/sidekiq_schedule.yml')
   if File.exist?(schedule_file)

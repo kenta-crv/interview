@@ -1,86 +1,86 @@
-    header.custom-navbar.py-2
-      .container-fluid.d-flex.align-items-center.justify-content-between
-        .d-flex.align-items-center.logo-section
-          /= image_tag "logo2.png", class: "nav-logo me-2", alt: "Logo"
-          span.nav-subtext
-            |
-          - if ENV['AI_INTERVIEW_TEST_MODE'] == 'true'
-            span style="margin-left:10px; background:#e74c3c; color:#fff; font-size:11px; font-weight:bold; padding:2px 8px; border-radius:4px; letter-spacing:0.5px;" TEST MODE
-        nav.nav-menu.d-none.d-lg-flex
-          ul.d-flex.list-unstyled.mb-0
-            - if client_signed_in?
-              li
-                = link_to "面接フォーム管理", situations_path, class: "nav-link-custom"
-              li
-                = link_to "面接結果", client_interview_results_path, class: "nav-link-custom"
-              li
-                = link_to "AI商談", client_deals_path, class: "nav-link-custom"
-            - elsif admin_signed_in?
-              li
-                = link_to "面接結果", admin_interview_results_path, class: "nav-link-custom"
-            - elsif user_signed_in?
-              li
-                = link_to "AI面接", interview_path, class: "nav-link-custom"
-            - else
-        nav.mobile-nav.d-lg-none
-          #mobile-nav-toggle.mobile-nav-toggle
-            span.hamburger-line
-            span.hamburger-line
-            span.hamburger-line
-          #mobile-nav-menu.mobile-nav-menu
-            .mobile-nav-header
-              #mobile-nav-close.mobile-nav-close
-                span.close-line
-                span.close-line
-            ul.mobile-nav-list
-              li
-                = link_to "トップページ", "/" , class: "nav-link-custom"
-              - if client_signed_in?
-                li
-                  = link_to "面接フォーム管理", situations_path, class: "nav-link-custom"
-                li
-                  = link_to "面接結果", client_interview_results_path, class: "nav-link-custom"
-                li
-                  = link_to "AI商談", client_deals_path, class: "nav-link-custom"
-              - elsif admin_signed_in?
-                li
-                  = link_to "面接結果", admin_interview_results_path, class: "nav-link-custom"
-              - elsif user_signed_in?
-                li
-                  = link_to "AI面接", interview_path, class: "nav-link-custom"
-              - else
-
-            .mobile-nav-actions
-              - if client_signed_in? || admin_signed_in? || user_signed_in?
-                - if client_signed_in?
-                  = link_to "ログアウト", destroy_client_session_path, method: :delete, class: "btn login-btn"
-                - elsif admin_signed_in?
-                  = link_to "ログアウト", destroy_admin_session_path, method: :delete, class: "btn login-btn"
-                - elsif user_signed_in?
-                  = link_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn login-btn"
-              - else
-                = link_to "ログイン（企業）", new_client_session_path, class: "btn login-btn"
-                = link_to "ログイン（応募者）", new_user_session_path, class: "btn login-btn"
-
-        .d-flex.align-items-center.gap-3.d-none.d-lg-flex
+header.custom-navbar.py-2
+  .container-fluid.d-flex.align-items-center.justify-content-between
+    .d-flex.align-items-center.logo-section
+      /= image_tag "logo2.png", class: "nav-logo me-2", alt: "Logo"
+      span.nav-subtext
+        |
+      - if ENV['AI_INTERVIEW_TEST_MODE'] == 'true'
+        span style="margin-left:10px; background:#e74c3c; color:#fff; font-size:11px; font-weight:bold; padding:2px 8px; border-radius:4px; letter-spacing:0.5px;" TEST MODE
+    nav.nav-menu.d-none.d-lg-flex
+      ul.d-flex.list-unstyled.mb-0
+        - if client_signed_in?
+          li
+            = link_to "面接フォーム管理", situations_path, class: "nav-link-custom"
+          li
+            = link_to "面接結果", dashboard_interview_results_path, class: "nav-link-custom"
+          li
+            = link_to "AI商談", dashboard_deals_path, class: "nav-link-custom"
+        - elsif admin_signed_in?
+          li
+            = link_to "面接結果", admin_interview_results_path, class: "nav-link-custom"
+        - elsif user_signed_in?
+          li
+            = link_to "AI面接", interview_path, class: "nav-link-custom"
+        - else
+    nav.mobile-nav.d-lg-none
+      #mobile-nav-toggle.mobile-nav-toggle
+        span.hamburger-line
+        span.hamburger-line
+        span.hamburger-line
+      #mobile-nav-menu.mobile-nav-menu
+        .mobile-nav-header
+          #mobile-nav-close.mobile-nav-close
+            span.close-line
+            span.close-line
+        ul.mobile-nav-list
+          li
+            = link_to "トップページ", "/" , class: "nav-link-custom"
           - if client_signed_in?
-            span.nav-link-custom style="color: #333; font-size: 14px;"
-              = current_client.email
-            = link_to "ログアウト", destroy_client_session_path, method: :delete, class: "btn login-btn"
+            li
+              = link_to "面接フォーム管理", situations_path, class: "nav-link-custom"
+            li
+              = link_to "面接結果", dashboard_interview_results_path, class: "nav-link-custom"
+            li
+              = link_to "AI商談", dashboard_deals_path, class: "nav-link-custom"
           - elsif admin_signed_in?
-            span.nav-link-custom style="color: #333; font-size: 14px;"
-              | 管理者:
-              = current_admin.email
-            = link_to "ログアウト", destroy_admin_session_path, method: :delete, class: "btn login-btn"
+            li
+              = link_to "面接結果", admin_interview_results_path, class: "nav-link-custom"
           - elsif user_signed_in?
-            span.nav-link-custom style="color: #333; font-size: 14px;"
-              = current_user.name || current_user.email
-            = link_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn login-btn"
+            li
+              = link_to "AI面接", interview_path, class: "nav-link-custom"
           - else
-            .dropdown.position-relative
-              button.btn.login-btn.dropdown-toggle-login data-toggle-login="true"
-                | ログイン
-              .dropdown-menu-login style="display:none; position:absolute; top:100%; right:0; background:#fff; border:1px solid #ddd; border-radius:8px; padding:8px 0; min-width:200px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000;"
-                = link_to "企業（クライアント）", new_client_session_path, style: "display:block; padding:10px 20px; color:#333; text-decoration:none; font-size:14px;"
-                = link_to "応募者（ユーザー）", new_user_session_path, style: "display:block; padding:10px 20px; color:#333; text-decoration:none; font-size:14px;"
-                = link_to "管理者", new_admin_session_path, style: "display:block; padding:10px 20px; color:#333; text-decoration:none; font-size:14px;"
+
+        .mobile-nav-actions
+          - if client_signed_in? || admin_signed_in? || user_signed_in?
+            - if client_signed_in?
+              = link_to "ログアウト", destroy_client_session_path, data: { turbo_method: :delete }, class: "btn login-btn"
+            - elsif admin_signed_in?
+              = link_to "ログアウト", destroy_admin_session_path, data: { turbo_method: :delete }, class: "btn login-btn"
+            - elsif user_signed_in?
+              = link_to "ログアウト", destroy_user_session_path, data: { turbo_method: :delete }, class: "btn login-btn"
+          - else
+            = link_to "ログイン（企業）", new_client_session_path, class: "btn login-btn"
+            = link_to "ログイン（応募者）", new_user_session_path, class: "btn login-btn"
+
+    .d-flex.align-items-center.gap-3.d-none.d-lg-flex
+      - if client_signed_in?
+        span.nav-link-custom style="color: #333; font-size: 14px;"
+          = current_client.email
+        = link_to "ログアウト", destroy_client_session_path, data: { turbo_method: :delete }, class: "btn login-btn"
+      - elsif admin_signed_in?
+        span.nav-link-custom style="color: #333; font-size: 14px;"
+          | 管理者:
+          = current_admin.email
+        = link_to "ログアウト", destroy_admin_session_path, data: { turbo_method: :delete }, class: "btn login-btn"
+      - elsif user_signed_in?
+        span.nav-link-custom style="color: #333; font-size: 14px;"
+          = current_user.name || current_user.email
+        = link_to "ログアウト", destroy_user_session_path, data: { turbo_method: :delete }, class: "btn login-btn"
+      - else
+        .dropdown.position-relative
+          button.btn.login-btn.dropdown-toggle-login data-toggle-login="true"
+            | ログイン
+          .dropdown-menu-login style="display:none; position:absolute; top:100%; right:0; background:#fff; border:1px solid #ddd; border-radius:8px; padding:8px 0; min-width:200px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000;"
+            = link_to "企業（クライアント）", new_client_session_path, style: "display:block; padding:10px 20px; color:#333; text-decoration:none; font-size:14px;"
+            = link_to "応募者（ユーザー）", new_user_session_path, style: "display:block; padding:10px 20px; color:#333; text-decoration:none; font-size:14px;"
+            = link_to "管理者", new_admin_session_path, style: "display:block; padding:10px 20px; color:#333; text-decoration:none; font-size:14px;"

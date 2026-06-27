@@ -1,0 +1,160 @@
+.admin-container data-deal-dashboard="" data-processing-status-url=processing_status_dashboard_deal_path(@deal) data-is-processing=@deal.processing?
+  .admin-header.ai-header-theme
+    .header-main-info
+      span.ai-badge-tech AI DEAL
+      h1.admin-title = @deal.title
+      p.admin-subtitle = @deal.description.present? ? @deal.description : "商談の作成・資料アップロード・台本編集・公開"
+    .admin-actions.header-actions-row
+      = link_to presentation_dashboard_deal_path(@deal), class: 'btn-secondary-custom', data: { turbo: false } do
+        span 🔮 シミュレーション
+      = link_to edit_dashboard_deal_path(@deal), class: 'btn-secondary-custom' do
+        span ⚙️ 基本情報
+      = link_to '共有URL', '#', class: 'btn-secondary-custom', id: 'share-url-btn'
+      = link_to dashboard_deals_path, class: 'btn-secondary-custom' do
+        span 一覧に戻る
+
+  - if @deal.processing?
+    .status-alert-box.info#processing-banner
+      span.icon ⏳
+      p#processing-message AI処理中です（要約・台本・音声生成）。このページは自動更新されます。
+  - elsif @deal.failed?
+    .status-alert-box style="background:#fff5f5;border-color:#fecdd3;"
+      p.text-danger AI処理に失敗しました。「PDFを再処理」から再実行してください。
+
+  .ai-dashboard-grid
+    .ai-grid-main
+      .admin-card.ai-card-glow
+        .card-header-mix
+          h2.admin-card-title 📄 資料アップロード
+          span.lang-badge = @deal.language.upcase
+
+        = form_tag upload_documents_dashboard_deal_path(@deal), multipart: true, id: 'documents-upload-form', class: 'ai-upload-dropzone', data: { turbo: false } do
+          .form-group.upload-zone-wrapper
+            label.form-label.upload-box-label
+              span.icon-cloud-upload 📤
+              span.main-msg PDFをアップロード（バックグラウンドでAI処理）
+              span.sub-msg 処理には数分かかります。アップロード後すぐに画面が戻ります。
+            = file_field_tag 'files[]', multiple: true, accept: '.pdf', class: 'form-control file-input-hidden', disabled: @deal.processing?
+          .form-actions.action-right-align
+            = submit_tag 'アップロードしてAI処理開始', class: 'btn-info-custom', disabled: @deal.processing?
+
+      - if @deal.deal_documents.any?
+        .admin-card.ai-card-flat
+          h2.admin-card-title 📦 アップロード済み資料
+          .document-list
+            - @deal.deal_documents.each do |doc|
+              .document-item.ai-doc-row
+                .doc-info-block
+                  span.doc-icon 📑
+                  .doc-meta
+                    .document-name = File.basename(doc.file.filename.to_s)
+                    .document-size = number_to_human_size(doc.file_size)
+
+          .pdf-process-actions.ai-action-bar
+            - if @deal.deal_pages.any?
+              .status-alert-box.success
+                span.icon ✅
+                p.text-success
+                  | 処理済み（#{@deal.deal_pages.count}ページ）
+                  - if @deal.playback_ready
+                    | ／ 公開中
+                  - else
+                    | ／ 編集・公開待ち
+            - elsif @deal.processing?
+              .status-alert-box.info
+                span.icon ⏳
+                p AI処理中です。完了までお待ちください。
+            - else
+              .status-alert-box.info
+                span.icon ⏳
+                p 未処理です。「PDFを再処理」を実行してください。
+
+            = button_to (@deal.deal_pages.any? ? '🔄 PDFを再処理' : '🔄 PDFを処理開始'),
+              reprocess_dashboard_deal_path(@deal),
+              method: :post,
+              class: 'btn-secondary-custom w-full',
+              disabled: @deal.processing?,
+              data: { turbo: false, confirm: 'PDFを再処理します。バックグラウンドで実行されます。よろしいですか？' },
+              form: { data: { turbo: false }, class: 'w-full' }
+
+    .ai-grid-sidebar
+      .admin-card.ai-card-gradient
+        h2.admin-card-title 🔗 公開ステータス
+        - if @deal.playback_ready
+          .status-alert-box.success
+            p 商談URLは公開中です
+        - else
+          .status-alert-box.info
+            p 台本確認後、下部の「公開する」を押してください
+
+        .form-group style="margin-top: 16px;"
+          label.form-label 商談URL（LPに貼り付け）
+          input.form-control type="text" value="#{public_deal_session_url(@deal.access_token)}" readonly
+
+      .admin-card.ai-card-flat
+        h2.admin-card-title 🎙️ AI要約
+        - if @deal.deal_summary
+          .transcript-content.ai-scrollbar
+            p = @deal.deal_summary.summary
+        - else
+          p.text-muted 資料アップロード後に自動生成されます
+
+  - if @deal.deal_pages.any?
+    .admin-card.ai-card-timeline#content-edit
+      .card-header-mix
+        h2.admin-card-title ✏️ 台本・音声編集（唯一の編集画面）
+        .header-actions-row
+          = button_to '公開する', publish_dashboard_deal_path(@deal), method: :post, class: 'btn-primary-custom', data: { confirm: '商談URLを公開しますか？' }
+          = button_to '全音声再生成', regenerate_audio_dashboard_deal_path(@deal), method: :post, class: 'btn-secondary-custom'
+
+      = form_with url: update_content_dashboard_deal_path(@deal), method: :patch, local: true do
+        .content-edit-section
+          h3.admin-card-title 冒頭パート
+          - [['greeting', '挨拶'], ['company_overview', '会社概要'], ['usage_guide', '操作案内']].each do |key, label|
+            .form-group
+              .studio-field-header
+                label.form-label = label
+                = button_to 'AI改善', ai_rewrite_dashboard_deal_path(@deal, target: key), method: :post, class: 'btn-info-custom btn-sm', form: { data: { turbo: false } }
+              = text_area_tag "deal[#{key}_script]", @deal.public_send("#{key}_script").presence || @deal.public_send("default_#{key}_text"), class: 'form-control', rows: 3
+              - audio_url = @deal.opening_speech_url(key)
+              - if audio_url
+                audio.ai-player controls=true
+                  source src=audio_url type="audio/mpeg"
+
+        .content-edit-section
+          h3.admin-card-title スライド台本（#{@deal_pages.count}面）
+          - @deal_pages.each do |page|
+            .deal-page-card
+              .page-badge-index P. #{page.page_number}
+              .form-group
+                label.form-label タイトル
+                = text_field_tag "pages[#{page.id}][title]", page.title, class: 'form-control', placeholder: "スライド #{page.page_number}"
+              .form-group
+                .studio-field-header
+                  label.form-label 読み上げ台本
+                  .studio-actions
+                    = button_to 'AI改善', ai_rewrite_dashboard_deal_path(@deal, target: 'page', page_id: page.id), method: :post, class: 'btn-info-custom btn-sm', form: { data: { turbo: false } }
+                    = button_to '音声再生成', regenerate_audio_dashboard_deal_path(@deal, page_id: page.id), method: :post, class: 'btn-secondary-custom btn-sm', form: { data: { turbo: false } }
+                = text_area_tag "pages[#{page.id}][script]", page.script, class: 'form-control', rows: 4
+                - if page.page_audio.attached?
+                  audio.ai-player controls=true
+                    source src=rails_blob_path(page.page_audio, only_path: true) type="audio/mpeg"
+
+        .form-actions.action-right-align
+          = submit_tag '変更を保存', class: 'btn-primary-custom'
+
+.modal id='share-url-modal' style='display: none;'
+  .modal-backdrop
+  .modal-content.ai-modal-glass
+    .modal-header
+      h2 🔗 商談URL
+      = button_tag '×', class: 'modal-close', id: 'close-share-modal'
+    .modal-body
+      .form-group
+        label.form-label LPに貼り付けるURL
+        .input-group-copy
+          input.form-control type='text' value="#{public_deal_session_url(@deal.access_token)}" readonly
+          = button_tag 'コピー', class: 'btn-primary-custom', id: 'copy-url-btn'
+
+= javascript_include_tag 'meetia_page_init'
+= javascript_include_tag 'deal_dashboard'

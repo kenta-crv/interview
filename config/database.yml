@@ -4,8 +4,8 @@
 # 本番環境: PostgreSQL（同時アクセス対応、データ整合性）
 
 default: &default
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 15 } %>
-  timeout: 5000
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  timeout: 30000
 
 # --- 開発環境 ---
 development:

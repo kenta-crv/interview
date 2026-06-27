@@ -99,3 +99,7 @@ gem 'aws-sdk-s3', require: false
 gem "dotenv", "~> 2.8"
 gem 'bullet'
 gem 'bullet'
+
+gem 'stripe'
+
+gem 'nokogiri'

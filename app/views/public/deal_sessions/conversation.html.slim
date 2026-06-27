@@ -1,4 +1,4 @@
-.admin-container
+.admin-container data-turbo="false" data-deal-conversation="" data-deal-id=@deal.id data-respond-url=respond_public_deal_session_path(token: @deal.access_token) data-evaluate-url=evaluate_public_deal_session_path(token: @deal.access_token)
   h1.admin-title AI商談
   p.admin-subtitle = @deal.title
 
@@ -20,17 +20,21 @@
                   span.message-time = Time.current.strftime('%H:%M')
                 .message-content = simple_format(msg[:content])
                 .message-actions
-                  button.btn-audio type="button" data-text=msg[:content] title="音声再生"
+                  button.btn-audio type="button" data-text=msg[:content] data-audio-url=msg[:audio_url] title="音声再生"
                     | 🔊
 
           .conversation-input-area
             .topic-selection
               h3.topic-title 知りたいトピックを選択
               .topic-buttons
-                = button_tag 'サービス概要', class: 'btn-topic', data: { topic: 'overview' }
-                = button_tag '料金プラン', class: 'btn-topic', data: { topic: 'pricing' }
-                = button_tag 'トライアル', class: 'btn-topic', data: { topic: 'trial' }
-                = button_tag '契約フロー', class: 'btn-topic', data: { topic: 'contract' }
+                - @menu_items.each do |item|
+                  = button_tag item['label'], class: 'btn-topic', type: 'button', data: { topic: item['key'], page_number: item['page_number'], label: item['label'] }
+
+            .free-text-input style="margin-top: 16px;"
+              h3.topic-title 自由に質問
+              .input-group-copy style="display: flex; gap: 8px;"
+                input.form-control#free-text-input type="text" placeholder="例: 導入までの期間はどのくらいですか？"
+                button.btn-primary-custom#send-free-text type="button" 送信
 
         .conversation-footer
           = button_tag '商談を終了', class: 'btn-secondary-custom', id: 'end-conversation-btn'
@@ -65,7 +69,6 @@
             .no-documents
               p 資料がありません
 
-# 評価モーダル
 .modal id='evaluation-modal' style='display: none;'
   .modal-content
     .modal-header
@@ -84,167 +87,4 @@
     .modal-footer
       = button_tag '送信', class: 'btn-primary-custom', id: 'submit-evaluation'
 
-javascript:
-  document.addEventListener('DOMContentLoaded', function() {
-    // トピック選択
-    const topicButtons = document.querySelectorAll('.btn-topic');
-    topicButtons.forEach(btn => {
-      btn.addEventListener('click', function() {
-        const topic = this.dataset.topic;
-        const topicText = this.textContent;
-        addMessage(topicText, 'user');
-
-        // ローディング表示
-        const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'message message--assistant loading';
-        loadingDiv.innerHTML = '<div class="message-content">入力中...</div>';
-        document.querySelector('.conversation-messages').appendChild(loadingDiv);
-        document.querySelector('.conversation-messages').scrollTop = document.querySelector('.conversation-messages').scrollHeight;
-
-        // AI応答をAPIから取得
-        fetchAIResponse(topic).then(response => {
-          loadingDiv.remove();
-          addMessage(response, 'assistant');
-        }).catch(error => {
-          loadingDiv.remove();
-          addMessage(getAIResponse(topic), 'assistant');
-        });
-      });
-    });
-
-    // 資料の開閉
-    document.querySelectorAll('.btn-toggle-doc').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const docId = this.dataset.docId;
-        const preview = document.getElementById('preview-' + docId);
-        const isHidden = preview.style.display === 'none';
-
-        // すべてのプレビューを閉じる
-        document.querySelectorAll('.document-preview').forEach(p => {
-          p.style.display = 'none';
-        });
-
-        // クリックされた資料のみ開閉
-        preview.style.display = isHidden ? 'block' : 'none';
-        this.textContent = isHidden ? '▲' : '▼';
-      });
-    });
-
-    // 音声ボタン
-    document.addEventListener('click', function(e) {
-      if (e.target.classList.contains('btn-audio')) {
-        const text = e.target.dataset.text;
-        speakText(text);
-      }
-    });
-
-    // 商談終了ボタン
-    document.getElementById('end-conversation-btn').addEventListener('click', function() {
-      document.getElementById('evaluation-modal').style.display = 'block';
-    });
-
-    // モーダル閉じる
-    document.getElementById('close-modal').addEventListener('click', function() {
-      document.getElementById('evaluation-modal').style.display = 'none';
-    });
-
-    // モーダル外クリックで閉じる
-    document.getElementById('evaluation-modal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        this.style.display = 'none';
-      }
-    });
-
-    // 評価送信
-    document.getElementById('submit-evaluation').addEventListener('click', function() {
-      document.getElementById('evaluation-modal').style.display = 'none';
-      alert('評価を送信しました。ありがとうございました！');
-    });
-  });
-
-  function addMessage(content, role) {
-    const messagesContainer = document.querySelector('.conversation-messages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message message--${role}`;
-    
-    const time = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-    const roleText = role === 'assistant' ? 'AIアシスタント' : 'あなた';
-    
-    messageDiv.innerHTML = `
-      <div class="message-header">
-        <span class="message-role">${roleText}</span>
-        <span class="message-time">${time}</span>
-      </div>
-      <div class="message-content">${content.replace(/\n/g, '<br>')}</div>
-      ${role === 'assistant' ? '<div class="message-actions"><button type="button" class="btn-audio" data-text="' + content.replace(/"/g, '&quot;').replace(/\n/g, ' ') + '" title="音声再生">🔊</button></div>' : ''}
-    `;
-    
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  }
-
-  async function fetchAIResponse(topic) {
-    try {
-      const response = await fetch('/api/ai_response', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-          topic: topic,
-          deal_id: #{@deal.id}
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.response;
-      } else {
-        throw new Error('API error');
-      }
-    } catch (error) {
-      console.error('AI response error:', error);
-      return getAIResponse(topic);
-    }
-  }
-
-  function getAIResponse(topic) {
-    const responses = {
-      overview: 'サービス概要について説明します。私たちのAI商談システムは、音声認識と要約生成を組み合わせた革新的なソリューションです。',
-      pricing: '料金プランについて説明します。基本プランは月額10,000円から始まり、企業規模に応じた柔軟なプランをご用意しています。',
-      trial: 'トライアルについて説明します。14日間の無料トライアルをご用意しており、すべての機能をお試しいただけます。',
-      contract: '契約フローについて説明します。オンラインで完結するシンプルな手続きとなっており、最短即日で利用開始可能です。'
-    };
-    return responses[topic] || '申し訳ありません、そのトピックについての情報を取得できませんでした。';
-  }
-
-  function speakText(text) {
-    if ('speechSynthesis' in window) {
-      // 既存の音声を停止
-      window.speechSynthesis.cancel();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ja-JP';
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-
-      // 音声がロードされた後に設定
-      window.speechSynthesis.getVoices();
-      const voices = window.speechSynthesis.getVoices();
-      const japaneseVoice = voices.find(voice => voice.lang === 'ja-JP' || voice.lang === 'ja_JP');
-      if (japaneseVoice) {
-        utterance.voice = japaneseVoice;
-      }
-
-      window.speechSynthesis.speak(utterance);
-    } else {
-      alert('お使いのブラウザは音声合成をサポートしていません。');
-    }
-  }
-
-  // 音声がロードされた後に再度設定
-  window.speechSynthesis.onvoiceschanged = function() {
-    window.speechSynthesis.getVoices();
-  };
+= javascript_include_tag 'deal_conversation'

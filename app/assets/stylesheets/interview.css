@@ -447,18 +447,65 @@ audio {
 
 
 
+/* Presentation layout: headerなしの全画面 */
+.presentation-body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.deal-public-body {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.deal-public-body header,
+.deal-public-body .hero,
+.deal-public-body .custom-navbar {
+  display: none !important;
+}
+
+.presentation-body .hero,
+.presentation-body header {
+  display: none !important;
+}
+
+/* admin_common.css の競合を presentation 内だけ無効化 */
+.presentation-body .presentation-wrapper {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 1000 !important;
+}
+
+.presentation-body .presentation-left {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  gap: 16px !important;
+  overflow: hidden !important;
+}
+
+.presentation-body .presentation-main {
+  display: none !important;
+}
+
 /* ===== Advanced AI Presentation Layout (Clean White Theme) ===== */
 
 /* 画面全体を管理する最外枠。クリーンな近未来ホワイト */
-.presentation-wrapper {
+.presentation-body .presentation-wrapper {
   display: flex !important;
-  flex-direction: column !important;
+  flex-direction: row !important;
   height: 100vh !important;
   width: 100vw !important;
   overflow: hidden !important;
-  background: #f8fafc !important; /* よりピュアで洗練されたライトグレー */
+  background: #f8fafc !important;
   box-sizing: border-box;
-  padding: 24px !important; /* 空間的な広がりを持たせてAIらしさを演出 */
+  padding: 24px !important;
   gap: 20px !important;
 }
 
@@ -603,41 +650,111 @@ audio {
   transform: translateY(-2px) !important;
 }
 
-/* 下部：ガイダンスエリア（浮き上がるようなスマートなフロートカード） */
-.guidance-area {
+/* 下部：ガイダンスエリア（左下・ボタンのみ） */
+.presentation-body .guidance-area {
   width: 100% !important;
   flex-shrink: 0 !important;
-  background: #ffffff !important; /* 高級感のある白 */
-  border-radius: 24px !important; /* 統一した角丸 */
-  padding: 28px 24px !important;
-  text-align: center !important;
+  background: transparent !important;
+  padding: 0 !important;
+  text-align: left !important;
   box-sizing: border-box !important;
-  /* 柔らかく、かつしっかりと持ち上がっている広範囲の美麗な影 */
-  box-shadow: 0 25px 50px -12px rgba(148, 163, 184, 0.25) !important;
-  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
-.guidance-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: #0f172a; /* 深みのある黒 */
-  margin-bottom: 24px;
-  line-height: 1.6;
-  letter-spacing: 0.03em;
+.presentation-body .guidance-text {
+  display: none !important;
 }
 
-.choice-buttons {
+.presentation-body .choice-buttons {
   display: flex !important;
   flex-direction: row !important;
-  flex-wrap: nowrap !important;
-  justify-content: center !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
   align-items: center !important;
-  gap: 18px !important; /* ボタン同士の間隔を広げて個々の浮き上がりを強調 */
+  gap: 12px !important;
   width: 100% !important;
   overflow-x: auto !important;
-  padding: 12px 0 !important; /* ボタンの立体的な影が切れないように広めの余白 */
+  padding: 0 !important;
   box-sizing: border-box !important;
   -webkit-overflow-scrolling: touch;
+}
+
+.presentation-body .btn-choice--active {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+.presentation-body .avatar-img-2--speaking {
+  animation: speakAnimation 0.8s ease-in-out infinite alternate !important;
+}
+
+.presentation-body.presentation-locked .presentation-wrapper {
+  filter: blur(8px) !important;
+  pointer-events: none !important;
+}
+
+.presentation-body .presentation-start-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(15, 23, 42, 0.55) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.presentation-body .presentation-start-overlay[hidden] {
+  display: none !important;
+}
+
+.presentation-body .presentation-start-card {
+  display: block !important;
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 24px !important;
+  padding: 48px 56px !important;
+  text-align: center !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45) !important;
+  max-width: 440px !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.presentation-body .presentation-start-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 30px 60px -12px rgba(37, 99, 235, 0.35) !important;
+}
+
+.presentation-body .presentation-start-icon {
+  display: block !important;
+  font-size: 40px !important;
+  margin-bottom: 16px !important;
+}
+
+.presentation-body .presentation-start-title {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin: 0 0 8px !important;
+}
+
+.presentation-body .presentation-start-desc {
+  font-size: 14px !important;
+  color: #64748b !important;
+  margin: 0 !important;
+}
+
+.presentation-body iframe.document-pdf-clean {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  display: block !important;
+  background: #ffffff !important;
+  border-radius: 24px !important;
 }
 
 /* セレクトボタン：最先端AIツールを意識した、圧倒的におしゃれで立体的なデザイン */

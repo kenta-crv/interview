@@ -1,3 +1,699 @@
 // Place all the styles related to the tops controller here.
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
+
+
+
+/* ==========================================================================
+   Meetia Minimal Tech LP Styles (2026 AI Trend - Clean Blue & White)
+   ========================================================================== */
+
+/* ==========================================================================
+   Meetia Minimal Tech LP Styles (2026 AI Trend - Clean Blue & White)
+   ========================================================================== */
+
+/* ==========================================================================
+   Meetia Minimal Tech LP Styles (2026 AI Trend - Clean Blue & White)
+   ========================================================================== */
+
+.meetia-modern-lp {
+  --meetia-primary: #2563eb;       /* 洗練されたデジタルブルー */
+  --meetia-primary-rgb: 37, 99, 235;
+  --meetia-dark: #0f172a;          /* ディープスレート */
+  --meetia-text: #334155;          /* スレートグレー */
+  --meetia-light-bg: #f8fafc;      /* クリアな薄グレー */
+  --meetia-accent-blue: #38bdf8;   /* ネオンライトブルー */
+  
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--meetia-text);
+  background-color: #ffffff;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
+.meetia-modern-lp * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 2026年トレンド：グラデーションテキスト */
+.meetia-text-gradient {
+  background: linear-gradient(135deg, var(--meetia-primary) 0%, var(--meetia-accent-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ボタンコンポーネント */
+.meetia-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.meetia-btn--primary {
+  background-color: var(--meetia-primary);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+.meetia-btn--primary:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.meetia-btn--secondary {
+  background-color: #ffffff;
+  color: var(--meetia-primary);
+  border: 1px solid #e2e8f0;
+}
+.meetia-btn--secondary:hover {
+  background-color: var(--meetia-light-bg);
+}
+
+.meetia-btn--ghost {
+  background: transparent;
+  color: var(--meetia-text);
+}
+.meetia-btn--ghost:hover {
+  color: var(--meetia-primary);
+}
+
+.meetia-btn--glass {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--meetia-primary);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+}
+.meetia-btn--glass:hover {
+  background: rgba(37, 99, 235, 0.15);
+}
+
+.meetia-btn--lg {
+  padding: 16px 40px;
+  font-size: 1.1rem;
+}
+
+/* セクションレイアウト */
+.meetia-section {
+  padding: 120px 24px;
+}
+.meetia-section__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.meetia-section__subtitle {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--meetia-primary);
+  letter-spacing: 0.15em;
+  text-align: center;
+  margin-bottom: 12px;
+}
+.meetia-section__title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--meetia-dark);
+  margin-bottom: 60px;
+}
+
+/* ナビゲーションバー */
+.meetia-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+.meetia-nav__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.meetia-nav__logo {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.meetia-nav__logo-text {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--meetia-primary);
+}
+.meetia-nav__logo-kana {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  letter-spacing: 0.1em;
+}
+.meetia-nav__menu {
+  display: flex;
+  gap: 32px;
+}
+.meetia-nav__item {
+  text-decoration: none;
+  color: var(--meetia-text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.meetia-nav__item:hover {
+  color: var(--meetia-primary);
+}
+.meetia-nav__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 1. ヒーローセクション（全面背景画像に最適化） */
+.meetia-hero {
+  position: relative;
+  /* 背景を右寄せにして、左側のテキストの可読性を保持 */
+  background: asset-url('meetia-main.png') no-repeat center right / cover;
+  padding: 160px 24px 140px 24px;
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  overflow: visible; /* カードがはみ出しても表示できるように変更 */
+}
+
+.meetia-hero__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.meetia-hero__content {
+  max-width: 600px;
+  position: relative;
+  z-index: 2;
+}
+
+.meetia-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(37, 99, 235, 0.05);
+  border: 1px solid rgba(37, 99, 235, 0.1);
+  color: var(--meetia-primary);
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.meetia-hero__badge-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--meetia-accent-blue);
+  border-radius: 50%;
+}
+
+.meetia-hero__title {
+  font-size: 3.8rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--meetia-dark);
+  margin-bottom: 24px;
+}
+
+.meetia-hero__lead {
+  font-size: 1.05rem;
+  color: var(--meetia-text);
+  line-height: 1.75;
+  margin-bottom: 40px;
+}
+
+.meetia-hero__actions {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.meetia-hero__caption {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+/* 2026年AIチックデザイン：グラスモルフィズムUIコンポーネントの位置制御を追加 */
+.meetia-glass-card {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+  z-index: 3;
+}
+
+.meetia-glass-card__header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--meetia-primary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+/* 位置を明示的に指定して親要素の右側に固定 */
+.meetia-glass-card--summary {
+  top: 15%;
+  right: 10%;
+  width: 260px;
+}
+
+.meetia-glass-card__list {
+  list-style: none;
+  font-size: 0.8rem;
+}
+
+.meetia-glass-card__list li {
+  margin-bottom: 8px;
+  display: flex;
+}
+
+.meetia-glass-card__label {
+  font-weight: 600;
+  color: var(--meetia-dark);
+  min-width: 80px;
+}
+
+/* 下側の文字起こしストリームカードの位置制御 */
+.meetia-glass-card--stream {
+  bottom: 15%;
+  right: 15%;
+  width: 300px;
+}
+
+.meetia-glass-card__stream-item {
+  display: flex;
+  gap: 10px;
+  font-size: 0.75rem;
+  margin-bottom: 8px;
+}
+
+.meetia-glass-card__time {
+  color: #94a3b8;
+}
+
+.meetia-glass-card__msg--ai {
+  color: var(--meetia-primary);
+  font-weight: 500;
+}
+
+/* 企業ロゴ */
+.meetia-logos {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  border-top: 1px solid #f1f5f9;
+  text-align: center;
+}
+.meetia-logos__title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 24px;
+}
+.meetia-logos__wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+.meetia-logos__item {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+/* 2. こんなお悩みありませんか */
+.meetia-problems {
+  background-color: var(--meetia-light-bg);
+}
+.meetia-problems__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.meetia-problems__card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 40px 24px;
+}
+.meetia-problems__icon-wrap {
+  width: 36px;
+  height: 36px;
+  background-color: rgba(148, 163, 184, 0.1);
+  color: #64748b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+.meetia-problems__card h3 {
+  font-size: 1.2rem;
+  color: var(--meetia-dark);
+  margin-bottom: 12px;
+}
+.meetia-problems__card p {
+  font-size: 0.9rem;
+  color: var(--meetia-text);
+  line-height: 1.6;
+}
+
+/* 3. サービス概要 */
+.meetia-overview .meetia-section__lead {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 60px auto;
+  font-size: 1.1rem;
+}
+.meetia-flow {
+  background-color: var(--meetia-light-bg);
+  border-radius: 20px;
+  padding: 48px;
+}
+.meetia-flow__title {
+  font-size: 1.3rem;
+  text-align: center;
+  margin-bottom: 40px;
+  color: var(--meetia-dark);
+}
+.meetia-flow__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.meetia-flow__card {
+  background: #ffffff;
+  padding: 32px 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+.meetia-flow__num {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--meetia-primary);
+  background: rgba(37, 99, 235, 0.05);
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+.meetia-flow__card h4 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: var(--meetia-dark);
+}
+.meetia-flow__card p {
+  font-size: 0.85rem;
+  color: var(--meetia-text);
+}
+
+/* 4. このサービスでできること */
+.meetia-features__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+  margin-bottom: 80px;
+}
+.meetia-features__card {
+  background-color: var(--meetia-light-bg);
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.meetia-features__image-box {
+  width: 100%;
+  height: 200px;
+  background-color: #e2e8f0;
+}
+.meetia-features__thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.meetia-features__info {
+  padding: 32px;
+}
+.meetia-features__tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: var(--meetia-dark);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+.meetia-features__info h3 {
+  font-size: 1.3rem;
+  color: var(--meetia-dark);
+  margin-bottom: 12px;
+}
+.meetia-features__info p {
+  font-size: 0.95rem;
+}
+
+.meetia-integrations {
+  text-align: center;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 60px;
+}
+.meetia-integrations__title {
+  font-size: 1.2rem;
+  margin-bottom: 24px;
+  color: var(--meetia-dark);
+}
+.meetia-integrations__list {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.meetia-integrations__list span {
+  background: var(--meetia-light-bg);
+  border: 1px solid #e2e8f0;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* 5. 料金プラン */
+.meetia-pricing__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+.meetia-pricing__card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 48px 32px;
+  text-align: center;
+  position: relative;
+}
+.meetia-pricing__card--featured {
+  border: 2px solid var(--meetia-primary);
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.05);
+}
+.meetia-pricing__badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--meetia-primary);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 16px;
+  border-radius: 99px;
+  letter-spacing: 0.05em;
+}
+.meetia-pricing__plan {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--meetia-dark);
+  margin-bottom: 24px;
+}
+.meetia-pricing__price {
+  margin-bottom: 24px;
+  color: var(--meetia-dark);
+}
+.meetia-pricing__currency {
+  font-size: 1.4rem;
+  font-weight: 700;
+  vertical-align: super;
+}
+.meetia-pricing__amount {
+  font-size: 3.2rem;
+  font-weight: 800;
+}
+.meetia-pricing__period {
+  font-size: 0.95rem;
+  color: #64748b;
+}
+.meetia-pricing__desc {
+  font-size: 0.9rem;
+  color: var(--meetia-text);
+  text-align: left;
+}
+
+/* 6. 導入フロー */
+.meetia-timeline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+.meetia-timeline__step {
+  border-top: 2px solid #e2e8f0;
+  padding-top: 24px;
+}
+.meetia-timeline__num {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--meetia-primary);
+  margin-bottom: 12px;
+}
+.meetia-timeline__step h3 {
+  font-size: 1.1rem;
+  color: var(--meetia-dark);
+  margin-bottom: 8px;
+}
+.meetia-timeline__step p {
+  font-size: 0.85rem;
+}
+
+/* 7. 導入事例 */
+.meetia-cases {
+  background-color: var(--meetia-light-bg);
+}
+.meetia-cases__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+.meetia-cases__card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 40px;
+}
+.meetia-cases__meta {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--meetia-primary);
+  margin-bottom: 16px;
+}
+.meetia-cases__card h3 {
+  font-size: 1.3rem;
+  color: var(--meetia-dark);
+  margin-bottom: 16px;
+}
+.meetia-cases__card p {
+  font-size: 0.95rem;
+  color: var(--meetia-text);
+}
+
+/* 8. FAQ */
+.meetia-faq__list {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.meetia-faq__item {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 24px 0;
+}
+.meetia-faq__q {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--meetia-dark);
+  margin-bottom: 8px;
+}
+.meetia-faq__a {
+  font-size: 0.95rem;
+  color: var(--meetia-text);
+}
+
+/* 9. まずはトライアル */
+.meetia-trial {
+  padding: 80px 24px;
+  background-color: #ffffff;
+}
+.meetia-trial__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  background: var(--meetia-dark);
+  border-radius: 24px;
+  overflow: hidden;
+  padding: 60px;
+}
+.meetia-trial__blur-bg {
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(37,99,235,0.4) 0%, rgba(0,0,0,0) 70%);
+  filter: blur(40px);
+  z-index: 1;
+}
+.meetia-trial__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+.meetia-trial__avatar {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.1);
+  background: #ffffff;
+}
+.meetia-trial__text-block {
+  flex: 1;
+}
+.meetia-trial__title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+.meetia-trial__lead {
+  font-size: 1.1rem;
+  color: #94a3b8;
+  margin-bottom: 28px;
+}
+.meetia-trial__actions {
+  display: flex;
+}

@@ -1,0 +1,8 @@
+doctype html
+html lang="ja"
+  head
+    = render "layouts/head"
+  body.presentation-body data-turbo="false"
+    = yield
+    = javascript_include_tag "meetia_page_init"
+    = javascript_include_tag "deal_presentation"

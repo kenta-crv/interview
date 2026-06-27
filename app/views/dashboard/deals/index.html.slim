@@ -4,12 +4,12 @@
 
   .admin-card
     .admin-actions
-      = link_to '新規商談作成', new_client_deal_path, class: 'btn-primary-custom'
+      = link_to '新規商談作成', new_dashboard_deal_path, class: 'btn-primary-custom'
 
     - if @deals.empty?
       .empty-state
         p まだ商談がありません
-        = link_to '最初の商談を作成', new_client_deal_path, class: 'btn-primary-custom'
+        = link_to '最初の商談を作成', new_dashboard_deal_path, class: 'btn-primary-custom'
     - else
       table.admin-table
         thead
@@ -58,8 +58,13 @@
                   span -
               td= l(deal.created_at, format: :short)
               td
-                = link_to '詳細', client_deal_path(deal), class: 'btn-primary-custom btn-sm'
-                - if deal.access_token.present?
-                  = link_to '共有リンク', public_deal_session_path(deal.access_token), class: 'btn-secondary-custom btn-sm', target: '_blank'
-                - else
-                  span.text-muted （リンクなし）
+                .admin-operations style="display: flex; gap: 4px; align-items: center;"
+                  = link_to '詳細', dashboard_deal_path(deal), class: 'btn-primary-custom btn-sm'
+                  
+                  / 確実にDELETEリクエストを送るためにbutton_toを使用（dashboard_deal_pathに変更）
+                  = button_to '削除', dashboard_deal_path(deal), method: :delete, data: { turbo_confirm: '本当にこの商談を削除しますか？', confirm: '本当にこの商談を削除しますか？' }, class: 'btn-danger-custom btn-sm', form: { style: 'display: inline;' }
+                  
+                  - if deal.access_token.present?
+                    = link_to '共有リンク', public_deal_session_path(deal.access_token), class: 'btn-secondary-custom btn-sm', target: '_blank'
+                  - else
+                    span.text-muted （リンクなし）

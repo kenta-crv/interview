@@ -27,7 +27,12 @@ module Api
       @deal = current_client.deals.find(params[:id])
 
       if params[:files].blank?
-        redirect_to client_deal_path(@deal), alert: 'ファイルが選択されていません'
+        redirect_to dashboard_deal_path(@deal), alert: 'ファイルが選択されていません'
+        return
+      end
+
+      if @deal.processing?
+        redirect_to dashboard_deal_path(@deal), alert: 'AI処理中です。完了までお待ちください。'
         return
       end
 
@@ -46,23 +51,14 @@ module Api
         end
       end
 
-      # :inlineモードでの同期実行。ジョブ内部での例外でアップロード処理全体が
-      # クラッシュするのを防ぐため、明示的に例外を捕捉してログに記録します。
-      begin
-        ProcessDealJob.perform_now(@deal.id)
-      rescue => e
-        logger.error "=== [ProcessDealJob Error in Inline Mode] ==="
-        logger.error "Message: #{e.message}"
-        logger.error e.backtrace.join("\n")
-        # ジョブ内でfail!が呼ばれずに落ちた場合を考慮し、ステータスを確実にfailedに更新
-        @deal.fail! if @deal.respond_to?(:fail!) && !@deal.failed?
-      end
+      @deal.start_processing!
+      ProcessDealJob.perform_later(@deal.id)
 
-      redirect_to client_deal_path(@deal), notice: '資料をアップロードしました'
+      redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました。AI処理をバックグラウンドで開始しています。'
     rescue ActiveRecord::RecordInvalid => e
-      redirect_to client_deal_path(@deal), alert: e.message
+      redirect_to dashboard_deal_path(@deal), alert: e.message
     rescue => e
-      redirect_to client_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"
+      redirect_to dashboard_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"
     end
 
     # POST /api/deals/:id/process_pdf
@@ -74,23 +70,18 @@ module Api
         return
       end
 
-      begin
-        # 既存のページを削除
-        @deal.deal_pages.destroy_all
-
-        # 各ドキュメントを処理
-        @deal.deal_documents.each do |document|
-          next unless document.content_type&.include?('pdf')
-
-          processor = DealEngine::PdfProcessorService.new(document)
-          processor.process!
-        end
-
-        render json: { message: 'PDF processing completed', pages_count: @deal.deal_pages.count }, status: :ok
-      rescue => e
-        logger.error "PDF processing failed: #{e.message}"
-        render json: { errors: [e.message] }, status: :internal_server_error
+      if @deal.processing?
+        render json: { message: 'AI処理中です', status: @deal.status }, status: :accepted
+        return
       end
+
+      @deal.start_processing!
+      ProcessDealJob.perform_later(@deal.id)
+
+      render json: {
+        message: 'AI処理をキューに登録しました。完了まで数分かかる場合があります。',
+        status: @deal.status
+      }, status: :accepted
     end
 
     # POST /api/deals/:id/upload_audio
@@ -98,7 +89,7 @@ module Api
       @deal = current_client.deals.find(params[:id])
 
       if params[:audio].blank?
-        redirect_to client_deal_path(@deal), alert: '音声ファイルが選択されていません'
+        redirect_to dashboard_deal_path(@deal), alert: '音声ファイルが選択されていません'
         return
       end
 
@@ -118,19 +109,12 @@ module Api
         deal_audio.audio_file.attach(audio_file)
       end
 
-      # :inlineモードでの同期実行。同様にジョブのエラーを隔離します。
-      begin
-        ProcessDealJob.perform_now(@deal.id)
-      rescue => e
-        logger.error "=== [ProcessDealJob Error in Inline Mode] ==="
-        logger.error "Message: #{e.message}"
-        logger.error e.backtrace.join("\n")
-        @deal.fail! if @deal.respond_to?(:fail!) && !@deal.failed?
-      end
+      @deal.start_processing!
+      ProcessDealJob.perform_later(@deal.id)
 
-      redirect_to client_deal_path(@deal), notice: '音声ファイルをアップロードしました'
+      redirect_to dashboard_deal_path(@deal), notice: '音声ファイルをアップロードしました。AI処理をバックグラウンドで開始しています。'
     rescue => e
-      redirect_to client_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"
+      redirect_to dashboard_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"
     end
 
     # POST /api/deals/:id/generate_speech

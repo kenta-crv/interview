@@ -12,6 +12,10 @@
 //
 //= require rails-ujs
 //= require activestorage
+//= require meetia_page_init
+//= stub deal_conversation
+//= stub deal_presentation
+//= stub deal_dashboard
 //= require_tree .
 
 document.addEventListener('DOMContentLoaded', () => {

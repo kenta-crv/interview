@@ -1,8 +1,10 @@
 # app/controllers/public/deal_sessions_controller.rb
 module Public
   class DealSessionsController < ApplicationController
-    skip_before_action :verify_authenticity_token
+    layout 'deal_public'
+    skip_before_action :verify_authenticity_token, only: [:respond, :evaluate]
     before_action :set_deal_by_token
+    before_action :require_registered_user, only: [:conversation, :playback, :respond, :evaluate]
 
     def show
       @user_progress = @deal.user_progresses.find_or_initialize_by(user: current_user)
@@ -24,9 +26,7 @@ module Public
           key_points_for_application: params[:key_points_for_application]
         )
 
-        # セッションにユーザーを設定
         session[:user_id] = @user.id
-
         redirect_to conversation_public_deal_session_path(token: @deal.access_token), notice: '情報を登録しました'
       else
         render :show, status: :unprocessable_entity
@@ -34,20 +34,45 @@ module Public
     end
 
     def conversation
-      @user = User.find_by(id: session[:user_id])
-      unless @user
-        redirect_to public_deal_session_path(token: @deal.access_token), alert: 'まず情報を登録してください'
+      @menu_items = @deal.menu_items_for_conversation
+      @conversation_messages = @deal.conversation_opening_messages
+    end
+
+    def playback
+      render json: @deal.playback_payload
+    end
+
+    def respond
+      topic = params[:topic]
+      message = params[:message]
+      page_number = params[:page_number]
+
+      if page_number.blank? && topic.present?
+        menu_item = @deal.menu_items_for_conversation.find { |item| item['key'] == topic.to_s }
+        page_number = menu_item&.dig('page_number')
+      end
+
+      service = DealEngine::ConversationService.new(@deal, user_progress: @user_progress)
+      result = service.respond(
+        topic: topic,
+        message: message,
+        page_number: page_number
+      )
+
+      render json: result
+    end
+
+    def evaluate
+      rating = params[:rating].to_i
+      unless (1..5).cover?(rating)
+        render json: { errors: ['評価は1〜5で指定してください'] }, status: :unprocessable_entity
         return
       end
 
-      @user_progress = @deal.user_progresses.find_by(user: @user)
-      unless @user_progress
-        redirect_to public_deal_session_path(token: @deal.access_token), alert: 'まず情報を登録してください'
-        return
-      end
+      evaluation = @deal.deal_evaluations.find_or_initialize_by(user: @user)
+      evaluation.update!(rating: rating, feedback: params[:feedback])
 
-      @conversation_messages = initialize_conversation
-      @documents = @deal.deal_documents
+      render json: { message: '評価を保存しました' }
     end
 
     private
@@ -62,40 +87,21 @@ module Public
       redirect_to root_path, alert: '無効なリンクです'
     end
 
+    def require_registered_user
+      @user = User.find_by(id: session[:user_id])
+      unless @user
+        redirect_to public_deal_session_path(token: @deal.access_token), alert: 'まず情報を登録してください'
+        return
+      end
+
+      @user_progress = @deal.user_progresses.find_by(user: @user)
+      unless @user_progress
+        redirect_to public_deal_session_path(token: @deal.access_token), alert: 'まず情報を登録してください'
+      end
+    end
+
     def user_params
       params.require(:user).permit(:name, :company, :tel, :address, :email, :url)
-    end
-
-    def initialize_conversation
-      [
-        { role: 'assistant', content: greeting_message },
-        { role: 'assistant', content: company_introduction },
-        { role: 'assistant', content: usage_guide }
-      ]
-    end
-
-    def greeting_message
-      if @deal.language == 'ja'
-        "こんにちは！#{@deal.client.email}のAI商談アシスタントです。本日はお時間をいただきありがとうございます。"
-      else
-        "Hello! I'm the AI sales assistant from #{@deal.client.email}. Thank you for your time today."
-      end
-    end
-
-    def company_introduction
-      if @deal.language == 'ja'
-        "私たちは#{@deal.client.email}で、AIを活用した商談支援サービスを提供しています。"
-      else
-        "We at #{@deal.client.email} provide AI-powered sales support services."
-      end
-    end
-
-    def usage_guide
-      if @deal.language == 'ja'
-        "このAI商談では、以下のトピックについてお話しできます：\n・サービス概要\n・料金プラン\n・トライアルについて\n・契約フロー\n\n知りたいトピックを選んでください。"
-      else
-        "In this AI sales conversation, we can discuss:\n・Service Overview\n・Pricing Plans\n・Trial Information\n・Contract Flow\n\nPlease select a topic you'd like to know about."
-      end
     end
   end
 end
