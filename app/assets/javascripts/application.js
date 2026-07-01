@@ -13,7 +13,6 @@
 //= require rails-ujs
 //= require activestorage
 //= require meetia_page_init
-//= stub deal_conversation
 //= stub deal_presentation
 //= stub deal_dashboard
 //= require_tree .
@@ -218,8 +217,13 @@ if (typeof gsap !== "undefined") {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('Initializing Swiper sliders...');
-  
+  if (typeof Swiper === 'undefined') return;
+
+  const caseStudiesEl = document.querySelector('.case-studies-swiper');
+  const pricingEl = document.querySelector('.pricing-swiper');
+  if (!caseStudiesEl && !pricingEl) return;
+
+  if (caseStudiesEl) {
   const caseStudiesSwiper = new Swiper('.case-studies-swiper', {
     slidesPerView: 1,
     spaceBetween: 20,
@@ -240,7 +244,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
-  
+  }
+
+  if (pricingEl) {
   const pricingSwiper = new Swiper('.pricing-swiper', {
     slidesPerView: 1,
     spaceBetween: 20,
@@ -261,12 +267,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
-  
-  console.log('Swiper sliders initialized successfully!');
+  }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
   const section = document.querySelector('.japan-notyo-section');
+  if (!section) return;
 
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -380,3 +386,40 @@ document.addEventListener('turbo:load', function() {
     e.stopPropagation();
   });
 });
+
+function initDashboardSidebar() {
+  const container = document.getElementById('dashboard-v2-container');
+  if (!container || container.dataset.dashboardSidebarReady === 'true') return;
+
+  container.dataset.dashboardSidebarReady = 'true';
+
+  const open = () => {
+    container.classList.add('db-v2-sidebar--open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const close = () => {
+    container.classList.remove('db-v2-sidebar--open');
+    document.body.style.overflow = '';
+  };
+
+  container.querySelectorAll('[data-dashboard-sidebar-toggle]').forEach((btn) => {
+    btn.addEventListener('click', open);
+  });
+
+  container.querySelectorAll('[data-dashboard-sidebar-close]').forEach((btn) => {
+    btn.addEventListener('click', close);
+  });
+
+  const overlay = container.querySelector('[data-dashboard-sidebar-overlay]');
+  if (overlay) overlay.addEventListener('click', close);
+
+  container.querySelectorAll('.db-v2-sidebar__link').forEach((link) => {
+    link.addEventListener('click', () => {
+      if (window.matchMedia('(max-width: 1023px)').matches) close();
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initDashboardSidebar);
+document.addEventListener('turbolinks:load', initDashboardSidebar);

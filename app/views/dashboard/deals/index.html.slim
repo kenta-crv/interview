@@ -11,60 +11,61 @@
         p まだ商談がありません
         = link_to '最初の商談を作成', new_dashboard_deal_path, class: 'btn-primary-custom'
     - else
-      table.admin-table
-        thead
-          tr
-            th ID
-            th タイトル
-            th ステータス
-            th 言語
-            th 資料数
-            th 音声
-            th 要約
-            th 作成日
-            th 操作
-        tbody
-          - @deals.each do |deal|
+      .table-responsive
+        table.admin-table
+          thead
             tr
-              td= deal.id
-              td= deal.title
-              td
-                - case deal.status
-                - when 'uploading'
-                  span.status-badge.status-badge--progress アップロード中
-                - when 'processing'
-                  span.status-badge.status-badge--progress 処理中
-                - when 'transcribing'
-                  span.status-badge.status-badge--progress 文字起こし中
-                - when 'summarizing'
-                  span.status-badge.status-badge--progress 要約生成中
-                - when 'completed'
-                  span.status-badge.status-badge--pass 完了
-                - when 'failed'
-                  span.status-badge.status-badge--fail 失敗
-                - else
-                  span.status-badge= deal.status
-              td= deal.language.upcase
-              td= deal.deal_documents.count
-              td
-                - if deal.deal_audios.any?
-                  span ✓
-                - else
-                  span -
-              td
-                - if deal.deal_summary.present?
-                  span ✓
-                - else
-                  span -
-              td= l(deal.created_at, format: :short)
-              td
-                .admin-operations style="display: flex; gap: 4px; align-items: center;"
-                  = link_to '詳細', dashboard_deal_path(deal), class: 'btn-primary-custom btn-sm'
-                  
-                  / 確実にDELETEリクエストを送るためにbutton_toを使用（dashboard_deal_pathに変更）
-                  = button_to '削除', dashboard_deal_path(deal), method: :delete, data: { turbo_confirm: '本当にこの商談を削除しますか？', confirm: '本当にこの商談を削除しますか？' }, class: 'btn-danger-custom btn-sm', form: { style: 'display: inline;' }
-                  
-                  - if deal.access_token.present?
-                    = link_to '共有リンク', public_deal_session_path(deal.access_token), class: 'btn-secondary-custom btn-sm', target: '_blank'
+              th ID
+              th タイトル
+              th ステータス
+              th 言語
+              th 資料数
+              th 音声
+              th 要約
+              th 作成日
+              th 操作
+          tbody
+            - @deals.each do |deal|
+              tr
+                td= deal.id
+                td= deal.title
+                td
+                  - case deal.status
+                  - when 'uploading'
+                    span.status-badge.status-badge--progress アップロード中
+                  - when 'processing'
+                    span.status-badge.status-badge--progress 処理中
+                  - when 'transcribing'
+                    span.status-badge.status-badge--progress 文字起こし中
+                  - when 'summarizing'
+                    span.status-badge.status-badge--progress 要約生成中
+                  - when 'completed'
+                    span.status-badge.status-badge--pass 完了
+                  - when 'failed'
+                    span.status-badge.status-badge--fail 失敗
                   - else
-                    span.text-muted （リンクなし）
+                    span.status-badge= deal.status
+                td= deal.language.upcase
+                td= deal.deal_documents.count
+                td
+                  - if deal.deal_audios.any?
+                    span ✓
+                  - else
+                    span -
+                td
+                  - if deal.deal_summary.present?
+                    span ✓
+                  - else
+                    span -
+                td= l(deal.created_at, format: :short)
+                td
+                  .admin-operations style="display: flex; gap: 4px; align-items: center;"
+                    = link_to '詳細', dashboard_deal_path(deal), class: 'btn-primary-custom btn-sm'
+
+                    / 確実にDELETEリクエストを送るためにbutton_toを使用（dashboard_deal_pathに変更）
+                    = button_to '削除', dashboard_deal_path(deal), method: :delete, data: { turbo_confirm: '本当にこの商談を削除しますか？', confirm: '本当にこの商談を削除しますか？' }, class: 'btn-danger-custom btn-sm', form: { style: 'display: inline;' }
+
+                    - if deal.access_token.present?
+                      = link_to '共有リンク', public_deal_session_path(deal.access_token), class: 'btn-secondary-custom btn-sm', target: '_blank'
+                    - else
+                      span.text-muted （リンクなし）

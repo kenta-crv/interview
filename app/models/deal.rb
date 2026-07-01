@@ -43,8 +43,34 @@ class Deal < ApplicationRecord
   ].freeze
 
   def menu_items_for_conversation
-    items = menu_items_list
+    items = presentation_menu_items
     items.any? ? items : DEFAULT_CONVERSATION_TOPICS
+  end
+
+  def presentation_opening_segments
+    payload = presentation_opening_payload
+    guide_page = payload['company_page']
+
+    [
+      {
+        'page_number' => payload['greeting_page'],
+        'title' => 'ご挨拶',
+        'text' => payload['greeting_text'],
+        'audio_url' => payload['greeting_audio']
+      },
+      {
+        'page_number' => payload['company_page'],
+        'title' => '会社概要',
+        'text' => payload['company_overview_text'],
+        'audio_url' => payload['company_overview_audio']
+      },
+      {
+        'page_number' => guide_page,
+        'title' => 'ご案内',
+        'text' => usage_guide_script.presence || default_usage_guide_text,
+        'audio_url' => opening_speech_url('usage_guide')
+      }
+    ]
   end
 
   def presentation_menu_items
@@ -72,10 +98,18 @@ class Deal < ApplicationRecord
   end
 
   def presentation_opening_payload
+    pages = deal_pages.order(:page_number)
+    company_page = pages.find { |p| p.page_number > 1 }&.page_number || pages.first&.page_number || 1
+
     {
       'greeting_audio' => opening_speech_url('greeting'),
       'company_overview_audio' => opening_speech_url('company_overview'),
-      'company_page' => 1
+      'usage_guide_audio' => opening_speech_url('usage_guide'),
+      'greeting_page' => pages.first&.page_number || 1,
+      'company_page' => company_page,
+      'greeting_text' => greeting_script.presence || default_greeting_text,
+      'company_overview_text' => company_overview_script.presence || default_company_overview_text,
+      'usage_guide_text' => usage_guide_script.presence || default_usage_guide_text
     }
   end
 
@@ -110,9 +144,20 @@ class Deal < ApplicationRecord
 
   def opening_speech_url(kind)
     speech = deal_speeches.find_by(voice: kind.to_s)
-    return nil unless speech&.audio_file&.attached?
+    inline_audio_path(speech&.audio_file)
+  end
 
-    Rails.application.routes.url_helpers.rails_blob_path(speech.audio_file, only_path: true)
+  def inline_audio_path(attachment)
+    return nil unless attachment&.attached?
+
+    Rails.application.routes.url_helpers.rails_blob_path(
+      attachment,
+      only_path: true
+    )
+  end
+
+  def page_audio_path(page)
+    inline_audio_path(page.page_audio) || page.audio_url
   end
 
   def menu_items_list

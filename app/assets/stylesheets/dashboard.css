@@ -1,7 +1,14 @@
 /* =========================================================================
-   全体レイアウト（2カラム構造・スクロール制御修正）
+   全体レイアウト（2カラム構造）
    ========================================================================= */
+.dashboard-body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
 .dashboard-v2-container {
+  --db-sidebar-width: 260px;
   box-sizing: border-box;
   width: 100%;
   min-height: 100vh;
@@ -23,25 +30,49 @@
    左側：サイドバー スタイリング（左固定・スクロールなし仕様）
    ========================================================================= */
 .dashboard-v2-container .db-v2-sidebar {
-  width: 260px;
+  width: var(--db-sidebar-width);
   height: 100vh;
   position: fixed;
   top: 0;
   left: 0;
-  background-color: #031530; /* 深いネイビーのグラデーションベース */
+  background-color: #031530;
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* 上部メニューと下部ログアウトを分離 */
   padding: 24px 16px;
   flex-shrink: 0;
-  z-index: 100;
+  z-index: 1100;
+  overflow: hidden;
+}
+
+.dashboard-v2-container .db-v2-sidebar__close {
+  display: none;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.dashboard-v2-container .db-v2-sidebar__overlay {
+  display: none;
 }
 
 .dashboard-v2-container .db-v2-sidebar__inner {
   display: flex;
   flex-direction: column;
   width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .dashboard-v2-container .db-v2-sidebar__logo-area {
@@ -129,6 +160,8 @@
 .dashboard-v2-container .db-v2-sidebar__footer {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 16px;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 /* =========================================================================
@@ -136,9 +169,45 @@
    ========================================================================= */
 .dashboard-v2-container .db-v2-main-content {
   flex: 1;
+  width: 100%;
   padding: 32px;
-  margin-left: 260px; /* 固定サイドバーの幅分のマージンを確保 */
-  min-width: 0;      /* レスポンシブ、Gridの崩れ防止 */
+  margin-left: var(--db-sidebar-width);
+  min-width: 0;
+}
+
+.dashboard-v2-container .db-v2-mobile-bar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.dashboard-v2-container .db-v2-sidebar__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.dashboard-v2-container .db-v2-mobile-bar__label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* 商談管理ページなど admin-container をサイドバーレイアウト内で使う */
+.dashboard-v2-container .db-v2-main-content > .admin-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
 /* --- 上部ヘッダー関係 --- */
@@ -615,30 +684,54 @@
 /* =========================================================================
    レスポンシブ対応
    ========================================================================= */
-@media (max-width: 1200px) {
-  .dashboard-v2-container {
-    flex-direction: column;
-  }
+@media (max-width: 1023px) {
   .dashboard-v2-container .db-v2-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    width: min(280px, 86vw);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
   }
+
+  .dashboard-v2-container.db-v2-sidebar--open .db-v2-sidebar {
+    transform: translateX(0);
+  }
+
+  .dashboard-v2-container .db-v2-sidebar__overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 1050;
+  }
+
+  .dashboard-v2-container.db-v2-sidebar--open .db-v2-sidebar__overlay {
+    display: block;
+  }
+
+  .dashboard-v2-container .db-v2-sidebar__close,
+  .dashboard-v2-container .db-v2-sidebar__toggle,
+  .dashboard-v2-container .db-v2-mobile-bar {
+    display: flex;
+  }
+
   .dashboard-v2-container .db-v2-main-content {
     margin-left: 0;
+    padding: 16px;
   }
-  .dashboard-v2-container .db-v2-sidebar__avatar-wrap,
-  .dashboard-v2-container .db-v2-sidebar__logo-sub,
-  .dashboard-v2-container .db-v2-sidebar__footer {
-    display: none;
+
+  .dashboard-v2-container .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
   }
-  .dashboard-v2-container .db-v2-sidebar__nav {
-    flex-direction: row;
+
+  .dashboard-v2-container .header-actions-row {
     flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .dashboard-v2-container .admin-card:has(.admin-table) {
+    overflow-x: auto;
   }
 }
 
@@ -658,9 +751,6 @@
 }
 
 @media (max-width: 640px) {
-  .dashboard-v2-container .db-v2-sidebar__nav {
-    display: none; /* スマホ時はハンバーガーメニュー等に退避を推奨 */
-  }
   .dashboard-v2-container .db-v2-header {
     flex-direction: column;
     align-items: flex-start;
@@ -675,8 +765,14 @@
   .dashboard-v2-container .db-v2-chart-card--span-2 {
     grid-column: span 1;
   }
-  .dashboard-v2-container .db-v2-main-content {
-    padding: 16px;
+  .dashboard-v2-container .db-v2-donut-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dashboard-v2-container .db-v2-chart-card__body--flex,
+  .dashboard-v2-container .db-v2-bottom-card__body--flex {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 

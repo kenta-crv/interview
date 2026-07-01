@@ -2,18 +2,28 @@
   var init = window.MeetiaPageInit;
 
   function readConfig() {
+    var defaults = { pages: [], opening: {}, opening_segments: [], public_mode: false };
     var el = document.getElementById('deal-presentation-config');
-    if (!el) return { pages: [], opening: {} };
+    if (!el) return defaults;
 
     try {
       var data = JSON.parse(el.textContent);
       return {
         pages: data.pages || [],
-        opening: data.opening || {}
+        opening: data.opening || {},
+        opening_segments: data.opening_segments || [],
+        respond_url: data.respond_url || '',
+        evaluate_url: data.evaluate_url || '',
+        public_mode: !!data.public_mode
       };
     } catch (_e) {
-      return { pages: [], opening: {} };
+      return defaults;
     }
+  }
+
+  function csrfToken() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.content : '';
   }
 
   function initDealPresentation() {
@@ -30,21 +40,32 @@
       var config = readConfig();
       var pages = config.pages;
       var opening = config.opening;
+      var openingSegments = config.opening_segments;
+      var respondUrl = root.dataset.respondUrl || config.respond_url;
+      var evaluateUrl = root.dataset.evaluateUrl || config.evaluate_url;
       var slides = root.querySelectorAll('.document-slide');
       var choiceButtons = root.querySelectorAll('.btn-choice');
       var avatar = root.querySelector('.avatar-img-2');
       var overlay = document.getElementById('presentation-start-overlay');
       var startBtn = document.getElementById('presentation-start-btn');
+      var chatPanel = document.getElementById('presentation-chat-panel');
+      var chatToggle = document.getElementById('presentation-chat-toggle');
+      var messagesContainer = document.getElementById('conversation-messages');
+      var freeTextInput = document.getElementById('free-text-input');
+      var freeTextBtn = document.getElementById('send-free-text');
+      var endBtn = document.getElementById('end-conversation-btn');
+      var modal = document.getElementById('evaluation-modal');
+      var closeModalBtn = document.getElementById('close-modal');
+      var submitEvaluationBtn = document.getElementById('submit-evaluation');
       var currentAudio = null;
-      var audioUnlocked = false;
       var presentationStarted = false;
 
       function openingValue(key) {
         return opening[key] || opening[key.replace(/_/g, '-')] || null;
       }
 
-      function hasOpeningAudio() {
-        return Boolean(openingValue('greeting_audio') || openingValue('company_overview_audio'));
+      function segmentValue(segment, key) {
+        return segment[key] || segment[key.replace(/_/g, '-')] || null;
       }
 
       function setAvatarSpeaking(active) {
@@ -56,6 +77,7 @@
         if (!overlay) return;
         overlay.hidden = true;
         overlay.style.display = 'none';
+        overlay.setAttribute('aria-hidden', 'true');
         document.body.classList.remove('presentation-locked');
       }
 
@@ -63,20 +85,51 @@
         if (!overlay) return;
         overlay.hidden = false;
         overlay.style.display = 'flex';
+        overlay.setAttribute('aria-hidden', 'false');
         document.body.classList.add('presentation-locked');
       }
 
-      function playUrl(url) {
+      function setChatPanelOpen(open) {
+        if (!chatPanel || !chatToggle) return;
+        chatPanel.classList.toggle('presentation-chat-panel--closed', !open);
+        chatToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
+
+      function stopCurrentAudio() {
+        if (!currentAudio) return;
+        currentAudio.pause();
+        currentAudio = null;
+      }
+
+      function speakText(text) {
         return new Promise(function(resolve) {
-          if (!url) {
+          if (!text || !('speechSynthesis' in window)) {
             resolve();
             return;
           }
 
-          if (currentAudio) {
-            currentAudio.pause();
-            currentAudio = null;
+          window.speechSynthesis.cancel();
+          var utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'ja-JP';
+          utterance.onend = function() {
+            setAvatarSpeaking(false);
+            resolve();
+          };
+          utterance.onerror = utterance.onend;
+          setAvatarSpeaking(true);
+          window.speechSynthesis.speak(utterance);
+        });
+      }
+
+      function playUrl(url, textFallback) {
+        return new Promise(function(resolve) {
+          if (!url) {
+            if (textFallback) speakText(textFallback).then(resolve);
+            else resolve();
+            return;
           }
+
+          stopCurrentAudio();
 
           var audio = new Audio(url);
           currentAudio = audio;
@@ -84,30 +137,23 @@
 
           function finish() {
             setAvatarSpeaking(false);
-            currentAudio = null;
+            if (currentAudio === audio) currentAudio = null;
             resolve();
           }
 
-          audio.addEventListener('ended', finish);
-          audio.addEventListener('error', finish);
+          function fallback() {
+            if (textFallback) speakText(textFallback).then(finish);
+            else finish();
+          }
 
-          audio.play().then(function() {
-            audioUnlocked = true;
-          }).catch(finish);
+          audio.addEventListener('ended', finish, { once: true });
+          audio.addEventListener('error', fallback, { once: true });
+
+          var playAttempt = audio.play();
+          if (playAttempt && playAttempt.catch) {
+            playAttempt.catch(fallback);
+          }
         });
-      }
-
-      function playSequence(urls) {
-        return urls.filter(Boolean).reduce(function(chain, url) {
-          return chain.then(function() { return playUrl(url); });
-        }, Promise.resolve());
-      }
-
-      function openingUrls() {
-        return [
-          openingValue('greeting_audio'),
-          openingValue('company_overview_audio')
-        ];
       }
 
       function showSlideByPageNumber(pageNumber) {
@@ -133,52 +179,216 @@
         });
       }
 
+      function presentPage(pageNumber) {
+        showSlideByPageNumber(pageNumber);
+        setActiveButton(pageNumber);
+      }
+
+      function appendChatMessage(content, role, audioUrl) {
+        if (!messagesContainer || !content) return;
+
+        var messageDiv = document.createElement('div');
+        messageDiv.className = 'message message--' + role;
+        var roleText = role === 'assistant' ? 'AIアシスタント' : 'あなた';
+        var safeContent = String(content).replace(/\n/g, '<br>');
+
+        messageDiv.innerHTML =
+          '<div class="message-header"><span class="message-role">' + roleText + '</span></div>' +
+          '<div class="message-content">' + safeContent + '</div>';
+
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        if (role === 'assistant' && audioUrl) playUrl(audioUrl, content);
+      }
+
+      function segmentsForOpening() {
+        if (openingSegments.length > 0) return openingSegments;
+
+        return [
+          {
+            page_number: parseInt(openingValue('greeting_page'), 10) || 1,
+            text: openingValue('greeting_text'),
+            audio_url: openingValue('greeting_audio')
+          },
+          {
+            page_number: parseInt(openingValue('company_page'), 10) || 1,
+            text: openingValue('company_overview_text'),
+            audio_url: openingValue('company_overview_audio')
+          },
+          {
+            page_number: parseInt(openingValue('company_page'), 10) || 1,
+            text: openingValue('usage_guide_text'),
+            audio_url: openingValue('usage_guide_audio')
+          }
+        ];
+      }
+
+      function playOpeningSegments(segments) {
+        return segments.reduce(function(chain, segment) {
+          return chain.then(function() {
+            var pageNumber = parseInt(segmentValue(segment, 'page_number'), 10) || 1;
+            var url = segmentValue(segment, 'audio_url');
+            var text = segmentValue(segment, 'text');
+            presentPage(pageNumber);
+            return playUrl(url, text);
+          });
+        }, Promise.resolve());
+      }
+
       function startPresentation() {
         if (presentationStarted) return Promise.resolve();
         presentationStarted = true;
-        audioUnlocked = true;
         hideOverlay();
-        showSlideByPageNumber(openingValue('company_page') || 1);
-        return playSequence(openingUrls());
+        return playOpeningSegments(segmentsForOpening());
       }
 
-      function handleChoice(pageNumber) {
+      function fetchResponse(options) {
+        if (!respondUrl) return Promise.reject(new Error('no respond url'));
+
+        return fetch(respondUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken()
+          },
+          body: JSON.stringify({
+            topic: options.topic || null,
+            message: options.message || null,
+            page_number: options.pageNumber || null
+          })
+        }).then(function(response) {
+          if (!response.ok) throw new Error('respond error');
+          return response.json();
+        });
+      }
+
+      function handleTopicChoice(button) {
+        var pageNumber = parseInt(button.dataset.pageNumber, 10);
+        var topic = button.dataset.topic;
+        if (!pageNumber) return Promise.resolve();
+
+        presentPage(pageNumber);
         var page = pages.find(function(p) { return p.page_number === pageNumber; });
-        showSlideByPageNumber(pageNumber);
-        setActiveButton(pageNumber);
-        return playUrl(page && page.audio_url);
+
+        if (page && page.audio_url) {
+          return playUrl(page.audio_url, page.script);
+        }
+
+        return fetchResponse({ topic: topic, pageNumber: pageNumber }).then(function(result) {
+          if (result.page_number) presentPage(result.page_number);
+          appendChatMessage(result.text, 'assistant', result.audio_url);
+        });
+      }
+
+      function handleFreeText(message) {
+        appendChatMessage(message, 'user');
+        return fetchResponse({ message: message }).then(function(result) {
+          if (result.page_number) presentPage(result.page_number);
+          appendChatMessage(result.text, 'assistant', result.audio_url);
+        }).catch(function() {
+          appendChatMessage('回答を取得できませんでした。', 'assistant', null);
+        });
+      }
+
+      function ensureStarted(thenFn) {
+        if (presentationStarted) {
+          thenFn();
+          return;
+        }
+        startPresentation().then(thenFn);
+      }
+
+      if (chatToggle && chatPanel) {
+        chatToggle.addEventListener('click', function() {
+          var isClosed = chatPanel.classList.contains('presentation-chat-panel--closed');
+          setChatPanelOpen(isClosed);
+        });
       }
 
       choiceButtons.forEach(function(button) {
         button.addEventListener('click', function() {
-          var pageNumber = parseInt(this.dataset.pageNumber, 10);
-          if (!pageNumber) return;
-
-          if (!audioUnlocked) {
-            startPresentation().then(function() {
-              handleChoice(pageNumber);
-            });
-            return;
-          }
-
-          handleChoice(pageNumber);
+          ensureStarted(function() {
+            handleTopicChoice(button);
+          });
         });
       });
 
+      if (freeTextBtn && freeTextInput) {
+        freeTextBtn.addEventListener('click', function() {
+          var message = freeTextInput.value.trim();
+          if (!message) return;
+          freeTextInput.value = '';
+          ensureStarted(function() {
+            handleFreeText(message);
+          });
+        });
+
+        freeTextInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') freeTextBtn.click();
+        });
+      }
+
       if (startBtn) {
         startBtn.addEventListener('click', function(e) {
+          e.preventDefault();
           e.stopPropagation();
           startPresentation();
         });
       }
 
-      showSlideByPageNumber(openingValue('company_page') || 1);
-
-      if (slides.length > 0 && hasOpeningAudio()) {
-        showOverlay();
-      } else {
-        hideOverlay();
+      if (overlay) {
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay) startPresentation();
+        });
       }
+
+      if (endBtn && modal) {
+        endBtn.addEventListener('click', function() {
+          modal.style.display = 'flex';
+        });
+      }
+
+      if (closeModalBtn && modal) {
+        closeModalBtn.addEventListener('click', function() {
+          modal.style.display = 'none';
+        });
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) modal.style.display = 'none';
+        });
+      }
+
+      if (submitEvaluationBtn && modal) {
+        submitEvaluationBtn.addEventListener('click', function() {
+          var rating = document.querySelector('input[name="rating"]:checked');
+          var feedbackEl = document.getElementById('feedback');
+          if (!rating) {
+            alert('満足度を選択してください');
+            return;
+          }
+
+          if (evaluateUrl) {
+            fetch(evaluateUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken()
+              },
+              body: JSON.stringify({
+                rating: rating.value,
+                feedback: feedbackEl ? feedbackEl.value : ''
+              })
+            }).catch(function() {});
+          }
+
+          modal.style.display = 'none';
+          alert('評価を送信しました。ありがとうございました！');
+        });
+      }
+
+      setChatPanelOpen(false);
+      presentPage(parseInt(openingValue('greeting_page'), 10) || 1);
+      showOverlay();
     });
   }
 

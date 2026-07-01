@@ -650,7 +650,130 @@ audio {
   transform: translateY(-2px) !important;
 }
 
-/* 下部：ガイダンスエリア（左下・ボタンのみ） */
+/* 下部：トピックボタン（常時表示） */
+.presentation-body .presentation-topics-bar {
+  width: 100% !important;
+  flex-shrink: 0 !important;
+}
+
+.presentation-body .presentation-topics-bar .guidance-area {
+  width: 100% !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.presentation-body .presentation-topics-bar .choice-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  padding: 4px 0 !important;
+  box-sizing: border-box !important;
+}
+
+.presentation-body .presentation-free-text {
+  margin-top: 12px !important;
+  flex-shrink: 0 !important;
+}
+
+.presentation-body .presentation-free-text .input-group-copy {
+  display: flex !important;
+  gap: 8px !important;
+}
+
+.presentation-body .presentation-free-text .form-control {
+  flex: 1 !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  font-size: 14px !important;
+}
+
+.presentation-body .presentation-free-text .btn-primary-custom {
+  flex-shrink: 0 !important;
+  padding: 12px 20px !important;
+  border-radius: 12px !important;
+  white-space: nowrap !important;
+}
+
+/* 折りたたみ：メッセージチャットのみ */
+.presentation-body .presentation-chat-panel {
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  box-shadow: 0 8px 20px -5px rgba(148, 163, 184, 0.1) !important;
+  overflow: hidden !important;
+  margin-top: 12px !important;
+}
+
+.presentation-body .presentation-chat-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: 12px 20px !important;
+  border: none !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+}
+
+.presentation-body .presentation-chat-toggle-icon {
+  font-size: 12px !important;
+  color: #64748b !important;
+  transition: transform 0.25s ease !important;
+}
+
+.presentation-body .presentation-chat-panel:not(.presentation-chat-panel--closed) .presentation-chat-toggle-icon {
+  transform: rotate(180deg) !important;
+}
+
+.presentation-body .presentation-chat-panel__body {
+  padding: 0 16px 16px !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
+
+.presentation-body .presentation-chat-panel--closed .presentation-chat-panel__body {
+  display: none !important;
+}
+
+.presentation-body .conversation-messages {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  margin-bottom: 12px !important;
+}
+
+.presentation-body .message {
+  max-width: 100% !important;
+  padding: 10px 14px !important;
+  border-radius: 12px !important;
+  line-height: 1.6 !important;
+  font-size: 13px !important;
+}
+
+.presentation-body .message--assistant {
+  background: #f8f9ff !important;
+  align-self: flex-start !important;
+}
+
+.presentation-body .message--user {
+  background: #2541B2 !important;
+  color: #ffffff !important;
+  align-self: flex-end !important;
+}
+
 .presentation-body .guidance-area {
   width: 100% !important;
   flex-shrink: 0 !important;
@@ -695,10 +818,11 @@ audio {
   pointer-events: none !important;
 }
 
+#presentation-start-overlay,
 .presentation-body .presentation-start-overlay {
   position: fixed !important;
   inset: 0 !important;
-  z-index: 2000 !important;
+  z-index: 2147483000 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -707,10 +831,12 @@ audio {
   -webkit-backdrop-filter: blur(12px) !important;
 }
 
+#presentation-start-overlay[hidden],
 .presentation-body .presentation-start-overlay[hidden] {
   display: none !important;
 }
 
+#presentation-start-overlay .presentation-start-card,
 .presentation-body .presentation-start-card {
   display: block !important;
   background: #ffffff !important;

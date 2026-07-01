@@ -1,11 +1,8 @@
-class Dashboard::DealsController < ApplicationController
+class Dashboard::DealsController < Dashboard::BaseController
   include FileUploadValidation
 
-  before_action :authenticate_client!
   before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :upload_documents, :processing_status]
-  before_action :load_deal_associations, only: [:show, :presentation]
-
-  layout 'presentation', only: [:presentation]
+  before_action :load_deal_associations, only: [:show]
 
   def index
     @deals = current_client.deals.includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
@@ -19,9 +16,8 @@ class Dashboard::DealsController < ApplicationController
   end
 
   def presentation
-    @deal_pages = @deal.deal_pages.order(:page_number)
-    @menu_items = @deal.presentation_menu_items
-    @opening_payload = @deal.presentation_opening_payload
+    redirect_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1),
+                notice: '共有商談URLと同じ画面でプレビューします'
   end
 
   def update_content

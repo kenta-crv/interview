@@ -5,7 +5,7 @@
       h1.admin-title = @deal.title
       p.admin-subtitle = @deal.description.present? ? @deal.description : "商談の作成・資料アップロード・台本編集・公開"
     .admin-actions.header-actions-row
-      = link_to presentation_dashboard_deal_path(@deal), class: 'btn-secondary-custom', data: { turbo: false } do
+      = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: 'btn-secondary-custom', data: { turbo: false } do
         span 🔮 シミュレーション
       = link_to edit_dashboard_deal_path(@deal), class: 'btn-secondary-custom' do
         span ⚙️ 基本情報

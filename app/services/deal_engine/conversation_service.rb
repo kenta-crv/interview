@@ -39,7 +39,8 @@ module DealEngine
     end
 
     def find_menu_item(topic)
-      @deal.menu_items_for_conversation.find { |item| item['key'] == topic.to_s }
+      @deal.presentation_menu_items.find { |item| item['key'] == topic.to_s } ||
+        @deal.menu_items_for_conversation.find { |item| item['key'] == topic.to_s }
     end
 
     def generate_ai_response(message)

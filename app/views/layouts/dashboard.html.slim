@@ -1,0 +1,18 @@
+doctype html
+html lang="ja"
+  head
+    = render "layouts/head"
+
+  body.dashboard-body
+    .dashboard-v2-container#dashboard-v2-container
+      .db-v2-sidebar__overlay data-dashboard-sidebar-overlay=""
+      = render "/dashboard/sidebar"
+
+      .db-v2-main-content
+        .db-v2-mobile-bar
+          button.db-v2-sidebar__toggle type="button" aria-label="メニューを開く" data-dashboard-sidebar-toggle=""
+            i.fas.fa-bars
+          span.db-v2-mobile-bar__label Dashboard
+        = yield
+
+    = javascript_include_tag "application", "data-turbolinks-track": "reload"

@@ -1,7 +1,9 @@
 # app/controllers/public/deal_sessions_controller.rb
 module Public
   class DealSessionsController < ApplicationController
-    layout 'deal_public'
+    layout 'deal_public', only: [:show, :create_user_info]
+    layout 'presentation', only: [:conversation]
+
     skip_before_action :verify_authenticity_token, only: [:respond, :evaluate]
     before_action :set_deal_by_token
     before_action :require_registered_user, only: [:conversation, :playback, :respond, :evaluate]
@@ -34,8 +36,7 @@ module Public
     end
 
     def conversation
-      @menu_items = @deal.menu_items_for_conversation
-      @conversation_messages = @deal.conversation_opening_messages
+      load_deal_experience_data
     end
 
     def playback
@@ -48,7 +49,7 @@ module Public
       page_number = params[:page_number]
 
       if page_number.blank? && topic.present?
-        menu_item = @deal.menu_items_for_conversation.find { |item| item['key'] == topic.to_s }
+        menu_item = @deal.presentation_menu_items.find { |item| item['key'] == topic.to_s }
         page_number = menu_item&.dig('page_number')
       end
 
@@ -77,17 +78,27 @@ module Public
 
     private
 
+    def load_deal_experience_data
+      @deal_pages = @deal.deal_pages.order(:page_number)
+      @menu_items = @deal.presentation_menu_items
+      @opening_payload = @deal.presentation_opening_payload
+      @opening_segments = @deal.presentation_opening_segments
+      @conversation_messages = @deal.conversation_opening_messages
+    end
+
     def set_deal_by_token
       @deal = Deal.by_token(params[:token]).first
       unless @deal
         redirect_to root_path, alert: '無効なリンクです'
         return
       end
-    rescue => e
+    rescue StandardError
       redirect_to root_path, alert: '無効なリンクです'
     end
 
     def require_registered_user
+      return if client_preview?
+
       @user = User.find_by(id: session[:user_id])
       unless @user
         redirect_to public_deal_session_path(token: @deal.access_token), alert: 'まず情報を登録してください'
@@ -98,6 +109,10 @@ module Public
       unless @user_progress
         redirect_to public_deal_session_path(token: @deal.access_token), alert: 'まず情報を登録してください'
       end
+    end
+
+    def client_preview?
+      params[:preview].present? && client_signed_in? && @deal.client_id == current_client.id
     end
 
     def user_params

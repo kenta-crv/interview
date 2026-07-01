@@ -1,8 +1,8 @@
 # Be sure to restart your server when you modify this file.
 
 # Version of your assets, change this if you want to expire all your assets.
-Rails.application.config.assets.version = '1.0'
-Rails.application.config.assets.precompile += %w( turbo.js meetia_page_init.js deal_conversation.js deal_presentation.js deal_dashboard.js )
+Rails.application.config.assets.version = '2.3'
+Rails.application.config.assets.precompile += %w( turbo.js meetia_page_init.js deal_presentation.js deal_dashboard.js )
 # Add additional assets to the asset load path.
 # Rails.application.config.assets.paths << Emoji.images_path
 # Add Yarn node_modules folder to the asset load path.

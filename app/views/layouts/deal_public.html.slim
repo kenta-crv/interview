@@ -1,7 +1,18 @@
 doctype html
-html lang="ja"
+html lang="ja" data-turbo="false"
   head
     = render "layouts/head"
+    meta name="turbo-visit-control" content="reload"
+    style type="text/css"
+      | #presentation-start-overlay{position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(15,23,42,.55)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important}
+      | #presentation-start-overlay[hidden]{display:none!important}
+      | #presentation-start-overlay .presentation-start-card{display:block!important;background:#fff!important;border:none!important;border-radius:24px!important;padding:48px 56px!important;text-align:center!important;box-shadow:0 25px 50px -12px rgba(15,23,42,.45)!important;max-width:440px!important;cursor:pointer!important}
+      | #presentation-start-overlay .presentation-start-title{font-size:24px!important;font-weight:700!important;color:#0f172a!important;margin:0 0 8px!important}
+      | #presentation-start-overlay .presentation-start-desc{font-size:14px!important;color:#64748b!important;margin:0!important}
+      | #presentation-start-overlay .presentation-start-icon{display:block!important;font-size:40px!important;margin-bottom:16px!important}
+      | body.deal-public-locked .admin-container{filter:blur(8px)!important;pointer-events:none!important}
   body.deal-public-body data-turbo="false"
     = yield
-    = javascript_include_tag "application", "data-turbolinks-track": "reload"
+    script
+      | (function(){var o=document.getElementById('presentation-start-overlay');if(!o)return;o.hidden=false;o.style.display='flex';document.body.classList.add('deal-public-locked');})();
+    = yield :footer_js

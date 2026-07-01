@@ -1,4 +1,6 @@
 .db-v2-sidebar
+  button.db-v2-sidebar__close type="button" aria-label="メニューを閉じる" data-dashboard-sidebar-close=""
+    i.fas.fa-times
   .db-v2-sidebar__inner
     / ロゴエリア
     .db-v2-sidebar__logo-area
@@ -16,7 +18,8 @@
           i.fas.fa-file-upload
           span 商談管理・台本編集
         
-        = link_to presentation_dashboard_deal_path(@deal.id), class: "db-v2-sidebar__link #{current_page?(presentation_dashboard_deal_path(@deal.id)) ? 'db-v2-sidebar__link--active' : ''}", data: { turbo: false } do
+        - preview_url = conversation_public_deal_session_path(token: @deal.access_token, preview: 1)
+        = link_to preview_url, class: "db-v2-sidebar__link #{request.path.include?('/public/deal/') && params[:preview].present? ? 'db-v2-sidebar__link--active' : ''}", data: { turbo: false } do
           i.fas.fa-laptop-code
           span シミュレーションテスト
       - else

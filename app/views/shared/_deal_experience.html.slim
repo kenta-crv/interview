@@ -1,0 +1,77 @@
+- config_payload = { pages: deal_pages.map { |p| { page_number: p.page_number, title: p.title, script: p.script, audio_url: (p.page_audio.attached? ? rails_blob_path(p.page_audio, only_path: true) : p.audio_url) } }, opening: opening_payload, opening_segments: opening_segments, respond_url: respond_url, evaluate_url: evaluate_url, public_mode: public_mode }.to_json
+
+script type="application/json" id="deal-presentation-config"
+  = raw json_escape(config_payload)
+
+.presentation-wrapper data-turbo="false" data-deal-presentation="" data-respond-url=respond_url data-evaluate-url=evaluate_url
+  .presentation-left
+    .document-area#presentation-document-area
+      - if deal_pages.any?
+        - deal_pages.each_with_index do |page, index|
+          - pdf_url = "#{Rails.application.routes.url_helpers.rails_blob_path(page.deal_document.file, only_path: true)}#page=#{page.page_number}&toolbar=0&navpanes=0&scrollbar=0&view=FitH"
+          .document-slide id="slide-#{page.id}" data-page-number=page.page_number class="#{index == 0 ? 'active' : ''}"
+            - if page.deal_document.file.attached?
+              iframe.document-pdf-clean src=pdf_url title="スライド #{page.page_number}"
+            - else
+              .document-placeholder 資料データがありません
+      - else
+        .document-placeholder
+          p ページがありません。資料をアップロードして処理してください。
+
+    .presentation-topics-bar
+      .guidance-area
+        .choice-buttons#choice-buttons
+          - if menu_items.any?
+            - menu_items.each do |item|
+              = button_tag item['label'], class: 'btn-choice', type: 'button', data: { page_number: item['page_number'], label: item['label'], topic: item['key'], choice: item['key'] }
+          - else
+            - deal_pages.reject { |p| p.page_number == 1 }.first(6).each do |page|
+              = button_tag (page.title.presence || "スライド #{page.page_number}"), class: 'btn-choice', type: 'button', data: { page_number: page.page_number, label: page.title, topic: "page_#{page.page_number}", choice: "page_#{page.page_number}" }
+
+    - if public_mode
+      .presentation-free-text
+        .input-group-copy
+          input.form-control#free-text-input type="text" placeholder="例: 導入までの期間はどのくらいですか？"
+          button.btn-primary-custom#send-free-text type="button" 送信
+
+    .presentation-chat-panel.presentation-chat-panel--closed#presentation-chat-panel
+      button.presentation-chat-toggle type="button" id="presentation-chat-toggle" aria-expanded="false" aria-controls="presentation-chat-panel-body"
+        span.presentation-chat-toggle-label メッセージ
+        span.presentation-chat-toggle-icon aria-hidden="true" ▼
+      .presentation-chat-panel__body#presentation-chat-panel-body
+        .conversation-messages#conversation-messages
+          - opening_messages.each do |msg|
+            .message.message--assistant
+              .message-header
+                span.message-role AIアシスタント
+              .message-content = simple_format(msg[:content] || msg['content'])
+
+  .avatar-sidebar
+    - if finish_url
+      = link_to 'AI商談を終了する', finish_url, class: 'btn-finish-presentation', data: { turbo: false }
+    - else
+      = button_tag '商談を終了', class: 'btn-finish-presentation', type: 'button', id: 'end-conversation-btn'
+    .avatar-area
+      .avatar-frame
+        = image_tag 'avatar_2.png', alt: 'アバター2', class: 'avatar-img-2', loading: 'eager', decoding: 'sync'
+
+- if public_mode
+  .modal#evaluation-modal style="display: none;"
+    .modal-content
+      .modal-header
+        h2 商談評価
+        = button_tag '×', class: 'modal-close', id: 'close-modal', type: 'button'
+      .modal-body
+        .form-group
+          label.form-label 満足度（星5つ中）
+          .star-rating
+            - 5.times do |i|
+              = radio_button_tag 'rating', 5 - i, false, id: "star-#{5 - i}", class: 'star-rating-input'
+              = label_tag "star-#{5 - i}", '★', class: 'star-rating-label'
+        .form-group
+          = label_tag 'feedback', 'ご意見・ご要望', class: 'form-label'
+          = text_area_tag 'feedback', '', class: 'form-control', rows: 4, placeholder: '自由にご意見をお聞かせください'
+      .modal-footer
+        = button_tag '送信', class: 'btn-primary-custom', id: 'submit-evaluation', type: 'button'
+
+= render 'public/deal_sessions/deal_start_overlay'
