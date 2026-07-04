@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_06_27_000001) do
+ActiveRecord::Schema.define(version: 2026_07_04_230000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -156,6 +156,29 @@ ActiveRecord::Schema.define(version: 2026_06_27_000001) do
     t.index ["deal_id"], name: "index_deal_pages_on_deal_id"
   end
 
+  create_table "deal_presentation_events", force: :cascade do |t|
+    t.integer "deal_id", null: false
+    t.integer "user_id"
+    t.integer "user_progress_id"
+    t.string "session_key", null: false
+    t.string "event_type", null: false
+    t.integer "page_number"
+    t.string "topic"
+    t.string "label"
+    t.text "message"
+    t.json "metadata", default: {}
+    t.datetime "occurred_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_id", "occurred_at"], name: "idx_deal_pres_events_on_deal_and_time"
+    t.index ["deal_id", "user_id", "occurred_at"], name: "idx_deal_pres_events_on_deal_user_time"
+    t.index ["deal_id"], name: "index_deal_presentation_events_on_deal_id"
+    t.index ["event_type"], name: "idx_deal_pres_events_on_event_type"
+    t.index ["session_key", "occurred_at"], name: "idx_deal_pres_events_on_session_time"
+    t.index ["user_id"], name: "index_deal_presentation_events_on_user_id"
+    t.index ["user_progress_id"], name: "index_deal_presentation_events_on_user_progress_id"
+  end
+
   create_table "deal_presentations", force: :cascade do |t|
     t.integer "deal_id", null: false
     t.integer "situation_id", null: false
@@ -239,6 +262,10 @@ ActiveRecord::Schema.define(version: 2026_06_27_000001) do
     t.text "usage_guide_script"
     t.json "menu_items", default: []
     t.boolean "playback_ready", default: false, null: false
+    t.string "presentation_cta_label", default: "契約を進める", null: false
+    t.string "presentation_cta_url"
+    t.string "exit_contract_label", default: "契約へ進む", null: false
+    t.string "exit_sales_call_label", default: "担当者と商談を希望", null: false
     t.index ["access_token"], name: "index_deals_on_access_token", unique: true
     t.index ["client_id", "status"], name: "index_deals_on_client_id_and_status"
     t.index ["client_id"], name: "index_deals_on_client_id"
@@ -419,6 +446,9 @@ ActiveRecord::Schema.define(version: 2026_06_27_000001) do
   add_foreign_key "deal_evaluations", "users"
   add_foreign_key "deal_pages", "deal_documents"
   add_foreign_key "deal_pages", "deals"
+  add_foreign_key "deal_presentation_events", "deals"
+  add_foreign_key "deal_presentation_events", "user_progresses"
+  add_foreign_key "deal_presentation_events", "users"
   add_foreign_key "deal_presentations", "deals"
   add_foreign_key "deal_presentations", "situations"
   add_foreign_key "deal_segments", "deal_audios"

@@ -36,6 +36,33 @@
         .info-label 重要ポイント:
         .info-value = simple_format(@user_progress.key_points_for_application)
 
+  - if @presentation_events.any?
+    .admin-card
+      h2.admin-card-title プレゼン操作ログ
+      .table-responsive
+        table.admin-table
+          thead
+            tr
+              th 日時
+              th 種別
+              th ページ
+              th トピック
+              th 詳細
+          tbody
+            - @presentation_events.each do |event|
+              tr
+                td= l(event.occurred_at, format: :short)
+                td= event.event_type
+                td= event.page_number.presence || '-'
+                td= event.label.presence || event.topic.presence || '-'
+                td
+                  - if event.event_type == 'session_close'
+                    | P.#{event.metadata['current_page_number']} で離脱（#{event.metadata['duration_ms']}ms）
+                  - elsif event.event_type == 'free_text_send'
+                    = event.message.to_s.truncate(50)
+                  - else
+                    | -
+
   .admin-actions
-    = link_to '一覧に戻る', client_deal_user_progresses_path(@deal), class: 'btn-secondary-custom'
+    = link_to '一覧に戻る', dashboard_deal_user_progresses_path(@deal), class: 'btn-secondary-custom'
     = link_to '商談詳細に戻る', dashboard_deal_path(@deal), class: 'btn-primary-custom'

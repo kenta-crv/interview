@@ -133,7 +133,7 @@ module Api
         return render_api_error('Missing question_id or answer input', status: :bad_request)
       end
 
-      // ファイルアップロードバリデーション
+      # ファイルアップロードバリデーション
       validate_audio_upload!(audio_file)
       validate_video_upload!(video_file)
 

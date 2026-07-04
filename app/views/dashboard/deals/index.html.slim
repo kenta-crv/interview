@@ -2,6 +2,15 @@
   h1.admin-title 商談一覧
   p.admin-subtitle AI商談の管理・確認ができます
 
+  - plan = current_client.current_plan_config
+  - deal_limit = current_client.deal_limit
+  - if deal_limit
+    p.admin-subtitle
+      | プラン: #{plan[:name]} ／ 商談 #{current_client.deals_count} / #{deal_limit} 件
+  - else
+    p.admin-subtitle
+      | プラン: #{plan[:name]} ／ 商談 #{current_client.deals_count} 件（無制限）
+
   .admin-card
     .admin-actions
       = link_to '新規商談作成', new_dashboard_deal_path, class: 'btn-primary-custom'

@@ -94,6 +94,7 @@ gem 'breadcrumbs_on_rails'
 gem 'friendly_id', '~> 5.5'
 gem 'carrierwave'
 gem 'rack-cors'
+gem 'rack-attack'
 gem 'redis', '~> 4.0'
 gem 'aws-sdk-s3', require: false
 gem "dotenv", "~> 2.8"

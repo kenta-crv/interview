@@ -45,8 +45,8 @@ class WebhooksController < ApplicationController
 
     begin
       if session.mode == 'subscription'
-        plan_type = session.metadata.plan_type
-        trial_ends_at = nil 
+        plan_type = resolve_plan_type_from_session(session)
+        return if plan_type.blank?
 
         if defined?(Subscription) && Subscription.respond_to?(:plan_types)
           unless Subscription.plan_types.keys.include?(plan_type.to_s)
@@ -59,35 +59,28 @@ class WebhooksController < ApplicationController
 
         Subscription.transaction do
           sub = client.subscriptions.find_or_initialize_by(stripe_subscription_id: session.subscription)
-          
+
           client.subscriptions.where.not(id: sub.id).update_all(status: :cancelled)
 
-          final_plan_type = (plan_type == "trial") ? "enterprise" : plan_type
-          
           sub.update!(
-            plan_type: final_plan_type,
+            plan_type: plan_type,
             status: :active,
-            trial_ends_at: trial_ends_at
-            )
-            
-          client.update!(
-              subscription_plan: final_plan_type,
-              subscription_status: 'active'
+            trial_ends_at: nil
           )
 
-      elsif session.mode == 'payment'
-        campaign_id = session.metadata.campaign_id
-        campaign = client.campaigns.find_by(id: campaign_id) if campaign_id.present?
+          client.update!(
+            subscription_plan: plan_type,
+            subscription_status: 'active'
+          )
+        end
 
+      elsif session.mode == 'payment'
         client.payments.create!(
-          campaign: campaign,
           amount: session.amount_total,
           status: 'succeeded',
           stripe_payment_intent_id: session.payment_intent,
-          description: campaign ? "Campaign delivery: #{campaign.title}" : "One-time payment"
+          description: "One-time payment"
         )
-
-        ::PushNotificationSender.deliver(campaign) if campaign
       end
 
     rescue => e
@@ -209,5 +202,27 @@ class WebhooksController < ApplicationController
       Rails.logger.error "========================================================="
       raise e
     end
+  end
+
+  def resolve_plan_type_from_session(session)
+    metadata_plan = session.metadata["plan_type"].presence
+
+    if session.subscription.present?
+      stripe_sub = Stripe::Subscription.retrieve(session.subscription)
+      price_id = stripe_sub.items&.data&.first&.price&.id
+      from_price = StripePlanValidator.plan_type_for_price_id(price_id)
+
+      if from_price.present?
+        if metadata_plan.present? && metadata_plan != from_price
+          Rails.logger.warn "[Webhook] plan_type metadata=#{metadata_plan} price=#{from_price} — using price mapping"
+        end
+        return from_price
+      end
+    end
+
+    metadata_plan
+  rescue Stripe::StripeError => e
+    Rails.logger.error "[Webhook] Failed to resolve plan type: #{e.message}"
+    metadata_plan
   end
 end

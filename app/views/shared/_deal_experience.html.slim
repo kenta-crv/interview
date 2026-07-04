@@ -1,9 +1,11 @@
-- config_payload = { pages: deal_pages.map { |p| { page_number: p.page_number, title: p.title, script: p.script, audio_url: (p.page_audio.attached? ? rails_blob_path(p.page_audio, only_path: true) : p.audio_url) } }, opening: opening_payload, opening_segments: opening_segments, respond_url: respond_url, evaluate_url: evaluate_url, public_mode: public_mode }.to_json
+- deal_record = local_assigns[:deal]
+- cta = deal_record ? deal_record.presentation_cta_payload : (local_assigns[:cta_payload] || {})
+- config_payload = { pages: deal_pages.map { |p| { page_number: p.page_number, title: p.title, script: p.script, audio_url: (p.page_audio.attached? ? rails_blob_path(p.page_audio, only_path: true) : p.audio_url) } }, opening: opening_payload, opening_segments: opening_segments, respond_url: respond_url, evaluate_url: evaluate_url, track_url: (local_assigns[:track_url].presence), public_mode: public_mode, cta: cta }.to_json
 
 script type="application/json" id="deal-presentation-config"
   = raw json_escape(config_payload)
 
-.presentation-wrapper data-turbo="false" data-deal-presentation="" data-respond-url=respond_url data-evaluate-url=evaluate_url
+.presentation-wrapper data-turbo="false" data-deal-presentation="" data-respond-url=respond_url data-evaluate-url=evaluate_url data-track-url=(local_assigns[:track_url].presence)
   .presentation-left
     .document-area#presentation-document-area
       - if deal_pages.any?
@@ -27,6 +29,10 @@ script type="application/json" id="deal-presentation-config"
           - else
             - deal_pages.reject { |p| p.page_number == 1 }.first(6).each do |page|
               = button_tag (page.title.presence || "スライド #{page.page_number}"), class: 'btn-choice', type: 'button', data: { page_number: page.page_number, label: page.title, topic: "page_#{page.page_number}", choice: "page_#{page.page_number}" }
+          - if cta['url'].to_s.strip.present?
+            = link_to cta['label'], cta['url'], target: '_blank', rel: 'noopener noreferrer', class: 'btn-presentation-cta', id: 'presentation-cta-btn', data: { label: cta['label'], turbo: false }
+          - else
+            = button_tag cta['label'], type: 'button', class: 'btn-presentation-cta', id: 'presentation-cta-btn', data: { label: cta['label'] }
 
     - if public_mode
       .presentation-free-text
@@ -55,13 +61,22 @@ script type="application/json" id="deal-presentation-config"
       .avatar-frame
         = image_tag 'avatar_2.png', alt: 'アバター2', class: 'avatar-img-2', loading: 'eager', decoding: 'sync'
 
-- if public_mode
-  .modal#evaluation-modal style="display: none;"
-    .modal-content
+- unless finish_url
+  .modal.presentation-exit-modal#evaluation-modal role="dialog" aria-modal="true" aria-labelledby="evaluation-modal-title"
+    .presentation-exit-modal__backdrop data-close-modal="true"
+    .modal-content.presentation-exit-modal__dialog
       .modal-header
-        h2 商談評価
-        = button_tag '×', class: 'modal-close', id: 'close-modal', type: 'button'
+        h2#evaluation-modal-title 商談を終了します
+        = button_tag '×', class: 'modal-close', id: 'close-modal', type: 'button', 'aria-label': '閉じる'
       .modal-body
+        p.presentation-exit-modal__lead ご検討ありがとうございました。次のアクションをお選びください。
+        .presentation-exit-actions
+          - if cta['url'].to_s.strip.present?
+            = link_to cta['exit_contract_label'], cta['url'], target: '_blank', rel: 'noopener noreferrer', class: 'btn-presentation-cta btn-presentation-cta--wide', id: 'exit-contract-btn', data: { turbo: false }
+          - else
+            = button_tag cta['exit_contract_label'], type: 'button', class: 'btn-presentation-cta btn-presentation-cta--wide', id: 'exit-contract-btn'
+          = button_tag cta['exit_sales_call_label'], type: 'button', class: 'btn-secondary-custom', id: 'exit-sales-call-btn'
+        .presentation-exit-divider
         .form-group
           label.form-label 満足度（星5つ中）
           .star-rating
@@ -72,6 +87,7 @@ script type="application/json" id="deal-presentation-config"
           = label_tag 'feedback', 'ご意見・ご要望', class: 'form-label'
           = text_area_tag 'feedback', '', class: 'form-control', rows: 4, placeholder: '自由にご意見をお聞かせください'
       .modal-footer
-        = button_tag '送信', class: 'btn-primary-custom', id: 'submit-evaluation', type: 'button'
+        = button_tag '評価を送信', class: 'btn-info-custom', id: 'submit-evaluation', type: 'button'
+        = button_tag '閉じる', class: 'btn-secondary-custom', id: 'dismiss-modal', type: 'button'
 
 = render 'public/deal_sessions/deal_start_overlay'

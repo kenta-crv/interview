@@ -1,8 +1,9 @@
 class Dashboard::DealsController < Dashboard::BaseController
   include FileUploadValidation
 
-  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :upload_documents, :processing_status]
+  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :upload_documents, :update_presentation_settings, :processing_status]
   before_action :load_deal_associations, only: [:show]
+  before_action :ensure_deal_quota!, only: [:new, :create]
 
   def index
     @deals = current_client.deals.includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
@@ -13,6 +14,11 @@ class Dashboard::DealsController < Dashboard::BaseController
     @segments = @deal_audio&.deal_segments&.in_order || []
     @situations = current_client.situations.active
     @deal_pages = @deal.deal_pages.order(:page_number)
+    @presentation_events = if current_client.click_analytics_enabled?
+      @deal.deal_presentation_events.includes(:user).recent_first.limit(100)
+    else
+      []
+    end
   end
 
   def presentation
@@ -40,6 +46,7 @@ class Dashboard::DealsController < Dashboard::BaseController
   def ai_rewrite
     target = params[:target]
     instruction = params[:instruction]
+    Rails.logger.info("ai_rewrite start deal=#{@deal.id} target=#{target} page_id=#{params[:page_id]}")
     generator = DealEngine::ScriptGeneratorService.new(@deal)
 
     case target
@@ -113,6 +120,13 @@ class Dashboard::DealsController < Dashboard::BaseController
     @deal.start_processing!
     ProcessDealJob.perform_later(@deal.id)
     redirect_to dashboard_deal_path(@deal), notice: 'AI処理を開始しました。完了まで数分かかる場合があります'
+  end
+
+  def update_presentation_settings
+    @deal.update!(presentation_settings_params)
+    redirect_to dashboard_deal_path(@deal, anchor: 'presentation-cta'), notice: 'プレゼンCTA設定を更新しました'
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to dashboard_deal_path(@deal, anchor: 'presentation-cta'), alert: e.message
   end
 
   def upload_documents
@@ -209,5 +223,15 @@ class Dashboard::DealsController < Dashboard::BaseController
 
   def deal_content_params
     params.require(:deal).permit(:greeting_script, :company_overview_script, :usage_guide_script)
+  end
+
+  def presentation_settings_params
+    params.require(:deal).permit(:presentation_cta_label, :presentation_cta_url, :exit_contract_label, :exit_sales_call_label)
+  end
+
+  def ensure_deal_quota!
+    return if current_client.can_create_deal?
+
+    redirect_to dashboard_deals_path, alert: current_client.deal_limit_message
   end
 end

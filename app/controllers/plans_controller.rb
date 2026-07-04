@@ -30,21 +30,18 @@ class PlansController < ApplicationController
   def select
     plan_type = params[:plan_type]
 
-    unless Subscription::PLAN_PRICES.key?(plan_type.to_sym)
+    unless Subscription::PLAN_CATALOG.key?(plan_type.to_sym)
       redirect_to plans_path, alert: "無効なプランです。"
       return
     end
 
-    # =========================
-    # TRIAL
-    # =========================
     if plan_type == "trial" && current_client.created_at > Subscription::TRIAL_DAYS.days.ago
 
       current_client.subscriptions.where(status: :active).update_all(status: :cancelled)
 
       trial_end = Subscription::TRIAL_DAYS.days.from_now
 
-      subscription = current_client.subscriptions.create!(
+      current_client.subscriptions.create!(
         plan_type: :trial,
         status: :active,
         trial_ends_at: trial_end
@@ -52,8 +49,7 @@ class PlansController < ApplicationController
 
       current_client.update!(
         subscription_plan: "trial",
-        subscription_status: "active",
-        trial_ends_at: trial_end
+        subscription_status: "active"
       )
 
       redirect_to plans_path, notice: "無料トライアルを開始しました。"

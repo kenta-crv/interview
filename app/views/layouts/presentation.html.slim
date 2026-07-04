@@ -13,7 +13,8 @@ html lang="ja" data-turbo="false"
       | #presentation-start-overlay .presentation-start-icon{display:block!important;font-size:40px!important;margin-bottom:16px!important}
       | body.presentation-locked .presentation-wrapper{filter:blur(8px)!important;pointer-events:none!important}
       | .presentation-body .presentation-topics-bar{margin-top:16px!important;flex-shrink:0!important}
-      | .presentation-body .presentation-topics-bar .choice-buttons{display:flex!important;flex-wrap:wrap!important;gap:12px!important;padding:4px 0!important}
+      | .presentation-body .presentation-topics-bar .choice-buttons{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:12px!important;padding:4px 0!important}
+      | .presentation-body .btn-presentation-cta{background:linear-gradient(135deg,#dc2626 0%,#b91c1c 100%)!important;color:#fff!important;box-shadow:0 8px 20px rgba(220,38,38,.35)!important}
       | .presentation-body .presentation-free-text{margin-top:12px!important;flex-shrink:0!important}
       | .presentation-body .presentation-free-text .input-group-copy{display:flex!important;gap:8px!important}
       | .presentation-body .presentation-chat-panel{margin-top:12px!important;flex-shrink:0!important;background:#fff!important;border-radius:20px!important;border:1px solid rgba(226,232,240,.9)!important;overflow:hidden!important}
@@ -25,7 +26,8 @@ html lang="ja" data-turbo="false"
       | .presentation-body .message--assistant{background:#f8f9ff!important;align-self:flex-start!important}
       | .presentation-body .message--user{background:#2541B2!important;color:#fff!important;align-self:flex-end!important}
       | .presentation-body .presentation-free-text .input-group-copy{display:flex!important;gap:8px!important}
-      | .presentation-body .modal{position:fixed!important;inset:0!important;background:rgba(0,0,0,.5)!important;display:none;align-items:center!important;justify-content:center!important;z-index:2147483646!important}
+      | .presentation-body .presentation-exit-modal.presentation-exit-modal--open{display:flex!important}
+      | .presentation-body .presentation-exit-modal{display:none!important;align-items:center!important;justify-content:center!important}
       | .presentation-body .modal-content{background:#fff!important;border-radius:12px!important;padding:24px!important;max-width:480px!important;width:90%!important}
   body.presentation-body data-turbo="false"
     = yield

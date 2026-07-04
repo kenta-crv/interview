@@ -19,7 +19,7 @@
           span 商談管理・台本編集
         
         - preview_url = conversation_public_deal_session_path(token: @deal.access_token, preview: 1)
-        = link_to preview_url, class: "db-v2-sidebar__link #{request.path.include?('/public/deal/') && params[:preview].present? ? 'db-v2-sidebar__link--active' : ''}", data: { turbo: false } do
+        = link_to preview_url, class: "db-v2-sidebar__link #{request.path.include?('/public/deal/') && params[:preview].present? ? 'db-v2-sidebar__link--active' : ''}", target: '_blank', rel: 'noopener', data: { turbo: false } do
           i.fas.fa-laptop-code
           span シミュレーションテスト
       - else

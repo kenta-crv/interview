@@ -29,5 +29,7 @@ module Smart
     authentication: 'plain',
     enable_starttls_auto: true
     }
+
+    config.middleware.use Rack::Attack
   end
 end

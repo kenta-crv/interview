@@ -60,6 +60,16 @@
       }
 
       container._meetiaPollTimer = pollTimer;
+
+      container.querySelectorAll('.btn-ai-rewrite').forEach(function(link) {
+        link.addEventListener('click', function() {
+          window.setTimeout(function() {
+            link.textContent = 'AI改善中...';
+            link.classList.add('is-disabled');
+            link.style.pointerEvents = 'none';
+          }, 0);
+        });
+      });
     });
   }
 

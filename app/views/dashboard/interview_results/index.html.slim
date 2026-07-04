@@ -20,4 +20,4 @@ h1 Interview Results (Client)
           td= result.final_status
           td= result.average_score
           td= l(result.created_at, format: :short)
-          td= link_to 'View', client_interview_result_path(result)
+          td= link_to 'View', dashboard_interview_result_path(result)

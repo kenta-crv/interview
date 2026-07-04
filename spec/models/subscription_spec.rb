@@ -1,5 +1,38 @@
 require 'rails_helper'
 
 RSpec.describe Subscription, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  describe 'PLAN_CATALOG' do
+    it 'includes trial and paid plans for LP' do
+      expect(Subscription.public_plans.keys).to contain_exactly(:trial, :starter, :standard, :enterprise)
+    end
+
+    it 'has expected trial limits' do
+      config = Subscription.plan_config(:trial)
+      expect(config[:price]).to eq(0)
+      expect(config[:deal_limit]).to eq(3)
+      expect(config[:service_limit]).to eq(1)
+      expect(config[:post_trial_plan]).to eq(:standard)
+    end
+
+    it 'has expected starter limits and price' do
+      config = Subscription.plan_config(:starter)
+      expect(config[:price]).to eq(19_800)
+      expect(config[:deal_limit]).to eq(15)
+      expect(config[:service_limit]).to eq(1)
+      expect(config[:click_analytics]).to be true
+    end
+
+    it 'has unlimited deals for enterprise' do
+      config = Subscription.plan_config(:enterprise)
+      expect(config[:deal_limit]).to be_nil
+      expect(config[:service_limit]).to eq(10)
+      expect(config[:price]).to eq(198_000)
+    end
+  end
+
+  describe '.format_feature_value' do
+    it 'shows 近日公開 for enterprise prospect follow up' do
+      expect(Subscription.format_feature_value(:enterprise, :prospect_follow_up)).to eq('近日公開')
+    end
+  end
 end

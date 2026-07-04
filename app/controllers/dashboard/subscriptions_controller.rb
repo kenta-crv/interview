@@ -12,7 +12,7 @@ module Dashboard
     def update
       new_plan_type = params[:plan_type]
 
-      unless Subscription::PLAN_PRICES.key?(new_plan_type.to_sym)
+      unless Subscription::PLAN_CATALOG.key?(new_plan_type.to_sym)
         redirect_to dashboard_subscription_path(client_id: params[:client_id]), alert: "無効なプランです。"
         return
       end

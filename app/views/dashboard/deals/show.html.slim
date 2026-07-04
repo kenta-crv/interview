@@ -5,7 +5,7 @@
       h1.admin-title = @deal.title
       p.admin-subtitle = @deal.description.present? ? @deal.description : "商談の作成・資料アップロード・台本編集・公開"
     .admin-actions.header-actions-row
-      = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: 'btn-secondary-custom', data: { turbo: false } do
+      = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: 'btn-secondary-custom', target: '_blank', rel: 'noopener', data: { turbo: false } do
         span 🔮 シミュレーション
       = link_to edit_dashboard_deal_path(@deal), class: 'btn-secondary-custom' do
         span ⚙️ 基本情報
@@ -49,6 +49,19 @@
                   .doc-meta
                     .document-name = File.basename(doc.file.filename.to_s)
                     .document-size = number_to_human_size(doc.file_size)
+                - if doc.file.attached?
+                  .doc-actions
+                    = link_to 'PDFを開く', rails_blob_path(doc.file, disposition: 'inline'), class: 'btn-secondary-custom btn-sm', target: '_blank', rel: 'noopener'
+                    = link_to 'ダウンロード', rails_blob_path(doc.file, disposition: 'attachment'), class: 'btn-secondary-custom btn-sm'
+
+          - @deal.deal_documents.select { |doc| doc.file.attached? }.each do |doc|
+            .pdf-preview-section
+              h3.admin-card-title = "📖 PDFプレビュー: #{File.basename(doc.file.filename.to_s)}"
+              .pdf-preview-frame
+                iframe.pdf-preview-embed src=rails_blob_path(doc.file, disposition: 'inline') title=File.basename(doc.file.filename.to_s)
+              - related_pages = @deal.deal_pages.select { |p| p.deal_document_id == doc.id }.sort_by(&:page_number)
+              - if related_pages.any?
+                p.pdf-preview-meta 抽出ページ: #{related_pages.map(&:page_number).join(', ')}（全#{related_pages.size}面）
 
           .pdf-process-actions.ai-action-bar
             - if @deal.deal_pages.any?
@@ -99,6 +112,24 @@
         - else
           p.text-muted 資料アップロード後に自動生成されます
 
+      .admin-card.ai-card-flat#presentation-cta
+        h2.admin-card-title 🎯 プレゼンCTA
+        p.admin-subtitle style="font-size: 13px; margin-bottom: 12px;" 契約ボタン・終了モーダルの文言とリンク先
+        = form_with model: @deal, url: update_presentation_settings_dashboard_deal_path(@deal), method: :patch, local: true do |f|
+          .form-group
+            = f.label :presentation_cta_label, 'CTAボタン文言', class: 'form-label'
+            = f.text_field :presentation_cta_label, class: 'form-control'
+          .form-group
+            = f.label :presentation_cta_url, 'リンク先URL', class: 'form-label'
+            = f.url_field :presentation_cta_url, class: 'form-control', placeholder: 'https://'
+          .form-group
+            = f.label :exit_contract_label, '終了：契約ボタン', class: 'form-label'
+            = f.text_field :exit_contract_label, class: 'form-control'
+          .form-group
+            = f.label :exit_sales_call_label, '終了：担当者商談', class: 'form-label'
+            = f.text_field :exit_sales_call_label, class: 'form-control'
+          = f.submit '保存', class: 'btn-primary-custom btn-sm'
+
   - if @deal.deal_pages.any?
     .admin-card.ai-card-timeline#content-edit
       .card-header-mix
@@ -107,14 +138,14 @@
           = button_to '公開する', publish_dashboard_deal_path(@deal), method: :post, class: 'btn-primary-custom', data: { confirm: '商談URLを公開しますか？' }
           = button_to '全音声再生成', regenerate_audio_dashboard_deal_path(@deal), method: :post, class: 'btn-secondary-custom'
 
-      = form_with url: update_content_dashboard_deal_path(@deal), method: :patch, local: true do
+      = form_with url: update_content_dashboard_deal_path(@deal), method: :patch, local: true, html: { id: 'deal-content-form', data: { turbolinks: false } } do
         .content-edit-section
           h3.admin-card-title 冒頭パート
           - [['greeting', '挨拶'], ['company_overview', '会社概要'], ['usage_guide', '操作案内']].each do |key, label|
             .form-group
               .studio-field-header
                 label.form-label = label
-                = button_to 'AI改善', ai_rewrite_dashboard_deal_path(@deal, target: key), method: :post, class: 'btn-info-custom btn-sm', form: { data: { turbo: false } }
+                = link_to 'AI改善', ai_rewrite_dashboard_deal_path(@deal, target: key), method: :post, class: 'btn-info-custom btn-sm btn-ai-rewrite', data: { turbolinks: false, confirm: 'AIで台本を改善します。数秒〜数十秒かかる場合があります。' }
               = text_area_tag "deal[#{key}_script]", @deal.public_send("#{key}_script").presence || @deal.public_send("default_#{key}_text"), class: 'form-control', rows: 3
               - audio_url = @deal.opening_speech_url(key)
               - if audio_url
@@ -133,8 +164,8 @@
                 .studio-field-header
                   label.form-label 読み上げ台本
                   .studio-actions
-                    = button_to 'AI改善', ai_rewrite_dashboard_deal_path(@deal, target: 'page', page_id: page.id), method: :post, class: 'btn-info-custom btn-sm', form: { data: { turbo: false } }
-                    = button_to '音声再生成', regenerate_audio_dashboard_deal_path(@deal, page_id: page.id), method: :post, class: 'btn-secondary-custom btn-sm', form: { data: { turbo: false } }
+                    = link_to 'AI改善', ai_rewrite_dashboard_deal_path(@deal, target: 'page', page_id: page.id), method: :post, class: 'btn-info-custom btn-sm btn-ai-rewrite', data: { turbolinks: false, confirm: 'AIで台本を改善します。数秒〜数十秒かかる場合があります。' }
+                    = link_to '音声再生成', regenerate_audio_dashboard_deal_path(@deal, page_id: page.id), method: :post, class: 'btn-secondary-custom btn-sm', data: { turbolinks: false, confirm: 'このページの音声を再生成しますか？' }
                 = text_area_tag "pages[#{page.id}][script]", page.script, class: 'form-control', rows: 4
                 - if page.page_audio.attached?
                   audio.ai-player controls=true
@@ -142,6 +173,44 @@
 
         .form-actions.action-right-align
           = submit_tag '変更を保存', class: 'btn-primary-custom'
+
+  - if @presentation_events&.any?
+    .admin-card.ai-card-flat#presentation-analytics
+      h2.admin-card-title 📊 プレゼン操作ログ（直近#{@presentation_events.size}件）
+      p.admin-subtitle ユーザーのトピッククリック・離脱タイミングなどを記録しています
+      .table-responsive
+        table.admin-table
+          thead
+            tr
+              th 日時
+              th ユーザー
+              th 種別
+              th ページ
+              th トピック / ラベル
+              th 詳細
+          tbody
+            - @presentation_events.each do |event|
+              tr
+                td= l(event.occurred_at, format: :short)
+                td= event.user&.name.presence || event.user&.email || 'プレビュー'
+                td= event.display_event_type
+                td= event.page_number.presence || '-'
+                td
+                  - if event.label.present?
+                    = event.label
+                  - elsif event.topic.present?
+                    = event.topic
+                  - else
+                    | -
+                td
+                  - if event.event_type == 'session_close' && event.metadata.present?
+                    | P.#{event.metadata['current_page_number']} / #{event.metadata['duration_ms']}ms
+                  - elsif event.event_type == 'free_text_send'
+                    = event.message.to_s.truncate(40)
+                  - elsif event.event_type.in?(%w[cta_click exit_contract_click exit_sales_call_click])
+                    = event.label.presence || event.metadata&.dig('url').to_s.truncate(40)
+                  - elsif event.metadata.present?
+                    = event.metadata.to_json.truncate(60)
 
 .modal id='share-url-modal' style='display: none;'
   .modal-backdrop

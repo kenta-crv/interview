@@ -1,7 +1,4 @@
-# app/controllers/client/interview_results_controller.rb
-class Client::InterviewResultsController < ApplicationController
-  before_action :authenticate_client!
-
+class Dashboard::InterviewResultsController < Dashboard::BaseController
   def index
     @results = InterviewResult
       .joins(interview: :situation)

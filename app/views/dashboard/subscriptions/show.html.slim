@@ -46,18 +46,7 @@
 
             .mt-5.pt-4 style="border-top: 1px solid rgba(56, 189, 248, 0.2);"
               h3.sc-detect__label.mb-3 プランのアップグレード・変更
-              .d-flex.flex-wrap.gap-3
-                - current_plan = @subscription&.plan_type || @target_client.subscription_plan
-
-                - unless current_plan == 'standard'
-                  = link_to checkout_confirmation_path(plan_type: "standard", client_id: params[:client_id]), class: "sc-detect__btn sc-detect__btn--primary", style: "text-decoration: none;" do
-                    i.fas.fa-level-up-alt.me-1
-                    = "#{Subscription::PLAN_NAMES[:standard]}に変更"
-
-                - unless current_plan == 'enterprise'
-                  = link_to checkout_confirmation_path(plan_type: "enterprise", client_id: params[:client_id]), class: "sc-detect__btn sc-detect__btn--primary", style: "text-decoration: none;" do
-                    i.fas.fa-rocket.me-1
-                    = "#{Subscription::PLAN_NAMES[:enterprise]}に変更"
+              = render "dashboard/subscriptions/upgrade_links", subscription: @subscription, target_client: @target_client, client_id: params[:client_id]
 
             - if is_active
               .mt-4.pt-4 style="border-top: 1px solid rgba(56, 189, 248, 0.1);"

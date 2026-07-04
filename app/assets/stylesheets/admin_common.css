@@ -759,6 +759,41 @@ textarea.form-control {
   display: flex;
   flex-direction: column;
 }
+.doc-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.ai-doc-row {
+  justify-content: space-between;
+}
+.pdf-preview-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px dashed #e2e8f0;
+}
+.pdf-preview-section .admin-card-title {
+  margin-bottom: 12px;
+}
+.pdf-preview-frame {
+  width: 100%;
+  height: 520px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8fafc;
+}
+.pdf-preview-embed {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.pdf-preview-meta {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
 
 /* アラート・ステータス表示 */
 .ai-action-bar {

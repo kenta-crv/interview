@@ -10,6 +10,7 @@ class Deal < ApplicationRecord
   has_one :deal_summary, dependent: :destroy
   has_many :user_progresses, dependent: :destroy
   has_many :deal_evaluations, dependent: :destroy
+  has_many :deal_presentation_events, dependent: :destroy
 
   enum status: {
     uploading: 0,
@@ -41,6 +42,19 @@ class Deal < ApplicationRecord
     { 'key' => 'trial', 'label' => 'トライアル', 'page_number' => 3 },
     { 'key' => 'contract', 'label' => '契約フロー', 'page_number' => 4 }
   ].freeze
+
+  DEFAULT_CTA_LABEL = "契約を進める".freeze
+  DEFAULT_EXIT_CONTRACT_LABEL = "契約へ進む".freeze
+  DEFAULT_EXIT_SALES_CALL_LABEL = "担当者と商談を希望".freeze
+
+  def presentation_cta_payload
+    {
+      'label' => presentation_cta_label.presence || DEFAULT_CTA_LABEL,
+      'url' => presentation_cta_url.to_s,
+      'exit_contract_label' => exit_contract_label.presence || DEFAULT_EXIT_CONTRACT_LABEL,
+      'exit_sales_call_label' => exit_sales_call_label.presence || DEFAULT_EXIT_SALES_CALL_LABEL
+    }
+  end
 
   def menu_items_for_conversation
     items = presentation_menu_items

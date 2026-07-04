@@ -4,8 +4,7 @@
 # テスト環境ではMemoryStoreを使用、本番ではRedis推奨
 #
 class Rack::Attack
-  # キャッシュストア設定
-  # Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
+  Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
 
   ### ホワイトリスト ###
 
@@ -34,6 +33,16 @@ class Rack::Attack
   # 回答送信: 1IPあたり30リクエスト/分（音声/動画アップロードの制限）
   throttle('api/interviews/submit_answer', limit: 30, period: 1.minute) do |req|
     req.ip if req.path =~ %r{/api/interviews/\d+/submit_answer} && req.post?
+  end
+
+  # 公開商談のAI応答: 1IPあたり30リクエスト/分
+  throttle('public/deal/respond', limit: 30, period: 1.minute) do |req|
+    req.ip if req.path =~ %r{/public/deal/[^/]+/respond} && req.post?
+  end
+
+  # 公開商談の操作ログ: 1IPあたり120リクエスト/分
+  throttle('public/deal/track_event', limit: 120, period: 1.minute) do |req|
+    req.ip if req.path =~ %r{/public/deal/[^/]+/track_event} && req.post?
   end
 
   # 面接完了: 1IPあたり10リクエスト/分

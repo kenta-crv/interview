@@ -1,7 +1,8 @@
 # app/controllers/situations_controller.rb
 class SituationsController < ApplicationController
-  before_action :authenticate_client!, except: [:show]  # クライアント認証（閲覧は除く）
+  before_action :authenticate_client!, except: [:show]
   before_action :set_situation, only: [:show, :edit, :update, :destroy]
+  before_action :ensure_service_quota!, only: [:new, :create]
 
   def index
     @situations = current_client.situations
@@ -48,5 +49,11 @@ class SituationsController < ApplicationController
 
   def situation_params
     params.require(:situation).permit(:title, :description, :language, :archived)
+  end
+
+  def ensure_service_quota!
+    return if current_client.can_create_service?
+
+    redirect_to situations_path, alert: current_client.service_limit_message
   end
 end

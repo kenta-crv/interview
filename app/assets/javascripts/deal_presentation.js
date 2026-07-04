@@ -2,7 +2,7 @@
   var init = window.MeetiaPageInit;
 
   function readConfig() {
-    var defaults = { pages: [], opening: {}, opening_segments: [], public_mode: false };
+    var defaults = { pages: [], opening: {}, opening_segments: [], public_mode: false, cta: {} };
     var el = document.getElementById('deal-presentation-config');
     if (!el) return defaults;
 
@@ -14,7 +14,9 @@
         opening_segments: data.opening_segments || [],
         respond_url: data.respond_url || '',
         evaluate_url: data.evaluate_url || '',
-        public_mode: !!data.public_mode
+        track_url: data.track_url || '',
+        public_mode: !!data.public_mode,
+        cta: data.cta || {}
       };
     } catch (_e) {
       return defaults;
@@ -43,6 +45,7 @@
       var openingSegments = config.opening_segments;
       var respondUrl = root.dataset.respondUrl || config.respond_url;
       var evaluateUrl = root.dataset.evaluateUrl || config.evaluate_url;
+      var trackUrl = root.dataset.trackUrl || config.track_url;
       var slides = root.querySelectorAll('.document-slide');
       var choiceButtons = root.querySelectorAll('.btn-choice');
       var avatar = root.querySelector('.avatar-img-2');
@@ -56,9 +59,159 @@
       var endBtn = document.getElementById('end-conversation-btn');
       var modal = document.getElementById('evaluation-modal');
       var closeModalBtn = document.getElementById('close-modal');
+      var dismissModalBtn = document.getElementById('dismiss-modal');
       var submitEvaluationBtn = document.getElementById('submit-evaluation');
+      var ctaBtn = document.getElementById('presentation-cta-btn');
+      var exitContractBtn = document.getElementById('exit-contract-btn');
+      var exitSalesCallBtn = document.getElementById('exit-sales-call-btn');
+      var ctaConfig = config.cta || {};
       var currentAudio = null;
       var presentationStarted = false;
+      var currentPageNumber = parseInt((opening.greeting_page || opening['greeting-page'] || 1), 10);
+      var sessionStartedAt = Date.now();
+      var sessionKey = (function() {
+        var storageKey = 'deal-presentation-session';
+        var existing = null;
+        try { existing = sessionStorage.getItem(storageKey); } catch (_e) {}
+        if (existing) return existing;
+        var generated = 'sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+        try { sessionStorage.setItem(storageKey, generated); } catch (_e2) {}
+        return generated;
+      })();
+      var closeLogged = false;
+
+      function trackEvent(eventType, details) {
+        if (!trackUrl) return;
+
+        var payload = Object.assign({
+          session_key: sessionKey,
+          event_type: eventType,
+          page_number: currentPageNumber,
+          occurred_at: new Date().toISOString()
+        }, details || {});
+
+        var body = JSON.stringify(payload);
+        var useBeacon = eventType === 'session_close' && navigator.sendBeacon;
+
+        if (useBeacon) {
+          var blob = new Blob([body], { type: 'application/json' });
+          navigator.sendBeacon(trackUrl, blob);
+          return;
+        }
+
+        fetch(trackUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken()
+          },
+          body: body,
+          keepalive: true
+        }).catch(function() {});
+      }
+
+      function logSessionClose(reason) {
+        if (closeLogged) return;
+        closeLogged = true;
+        trackEvent('session_close', {
+          metadata: {
+            reason: reason,
+            presentation_started: presentationStarted,
+            current_page_number: currentPageNumber,
+            duration_ms: Date.now() - sessionStartedAt
+          }
+        });
+      }
+
+      function ctaUrl() {
+        return (ctaConfig.url || '').trim();
+      }
+
+      function openCtaUrl(source) {
+        var url = ctaUrl();
+        if (!url) {
+          alert('契約ページのURLが設定されていません。');
+          return false;
+        }
+        var opened = window.open(url, '_blank', 'noopener,noreferrer');
+        if (!opened) {
+          window.location.assign(url);
+        }
+        return true;
+      }
+
+      function trackCtaClick(source, label) {
+        trackEvent('cta_click', {
+          label: label,
+          metadata: { source: source, url: ctaUrl() }
+        });
+      }
+
+      function handleCtaInteraction(e, source) {
+        var url = ctaUrl();
+        var label = ctaConfig.label || (ctaBtn && (ctaBtn.dataset.label || ctaBtn.textContent.trim())) || 'CTA';
+
+        if (!presentationStarted) {
+          if (e) e.preventDefault();
+          startPresentation().then(function() {
+            trackCtaClick(source, label);
+            if (url) openCtaUrl(source);
+            else alert('契約ページのURLが設定されていません。');
+          });
+          return;
+        }
+
+        trackCtaClick(source, label);
+        if (!url) {
+          if (e) e.preventDefault();
+          alert('契約ページのURLが設定されていません。');
+        }
+      }
+
+      function showExitModal() {
+        if (!modal) return;
+        hideOverlay();
+        modal.classList.add('presentation-exit-modal--open');
+        document.body.classList.add('presentation-exit-open');
+        document.body.classList.remove('presentation-locked');
+      }
+
+      function hideExitModal() {
+        if (!modal) return;
+        modal.classList.remove('presentation-exit-modal--open');
+        document.body.classList.remove('presentation-exit-open');
+      }
+
+      function handleCtaClick(source) {
+        handleCtaInteraction(null, source);
+      }
+
+      function handleExitContractClick(e) {
+        var label = ctaConfig.exit_contract_label || (exitContractBtn && exitContractBtn.textContent.trim()) || '契約へ進む';
+        var url = ctaUrl();
+
+        trackEvent('exit_contract_click', {
+          label: label,
+          metadata: { url: url }
+        });
+
+        if (!url) {
+          if (e) e.preventDefault();
+          alert('契約ページのURLが設定されていません。');
+          return;
+        }
+
+        hideExitModal();
+      }
+
+      function handleExitSalesCallClick() {
+        var label = ctaConfig.exit_sales_call_label || (exitSalesCallBtn && exitSalesCallBtn.textContent.trim()) || '担当者と商談を希望';
+        trackEvent('exit_sales_call_click', {
+          label: label,
+          metadata: { status: 'pending_implementation' }
+        });
+        alert('担当者より折り返しご連絡いたします。しばらくお待ちください。');
+      }
 
       function openingValue(key) {
         return opening[key] || opening[key.replace(/_/g, '-')] || null;
@@ -180,6 +333,10 @@
       }
 
       function presentPage(pageNumber) {
+        if (currentPageNumber !== pageNumber) {
+          trackEvent('page_view', { page_number: pageNumber });
+        }
+        currentPageNumber = pageNumber;
         showSlideByPageNumber(pageNumber);
         setActiveButton(pageNumber);
       }
@@ -239,6 +396,7 @@
       function startPresentation() {
         if (presentationStarted) return Promise.resolve();
         presentationStarted = true;
+        trackEvent('presentation_start', { page_number: currentPageNumber });
         hideOverlay();
         return playOpeningSegments(segmentsForOpening());
       }
@@ -266,7 +424,14 @@
       function handleTopicChoice(button) {
         var pageNumber = parseInt(button.dataset.pageNumber, 10);
         var topic = button.dataset.topic;
+        var label = button.dataset.label;
         if (!pageNumber) return Promise.resolve();
+
+        trackEvent('topic_click', {
+          page_number: pageNumber,
+          topic: topic,
+          label: label
+        });
 
         presentPage(pageNumber);
         var page = pages.find(function(p) { return p.page_number === pageNumber; });
@@ -282,6 +447,7 @@
       }
 
       function handleFreeText(message) {
+        trackEvent('free_text_send', { message: message, page_number: currentPageNumber });
         appendChatMessage(message, 'user');
         return fetchResponse({ message: message }).then(function(result) {
           if (result.page_number) presentPage(result.page_number);
@@ -303,6 +469,10 @@
         chatToggle.addEventListener('click', function() {
           var isClosed = chatPanel.classList.contains('presentation-chat-panel--closed');
           setChatPanelOpen(isClosed);
+          trackEvent('chat_toggle', {
+            metadata: { open: isClosed },
+            page_number: currentPageNumber
+          });
         });
       }
 
@@ -343,18 +513,48 @@
         });
       }
 
-      if (endBtn && modal) {
-        endBtn.addEventListener('click', function() {
-          modal.style.display = 'flex';
+      if (ctaBtn) {
+        ctaBtn.addEventListener('click', function(e) {
+          handleCtaInteraction(e, 'presentation_bar');
         });
       }
 
-      if (closeModalBtn && modal) {
-        closeModalBtn.addEventListener('click', function() {
-          modal.style.display = 'none';
+      if (endBtn && modal) {
+        endBtn.addEventListener('click', function() {
+          trackEvent('session_close', {
+            metadata: {
+              reason: 'end_button',
+              presentation_started: presentationStarted,
+              current_page_number: currentPageNumber,
+              duration_ms: Date.now() - sessionStartedAt
+            }
+          });
+          closeLogged = true;
+          showExitModal();
+        });
+      }
+
+      if (exitContractBtn) {
+        exitContractBtn.addEventListener('click', handleExitContractClick);
+      }
+
+      if (exitSalesCallBtn) {
+        exitSalesCallBtn.addEventListener('click', handleExitSalesCallClick);
+      }
+
+      [closeModalBtn, dismissModalBtn].forEach(function(btn) {
+        if (!btn) return;
+        btn.addEventListener('click', hideExitModal);
+      });
+
+      if (modal) {
+        modal.querySelectorAll('[data-close-modal]').forEach(function(el) {
+          el.addEventListener('click', hideExitModal);
         });
         modal.addEventListener('click', function(e) {
-          if (e.target === modal) modal.style.display = 'none';
+          if (e.target === modal || e.target.classList.contains('presentation-exit-modal__backdrop')) {
+            hideExitModal();
+          }
         });
       }
 
@@ -368,6 +568,12 @@
           }
 
           if (evaluateUrl) {
+            trackEvent('evaluation_submit', {
+              metadata: {
+                rating: rating.value,
+                feedback: feedbackEl ? feedbackEl.value : ''
+              }
+            });
             fetch(evaluateUrl, {
               method: 'POST',
               headers: {
@@ -381,7 +587,7 @@
             }).catch(function() {});
           }
 
-          modal.style.display = 'none';
+          hideExitModal();
           alert('評価を送信しました。ありがとうございました！');
         });
       }
@@ -389,6 +595,13 @@
       setChatPanelOpen(false);
       presentPage(parseInt(openingValue('greeting_page'), 10) || 1);
       showOverlay();
+
+      window.addEventListener('pagehide', function() {
+        logSessionClose('pagehide');
+      });
+      window.addEventListener('beforeunload', function() {
+        logSessionClose('beforeunload');
+      });
     });
   }
 

@@ -1,4 +1,5 @@
 class TopsController < ApplicationController
+  layout "lp", only: [:index]
 
   def index
   end

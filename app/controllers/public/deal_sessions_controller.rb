@@ -4,9 +4,10 @@ module Public
     layout 'deal_public', only: [:show, :create_user_info]
     layout 'presentation', only: [:conversation]
 
-    skip_before_action :verify_authenticity_token, only: [:respond, :evaluate]
+    skip_before_action :verify_authenticity_token, only: [:respond, :evaluate, :track_event]
     before_action :set_deal_by_token
     before_action :require_registered_user, only: [:conversation, :playback, :respond, :evaluate]
+    before_action :load_tracking_context, only: [:track_event]
 
     def show
       @user_progress = @deal.user_progresses.find_or_initialize_by(user: current_user)
@@ -76,7 +77,72 @@ module Public
       render json: { message: '評価を保存しました' }
     end
 
+    def track_event
+      data = json_request_params
+      session_key = data['session_key']
+      events = normalize_track_events(data)
+      return head :bad_request if session_key.blank? || events.blank?
+
+      events.each do |event|
+        event_type = event[:event_type].to_s
+        next unless DealPresentationEvent::EVENT_TYPES.include?(event_type)
+
+        metadata = (event[:metadata] || {}).merge(client_preview? ? { preview: true } : {})
+
+        @deal.deal_presentation_events.create!(
+          user: @user,
+          user_progress: @user_progress,
+          session_key: session_key,
+          event_type: event_type,
+          page_number: event[:page_number],
+          topic: event[:topic],
+          label: event[:label],
+          message: event[:message],
+          metadata: metadata,
+          occurred_at: parse_event_time(event[:occurred_at])
+        )
+      end
+
+      head :ok
+    end
+
     private
+
+    def json_request_params
+      if params[:session_key].present? || params[:event_type].present?
+        return params.to_unsafe_h
+      end
+
+      return {} unless request.content_type.to_s.include?('application/json')
+
+      body = request.body.read
+      return {} if body.blank?
+
+      JSON.parse(body)
+    rescue JSON::ParserError
+      {}
+    end
+
+    def normalize_track_events(data)
+      data = data.to_unsafe_h if data.respond_to?(:to_unsafe_h)
+      data = data.with_indifferent_access
+
+      if data[:events].present?
+        Array(data[:events]).map { |event| event.to_h.symbolize_keys }
+      elsif data[:event_type].present?
+        [data.slice(:event_type, :page_number, :topic, :label, :message, :occurred_at, :metadata).symbolize_keys]
+      else
+        []
+      end
+    end
+
+    def parse_event_time(value)
+      return Time.current if value.blank?
+
+      Time.zone.parse(value.to_s)
+    rescue ArgumentError
+      Time.current
+    end
 
     def load_deal_experience_data
       @deal_pages = @deal.deal_pages.order(:page_number)
@@ -109,6 +175,14 @@ module Public
       unless @user_progress
         redirect_to public_deal_session_path(token: @deal.access_token), alert: 'まず情報を登録してください'
       end
+    end
+
+    def load_tracking_context
+      return if client_preview?
+
+      @user = User.find_by(id: session[:user_id])
+      @user_progress = @deal.user_progresses.find_by(user: @user) if @user
+      head :forbidden unless @user_progress
     end
 
     def client_preview?

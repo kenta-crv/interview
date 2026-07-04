@@ -1,6 +1,4 @@
-# app/controllers/client/user_progresses_controller.rb
-class Client::UserProgressesController < ApplicationController
-  before_action :authenticate_client!
+class Dashboard::UserProgressesController < Dashboard::BaseController
   before_action :set_deal
 
   def index
@@ -9,6 +7,10 @@ class Client::UserProgressesController < ApplicationController
 
   def show
     @user_progress = @deal.user_progresses.find(params[:id])
+    @presentation_events = @deal.deal_presentation_events
+                               .where(user_id: @user_progress.user_id)
+                               .recent_first
+                               .limit(100)
   end
 
   private

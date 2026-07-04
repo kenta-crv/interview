@@ -1,4 +1,5 @@
 = render 'shared/deal_experience',
+  deal: @deal,
   deal_pages: @deal_pages,
   menu_items: @menu_items,
   opening_payload: @opening_payload,
@@ -6,5 +7,6 @@
   opening_messages: @conversation_messages,
   respond_url: respond_public_deal_session_path(token: @deal.access_token),
   evaluate_url: evaluate_public_deal_session_path(token: @deal.access_token),
+  track_url: track_event_public_deal_session_path(token: @deal.access_token),
   finish_url: nil,
   public_mode: true

@@ -3,12 +3,11 @@ Rails.application.routes.draw do
     sessions: 'users/sessions',
     registrations: 'users/registrations'
   }
-  devise_for :admins, controllers: {
+  devise_for :admins, skip: [:registrations], controllers: {
     sessions: "admins/sessions",
-    registrations: "admins/registrations",
     passwords: "admins/passwords"
   }
-  
+
   devise_for :clients, controllers: {
     sessions: "clients/sessions",
     registrations: "clients/registrations",
@@ -27,7 +26,7 @@ Rails.application.routes.draw do
 
   # --- Sidekiq Web UI ---
   require 'sidekiq/web'
-  authenticate :admin do 
+  authenticate :admin do
     mount Sidekiq::Web, at: "/sidekiq"
   end
 
@@ -68,13 +67,9 @@ Rails.application.routes.draw do
   get '/api/interviews/start', to: redirect('/interview')
   get '/api/interviews/start_by_token', to: redirect('/interview')
 
-  # 不要になった場合は削除、あるいは管理用として残す場合は保持
   namespace :admin do
     resources :interview_results, only: [:index, :show]
   end
-
-  # API for AI responses
-  post '/api/ai_response', to: 'api/ai_responses#create'
 
   # Public Deal Sessions (for users accessing deals via access token)
   namespace :public do
@@ -84,6 +79,7 @@ Rails.application.routes.draw do
       get :playback, on: :member
       post :respond, on: :member
       post :evaluate, on: :member
+      post :track_event, on: :member
     end
   end
 
@@ -91,17 +87,14 @@ Rails.application.routes.draw do
   # --- ダッシュボード機能の集約 ---
   namespace :dashboard do
     get 'index', to: 'dashboard#index', as: :index
-    get 'setting', to: 'dashboard#setting', as: :setting
-    get 'management', to: 'dashboard#management', as: :management
     root to: 'dashboard#index'
-    
+
     resource :subscription, only: [:show, :update] do
       get :cancel_confirm
       post :cancel
     end
     resources :notifications
 
-    # client から dashboard へ移行したリソース
     resources :interview_results, only: [:index, :show]
     resources :deals do
       resources :user_progresses, only: [:index, :show]
@@ -113,13 +106,9 @@ Rails.application.routes.draw do
         post :publish
         post :reprocess
         post :upload_documents
+        patch :update_presentation_settings
         get :processing_status
       end
-    end
-
-    # 外出しになっていた clients とその子リソースを dashboard 内に移動
-    resources :clients do
-      resources :push_subscriptions, only: [:index, :create]
     end
   end
 
@@ -135,10 +124,8 @@ Rails.application.routes.draw do
   get 'checkout/success', to: 'checkout#success', as: :checkout_success
   get 'checkout/cancel', to: 'checkout#cancel', as: :checkout_cancel
 
-  post 'stripe/webhook', to: 'stripe_webhooks#create'
   get 'plans', to: 'plans#index', as: :plans
   post 'plans/select', to: 'plans#select', as: :select_plan
-
 
   get '/unsubscribe/:token', to: 'unsubscribes#show', as: :unsubscribe
   post '/webhooks/stripe', to: 'webhooks#stripe'
