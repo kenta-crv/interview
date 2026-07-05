@@ -15,6 +15,7 @@ module DealEngine
 
       @deal.update!(playback_ready: false)
       @deal.complete!
+      AnalyzeDealKnowledgeGapsJob.perform_later(@deal.id)
       Rails.logger.info("DealPipeline completed for deal #{@deal.id}")
     rescue => e
       @deal.fail!
@@ -37,7 +38,7 @@ module DealEngine
     def process_pdf_documents!
       @deal.deal_pages.destroy_all
 
-      @deal.deal_documents.each do |document|
+      @deal.deal_documents.proposals.each do |document|
         next unless document.file.attached?
         next unless document.content_type&.include?('pdf')
 

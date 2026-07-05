@@ -11,6 +11,7 @@ class Deal < ApplicationRecord
   has_many :user_progresses, dependent: :destroy
   has_many :deal_evaluations, dependent: :destroy
   has_many :deal_presentation_events, dependent: :destroy
+  has_many :deal_faqs, dependent: :destroy
 
   enum status: {
     uploading: 0,
@@ -47,6 +48,16 @@ class Deal < ApplicationRecord
   DEFAULT_EXIT_CONTRACT_LABEL = "契約へ進む".freeze
   DEFAULT_EXIT_SALES_CALL_LABEL = "担当者と商談を希望".freeze
 
+  INDUSTRIES = {
+    "general" => "一般",
+    "saas" => "SaaS・IT",
+    "hr" => "人材・採用",
+    "consulting" => "コンサル",
+    "manufacturing" => "製造・メーカー"
+  }.freeze
+
+  SYSTEM_FAQ_SOURCES = %w[ai_gap template supplement_pdf session_log stress_test checklist].freeze
+
   def presentation_cta_payload
     {
       'label' => presentation_cta_label.presence || DEFAULT_CTA_LABEL,
@@ -54,6 +65,54 @@ class Deal < ApplicationRecord
       'exit_contract_label' => exit_contract_label.presence || DEFAULT_EXIT_CONTRACT_LABEL,
       'exit_sales_call_label' => exit_sales_call_label.presence || DEFAULT_EXIT_SALES_CALL_LABEL
     }
+  end
+
+  def approved_faqs_for_conversation
+    deal_faqs.for_conversation.ordered
+  end
+
+  def faq_context_for_prompt
+    approved_faqs_for_conversation.map do |faq|
+      "Q: #{faq.question}\nA: #{faq.answer}"
+    end.join("\n\n")
+  end
+
+  def knowledge_coverage_percent
+    suggested = deal_faqs.where(source: SYSTEM_FAQ_SOURCES).where.not(status: "skipped")
+    return 100 if suggested.empty?
+
+    answered = suggested.where(status: "approved").where.not(answer: [nil, ""]).count
+    ((answered.to_f / suggested.count) * 100).round
+  end
+
+  def industry_label
+    INDUSTRIES[industry] || INDUSTRIES["general"]
+  end
+
+  def checklist_coverage
+    DealEngine::IndustryFaqChecklist.coverage(self)
+  end
+
+  def unanswered_free_text_questions(limit: 20)
+    messages = deal_presentation_events
+      .where(event_type: "free_text_send")
+      .where.not(message: [nil, ""])
+      .order(occurred_at: :desc)
+      .limit(limit)
+      .pluck(:message)
+      .uniq
+
+    messages.reject do |message|
+      deal_faqs.exists?(["question LIKE ?", "%#{message.to_s.truncate(30)}%"])
+    end
+  end
+
+  def pending_faq_count
+    deal_faqs.pending.count
+  end
+
+  def low_knowledge_coverage?
+    knowledge_coverage_percent < 70
   end
 
   def menu_items_for_conversation
@@ -313,7 +372,7 @@ class Deal < ApplicationRecord
   end
 
   def collect_documents
-    deal_documents.filter_map do |doc|
+    deal_documents.proposals.filter_map do |doc|
       next unless doc.file.attached?
 
       raw = doc.file.download

@@ -104,6 +104,9 @@ module DealEngine
           【スライド台本】
           #{pages_context}
 
+          【FAQ（承認済み）】
+          #{faq_context}
+
           #{user_context}
         PROMPT
       else
@@ -113,9 +116,17 @@ module DealEngine
 
           Summary: #{summary&.summary}
           Slides: #{pages_context}
+          FAQ: #{faq_context}
           #{user_context}
         PROMPT
       end
+    end
+
+    def faq_context
+      context = @deal.faq_context_for_prompt
+      return (@language == 'ja' ? '（未設定）' : '(none)') if context.blank?
+
+      context
     end
 
     def fallback_response(message)

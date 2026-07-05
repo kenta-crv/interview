@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_07_04_230000) do
+ActiveRecord::Schema.define(version: 2026_07_05_120100) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -125,6 +125,8 @@ ActiveRecord::Schema.define(version: 2026_07_04_230000) do
     t.json "metadata", default: {}
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "document_kind", default: "proposal", null: false
+    t.index ["deal_id", "document_kind"], name: "index_deal_documents_on_deal_id_and_document_kind"
     t.index ["deal_id"], name: "index_deal_documents_on_deal_id"
   end
 
@@ -138,6 +140,21 @@ ActiveRecord::Schema.define(version: 2026_07_04_230000) do
     t.index ["deal_id", "user_id"], name: "index_deal_evaluations_on_deal_id_and_user_id", unique: true
     t.index ["deal_id"], name: "index_deal_evaluations_on_deal_id"
     t.index ["user_id"], name: "index_deal_evaluations_on_user_id"
+  end
+
+  create_table "deal_faqs", force: :cascade do |t|
+    t.integer "deal_id", null: false
+    t.text "question", null: false
+    t.text "answer"
+    t.string "category", default: "other", null: false
+    t.string "source", default: "manual", null: false
+    t.string "status", default: "approved", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_id", "position"], name: "index_deal_faqs_on_deal_id_and_position"
+    t.index ["deal_id", "status"], name: "index_deal_faqs_on_deal_id_and_status"
+    t.index ["deal_id"], name: "index_deal_faqs_on_deal_id"
   end
 
   create_table "deal_pages", force: :cascade do |t|
@@ -266,9 +283,11 @@ ActiveRecord::Schema.define(version: 2026_07_04_230000) do
     t.string "presentation_cta_url"
     t.string "exit_contract_label", default: "契約へ進む", null: false
     t.string "exit_sales_call_label", default: "担当者と商談を希望", null: false
+    t.string "industry", default: "general", null: false
     t.index ["access_token"], name: "index_deals_on_access_token", unique: true
     t.index ["client_id", "status"], name: "index_deals_on_client_id_and_status"
     t.index ["client_id"], name: "index_deals_on_client_id"
+    t.index ["industry"], name: "index_deals_on_industry"
     t.index ["status"], name: "index_deals_on_status"
   end
 
@@ -444,6 +463,7 @@ ActiveRecord::Schema.define(version: 2026_07_04_230000) do
   add_foreign_key "deal_documents", "deals"
   add_foreign_key "deal_evaluations", "deals"
   add_foreign_key "deal_evaluations", "users"
+  add_foreign_key "deal_faqs", "deals"
   add_foreign_key "deal_pages", "deal_documents"
   add_foreign_key "deal_pages", "deals"
   add_foreign_key "deal_presentation_events", "deals"

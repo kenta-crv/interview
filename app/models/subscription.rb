@@ -81,6 +81,8 @@ class Subscription < ApplicationRecord
 
   class << self
     def plan_config(plan_type)
+      return nil if plan_type.blank?
+
       PLAN_CATALOG[plan_type.to_sym]
     end
 

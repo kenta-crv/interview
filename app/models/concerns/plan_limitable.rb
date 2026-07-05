@@ -2,7 +2,7 @@ module PlanLimitable
   extend ActiveSupport::Concern
 
   def current_plan_config
-    Subscription.plan_config(subscription_plan) || Subscription.plan_config(:trial)
+    Subscription.plan_config(subscription_plan.presence || :trial) || Subscription.plan_config(:trial)
   end
 
   def deal_limit
@@ -32,6 +32,34 @@ module PlanLimitable
 
   def click_analytics_enabled?
     current_plan_config[:click_analytics] == true
+  end
+
+  def faq_required_for_publish?
+    !on_trial?
+  end
+
+  def show_knowledge_coverage?
+    !on_trial?
+  end
+
+  def gap_analysis_suggest_only?
+    on_trial?
+  end
+
+  def gap_analysis_question_limit
+    on_trial? ? 3 : 8
+  end
+
+  def stress_test_question_limit
+    on_trial? ? 3 : 8
+  end
+
+  def knowledge_tools_full?
+    !on_trial?
+  end
+
+  def knowledge_section_optional?
+    on_trial?
   end
 
   def deal_limit_message

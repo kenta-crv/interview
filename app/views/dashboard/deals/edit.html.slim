@@ -21,6 +21,10 @@
         = f.label :language, '言語', class: 'form-label'
         = f.select :language, Deal.languages.map { |k, v| [k.upcase, v] }, {}, class: 'form-control'
 
+      .form-group
+        = f.label :industry, '業種', class: 'form-label'
+        = f.select :industry, Deal::INDUSTRIES.map { |k, v| [v, k] }, {}, class: 'form-control'
+
       .form-actions
         = f.submit '更新', class: 'btn-primary-custom'
         = link_to '商談管理に戻る', dashboard_deal_path(@deal), class: 'btn-secondary-custom'

@@ -90,6 +90,8 @@
               data: { turbo: false, confirm: 'PDFを再処理します。バックグラウンドで実行されます。よろしいですか？' },
               form: { data: { turbo: false }, class: 'w-full' }
 
+      = render 'deal_knowledge'
+
     .ai-grid-sidebar
       .admin-card.ai-card-gradient
         h2.admin-card-title 🔗 公開ステータス
@@ -135,7 +137,11 @@
       .card-header-mix
         h2.admin-card-title ✏️ 台本・音声編集（唯一の編集画面）
         .header-actions-row
-          = button_to '公開する', publish_dashboard_deal_path(@deal), method: :post, class: 'btn-primary-custom', data: { confirm: '商談URLを公開しますか？' }
+          - if current_client.faq_required_for_publish? && @deal.low_knowledge_coverage?
+            - publish_confirm = "ナレッジ完成度が#{@knowledge_coverage}%です。このまま公開しますか？"
+          - else
+            - publish_confirm = '商談URLを公開しますか？'
+          = button_to '公開する', publish_dashboard_deal_path(@deal), method: :post, class: 'btn-primary-custom', data: { confirm: publish_confirm, turbo: false }
           = button_to '全音声再生成', regenerate_audio_dashboard_deal_path(@deal), method: :post, class: 'btn-secondary-custom'
 
       = form_with url: update_content_dashboard_deal_path(@deal), method: :patch, local: true, html: { id: 'deal-content-form', data: { turbolinks: false } } do

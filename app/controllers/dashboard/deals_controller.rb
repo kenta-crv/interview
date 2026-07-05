@@ -1,7 +1,7 @@
 class Dashboard::DealsController < Dashboard::BaseController
   include FileUploadValidation
 
-  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :upload_documents, :update_presentation_settings, :processing_status]
+  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :processing_status]
   before_action :load_deal_associations, only: [:show]
   before_action :ensure_deal_quota!, only: [:new, :create]
 
@@ -14,6 +14,11 @@ class Dashboard::DealsController < Dashboard::BaseController
     @segments = @deal_audio&.deal_segments&.in_order || []
     @situations = current_client.situations.active
     @deal_pages = @deal.deal_pages.order(:page_number)
+    @deal_faqs = @deal.deal_faqs.ordered
+    @knowledge_coverage = @deal.knowledge_coverage_percent
+    @pending_faq_count = @deal.pending_faq_count
+    @checklist_coverage = @deal.checklist_coverage
+    @supplement_documents = @deal.deal_documents.supplements
     @presentation_events = if current_client.click_analytics_enabled?
       @deal.deal_presentation_events.includes(:user).recent_first.limit(100)
     else
@@ -145,7 +150,8 @@ class Dashboard::DealsController < Dashboard::BaseController
         document = @deal.deal_documents.create!(
           filename: file.original_filename,
           content_type: file.content_type,
-          file_size: file.size
+          file_size: file.size,
+          document_kind: "proposal"
         )
         document.file.attach(file)
       end
@@ -165,6 +171,35 @@ class Dashboard::DealsController < Dashboard::BaseController
     end
   rescue StandardError => e
     redirect_to dashboard_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"
+  end
+
+  def upload_supplement_documents
+    if params[:files].blank?
+      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: "ファイルが選択されていません"
+      return
+    end
+
+    created_docs = []
+
+    ActiveRecord::Base.transaction do
+      params[:files].each do |file|
+        document = @deal.deal_documents.create!(
+          filename: file.original_filename,
+          content_type: file.content_type,
+          file_size: file.size,
+          document_kind: "supplement"
+        )
+        document.file.attach(file)
+        created_docs << document
+      end
+    end
+
+    created_docs.each { |doc| ExtractSupplementFaqsJob.perform_later(doc.id) }
+
+    redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"),
+                notice: "補足資料をアップロードしました。FAQ抽出をバックグラウンドで実行しています"
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: e.message
   end
 
   def publish
@@ -214,11 +249,11 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def load_deal_associations
-    @deal = Deal.includes(:deal_summary, :deal_speeches, :deal_pages).find(@deal.id)
+    @deal = Deal.includes(:deal_summary, :deal_speeches, :deal_pages, :deal_faqs).find(@deal.id)
   end
 
   def deal_params
-    params.require(:deal).permit(:title, :description, :deal_date, :language)
+    params.require(:deal).permit(:title, :description, :deal_date, :language, :industry)
   end
 
   def deal_content_params

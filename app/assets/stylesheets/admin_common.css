@@ -1782,3 +1782,207 @@ textarea.form-control {
   padding-top: 15px;
   border-top: 1px solid #e8eaf6;
 }
+
+/* Deal FAQ / Knowledge */
+.deal-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.deal-faq-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fafafa;
+  overflow: hidden;
+}
+
+.deal-faq-item--pending {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.deal-faq-item__summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.deal-faq-item__summary::-webkit-details-marker {
+  display: none;
+}
+
+.deal-faq-item__toggle {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  position: relative;
+}
+
+.deal-faq-item__toggle::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid #475569;
+  border-bottom: 2px solid #475569;
+  transform: translate(-60%, -70%) rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+
+.deal-faq-item[open] .deal-faq-item__toggle::before {
+  transform: translate(-50%, -30%) rotate(45deg);
+}
+
+.deal-faq-item__summary-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.deal-faq-item__question {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.45;
+  margin-bottom: 6px;
+}
+
+.deal-faq-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.deal-faq-item__body {
+  padding: 0 14px 14px 42px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.deal-faq-item--pending .deal-faq-item__body {
+  border-top-color: #fde68a;
+}
+
+.deal-faq-item__category {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.deal-faq-item__badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.deal-faq-item__badge--muted {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.deal-faq-item__badge--warn {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.deal-faq-item__badge--ok {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.deal-faq-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.deal-faq-advanced {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.deal-faq-advanced__summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 12px;
+}
+
+.deal-faq-advanced--trial .deal-faq-advanced__summary {
+  color: #0369a1;
+}
+
+.deal-faq-advanced__body {
+  padding-top: 8px;
+}
+
+.deal-faq-analyze-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.deal-faq-analyze-hint {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.deal-knowledge-settings {
+  margin-bottom: 8px;
+}
+
+.deal-industry-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.deal-industry-row .form-control {
+  min-width: 200px;
+  flex: 1;
+}
+
+.deal-checklist-meta {
+  font-size: 12px;
+  color: #64748b;
+  margin: 8px 0 0;
+}
+
+.deal-knowledge-supplement {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.deal-supplement-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.deal-faq-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+

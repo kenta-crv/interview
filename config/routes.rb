@@ -98,6 +98,17 @@ Rails.application.routes.draw do
     resources :interview_results, only: [:index, :show]
     resources :deals do
       resources :user_progresses, only: [:index, :show]
+      resources :deal_faqs, only: [:create, :update, :destroy] do
+        member do
+          post :skip
+        end
+        collection do
+          post :analyze_gaps
+          post :suggest_from_events
+          post :stress_test
+          post :apply_checklist
+        end
+      end
       member do
         get :presentation
         patch :update_content
@@ -106,6 +117,7 @@ Rails.application.routes.draw do
         post :publish
         post :reprocess
         post :upload_documents
+        post :upload_supplement_documents
         patch :update_presentation_settings
         get :processing_status
       end

@@ -28,11 +28,24 @@ RSpec.describe Subscription, type: :model do
       expect(config[:service_limit]).to eq(10)
       expect(config[:price]).to eq(198_000)
     end
+
+    it 'returns nil for blank plan type' do
+      expect(Subscription.plan_config(nil)).to be_nil
+      expect(Subscription.plan_config("")).to be_nil
+    end
   end
 
   describe '.format_feature_value' do
     it 'shows 近日公開 for enterprise prospect follow up' do
       expect(Subscription.format_feature_value(:enterprise, :prospect_follow_up)).to eq('近日公開')
+    end
+  end
+
+  describe 'client without subscription' do
+    let(:client) { Client.create!(email: "no-sub@example.com", password: "password123") }
+
+    it 'falls back to trial plan config' do
+      expect(client.current_plan_config[:deal_limit]).to eq(3)
     end
   end
 end
