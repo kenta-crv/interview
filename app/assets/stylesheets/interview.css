@@ -447,106 +447,224 @@ audio {
 
 
 
-/* Presentation layout: headerなしの全画面 */
-.presentation-body {
+/* ===== Presentation: AI商談ルーム (Dark Glass Theme) ===== */
+
+.presentation-body,
+.deal-public-body.presentation-body {
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
-}
-
-.deal-public-body {
-  margin: 0 !important;
-  padding: 0 !important;
-  background: #f8fafc;
-  min-height: 100vh;
+  background: #0a0b1e !important;
+  min-height: 100vh !important;
+  font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif !important;
 }
 
 .deal-public-body header,
 .deal-public-body .hero,
-.deal-public-body .custom-navbar {
-  display: none !important;
-}
-
+.deal-public-body .custom-navbar,
 .presentation-body .hero,
-.presentation-body header {
+.presentation-body > header:not(.presentation-room-header) {
   display: none !important;
 }
 
-/* admin_common.css の競合を presentation 内だけ無効化 */
 .presentation-body .presentation-wrapper {
   position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
+  inset: 0 !important;
   z-index: 1000 !important;
-}
-
-.presentation-body .presentation-left {
-  flex: 1 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  min-width: 0 !important;
-  height: 100% !important;
-  gap: 16px !important;
-  overflow: hidden !important;
-}
-
-.presentation-body .presentation-main {
-  display: none !important;
-}
-
-/* ===== Advanced AI Presentation Layout (Clean White Theme) ===== */
-
-/* 画面全体を管理する最外枠。クリーンな近未来ホワイト */
-.presentation-body .presentation-wrapper {
-  display: flex !important;
-  flex-direction: row !important;
-  height: 100vh !important;
   width: 100vw !important;
+  height: 100vh !important;
   overflow: hidden !important;
-  background: #f8fafc !important;
-  box-sizing: border-box;
-  padding: 24px !important;
-  gap: 20px !important;
+  background:
+    linear-gradient(180deg, rgba(8, 12, 28, 0.45) 0%, rgba(6, 10, 24, 0.62) 100%),
+    var(--presentation-bg, url("presentation_room_bg.png")) center center / cover no-repeat !important;
 }
 
-/* 上部メインエリア：ドキュメントと右側サイドバーのレイアウト */
-.presentation-main {
-  flex: 1 !important;
-  display: flex !important;
-  flex-direction: row !important;
+.presentation-body .presentation-room {
+  display: grid !important;
+  grid-template-rows: auto 1fr !important;
   width: 100% !important;
-  overflow: hidden !important;
-  background: transparent !important;
-  gap: 20px !important;
+  height: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 10px 14px 8px !important;
+  box-sizing: border-box !important;
+  gap: 8px !important;
 }
 
-/* 左側：ドキュメント表示エリア（ツール感、黒フチ、スクロールを完全抹殺） */
-.document-area {
-  flex: 1 !important;
-  height: 100% !important;
-  overflow: hidden !important;
+/* Header */
+.presentation-room-header {
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
   position: relative !important;
-  background: #ffffff !important; /* ピュアホワイト */
-  border-radius: 24px !important; /* 滑らかで先進的な大きめの角丸 */
-  /* 高級感のある柔らかく深いレイヤーの影 */
-  box-shadow: 0 20px 25px -5px rgba(148, 163, 184, 0.1), 0 10px 10px -5px rgba(148, 163, 184, 0.04) !important;
-  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  z-index: 2 !important;
+  gap: 12px !important;
 }
 
-/* スライド切り替え（資料を100%ではめ込み、スクロールを完全に禁止） */
-.document-slide {
-  position: absolute !important;
-  top: 0;
-  left: 0;
-  width: 100% !important;
-  height: 100% !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  background: #ffffff !important;
-  overflow: hidden !important; /* スクロールを絶対に発生させない */
+.presentation-room-header__brand {
+  grid-column: 2 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  text-align: center !important;
+  min-width: 0 !important;
+}
+
+.presentation-room-title-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 14px !important;
+  flex-wrap: wrap !important;
+  min-width: 0 !important;
+}
+
+.presentation-room-timer {
+  font-variant-numeric: tabular-nums !important;
+  color: #cbd5e1 !important;
+  font-size: 13px !important;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+  background: rgba(15, 23, 42, 0.55) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  white-space: nowrap !important;
+}
+
+.presentation-room-title {
+  margin: 0 !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  letter-spacing: 0.04em !important;
+}
+
+.presentation-room-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  font-size: 13px !important;
+  color: #94a3b8 !important;
+  white-space: nowrap !important;
+}
+
+.presentation-room-status-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #8a5cff !important;
+  box-shadow: 0 0 10px rgba(138, 92, 255, 0.8) !important;
+  animation: presentationPulse 2s ease-in-out infinite !important;
+}
+
+@keyframes presentationPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.92); }
+}
+
+.presentation-room-header__actions {
+  grid-column: 3 !important;
+  justify-self: end !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.btn-room-exit {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px 14px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  color: #e2e8f0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  transition: background 0.2s ease, border-color 0.2s ease !important;
+}
+
+.btn-room-exit:hover {
+  background: rgba(30, 41, 59, 0.85) !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
+  color: #fff !important;
+}
+
+.btn-room-exit__icon {
+  font-size: 14px !important;
+  opacity: 0.85 !important;
+}
+
+/* Main body */
+.presentation-room-body {
+  display: grid !important;
+  grid-template-columns: 1fr 248px !important;
+  gap: 12px !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.presentation-body .presentation-left {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+  gap: 6px !important;
+}
+
+.presentation-body .presentation-bottom-controls {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.presentation-body .document-area {
+  flex: 1 1 0 !important;
+  position: relative !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06) !important;
+}
+
+.document-area__label {
+  position: absolute !important;
+  top: 14px !important;
+  left: 18px !important;
+  z-index: 3 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  padding-left: 10px !important;
+  border-left: 3px solid #4d7cff !important;
+  pointer-events: none !important;
+  max-width: calc(100% - 36px) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.document-slide {
+  position: absolute !important;
+  inset: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  background: #fff !important;
+  overflow: hidden !important;
 }
 
 .document-slide.active {
@@ -554,133 +672,363 @@ audio {
   pointer-events: auto !important;
 }
 
-/* * ブラウザ標準のPDFの黒フチやツールバーを完全に消し去る特殊設定
- * コンテナ(100%)に対して、PDF表示領域を上下左右に少しはみ出させることで、
- * ブラウザが勝手につける外側の黒いフチ（余白）を画面外に隠し、純粋な白い資料だけを100%で見せます。
- */
 .document-pdf-clean {
   width: 100% !important;
   height: 100% !important;
   border: none !important;
   display: block !important;
-  overflow: hidden !important;
-  object-fit: contain !important; /* 資料の比率を維持して100%表示 */
-  border-radius: 24px !important;
-  
-  /* 周辺の黒いフチやスクロールバーを完全にクリップして消滅させるためのハック（必要に応じて拡大率を調整） */
-  transform: scale(1.02) !important; 
+  border-radius: 20px !important;
 }
 
 .document-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #94a3b8;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-/* 右側サイドバー：終了ボタンとアバターを縦に配置 */
-.avatar-sidebar {
-  width: 200px !important;
-  height: 100% !important;
-  background: transparent !important; /* 完全透明 */
-  flex-shrink: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  justify-content: flex-start !important;
-  align-items: stretch !important;
-  padding: 4px 0 !important;
-  box-sizing: border-box;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  color: #94a3b8 !important;
+  font-size: 15px !important;
 }
 
-/* アバター表示エリア（さらに右寄せ、中央少し下へ美しく配置） */
-.avatar-area {
-  width: 140px !important;
-  height: auto !important;
-  display: block !important;
-  position: relative !important;
-  margin-left: auto !important; /* 右端へ寄せる */
-  margin-top: 30px !important; /* 下部寄りに押し下げる */
-  margin-bottom: 25% !important; /* 中央少し下の位置に調整 */
-  filter: drop-shadow(0 15px 25px rgba(148, 163, 184, 0.2)) !important;
-}
-
-.avatar-frame {
-  width: 100% !important;
-  height: auto !important;
-}
-
-.avatar-img-2 {
-  display: block !important;
-  width: 100% !important;
-  height: auto !important;
-  object-fit: contain;
-  transform: translateZ(0);
-  backface-visibility: hidden !important;
-  will-change: auto !important;
-}
-
-/* アバターの上に配置する「AI商談を終了する」ボタン（洗練されたフラット＆シャドウ） */
-.btn-finish-presentation {
-  display: block !important;
-  width: 100% !important;
-  padding: 14px 16px !important;
-  background: #fff5f5 !important; /* 優しい薄赤のベース */
-  color: #e11d48 !important; /* 洗練されたローズレッド */
-  text-align: center !important;
-  border-radius: 16px !important;
-  font-size: 13px !important;
-  font-weight: 700 !important;
-  text-decoration: none !important;
-  border: 1px solid #fecdd3 !important;
-  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.08) !important;
-  transition: all 0.25s ease !important;
-  box-sizing: border-box !important;
-  margin-bottom: 20px !important;
-  letter-spacing: 0.03em;
-}
-
-.btn-finish-presentation:hover {
-  background: #e11d48 !important;
-  color: #ffffff !important;
-  box-shadow: 0 8px 20px rgba(225, 29, 72, 0.3) !important;
-  transform: translateY(-2px) !important;
-}
-
-/* 下部：トピックボタン（常時表示） */
-.presentation-body .presentation-topics-bar {
-  width: 100% !important;
+/* Sidebar */
+.presentation-body .avatar-sidebar {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  width: 248px !important;
   flex-shrink: 0 !important;
 }
 
-.presentation-body .presentation-topics-bar .guidance-area {
+.presentation-body .presentation-avatar {
   width: 100% !important;
-  background: transparent !important;
-  padding: 0 !important;
-}
-
-.presentation-body .presentation-topics-bar .choice-buttons {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: wrap !important;
-  justify-content: flex-start !important;
-  align-items: center !important;
-  gap: 12px !important;
-  width: 100% !important;
-  overflow-x: auto !important;
-  padding: 4px 0 !important;
+  height: 260px !important;
   box-sizing: border-box !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  background: rgba(15, 23, 42, 0.55) !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  flex-shrink: 0 !important;
 }
 
-.presentation-body .presentation-cta-bar {
+.presentation-body .presentation-avatar__img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+}
+
+.avatar-playbar {
   display: none !important;
 }
 
-.presentation-body .choice-buttons .btn-presentation-cta {
+.presentation-controls-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.presentation-choice-scroller-wrap {
+  min-width: 0 !important;
+  position: relative !important;
+}
+
+.presentation-choice-scroller-wrap--left {
+  padding-left: 32px !important;
+}
+
+.presentation-choice-scroller-wrap--left.has-overflow {
+  padding-left: 32px !important;
+}
+
+.presentation-choice-scroller-wrap--left.has-overflow::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 28px !important;
+  bottom: 0 !important;
+  width: 48px !important;
+  pointer-events: none !important;
+  background: linear-gradient(to left, transparent, rgba(5, 7, 10, 0.92)) !important;
+  z-index: 1 !important;
+}
+
+.presentation-choice-scroller-wrap--right {
+  padding-right: 32px !important;
+}
+
+.presentation-choice-scroller-wrap--right.has-overflow {
+  padding-right: 32px !important;
+}
+
+.presentation-choice-scroller-wrap--right.has-overflow::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  right: 28px !important;
+  bottom: 0 !important;
+  width: 48px !important;
+  pointer-events: none !important;
+  background: linear-gradient(to right, transparent, rgba(5, 7, 10, 0.92)) !important;
+  z-index: 1 !important;
+}
+
+.presentation-choice-scroller {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.presentation-choice-scroller::-webkit-scrollbar {
+  display: none !important;
+}
+
+.presentation-choice-track {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: max-content !important;
+  min-width: 100% !important;
+  padding: 2px 0 !important;
+}
+
+.presentation-choice-scroller-wrap--left .presentation-choice-track {
+  justify-content: flex-end !important;
+}
+
+.presentation-choice-scroller-wrap--right .presentation-choice-track {
+  justify-content: flex-start !important;
+}
+
+.presentation-choice-more--prev {
+  left: 0 !important;
+  right: auto !important;
+}
+
+.presentation-choice-more {
+  position: absolute !important;
+  right: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 2 !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  color: #e2e8f0 !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.presentation-choice-more[hidden] {
+  display: none !important;
+}
+
+.presentation-choice-more span {
+  display: block !important;
+  margin-top: -1px !important;
+}
+
+.presentation-play-btn {
+  width: 56px !important;
+  height: 56px !important;
   flex-shrink: 0 !important;
+  grid-column: 2 !important;
+  border: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  display: block !important;
+  overflow: visible !important;
+  position: relative !important;
+  transition: transform 0.2s ease !important;
+  line-height: 0 !important;
+}
+
+.presentation-play-btn:hover {
+  transform: scale(1.04) !important;
+}
+
+.presentation-play-btn__svg {
+  display: block !important;
+  width: 56px !important;
+  height: 56px !important;
+  filter: drop-shadow(0 0 10px rgba(77, 124, 255, 0.38)) !important;
+}
+
+.presentation-play-btn__play {
+  visibility: visible;
+}
+
+.presentation-play-btn__wave {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.presentation-wave-item {
+  display: block;
+  background: #fff;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.presentation-wave-item--dot {
+  width: 4px;
+  height: 4px;
+}
+
+.presentation-wave-item--bar {
+  width: 3px;
+  height: 10px;
+}
+
+.presentation-wave-item--center {
+  height: 18px;
+}
+
+.presentation-play-btn--playing .presentation-play-btn__play {
+  visibility: hidden !important;
+}
+
+.presentation-play-btn--playing .presentation-play-btn__wave {
+  display: flex !important;
+}
+
+.presentation-play-btn--playing .presentation-play-btn__svg {
+  animation: presentationVoiceGlow 2.4s ease-in-out infinite !important;
+}
+
+.presentation-play-btn--playing .presentation-play-btn__ring {
+  animation: presentationVoiceRing 2.4s ease-in-out infinite !important;
+}
+
+.presentation-play-btn--playing .presentation-wave-item--bar {
+  transform-origin: center center;
+  animation: presentationWaveBar 0.72s ease-in-out infinite;
+}
+
+.presentation-play-btn--playing .presentation-wave-item--center {
+  animation-duration: 0.62s;
+  animation-delay: 0s;
+}
+
+.presentation-play-btn--playing .presentation-wave-item--bar:not(.presentation-wave-item--center) {
+  animation-duration: 0.78s;
+  animation-delay: 0.1s;
+}
+
+.presentation-play-btn--playing .presentation-wave-item--dot {
+  transform-origin: center center;
+  animation: presentationWaveDot 0.72s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+@keyframes presentationVoiceGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(77, 124, 255, 0.32));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(96, 165, 250, 0.55)) drop-shadow(0 0 22px rgba(139, 92, 246, 0.35));
+  }
+}
+
+@keyframes presentationVoiceRing {
+  0%, 100% {
+    stroke: rgba(120, 190, 255, 0.55);
+  }
+  50% {
+    stroke: rgba(191, 219, 254, 0.85);
+  }
+}
+
+@keyframes presentationWaveBar {
+  0%, 100% {
+    transform: scaleY(0.28);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes presentationWaveDot {
+  0%, 100% {
+    transform: scale(0.5);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.presentation-cta-row {
+  display: none !important;
+}
+
+.presentation-body .presentation-topics-bar {
+  display: none !important;
+}
+
+.presentation-body .btn-choice {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 8px 16px !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  border-radius: 999px !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(8px) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #e2e8f0 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.presentation-body .btn-choice::before {
+  content: none !important;
+}
+
+.presentation-body .btn-choice:hover,
+.presentation-body .btn-choice--active {
+  background: linear-gradient(135deg, #4d7cff 0%, #6366f1 100%) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 20px rgba(77, 124, 255, 0.35) !important;
 }
 
 .presentation-body .btn-presentation-cta {
@@ -692,22 +1040,164 @@ audio {
   border-radius: 999px !important;
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
   color: #fff !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
   font-weight: 700 !important;
   cursor: pointer !important;
-  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.35) !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.35) !important;
   text-decoration: none !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
 }
 
-.presentation-body .btn-presentation-cta:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 12px 24px rgba(220, 38, 38, 0.45) !important;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+.presentation-body .btn-presentation-cta--header {
+  padding: 8px 14px !important;
+  font-size: 12px !important;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3) !important;
+}
+
+.presentation-body .presentation-free-text {
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+}
+
+.presentation-body .presentation-free-text .input-group-copy {
+  display: flex !important;
+  gap: 8px !important;
+}
+
+.presentation-body .presentation-free-text .form-control {
+  flex: 1 !important;
+  padding: 10px 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  color: #f1f5f9 !important;
+  font-size: 14px !important;
+}
+
+.presentation-body .presentation-free-text .form-control::placeholder {
+  color: #64748b !important;
+}
+
+.presentation-body .presentation-free-text .btn-primary-custom {
+  flex-shrink: 0 !important;
+  padding: 10px 16px !important;
+  border-radius: 12px !important;
+  white-space: nowrap !important;
+  background: linear-gradient(135deg, #4d7cff, #6366f1) !important;
+  border: none !important;
   color: #fff !important;
-  text-decoration: none !important;
+  font-weight: 700 !important;
 }
 
+.presentation-body .presentation-chat-panel {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-radius: 14px !important;
+  background: rgba(15, 23, 42, 0.55) !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden !important;
+}
+
+.presentation-body .presentation-chat-toggle {
+  background: rgba(15, 23, 42, 0.35) !important;
+  color: #e2e8f0 !important;
+  padding: 10px 16px !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12) !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.presentation-body .presentation-chat-panel__body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+.presentation-body .conversation-messages {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  padding: 0 12px 12px !important;
+  background: transparent !important;
+}
+
+.presentation-body .message {
+  max-width: 100% !important;
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+  line-height: 1.5 !important;
+  font-size: 13px !important;
+}
+
+.presentation-body .message-header {
+  margin-bottom: 4px !important;
+}
+
+.presentation-body .message-role {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  opacity: 0.85 !important;
+}
+
+.presentation-body .message-content,
+.presentation-body .message-content p {
+  color: inherit !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+.presentation-body .message--assistant {
+  background: rgba(77, 124, 255, 0.12) !important;
+  color: #e2e8f0 !important;
+  align-self: stretch !important;
+}
+
+.presentation-body .message--user {
+  background: linear-gradient(135deg, #4d7cff, #6366f1) !important;
+  color: #fff !important;
+  align-self: stretch !important;
+}
+
+.presentation-body .presentation-chat-toggle-icon {
+  color: #94a3b8 !important;
+  font-size: 11px !important;
+  transition: transform 0.2s ease !important;
+}
+
+.presentation-body .presentation-chat-panel--open .presentation-chat-toggle-icon {
+  transform: rotate(180deg) !important;
+}
+
+.presentation-body .presentation-chat-panel--peek .presentation-chat-panel__body {
+  max-height: 88px !important;
+  overflow: hidden !important;
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 100%) !important;
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%) !important;
+}
+
+.presentation-body .presentation-chat-panel--open .presentation-chat-panel__body {
+  max-height: none !important;
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+}
+
+.presentation-body .presentation-chat-panel--closed .presentation-chat-panel__body {
+  display: none !important;
+}
+
+/* Modals & overlay */
 .presentation-body .presentation-exit-modal {
   position: fixed !important;
   inset: 0 !important;
@@ -722,193 +1212,31 @@ audio {
   display: flex !important;
 }
 
-.presentation-body .btn-presentation-cta--wide {
-  width: 100% !important;
-  border-radius: 12px !important;
-  padding: 12px 20px !important;
-}
-
 .presentation-body .presentation-exit-modal__backdrop {
   position: absolute !important;
   inset: 0 !important;
-  background: rgba(15, 23, 42, 0.72) !important;
-  backdrop-filter: blur(6px) !important;
+  background: rgba(5, 7, 10, 0.82) !important;
+  backdrop-filter: blur(8px) !important;
 }
 
 .presentation-body .presentation-exit-modal__dialog {
   position: relative !important;
   z-index: 1 !important;
+  background: #fff !important;
+  border-radius: 16px !important;
   width: min(520px, 100%) !important;
   max-height: 90vh !important;
   overflow-y: auto !important;
-  border-radius: 16px !important;
-  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45) !important;
 }
 
-.presentation-body .presentation-exit-modal__lead {
-  margin: 0 0 16px !important;
-  color: #475569 !important;
-  font-size: 14px !important;
-  line-height: 1.6 !important;
-}
-
-.presentation-body .presentation-exit-actions {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 10px !important;
-  margin-bottom: 20px !important;
-}
-
-.presentation-body .presentation-exit-divider {
-  height: 1px !important;
-  background: #e2e8f0 !important;
-  margin: 8px 0 20px !important;
-}
-
-.presentation-body.presentation-exit-open .presentation-wrapper {
-  filter: blur(4px) !important;
-}
-
-.presentation-body .presentation-free-text {
-  margin-top: 12px !important;
-  flex-shrink: 0 !important;
-}
-
-.presentation-body .presentation-free-text .input-group-copy {
-  display: flex !important;
-  gap: 8px !important;
-}
-
-.presentation-body .presentation-free-text .form-control {
-  flex: 1 !important;
-  padding: 12px 14px !important;
+.presentation-body .btn-presentation-cta--wide {
+  width: 100% !important;
   border-radius: 12px !important;
-  border: 1px solid rgba(226, 232, 240, 0.9) !important;
-  font-size: 14px !important;
 }
 
-.presentation-body .presentation-free-text .btn-primary-custom {
-  flex-shrink: 0 !important;
-  padding: 12px 20px !important;
-  border-radius: 12px !important;
-  white-space: nowrap !important;
-}
-
-/* 折りたたみ：メッセージチャットのみ */
-.presentation-body .presentation-chat-panel {
-  flex-shrink: 0 !important;
-  width: 100% !important;
-  background: #ffffff !important;
-  border-radius: 20px !important;
-  border: 1px solid rgba(226, 232, 240, 0.9) !important;
-  box-shadow: 0 8px 20px -5px rgba(148, 163, 184, 0.1) !important;
-  overflow: hidden !important;
-  margin-top: 12px !important;
-}
-
-.presentation-body .presentation-chat-toggle {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  width: 100% !important;
-  padding: 12px 20px !important;
-  border: none !important;
-  background: #f8fafc !important;
-  color: #0f172a !important;
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  cursor: pointer !important;
-  box-sizing: border-box !important;
-}
-
-.presentation-body .presentation-chat-toggle-icon {
-  font-size: 12px !important;
-  color: #64748b !important;
-  transition: transform 0.25s ease !important;
-}
-
-.presentation-body .presentation-chat-panel:not(.presentation-chat-panel--closed) .presentation-chat-toggle-icon {
-  transform: rotate(180deg) !important;
-}
-
-.presentation-body .presentation-chat-panel__body {
-  padding: 0 16px 16px !important;
-  max-height: 240px !important;
-  overflow-y: auto !important;
-  box-sizing: border-box !important;
-}
-
-.presentation-body .presentation-chat-panel--closed .presentation-chat-panel__body {
-  display: none !important;
-}
-
-.presentation-body .conversation-messages {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-  margin-bottom: 12px !important;
-}
-
-.presentation-body .message {
-  max-width: 100% !important;
-  padding: 10px 14px !important;
-  border-radius: 12px !important;
-  line-height: 1.6 !important;
-  font-size: 13px !important;
-}
-
-.presentation-body .message--assistant {
-  background: #f8f9ff !important;
-  align-self: flex-start !important;
-}
-
-.presentation-body .message--user {
-  background: #2541B2 !important;
-  color: #ffffff !important;
-  align-self: flex-end !important;
-}
-
-.presentation-body .guidance-area {
-  width: 100% !important;
-  flex-shrink: 0 !important;
-  background: transparent !important;
-  padding: 0 !important;
-  text-align: left !important;
-  box-sizing: border-box !important;
-  box-shadow: none !important;
-  border: none !important;
-}
-
-.presentation-body .guidance-text {
-  display: none !important;
-}
-
-.presentation-body .choice-buttons {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: wrap !important;
-  justify-content: flex-start !important;
-  align-items: center !important;
-  gap: 12px !important;
-  width: 100% !important;
-  overflow-x: auto !important;
-  padding: 0 !important;
-  box-sizing: border-box !important;
-  -webkit-overflow-scrolling: touch;
-}
-
-.presentation-body .btn-choice--active {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
-}
-
-.presentation-body .avatar-img-2--speaking {
-  animation: speakAnimation 0.8s ease-in-out infinite alternate !important;
-}
-
+.presentation-body.presentation-exit-open .presentation-wrapper,
 .presentation-body.presentation-locked .presentation-wrapper {
-  filter: blur(8px) !important;
+  filter: blur(6px) !important;
   pointer-events: none !important;
 }
 
@@ -920,128 +1248,59 @@ audio {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: rgba(15, 23, 42, 0.55) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  background: rgba(5, 7, 10, 0.75) !important;
+  backdrop-filter: blur(14px) !important;
 }
 
-#presentation-start-overlay[hidden],
-.presentation-body .presentation-start-overlay[hidden] {
+#presentation-start-overlay[hidden] {
   display: none !important;
 }
 
-#presentation-start-overlay .presentation-start-card,
-.presentation-body .presentation-start-card {
-  display: block !important;
-  background: #ffffff !important;
-  border: none !important;
+#presentation-start-overlay .presentation-start-card {
+  background: #fff !important;
   border-radius: 24px !important;
   padding: 48px 56px !important;
   text-align: center !important;
-  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5) !important;
   max-width: 440px !important;
   cursor: pointer !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-.presentation-body .presentation-start-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 30px 60px -12px rgba(37, 99, 235, 0.35) !important;
+.presentation-body .presentation-main {
+  display: none !important;
 }
 
-.presentation-body .presentation-start-icon {
-  display: block !important;
-  font-size: 40px !important;
-  margin-bottom: 16px !important;
+@media (max-width: 960px) {
+  .presentation-room-body {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 1fr auto !important;
+  }
+
+  .presentation-body .avatar-sidebar {
+    width: 100% !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: stretch !important;
+    max-height: 240px !important;
+  }
+
+  .presentation-body .presentation-avatar {
+    flex: 0 0 160px !important;
+    height: 200px !important;
+  }
+
+  .presentation-body .presentation-chat-panel {
+    flex: 1 1 200px !important;
+    min-width: 200px !important;
+  }
 }
 
-.presentation-body .presentation-start-title {
-  font-size: 24px !important;
-  font-weight: 700 !important;
-  color: #0f172a !important;
-  margin: 0 0 8px !important;
-}
-
-.presentation-body .presentation-start-desc {
-  font-size: 14px !important;
-  color: #64748b !important;
-  margin: 0 !important;
-}
-
-.presentation-body iframe.document-pdf-clean {
-  width: 100% !important;
-  height: 100% !important;
-  border: none !important;
-  display: block !important;
-  background: #ffffff !important;
-  border-radius: 24px !important;
-}
-
-/* セレクトボタン：最先端AIツールを意識した、圧倒的におしゃれで立体的なデザイン */
-.btn-choice {
-  display: inline-block !important;
-  padding: 14px 32px !important;
-  border: 1px solid rgba(226, 232, 240, 0.8) !important;
-  border-radius: 30px !important; /* 美しいカプセル型 */
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(8px) !important; /* ハイクオリティなガラスの質感 */
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  color: #334155 !important; /* 上質なダークグレー */
-  cursor: pointer !important;
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
-  
-  /* 多重シャドウによる、リアルで上質な浮き上がりエフェクト */
-  box-shadow: 0 10px 20px -4px rgba(148, 163, 184, 0.25), 
-              0 4px 6px -2px rgba(148, 163, 184, 0.1),
-              inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important; /* 極めてなめらかなアニメーション */
-}
-
-.btn-choice:hover {
-  /* AIの先進性を感じる、鮮やかで品のある近未来ブルーのグラデーション */
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
-  
-  /* ホバー時はさらに高く美しく浮かび上がり、オーラのような光の影を放つ */
-  box-shadow: 0 20px 30px -8px rgba(37, 99, 235, 0.45), 
-              0 0 15px rgba(59, 130, 246, 0.2) !important;
-  transform: translateY(-6px) !important; /* 浮き上がり感をダイナミックに強化 */
-}
-
-/* モバイル対応 */
-@media (max-width: 768px) {
-  .presentation-wrapper {
+@media (max-width: 640px) {
+  .presentation-body .presentation-room {
     padding: 12px !important;
-    gap: 16px !important;
   }
 
-  .presentation-main {
-    gap: 12px !important;
-  }
-
-  .avatar-sidebar {
-    width: 90px !important;
-  }
-
-  .avatar-area {
-    width: 80px !important;
-    margin-bottom: 15px !important;
-  }
-
-  .btn-finish-presentation {
-    padding: 10px 4px !important;
-    font-size: 11px !important;
-    border-radius: 10px !important;
-    margin-bottom: 12px !important;
-  }
-
-  .choice-buttons {
-    justify-content: flex-start !important;
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-    gap: 12px !important;
+  .presentation-room-title {
+    font-size: 18px !important;
   }
 }

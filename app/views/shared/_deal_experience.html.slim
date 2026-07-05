@@ -1,65 +1,110 @@
 - deal_record = local_assigns[:deal]
 - cta = deal_record ? deal_record.presentation_cta_payload : (local_assigns[:cta_payload] || {})
+- room_title = deal_record&.title.presence || 'AI商談'
+- topic_items = menu_items.any? ? menu_items : deal_pages.reject { |p| p.page_number == 1 }.first(6).map { |page| { 'label' => (page.title.presence || "スライド #{page.page_number}"), 'page_number' => page.page_number, 'key' => "page_#{page.page_number}" } }
+- topic_split_at = (topic_items.size / 2.0).ceil
+- left_topics = topic_items.first(topic_split_at)
+- right_topics = topic_items.drop(topic_split_at)
 - config_payload = { pages: deal_pages.map { |p| { page_number: p.page_number, title: p.title, script: p.script, audio_url: (p.page_audio.attached? ? rails_blob_path(p.page_audio, only_path: true) : p.audio_url) } }, opening: opening_payload, opening_segments: opening_segments, respond_url: respond_url, evaluate_url: evaluate_url, track_url: (local_assigns[:track_url].presence), public_mode: public_mode, cta: cta }.to_json
 
 script type="application/json" id="deal-presentation-config"
   = raw json_escape(config_payload)
 
-.presentation-wrapper data-turbo="false" data-deal-presentation="" data-respond-url=respond_url data-evaluate-url=evaluate_url data-track-url=(local_assigns[:track_url].presence)
-  .presentation-left
-    .document-area#presentation-document-area
-      - if deal_pages.any?
-        - deal_pages.each_with_index do |page, index|
-          - pdf_url = "#{Rails.application.routes.url_helpers.rails_blob_path(page.deal_document.file, only_path: true)}#page=#{page.page_number}&toolbar=0&navpanes=0&scrollbar=0&view=FitH"
-          .document-slide id="slide-#{page.id}" data-page-number=page.page_number class="#{index == 0 ? 'active' : ''}"
-            - if page.deal_document.file.attached?
-              iframe.document-pdf-clean src=pdf_url title="スライド #{page.page_number}"
-            - else
-              .document-placeholder 資料データがありません
-      - else
-        .document-placeholder
-          p ページがありません。資料をアップロードして処理してください。
+.presentation-wrapper data-turbo="false" data-deal-presentation="" data-respond-url=respond_url data-evaluate-url=evaluate_url data-track-url=(local_assigns[:track_url].presence) style="--presentation-bg: url('#{asset_path('presentation_room_bg.png')}')"
+  .presentation-room
+    header.presentation-room-header
+      .presentation-room-header__brand
+        .presentation-room-title-row
+          h1.presentation-room-title 商談ルーム
+          p.presentation-room-status
+            span.presentation-room-status-dot aria-hidden="true"
+            span AI商談中
+          span.presentation-room-timer#presentation-timer 00:00:00
+      .presentation-room-header__actions
+        - if cta['url'].to_s.strip.present?
+          = link_to cta['label'], cta['url'], target: '_blank', rel: 'noopener noreferrer', class: 'btn-presentation-cta btn-presentation-cta--header', id: 'presentation-cta-btn', data: { label: cta['label'], turbo: false }
+        - else
+          = button_tag cta['label'], type: 'button', class: 'btn-presentation-cta btn-presentation-cta--header', id: 'presentation-cta-btn', data: { label: cta['label'] }
+        - if finish_url
+          = link_to finish_url, class: 'btn-room-exit', data: { turbo: false } do
+            span.btn-room-exit__icon ↗
+            span 終了する
+        - else
+          = button_tag type: 'button', class: 'btn-room-exit', id: 'end-conversation-btn' do
+            span.btn-room-exit__icon ↗
+            span 終了する
 
-    .presentation-topics-bar
-      .guidance-area
-        .choice-buttons#choice-buttons
-          - if menu_items.any?
-            - menu_items.each do |item|
-              = button_tag item['label'], class: 'btn-choice', type: 'button', data: { page_number: item['page_number'], label: item['label'], topic: item['key'], choice: item['key'] }
+    .presentation-room-body
+      .presentation-left
+        .document-area#presentation-document-area
+          .document-area__label = room_title
+          - if deal_pages.any?
+            - deal_pages.each_with_index do |page, index|
+              - pdf_url = "#{Rails.application.routes.url_helpers.rails_blob_path(page.deal_document.file, only_path: true)}#page=#{page.page_number}&toolbar=0&navpanes=0&scrollbar=0&view=FitV"
+              .document-slide id="slide-#{page.id}" data-page-number=page.page_number class="#{index == 0 ? 'active' : ''}"
+                - if page.deal_document.file.attached?
+                  iframe.document-pdf-clean src=pdf_url title="スライド #{page.page_number}"
+                - else
+                  .document-placeholder 資料データがありません
           - else
-            - deal_pages.reject { |p| p.page_number == 1 }.first(6).each do |page|
-              = button_tag (page.title.presence || "スライド #{page.page_number}"), class: 'btn-choice', type: 'button', data: { page_number: page.page_number, label: page.title, topic: "page_#{page.page_number}", choice: "page_#{page.page_number}" }
-          - if cta['url'].to_s.strip.present?
-            = link_to cta['label'], cta['url'], target: '_blank', rel: 'noopener noreferrer', class: 'btn-presentation-cta', id: 'presentation-cta-btn', data: { label: cta['label'], turbo: false }
-          - else
-            = button_tag cta['label'], type: 'button', class: 'btn-presentation-cta', id: 'presentation-cta-btn', data: { label: cta['label'] }
+            .document-placeholder
+              p ページがありません。資料をアップロードして処理してください。
 
-    - if public_mode
-      .presentation-free-text
-        .input-group-copy
-          input.form-control#free-text-input type="text" placeholder="例: 導入までの期間はどのくらいですか？"
-          button.btn-primary-custom#send-free-text type="button" 送信
+        .presentation-bottom-controls
+          .presentation-controls-row
+            .presentation-choice-scroller-wrap.presentation-choice-scroller-wrap--left#presentation-choice-scroller-wrap-left
+              button.presentation-choice-more.presentation-choice-more--prev#presentation-choice-more-left type="button" aria-label="前の選択肢を見る" hidden=true
+                span ‹
+              .presentation-choice-scroller#presentation-choice-scroller-left
+                .presentation-choice-track
+                  - left_topics.each do |item|
+                    = button_tag item['label'], class: 'btn-choice', type: 'button', data: { page_number: item['page_number'], label: item['label'], topic: item['key'], choice: item['key'] }
+            button.presentation-play-btn type="button" aria-label="再生" id="presentation-voice-btn"
+              svg.presentation-play-btn__svg viewBox="0 0 56 56" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                defs
+                  radialGradient#presentationPlayGrad cx="50%" cy="32%" r="58%"
+                    stop offset="0%" stop-color="#1a3fb0"
+                    stop offset="48%" stop-color="#4338ca"
+                    stop offset="100%" stop-color="#9444f0"
+                circle.presentation-play-btn__bg cx="28" cy="28" r="26" fill="url(#presentationPlayGrad)"
+                circle.presentation-play-btn__ring cx="28" cy="28" r="26" fill="none" stroke="rgba(120,190,255,0.62)" stroke-width="1.2"
+                g.presentation-play-btn__play
+                  polygon points="24,20 24,36 38,28" fill="#fff"
+              span.presentation-play-btn__wave aria-hidden="true"
+                span.presentation-wave-item.presentation-wave-item--dot
+                span.presentation-wave-item.presentation-wave-item--bar
+                span.presentation-wave-item.presentation-wave-item--bar.presentation-wave-item--center
+                span.presentation-wave-item.presentation-wave-item--bar
+                span.presentation-wave-item.presentation-wave-item--dot
+            .presentation-choice-scroller-wrap.presentation-choice-scroller-wrap--right#presentation-choice-scroller-wrap-right
+              .presentation-choice-scroller#presentation-choice-scroller-right
+                .presentation-choice-track#choice-buttons
+                  - right_topics.each do |item|
+                    = button_tag item['label'], class: 'btn-choice', type: 'button', data: { page_number: item['page_number'], label: item['label'], topic: item['key'], choice: item['key'] }
+              button.presentation-choice-more#presentation-choice-more-right type="button" aria-label="次の選択肢を見る" hidden=true
+                span ›
 
-    .presentation-chat-panel.presentation-chat-panel--closed#presentation-chat-panel
-      button.presentation-chat-toggle type="button" id="presentation-chat-toggle" aria-expanded="false" aria-controls="presentation-chat-panel-body"
-        span.presentation-chat-toggle-label メッセージ
-        span.presentation-chat-toggle-icon aria-hidden="true" ▼
-      .presentation-chat-panel__body#presentation-chat-panel-body
-        .conversation-messages#conversation-messages
-          - opening_messages.each do |msg|
-            .message.message--assistant
-              .message-header
-                span.message-role AIアシスタント
-              .message-content = simple_format(msg[:content] || msg['content'])
+          - if public_mode
+            .presentation-free-text
+              .input-group-copy
+                input.form-control#free-text-input type="text" placeholder="例: 導入までの期間はどのくらいですか？"
+                button.btn-primary-custom#send-free-text type="button" 送信
 
-  .avatar-sidebar
-    - if finish_url
-      = link_to 'AI商談を終了する', finish_url, class: 'btn-finish-presentation', data: { turbo: false }
-    - else
-      = button_tag '商談を終了', class: 'btn-finish-presentation', type: 'button', id: 'end-conversation-btn'
-    .avatar-area
-      .avatar-frame
-        = image_tag 'avatar_2.png', alt: 'アバター2', class: 'avatar-img-2', loading: 'eager', decoding: 'sync'
+      aside.avatar-sidebar
+        .presentation-avatar
+          = image_tag 'avatar_3.png', alt: 'AIアバター', class: 'presentation-avatar__img', id: 'presentation-avatar-img', loading: 'eager', decoding: 'sync'
+
+        .presentation-chat-panel.presentation-chat-panel--open#presentation-chat-panel
+          button.presentation-chat-toggle type="button" id="presentation-chat-toggle" aria-expanded="true" aria-controls="presentation-chat-panel-body"
+            span.presentation-chat-toggle-label メッセージ履歴
+            span.presentation-chat-toggle-icon aria-hidden="true" ▼
+          .presentation-chat-panel__body#presentation-chat-panel-body
+            .conversation-messages#conversation-messages
+              - opening_messages.each do |msg|
+                .message.message--assistant
+                  .message-header
+                    span.message-role AIアシスタント
+                  .message-content = simple_format(msg[:content] || msg['content'])
 
 - unless finish_url
   .modal.presentation-exit-modal#evaluation-modal role="dialog" aria-modal="true" aria-labelledby="evaluation-modal-title"

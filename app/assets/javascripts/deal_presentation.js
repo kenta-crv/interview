@@ -48,7 +48,7 @@
       var trackUrl = root.dataset.trackUrl || config.track_url;
       var slides = root.querySelectorAll('.document-slide');
       var choiceButtons = root.querySelectorAll('.btn-choice');
-      var avatar = root.querySelector('.avatar-img-2');
+      var avatar = document.getElementById('presentation-avatar-img');
       var overlay = document.getElementById('presentation-start-overlay');
       var startBtn = document.getElementById('presentation-start-btn');
       var chatPanel = document.getElementById('presentation-chat-panel');
@@ -69,6 +69,147 @@
       var presentationStarted = false;
       var currentPageNumber = parseInt((opening.greeting_page || opening['greeting-page'] || 1), 10);
       var sessionStartedAt = Date.now();
+      var timerEl = document.getElementById('presentation-timer');
+      var voiceBtn = document.getElementById('presentation-voice-btn');
+      var playbackToken = 0;
+      var isPaused = false;
+      var openingQueue = null;
+      var currentSpeech = null;
+
+      function setPlayButtonPlaying(playing) {
+        if (!voiceBtn) return;
+        voiceBtn.classList.toggle('presentation-play-btn--playing', !!playing);
+        voiceBtn.setAttribute('aria-label', playing ? '一時停止' : '再生');
+      }
+
+      function isSpeechActive() {
+        return 'speechSynthesis' in window &&
+          (window.speechSynthesis.speaking || window.speechSynthesis.paused);
+      }
+
+      function hasResumablePlayback() {
+        if (currentAudio && !currentAudio.ended && currentAudio.paused) return true;
+        if (isSpeechActive() && window.speechSynthesis.paused) return true;
+        if (openingQueue && openingQueue.running && isPaused) return true;
+        return false;
+      }
+
+      function pausePlayback() {
+        isPaused = true;
+        if (currentAudio && !currentAudio.ended) {
+          currentAudio.pause();
+        } else if (isSpeechActive() && !window.speechSynthesis.paused) {
+          window.speechSynthesis.pause();
+        }
+        setPlayButtonPlaying(false);
+      }
+
+      function resumePlayback() {
+        isPaused = false;
+        setPlayButtonPlaying(true);
+
+        if (currentAudio && currentAudio.paused && !currentAudio.ended) {
+          var attempt = currentAudio.play();
+          if (attempt && attempt.catch) attempt.catch(function() {});
+          return Promise.resolve();
+        }
+
+        if (isSpeechActive() && window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+          return Promise.resolve();
+        }
+
+        if (openingQueue && openingQueue.running) {
+          return continueOpeningQueue();
+        }
+
+        setPlayButtonPlaying(false);
+        return Promise.resolve();
+      }
+
+      function resetPlayback() {
+        playbackToken += 1;
+        isPaused = false;
+        currentSpeech = null;
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        openingQueue = null;
+        setPlayButtonPlaying(false);
+      }
+
+      if (timerEl) {
+        setInterval(function() {
+          var elapsed = Math.floor((Date.now() - sessionStartedAt) / 1000);
+          var h = Math.floor(elapsed / 3600);
+          var m = Math.floor((elapsed % 3600) / 60);
+          var s = elapsed % 60;
+          timerEl.textContent = [h, m, s].map(function(n) {
+            return String(n).padStart(2, '0');
+          }).join(':');
+        }, 1000);
+      }
+
+      function initChoiceScroller(options) {
+        var scrollerWrap = document.getElementById(options.wrapId);
+        var scroller = document.getElementById(options.scrollerId);
+        var moreBtn = document.getElementById(options.moreId);
+        if (!scrollerWrap || !scroller || !moreBtn) return;
+
+        function alignLeftScroller() {
+          if (options.side !== 'left') return;
+          scroller.scrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+        }
+
+        function updateChoiceScroller() {
+          var overflow = scroller.scrollWidth > scroller.clientWidth + 2;
+
+          if (options.side === 'left') {
+            var atStart = scroller.scrollLeft <= 4;
+            scrollerWrap.classList.toggle('has-overflow', overflow && !atStart);
+            moreBtn.hidden = !overflow || atStart;
+            return;
+          }
+
+          var atEnd = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 4;
+          scrollerWrap.classList.toggle('has-overflow', overflow && !atEnd);
+          moreBtn.hidden = !overflow || atEnd;
+        }
+
+        moreBtn.addEventListener('click', function() {
+          var delta = Math.max(180, scroller.clientWidth * 0.65);
+          scroller.scrollBy({
+            left: options.side === 'left' ? -delta : delta,
+            behavior: 'smooth'
+          });
+        });
+
+        scroller.addEventListener('scroll', updateChoiceScroller, { passive: true });
+        window.addEventListener('resize', function() {
+          alignLeftScroller();
+          updateChoiceScroller();
+        });
+
+        alignLeftScroller();
+        updateChoiceScroller();
+      }
+
+      initChoiceScroller({
+        wrapId: 'presentation-choice-scroller-wrap-left',
+        scrollerId: 'presentation-choice-scroller-left',
+        moreId: 'presentation-choice-more-left',
+        side: 'left'
+      });
+
+      initChoiceScroller({
+        wrapId: 'presentation-choice-scroller-wrap-right',
+        scrollerId: 'presentation-choice-scroller-right',
+        moreId: 'presentation-choice-more-right',
+        side: 'right'
+      });
+
       var sessionKey = (function() {
         var storageKey = 'deal-presentation-session';
         var existing = null;
@@ -221,9 +362,8 @@
         return segment[key] || segment[key.replace(/_/g, '-')] || null;
       }
 
-      function setAvatarSpeaking(active) {
-        if (!avatar) return;
-        avatar.classList.toggle('avatar-img-2--speaking', active);
+      function setAvatarSpeaking(_active) {
+        /* アバターは静止表示 */
       }
 
       function hideOverlay() {
@@ -242,64 +382,109 @@
         document.body.classList.add('presentation-locked');
       }
 
-      function setChatPanelOpen(open) {
+      function setChatPanelState(state) {
         if (!chatPanel || !chatToggle) return;
-        chatPanel.classList.toggle('presentation-chat-panel--closed', !open);
-        chatToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        var isOpen = state === 'open';
+        chatPanel.classList.toggle('presentation-chat-panel--open', isOpen);
+        chatPanel.classList.toggle('presentation-chat-panel--peek', state === 'peek');
+        chatPanel.classList.remove('presentation-chat-panel--closed');
+        chatToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       }
 
-      function stopCurrentAudio() {
+      function stopCurrentAudio(hard) {
         if (!currentAudio) return;
         currentAudio.pause();
-        currentAudio = null;
+        if (hard) currentAudio = null;
       }
 
-      function speakText(text) {
+      function speakText(text, token) {
         return new Promise(function(resolve) {
           if (!text || !('speechSynthesis' in window)) {
             resolve();
             return;
           }
 
-          window.speechSynthesis.cancel();
+          var activeToken = token || ++playbackToken;
+          if (!token) isPaused = false;
+
+          if (currentSpeech && isSpeechActive()) {
+            window.speechSynthesis.cancel();
+          }
+
           var utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = 'ja-JP';
-          utterance.onend = function() {
+          currentSpeech = utterance;
+
+          function finish() {
+            if (activeToken !== playbackToken) {
+              resolve();
+              return;
+            }
+            if (isPaused) {
+              resolve();
+              return;
+            }
+            currentSpeech = null;
             setAvatarSpeaking(false);
+            setPlayButtonPlaying(false);
             resolve();
-          };
-          utterance.onerror = utterance.onend;
+          }
+
+          utterance.onend = finish;
+          utterance.onerror = finish;
           setAvatarSpeaking(true);
+          setPlayButtonPlaying(true);
           window.speechSynthesis.speak(utterance);
         });
       }
 
       function playUrl(url, textFallback) {
         return new Promise(function(resolve) {
+          var token = ++playbackToken;
+          isPaused = false;
+
+          function finish() {
+            if (token !== playbackToken) {
+              resolve();
+              return;
+            }
+            if (isPaused) {
+              resolve();
+              return;
+            }
+            setAvatarSpeaking(false);
+            setPlayButtonPlaying(false);
+            resolve();
+          }
+
           if (!url) {
-            if (textFallback) speakText(textFallback).then(resolve);
-            else resolve();
+            speakText(textFallback, token).then(resolve);
             return;
           }
 
-          stopCurrentAudio();
+          stopCurrentAudio(true);
 
           var audio = new Audio(url);
           currentAudio = audio;
           setAvatarSpeaking(true);
+          setPlayButtonPlaying(true);
 
-          function finish() {
+          function finishAudio() {
+            if (isPaused) {
+              resolve();
+              return;
+            }
             setAvatarSpeaking(false);
             if (currentAudio === audio) currentAudio = null;
-            resolve();
+            finish();
           }
 
           function fallback() {
-            if (textFallback) speakText(textFallback).then(finish);
-            else finish();
+            if (textFallback) speakText(textFallback, token).then(resolve);
+            else finishAudio();
           }
 
-          audio.addEventListener('ended', finish, { once: true });
+          audio.addEventListener('ended', finishAudio, { once: true });
           audio.addEventListener('error', fallback, { once: true });
 
           var playAttempt = audio.play();
@@ -307,6 +492,40 @@
             playAttempt.catch(fallback);
           }
         });
+      }
+
+      function continueOpeningQueue() {
+        if (!openingQueue || !openingQueue.running || isPaused) {
+          return Promise.resolve();
+        }
+
+        var index = openingQueue.nextIndex;
+        if (index >= openingQueue.segments.length) {
+          openingQueue.running = false;
+          setPlayButtonPlaying(false);
+          return Promise.resolve();
+        }
+
+        var segment = openingQueue.segments[index];
+        var pageNumber = parseInt(segmentValue(segment, 'page_number'), 10) || 1;
+        var url = segmentValue(segment, 'audio_url');
+        var text = segmentValue(segment, 'text');
+        presentPage(pageNumber);
+
+        return playUrl(url, text).then(function() {
+          if (isPaused || !openingQueue || !openingQueue.running) return;
+          openingQueue.nextIndex = index + 1;
+          return continueOpeningQueue();
+        });
+      }
+
+      function startOpeningQueue(segments) {
+        openingQueue = {
+          segments: segments,
+          nextIndex: 0,
+          running: true
+        };
+        return continueOpeningQueue();
       }
 
       function showSlideByPageNumber(pageNumber) {
@@ -356,7 +575,13 @@
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-        if (role === 'assistant' && audioUrl) playUrl(audioUrl, content);
+        var panelBody = document.getElementById('presentation-chat-panel-body');
+        if (panelBody) panelBody.scrollTop = panelBody.scrollHeight;
+
+        if (role === 'assistant' && audioUrl) {
+          resetPlayback();
+          playUrl(audioUrl, content);
+        }
       }
 
       function segmentsForOpening() {
@@ -382,19 +607,15 @@
       }
 
       function playOpeningSegments(segments) {
-        return segments.reduce(function(chain, segment) {
-          return chain.then(function() {
-            var pageNumber = parseInt(segmentValue(segment, 'page_number'), 10) || 1;
-            var url = segmentValue(segment, 'audio_url');
-            var text = segmentValue(segment, 'text');
-            presentPage(pageNumber);
-            return playUrl(url, text);
-          });
-        }, Promise.resolve());
+        return startOpeningQueue(segments);
       }
 
       function startPresentation() {
-        if (presentationStarted) return Promise.resolve();
+        if (presentationStarted) {
+          if (hasResumablePlayback()) return resumePlayback();
+          if (openingQueue && openingQueue.running) return continueOpeningQueue();
+          return Promise.resolve();
+        }
         presentationStarted = true;
         trackEvent('presentation_start', { page_number: currentPageNumber });
         hideOverlay();
@@ -434,6 +655,7 @@
         });
 
         presentPage(pageNumber);
+        resetPlayback();
         var page = pages.find(function(p) { return p.page_number === pageNumber; });
 
         if (page && page.audio_url) {
@@ -467,10 +689,10 @@
 
       if (chatToggle && chatPanel) {
         chatToggle.addEventListener('click', function() {
-          var isClosed = chatPanel.classList.contains('presentation-chat-panel--closed');
-          setChatPanelOpen(isClosed);
+          var willOpen = !chatPanel.classList.contains('presentation-chat-panel--open');
+          setChatPanelState(willOpen ? 'open' : 'peek');
           trackEvent('chat_toggle', {
-            metadata: { open: isClosed },
+            metadata: { open: willOpen },
             page_number: currentPageNumber
           });
         });
@@ -504,6 +726,24 @@
           e.preventDefault();
           e.stopPropagation();
           startPresentation();
+        });
+      }
+
+      if (voiceBtn) {
+        voiceBtn.addEventListener('click', function() {
+          if (voiceBtn.classList.contains('presentation-play-btn--playing')) {
+            pausePlayback();
+            return;
+          }
+
+          if (hasResumablePlayback()) {
+            resumePlayback();
+            return;
+          }
+
+          if (!presentationStarted) {
+            startPresentation();
+          }
         });
       }
 
@@ -592,7 +832,7 @@
         });
       }
 
-      setChatPanelOpen(false);
+      setChatPanelState('open');
       presentPage(parseInt(openingValue('greeting_page'), 10) || 1);
       showOverlay();
 
