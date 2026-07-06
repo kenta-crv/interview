@@ -12,6 +12,9 @@ class Deal < ApplicationRecord
   has_many :deal_evaluations, dependent: :destroy
   has_many :deal_presentation_events, dependent: :destroy
   has_many :deal_faqs, dependent: :destroy
+  has_many :deal_follow_up_templates, dependent: :destroy
+
+  include DealFollowUpTemplateDefaults
 
   enum status: {
     uploading: 0,
@@ -36,6 +39,7 @@ class Deal < ApplicationRecord
   scope :by_token, ->(token) { where(access_token: token) }
 
   before_create :generate_access_token
+  after_create :ensure_follow_up_templates!
 
   DEFAULT_CONVERSATION_TOPICS = [
     { 'key' => 'overview', 'label' => 'サービス概要', 'page_number' => 1 },

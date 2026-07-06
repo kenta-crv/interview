@@ -14,7 +14,7 @@
         strong style="color: #38bdf8; margin: 0 5px;" = "#{Subscription::TRIAL_DAYS}日間の無料トライアル"
         | が利用できます（商談#{trial_config[:deal_limit]}件・サービス#{trial_config[:service_limit]}件まで）。
 
-  .row.row-cols-1.row-cols-md-2.row-cols-xl-4.g-4
+  .row.row-cols-1.row-cols-md-2.row-cols-xl-5.g-4
 
     / TRIAL
     - if @is_new_account
@@ -57,8 +57,10 @@
           .sc-detect__card-header
             h5.text-center
               = config[:name]
+              - if config[:popular]
+                span.badge.bg-primary.ms-2 POPULAR
               - if config[:featured]
-                span.badge.bg-primary.ms-2 おすすめ
+                span.badge.ms-2 style="background: #7c3aed;" RECOMMENDED
           .sc-detect__card-body.d-flex.flex-column.text-center
             .mb-4
               span.display-5.fw-bold style="color: #ffffff;" = "¥#{number_with_delimiter(config[:price])}"
@@ -74,7 +76,11 @@
               li.mb-2
                 i.fas.fa-check-circle.me-2 style="color: #10b981;"
                 | クリック履歴分析
-              - if config[:prospect_follow_up_soon]
+              - if config[:prospect_follow_up]
+                li.mb-2
+                  i.fas.fa-check-circle.me-2 style="color: #10b981;"
+                  | 見込みの追い
+              - elsif config[:prospect_follow_up_soon]
                 li.mb-2
                   i.fas.fa-clock.me-2 style="color: #f59e0b;"
                   | 見込みの追い（近日公開）

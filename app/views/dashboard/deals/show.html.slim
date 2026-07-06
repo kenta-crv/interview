@@ -132,6 +132,50 @@
             = f.text_field :exit_sales_call_label, class: 'form-control'
           = f.submit '保存', class: 'btn-primary-custom btn-sm'
 
+      - if current_client.prospect_follow_up_enabled?
+        .admin-card.ai-card-flat#follow-up-settings
+          h2.admin-card-title 📬 商談後フォローメール
+          p.admin-subtitle style="font-size: 13px; margin-bottom: 12px;"
+            | 商談終了後、見込み客のメールアドレスへ最大4通（初回＋追客3回）を送信します。開封・クリック・配信停止を記録します。
+          = form_with url: update_follow_up_settings_dashboard_deal_path(@deal), method: :patch, local: true do
+            .form-group
+              = label_tag 'deal[follow_up_sales_url]', '担当者に繋ぐリンク先URL', class: 'form-label'
+              = url_field_tag 'deal[follow_up_sales_url]', @deal.follow_up_sales_url, class: 'form-control', placeholder: 'https://calendly.com/... など'
+              small.text-muted 未設定の場合は契約CTAのURLを使用します
+            - @follow_up_templates.each do |template|
+              .follow-up-template-card style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px;background:#f8fafc;"
+                .form-group style="margin-bottom:8px;"
+                  = hidden_field_tag "templates[#{template.id}][enabled]", '0'
+                  label style="display:flex;align-items:center;gap:8px;font-weight:700;"
+                    = check_box_tag "templates[#{template.id}][enabled]", '1', template.enabled
+                    = template.label
+                .form-row style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;margin-bottom:12px;"
+                  = label_tag "templates_#{template.id}_delay_days", '送信タイミング', class: 'form-label', style: 'margin:0;'
+                  .input-group
+                    = number_field_tag "templates[#{template.id}][delay_days]", template.delay_days, class: 'form-control', min: 0, max: 365
+                    span style="margin-left:8px;align-self:center;" 日後（商談終了から）
+                .form-group
+                  = label_tag "templates_#{template.id}_subject", '件名', class: 'form-label'
+                  = text_field_tag "templates[#{template.id}][subject]", template.subject, class: 'form-control'
+                .form-group
+                  = label_tag "templates_#{template.id}_body", '本文', class: 'form-label'
+                  = text_area_tag "templates[#{template.id}][body]", template.body, class: 'form-control', rows: 5
+                  small.text-muted 利用可能: {{user_name}} / {{deal_title}} / {{company_name}}
+                .form-group style="display:flex;gap:16px;flex-wrap:wrap;"
+                  label style="display:flex;align-items:center;gap:8px;"
+                    = hidden_field_tag "templates[#{template.id}][include_sales_call_link]", '0'
+                    = check_box_tag "templates[#{template.id}][include_sales_call_link]", '1', template.include_sales_call_link?
+                    | 担当者に繋ぐボタン（担当者URL設定時のみ表示）
+                  label style="display:flex;align-items:center;gap:8px;"
+                    = hidden_field_tag "templates[#{template.id}][include_contract_link]", '0'
+                    = check_box_tag "templates[#{template.id}][include_contract_link]", '1', template.include_contract_link?
+                    | 契約を進めるボタン（契約CTA URL設定時のみ表示）
+            = submit_tag 'フォローアップ設定を保存', class: 'btn-primary-custom btn-sm'
+      - else
+        .admin-card.ai-card-flat#follow-up-settings
+          h2.admin-card-title 📬 商談後フォローメール
+          p.text-muted Businessプラン以上で、商談終了後のメール追客・開封トラッキングが利用できます。
+
   - if @deal.deal_pages.any?
     .admin-card.ai-card-timeline#content-edit
       .card-header-mix

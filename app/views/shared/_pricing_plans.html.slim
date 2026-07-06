@@ -1,30 +1,45 @@
 / Subscription::PLAN_CATALOG から LP 料金セクションを描画
 - lp_plans = Subscription.lp_plans
 
-.meetia-pricing__grid-four
-  - lp_plans.each do |plan_key, config|
-    - is_trial = plan_key == :trial
-    .meetia-pricing__card class=[(config[:featured] ? 'meetia-pricing__card--featured' : nil), (is_trial ? 'meetia-pricing__card--trial' : nil)].compact.join(' ')
-      - if config[:featured]
-        .meetia-pricing__badge RECOMMENDED
-      - if is_trial
-        .meetia-pricing__badge.meetia-pricing__badge--trial FREE TRIAL
-      .meetia-pricing__card-head
-        h3.meetia-pricing__plan = config[:name]
-        .meetia-pricing__price
-          span.meetia-pricing__currency ¥
-          span.meetia-pricing__amount = number_with_delimiter(config[:price])
-          span.meetia-pricing__period = " / 月"
-        p.meetia-pricing__desc = config[:description]
-      ul.meetia-pricing__features
-        - Subscription::LP_COMPARISON_FEATURES.each do |feature|
-          li.meetia-pricing__feature
-            span.meetia-pricing__feature-label = feature[:label]
-            span.meetia-pricing__feature-value = Subscription.format_feature_value(plan_key, feature[:key])
-      .meetia-pricing__card-foot
-        - cta_label = config[:lp_cta].presence || "このプランで始める"
-        - btn_class = is_trial ? "meetia-btn meetia-btn--secondary meetia-pricing__card-btn" : "meetia-btn meetia-btn--primary meetia-pricing__card-btn"
-        = link_to cta_label, new_client_registration_path, class: btn_class
+.meetia-pricing__slider
+  p.meetia-pricing__scroll-hint 左右の矢印またはスワイプでプランを比較
+  .meetia-pricing__slider-body
+    button.meetia-pricing__arrow.meetia-pricing__arrow--prev type="button" aria-label="前のプラン"
+      svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+        polyline points="15 18 9 12 15 6"
+    button.meetia-pricing__arrow.meetia-pricing__arrow--next type="button" aria-label="次のプラン"
+      svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+        polyline points="9 18 15 12 9 6"
+    .meetia-pricing__track
+      - lp_plans.each do |plan_key, config|
+        - is_trial = plan_key == :trial
+        - card_classes = []
+        - card_classes << 'meetia-pricing__card--popular' if config[:popular]
+        - card_classes << 'meetia-pricing__card--featured' if config[:featured]
+        - card_classes << 'meetia-pricing__card--trial' if is_trial
+        .meetia-pricing__card class=card_classes.join(' ')
+          - if config[:popular]
+            .meetia-pricing__badge.meetia-pricing__badge--popular POPULAR
+          - if config[:featured]
+            .meetia-pricing__badge RECOMMENDED
+          - if is_trial
+            .meetia-pricing__badge.meetia-pricing__badge--trial FREE TRIAL
+          .meetia-pricing__card-head
+            h3.meetia-pricing__plan = config[:name]
+            .meetia-pricing__price
+              span.meetia-pricing__currency ¥
+              span.meetia-pricing__amount = number_with_delimiter(config[:price])
+              span.meetia-pricing__period = " / 月"
+            p.meetia-pricing__desc = config[:description]
+          ul.meetia-pricing__features
+            - Subscription::LP_COMPARISON_FEATURES.each do |feature|
+              li.meetia-pricing__feature
+                span.meetia-pricing__feature-label = feature[:label]
+                span.meetia-pricing__feature-value = Subscription.format_feature_value(plan_key, feature[:key])
+          .meetia-pricing__card-foot
+            - cta_label = config[:lp_cta].presence || "このプランで始める"
+            - btn_class = is_trial ? "meetia-btn meetia-btn--secondary meetia-pricing__card-btn" : "meetia-btn meetia-btn--primary meetia-pricing__card-btn"
+            = link_to cta_label, new_client_registration_path, class: btn_class
 
 .meetia-pricing__cta
   = link_to "無料トライアルを開始", new_client_registration_path, class: "meetia-btn meetia-btn--primary meetia-btn--lg"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_07_05_120100) do
+ActiveRecord::Schema.define(version: 2026_07_05_210000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -157,6 +157,21 @@ ActiveRecord::Schema.define(version: 2026_07_05_120100) do
     t.index ["deal_id"], name: "index_deal_faqs_on_deal_id"
   end
 
+  create_table "deal_follow_up_templates", force: :cascade do |t|
+    t.integer "deal_id", null: false
+    t.integer "sequence", null: false
+    t.boolean "enabled", default: true, null: false
+    t.integer "delay_days", default: 0, null: false
+    t.string "subject", null: false
+    t.text "body", null: false
+    t.boolean "include_sales_call_link", default: true, null: false
+    t.boolean "include_contract_link", default: true, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["deal_id", "sequence"], name: "index_deal_follow_up_templates_on_deal_id_and_sequence", unique: true
+    t.index ["deal_id"], name: "index_deal_follow_up_templates_on_deal_id"
+  end
+
   create_table "deal_pages", force: :cascade do |t|
     t.integer "deal_id", null: false
     t.integer "deal_document_id", null: false
@@ -284,11 +299,53 @@ ActiveRecord::Schema.define(version: 2026_07_05_120100) do
     t.string "exit_contract_label", default: "契約へ進む", null: false
     t.string "exit_sales_call_label", default: "担当者と商談を希望", null: false
     t.string "industry", default: "general", null: false
+    t.string "follow_up_sales_url"
     t.index ["access_token"], name: "index_deals_on_access_token", unique: true
     t.index ["client_id", "status"], name: "index_deals_on_client_id_and_status"
     t.index ["client_id"], name: "index_deals_on_client_id"
     t.index ["industry"], name: "index_deals_on_industry"
     t.index ["status"], name: "index_deals_on_status"
+  end
+
+  create_table "follow_up_deliveries", force: :cascade do |t|
+    t.integer "user_progress_id", null: false
+    t.integer "deal_follow_up_template_id", null: false
+    t.integer "sequence", null: false
+    t.string "status", default: "scheduled", null: false
+    t.string "subject", null: false
+    t.text "body", null: false
+    t.datetime "scheduled_at", null: false
+    t.datetime "sent_at"
+    t.datetime "opened_at"
+    t.datetime "sales_call_clicked_at"
+    t.datetime "contract_clicked_at"
+    t.string "tracking_token", null: false
+    t.string "sales_click_token", null: false
+    t.string "contract_click_token", null: false
+    t.text "error_message"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["contract_click_token"], name: "index_follow_up_deliveries_on_contract_click_token", unique: true
+    t.index ["deal_follow_up_template_id"], name: "index_follow_up_deliveries_on_deal_follow_up_template_id"
+    t.index ["sales_click_token"], name: "index_follow_up_deliveries_on_sales_click_token", unique: true
+    t.index ["scheduled_at"], name: "index_follow_up_deliveries_on_scheduled_at"
+    t.index ["status"], name: "index_follow_up_deliveries_on_status"
+    t.index ["tracking_token"], name: "index_follow_up_deliveries_on_tracking_token", unique: true
+    t.index ["user_progress_id", "sequence"], name: "index_follow_up_deliveries_on_user_progress_id_and_sequence", unique: true
+    t.index ["user_progress_id"], name: "index_follow_up_deliveries_on_user_progress_id"
+  end
+
+  create_table "follow_up_unsubscribes", force: :cascade do |t|
+    t.integer "user_progress_id", null: false
+    t.string "token", null: false
+    t.datetime "unsubscribed_at", null: false
+    t.string "source", default: "email_link", null: false
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["token"], name: "index_follow_up_unsubscribes_on_token", unique: true
+    t.index ["user_progress_id"], name: "index_follow_up_unsubscribes_on_user_progress_id"
   end
 
   create_table "friendly_id_slugs", force: :cascade do |t|
@@ -434,7 +491,11 @@ ActiveRecord::Schema.define(version: 2026_07_05_120100) do
     t.text "key_points_for_application"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.datetime "session_ended_at"
+    t.string "follow_up_unsubscribe_token"
+    t.datetime "follow_up_unsubscribed_at"
     t.index ["deal_id"], name: "index_user_progresses_on_deal_id"
+    t.index ["follow_up_unsubscribe_token"], name: "index_user_progresses_on_follow_up_unsubscribe_token", unique: true
     t.index ["user_id", "deal_id"], name: "index_user_progresses_on_user_id_and_deal_id", unique: true
     t.index ["user_id"], name: "index_user_progresses_on_user_id"
   end
@@ -464,6 +525,7 @@ ActiveRecord::Schema.define(version: 2026_07_05_120100) do
   add_foreign_key "deal_evaluations", "deals"
   add_foreign_key "deal_evaluations", "users"
   add_foreign_key "deal_faqs", "deals"
+  add_foreign_key "deal_follow_up_templates", "deals"
   add_foreign_key "deal_pages", "deal_documents"
   add_foreign_key "deal_pages", "deals"
   add_foreign_key "deal_presentation_events", "deals"
@@ -476,6 +538,9 @@ ActiveRecord::Schema.define(version: 2026_07_05_120100) do
   add_foreign_key "deal_summaries", "deals"
   add_foreign_key "deal_transcripts", "deals"
   add_foreign_key "deals", "clients"
+  add_foreign_key "follow_up_deliveries", "deal_follow_up_templates"
+  add_foreign_key "follow_up_deliveries", "user_progresses"
+  add_foreign_key "follow_up_unsubscribes", "user_progresses"
   add_foreign_key "interview_responses", "interviews"
   add_foreign_key "interview_responses", "questions"
   add_foreign_key "interview_results", "interviews"

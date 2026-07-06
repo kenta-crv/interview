@@ -11,6 +11,8 @@ class Dashboard::UserProgressesController < Dashboard::BaseController
                                .where(user_id: @user_progress.user_id)
                                .recent_first
                                .limit(100)
+    @follow_up_deliveries = @user_progress.follow_up_deliveries.includes(:deal_follow_up_template).ordered
+    @follow_up_unsubscribes = @user_progress.follow_up_unsubscribes.order(unsubscribed_at: :desc)
   end
 
   private

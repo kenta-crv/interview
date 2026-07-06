@@ -39,13 +39,20 @@ script type="application/json" id="deal-presentation-config"
         .document-area#presentation-document-area
           .document-area__label = room_title
           - if deal_pages.any?
-            - deal_pages.each_with_index do |page, index|
-              - pdf_url = "#{Rails.application.routes.url_helpers.rails_blob_path(page.deal_document.file, only_path: true)}#page=#{page.page_number}&toolbar=0&navpanes=0&scrollbar=0&view=FitV"
-              .document-slide id="slide-#{page.id}" data-page-number=page.page_number class="#{index == 0 ? 'active' : ''}"
-                - if page.deal_document.file.attached?
-                  iframe.document-pdf-clean src=pdf_url title="スライド #{page.page_number}"
-                - else
-                  .document-placeholder 資料データがありません
+            .document-area__layout
+              nav.presentation-page-nav#presentation-page-nav aria-label="ページ一覧"
+                - deal_pages.each_with_index do |page, index|
+                  button.presentation-page-nav__item type="button" data-page-number=page.page_number class=(index.zero? ? 'is-active' : '')
+                    span.presentation-page-nav__num = page.page_number
+                    span.presentation-page-nav__title = page.title.presence || "スライド #{page.page_number}"
+              .document-viewport
+                - deal_pages.each_with_index do |page, index|
+                  - pdf_url = "#{Rails.application.routes.url_helpers.rails_blob_path(page.deal_document.file, only_path: true)}#page=#{page.page_number}&toolbar=0&navpanes=0&scrollbar=0&view=FitV"
+                  .document-slide id="slide-#{page.id}" data-page-number=page.page_number class="#{index == 0 ? 'active' : ''}"
+                    - if page.deal_document.file.attached?
+                      iframe.document-pdf-clean src=pdf_url title="スライド #{page.page_number}"
+                    - else
+                      .document-placeholder 資料データがありません
           - else
             .document-placeholder
               p ページがありません。資料をアップロードして処理してください。
@@ -112,9 +119,10 @@ script type="application/json" id="deal-presentation-config"
     .modal-content.presentation-exit-modal__dialog
       .modal-header
         h2#evaluation-modal-title 商談を終了します
-        = button_tag '×', class: 'modal-close', id: 'close-modal', type: 'button', 'aria-label': '閉じる'
       .modal-body
         p.presentation-exit-modal__lead ご検討ありがとうございました。次のアクションをお選びください。
+        p.presentation-exit-modal__notice#evaluation-notice
+          | 商談を終了するには、満足度（星）を選び「評価を送信」を押してください。
         .presentation-exit-actions
           - if cta['url'].to_s.strip.present?
             = link_to cta['exit_contract_label'], cta['url'], target: '_blank', rel: 'noopener noreferrer', class: 'btn-presentation-cta btn-presentation-cta--wide', id: 'exit-contract-btn', data: { turbo: false }
@@ -132,7 +140,6 @@ script type="application/json" id="deal-presentation-config"
           = label_tag 'feedback', 'ご意見・ご要望', class: 'form-label'
           = text_area_tag 'feedback', '', class: 'form-control', rows: 4, placeholder: '自由にご意見をお聞かせください'
       .modal-footer
-        = button_tag '評価を送信', class: 'btn-info-custom', id: 'submit-evaluation', type: 'button'
-        = button_tag '閉じる', class: 'btn-secondary-custom', id: 'dismiss-modal', type: 'button'
+        = button_tag '評価を送信して終了', class: 'btn-info-custom', id: 'submit-evaluation', type: 'button'
 
 = render 'public/deal_sessions/deal_start_overlay'

@@ -463,16 +463,100 @@
     margin-bottom: 40px;
     color: var(--meetia-text);
   }
-  .meetia-pricing__grid-five,
+  .meetia-pricing__slider {
+    position: relative;
+    margin: 0 -24px 32px;
+    padding: 0 24px;
+  }
+  .meetia-pricing__slider-body {
+    position: relative;
+    padding: 0 40px;
+    &::after {
+      content: "";
+      position: absolute;
+      top: 12px;
+      right: 40px;
+      bottom: 20px;
+      width: 40px;
+      pointer-events: none;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0), #ffffff);
+      z-index: 1;
+    }
+  }
+  .meetia-pricing__arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-top: -18px;
+    padding: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--meetia-primary);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1);
+    cursor: pointer;
+    transition: opacity 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+    &:hover {
+      border-color: var(--meetia-primary);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.18);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--meetia-primary);
+      outline-offset: 2px;
+    }
+    &.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    &--prev {
+      left: 0;
+    }
+    &--next {
+      right: 0;
+    }
+  }
+  .meetia-pricing__scroll-hint {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    letter-spacing: 0.04em;
+  }
+  .meetia-pricing__track {
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 24px;
+    padding: 12px 4px 20px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+    &::-webkit-scrollbar {
+      height: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 99px;
+    }
+  }
   .meetia-pricing__grid-three,
   .meetia-pricing__grid-four {
     display: grid;
     gap: 14px;
     align-items: stretch;
     margin-bottom: 32px;
-  }
-  .meetia-pricing__grid-five {
-    grid-template-columns: repeat(5, 1fr);
   }
   .meetia-pricing__grid-three {
     grid-template-columns: repeat(3, 1fr);
@@ -493,10 +577,30 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    flex: 0 0 auto;
+    flex-basis: unquote("calc((100% - 14px) / 1.15)");
+    scroll-snap-align: start;
+  }
+  .meetia-pricing__card--popular {
+    border: 2px solid var(--meetia-primary);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.08);
+  }
+  .meetia-pricing__card--popular .meetia-pricing__badge--popular {
+    background-color: var(--meetia-primary);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
   }
   .meetia-pricing__card--featured {
-    border: 2px solid var(--meetia-primary);
-    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.05);
+    border: 2px solid #7c3aed;
+    box-shadow: 0 12px 32px rgba(124, 58, 237, 0.18);
+    background: linear-gradient(180deg, #faf5ff 0%, #ffffff 42%);
+  }
+  .meetia-pricing__card--featured .meetia-pricing__badge {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+  }
+  .meetia-pricing__card--featured .meetia-pricing__plan,
+  .meetia-pricing__card--featured .meetia-pricing__amount {
+    color: #5b21b6;
   }
   .meetia-pricing__card--trial {
     border: 1px dashed #94a3b8;
@@ -739,6 +843,16 @@
     justify-content: center;
   }
 
+  @media (min-width: 768px) {
+    .meetia-pricing__card {
+      flex-basis: unquote("calc((100% - 28px) / 2.15)");
+    }
+  }
+  @media (min-width: 992px) {
+    .meetia-pricing__card {
+      flex-basis: unquote("calc((100% - 56px) / 4.2)");
+    }
+  }
   @media (max-width: 991px) {
     .meetia-pricing__grid-three,
     .meetia-pricing__grid-four {

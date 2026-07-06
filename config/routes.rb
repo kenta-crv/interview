@@ -119,6 +119,7 @@ Rails.application.routes.draw do
         post :upload_documents
         post :upload_supplement_documents
         patch :update_presentation_settings
+        patch :update_follow_up_settings
         get :processing_status
       end
     end
@@ -140,6 +141,9 @@ Rails.application.routes.draw do
   post 'plans/select', to: 'plans#select', as: :select_plan
 
   get '/unsubscribe/:token', to: 'unsubscribes#show', as: :unsubscribe
+  get '/follow_up/o/:token', to: 'public/follow_up_tracking#open', as: :follow_up_open
+  get '/follow_up/c/:token', to: 'public/follow_up_tracking#click', as: :follow_up_click
+  get '/follow_up/unsubscribe/:token', to: 'public/follow_up_tracking#unsubscribe', as: :follow_up_unsubscribe
   post '/webhooks/stripe', to: 'webhooks#stripe'
   get '/l/:token', to: 'click_tracking#redirect', as: :click_tracking
 end

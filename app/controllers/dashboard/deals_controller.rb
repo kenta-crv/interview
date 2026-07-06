@@ -1,7 +1,7 @@
 class Dashboard::DealsController < Dashboard::BaseController
   include FileUploadValidation
 
-  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :processing_status]
+  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_follow_up_settings, :processing_status]
   before_action :load_deal_associations, only: [:show]
   before_action :ensure_deal_quota!, only: [:new, :create]
 
@@ -23,6 +23,10 @@ class Dashboard::DealsController < Dashboard::BaseController
       @deal.deal_presentation_events.includes(:user).recent_first.limit(100)
     else
       []
+    end
+    if current_client.prospect_follow_up_enabled?
+      @deal.ensure_follow_up_templates!
+      @follow_up_templates = @deal.deal_follow_up_templates.ordered
     end
   end
 
@@ -132,6 +136,26 @@ class Dashboard::DealsController < Dashboard::BaseController
     redirect_to dashboard_deal_path(@deal, anchor: 'presentation-cta'), notice: 'プレゼンCTA設定を更新しました'
   rescue ActiveRecord::RecordInvalid => e
     redirect_to dashboard_deal_path(@deal, anchor: 'presentation-cta'), alert: e.message
+  end
+
+  def update_follow_up_settings
+    unless current_client.prospect_follow_up_enabled?
+      redirect_to dashboard_deal_path(@deal), alert: '現在のプランではフォローアップ機能を利用できません'
+      return
+    end
+
+    ActiveRecord::Base.transaction do
+      @deal.update!(follow_up_settings_params) if params[:deal].present?
+
+      Array(params[:templates]).each do |template_id, template_params|
+        template = @deal.deal_follow_up_templates.find(template_id)
+        template.update!(follow_up_template_params(template_params))
+      end
+    end
+
+    redirect_to dashboard_deal_path(@deal, anchor: 'follow-up-settings'), notice: 'フォローアップ設定を更新しました'
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => e
+    redirect_to dashboard_deal_path(@deal, anchor: 'follow-up-settings'), alert: e.message
   end
 
   def upload_documents
@@ -262,6 +286,22 @@ class Dashboard::DealsController < Dashboard::BaseController
 
   def presentation_settings_params
     params.require(:deal).permit(:presentation_cta_label, :presentation_cta_url, :exit_contract_label, :exit_sales_call_label)
+  end
+
+  def follow_up_settings_params
+    params.require(:deal).permit(:follow_up_sales_url)
+  end
+
+  def follow_up_template_params(raw_params)
+    permitted = raw_params.permit(:enabled, :delay_days, :subject, :body, :include_sales_call_link, :include_contract_link)
+    {
+      enabled: ActiveModel::Type::Boolean.new.cast(permitted[:enabled]),
+      delay_days: permitted[:delay_days],
+      subject: permitted[:subject],
+      body: permitted[:body],
+      include_sales_call_link: ActiveModel::Type::Boolean.new.cast(permitted[:include_sales_call_link]),
+      include_contract_link: ActiveModel::Type::Boolean.new.cast(permitted[:include_contract_link])
+    }
   end
 
   def ensure_deal_quota!

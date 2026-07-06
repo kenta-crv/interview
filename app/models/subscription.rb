@@ -1,7 +1,7 @@
 class Subscription < ApplicationRecord
   belongs_to :client
 
-  enum plan_type: { trial: "trial", starter: "starter", standard: "standard", enterprise: "enterprise" }
+  enum plan_type: { trial: "trial", starter: "starter", standard: "standard", business: "business", enterprise: "enterprise" }
   enum status: { active: "active", cancelled: "cancelled", expired: "expired" }
 
   validates :plan_type, presence: true
@@ -30,7 +30,7 @@ class Subscription < ApplicationRecord
     },
     starter: {
       name: "スターター",
-      price: 19_800,
+      price: 29_800,
       deal_limit: 15,
       service_limit: 1,
       click_analytics: true,
@@ -53,8 +53,23 @@ class Subscription < ApplicationRecord
       description: "成長中のチーム向け。商談50件・資料提示URL 3つ・クリック分析付き。",
       purchasable: true,
       public_on_lp: true,
-      featured: true,
+      popular: true,
+      featured: false,
       stripe_price_env: "STRIPE_PRICE_STANDARD"
+    },
+    business: {
+      name: "Business",
+      price: 98_000,
+      deal_limit: 100,
+      service_limit: 7,
+      click_analytics: true,
+      prospect_follow_up: true,
+      prospect_follow_up_soon: false,
+      description: "本格運用向け。商談100件・サービス7・クリック分析・見込み客追い付き。",
+      purchasable: true,
+      public_on_lp: true,
+      featured: true,
+      stripe_price_env: "STRIPE_PRICE_BUSINESS"
     },
     enterprise: {
       name: "エンタープライズ",

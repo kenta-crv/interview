@@ -29,8 +29,12 @@ class DealPresentationEvent < ApplicationRecord
     'exit_sales_call_click' => '終了：担当者商談希望'
   }.freeze
 
+  FOLLOW_UP_TRIGGER_EVENT = "session_close"
+
   validates :session_key, :event_type, :occurred_at, presence: true
   validates :event_type, inclusion: { in: EVENT_TYPES }
+
+  after_create_commit :enqueue_follow_up_campaign, if: :follow_up_trigger?
 
   scope :recent_first, -> { order(occurred_at: :desc) }
   scope :for_session, ->(key) { where(session_key: key) }
@@ -49,6 +53,30 @@ class DealPresentationEvent < ApplicationRecord
         event_type: event_type,
         occurred_at: Time.current
       }.merge(attrs)
+    )
+  end
+
+  private
+
+  def follow_up_trigger?
+    event_type == FOLLOW_UP_TRIGGER_EVENT &&
+      user_progress.present? &&
+      !preview_event? &&
+      evaluated_session_close?
+  end
+
+  def evaluated_session_close?
+    metadata.is_a?(Hash) && metadata["evaluated"] == true
+  end
+
+  def preview_event?
+    metadata.is_a?(Hash) && metadata["preview"]
+  end
+
+  def enqueue_follow_up_campaign
+    DealFollowUp::EnqueueCampaignService.call(
+      user_progress: user_progress,
+      ended_at: occurred_at
     )
   end
 end

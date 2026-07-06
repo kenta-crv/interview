@@ -48,6 +48,7 @@
       var trackUrl = root.dataset.trackUrl || config.track_url;
       var slides = root.querySelectorAll('.document-slide');
       var choiceButtons = root.querySelectorAll('.btn-choice');
+      var pageNavItems = root.querySelectorAll('.presentation-page-nav__item');
       var avatar = document.getElementById('presentation-avatar-img');
       var overlay = document.getElementById('presentation-start-overlay');
       var startBtn = document.getElementById('presentation-start-btn');
@@ -58,9 +59,8 @@
       var freeTextBtn = document.getElementById('send-free-text');
       var endBtn = document.getElementById('end-conversation-btn');
       var modal = document.getElementById('evaluation-modal');
-      var closeModalBtn = document.getElementById('close-modal');
-      var dismissModalBtn = document.getElementById('dismiss-modal');
       var submitEvaluationBtn = document.getElementById('submit-evaluation');
+      var evaluationNotice = document.getElementById('evaluation-notice');
       var ctaBtn = document.getElementById('presentation-cta-btn');
       var exitContractBtn = document.getElementById('exit-contract-btn');
       var exitSalesCallBtn = document.getElementById('exit-sales-call-btn');
@@ -220,6 +220,7 @@
         return generated;
       })();
       var closeLogged = false;
+      var exitModalShown = false;
 
       function trackEvent(eventType, details) {
         if (!trackUrl) return;
@@ -252,16 +253,77 @@
       }
 
       function logSessionClose(reason) {
-        if (closeLogged) return;
+        if (closeLogged || exitModalShown) return;
         closeLogged = true;
         trackEvent('session_close', {
           metadata: {
             reason: reason,
             presentation_started: presentationStarted,
             current_page_number: currentPageNumber,
-            duration_ms: Date.now() - sessionStartedAt
+            duration_ms: Date.now() - sessionStartedAt,
+            evaluated: false
           }
         });
+      }
+
+      function finalizeSession(reason, ratingValue, feedbackValue) {
+        if (closeLogged) return Promise.resolve();
+        closeLogged = true;
+
+        var tasks = [];
+        if (trackUrl) {
+          tasks.push(Promise.resolve(trackEvent('evaluation_submit', {
+            metadata: {
+              rating: ratingValue,
+              feedback: feedbackValue || ''
+            }
+          })));
+        }
+
+        if (evaluateUrl) {
+          tasks.push(fetch(evaluateUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': csrfToken()
+            },
+            body: JSON.stringify({
+              rating: ratingValue,
+              feedback: feedbackValue || ''
+            })
+          }));
+        }
+
+        return Promise.all(tasks).then(function() {
+          trackEvent('session_close', {
+            metadata: {
+              reason: reason,
+              presentation_started: presentationStarted,
+              current_page_number: currentPageNumber,
+              duration_ms: Date.now() - sessionStartedAt,
+              evaluated: true,
+              rating: ratingValue
+            }
+          });
+        });
+      }
+
+      function showEvaluationRequiredNotice() {
+        if (evaluationNotice) {
+          evaluationNotice.classList.add('is-warning');
+          evaluationNotice.textContent = '商談を終了するには、満足度（星）を選び「評価を送信して終了」を押してください。';
+        }
+        alert('満足度の評価を送信してから終了してください。');
+      }
+
+      function closePresentationWindow() {
+        pausePlayback();
+        document.body.classList.remove('presentation-exit-open', 'presentation-locked');
+        try { window.close(); } catch (_e) {}
+        if (!window.closed) {
+          document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0b1e;color:#fff;font-family:sans-serif;text-align:center;padding:24px;"><div><h1 style="font-size:1.5rem;margin-bottom:12px;">商談が終了しました</h1><p style="color:#94a3b8;margin:0;">このタブを閉じてください。</p></div></div>';
+          document.title = '商談終了';
+        }
       }
 
       function ctaUrl() {
@@ -312,15 +374,10 @@
       function showExitModal() {
         if (!modal) return;
         hideOverlay();
+        exitModalShown = true;
         modal.classList.add('presentation-exit-modal--open');
         document.body.classList.add('presentation-exit-open');
         document.body.classList.remove('presentation-locked');
-      }
-
-      function hideExitModal() {
-        if (!modal) return;
-        modal.classList.remove('presentation-exit-modal--open');
-        document.body.classList.remove('presentation-exit-open');
       }
 
       function handleCtaClick(source) {
@@ -341,8 +398,6 @@
           alert('契約ページのURLが設定されていません。');
           return;
         }
-
-        hideExitModal();
       }
 
       function handleExitSalesCallClick() {
@@ -551,6 +606,16 @@
         });
       }
 
+      function setActivePageNav(pageNumber) {
+        pageNavItems.forEach(function(item) {
+          var active = parseInt(item.dataset.pageNumber, 10) === pageNumber;
+          item.classList.toggle('is-active', active);
+          if (active && typeof item.scrollIntoView === 'function') {
+            item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }
+        });
+      }
+
       function presentPage(pageNumber) {
         if (currentPageNumber !== pageNumber) {
           trackEvent('page_view', { page_number: pageNumber });
@@ -558,6 +623,7 @@
         currentPageNumber = pageNumber;
         showSlideByPageNumber(pageNumber);
         setActiveButton(pageNumber);
+        setActivePageNav(pageNumber);
       }
 
       function appendChatMessage(content, role, audioUrl) {
@@ -706,6 +772,14 @@
         });
       });
 
+      pageNavItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+          var pageNumber = parseInt(item.dataset.pageNumber, 10);
+          if (!pageNumber) return;
+          presentPage(pageNumber);
+        });
+      });
+
       if (freeTextBtn && freeTextInput) {
         freeTextBtn.addEventListener('click', function() {
           var message = freeTextInput.value.trim();
@@ -761,15 +835,6 @@
 
       if (endBtn && modal) {
         endBtn.addEventListener('click', function() {
-          trackEvent('session_close', {
-            metadata: {
-              reason: 'end_button',
-              presentation_started: presentationStarted,
-              current_page_number: currentPageNumber,
-              duration_ms: Date.now() - sessionStartedAt
-            }
-          });
-          closeLogged = true;
           showExitModal();
         });
       }
@@ -782,18 +847,11 @@
         exitSalesCallBtn.addEventListener('click', handleExitSalesCallClick);
       }
 
-      [closeModalBtn, dismissModalBtn].forEach(function(btn) {
-        if (!btn) return;
-        btn.addEventListener('click', hideExitModal);
-      });
-
       if (modal) {
-        modal.querySelectorAll('[data-close-modal]').forEach(function(el) {
-          el.addEventListener('click', hideExitModal);
-        });
         modal.addEventListener('click', function(e) {
           if (e.target === modal || e.target.classList.contains('presentation-exit-modal__backdrop')) {
-            hideExitModal();
+            e.preventDefault();
+            showEvaluationRequiredNotice();
           }
         });
       }
@@ -803,32 +861,20 @@
           var rating = document.querySelector('input[name="rating"]:checked');
           var feedbackEl = document.getElementById('feedback');
           if (!rating) {
-            alert('満足度を選択してください');
+            showEvaluationRequiredNotice();
             return;
           }
 
-          if (evaluateUrl) {
-            trackEvent('evaluation_submit', {
-              metadata: {
-                rating: rating.value,
-                feedback: feedbackEl ? feedbackEl.value : ''
-              }
+          submitEvaluationBtn.disabled = true;
+          finalizeSession('evaluation_submit', rating.value, feedbackEl ? feedbackEl.value : '')
+            .then(function() {
+              closePresentationWindow();
+            })
+            .catch(function() {
+              submitEvaluationBtn.disabled = false;
+              closeLogged = false;
+              alert('送信に失敗しました。もう一度お試しください。');
             });
-            fetch(evaluateUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': csrfToken()
-              },
-              body: JSON.stringify({
-                rating: rating.value,
-                feedback: feedbackEl ? feedbackEl.value : ''
-              })
-            }).catch(function() {});
-          }
-
-          hideExitModal();
-          alert('評価を送信しました。ありがとうございました！');
         });
       }
 

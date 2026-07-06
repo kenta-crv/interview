@@ -30,6 +30,10 @@ module PlanLimitable
     active_services_count < service_limit
   end
 
+  def prospect_follow_up_enabled?
+    current_plan_config[:prospect_follow_up] == true
+  end
+
   def click_analytics_enabled?
     current_plan_config[:click_analytics] == true
   end

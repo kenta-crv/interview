@@ -63,6 +63,49 @@
                   - else
                     | -
 
+  - if @follow_up_deliveries.any? || @follow_up_unsubscribes.any? || @user_progress.session_ended_at.present?
+    .admin-card
+      h2.admin-card-title フォローメール履歴
+      - if @user_progress.session_ended_at.present?
+        .info-row
+          .info-label 商談終了:
+          .info-value= l(@user_progress.session_ended_at, format: :short)
+      - if @user_progress.follow_up_unsubscribed?
+        .status-alert-box.warning style="margin-bottom: 16px;"
+          p 導入見送り（#{l(@user_progress.follow_up_unsubscribed_at, format: :short)}）
+      - if @follow_up_deliveries.any?
+        .table-responsive
+          table.admin-table
+            thead
+              tr
+                th 通数
+                th 件名
+                th 予定/送信
+                th 開封
+                th 担当者クリック
+                th 契約クリック
+                th 状態
+            tbody
+              - @follow_up_deliveries.each do |delivery|
+                tr
+                  td= delivery.sequence
+                  td= delivery.subject
+                  td
+                    - if delivery.sent_at
+                      = l(delivery.sent_at, format: :short)
+                    - else
+                      = l(delivery.scheduled_at, format: :short)
+                      |  予定
+                  td= delivery.opened_at ? l(delivery.opened_at, format: :short) : '-'
+                  td= delivery.sales_call_clicked_at ? l(delivery.sales_call_clicked_at, format: :short) : '-'
+                  td= delivery.contract_clicked_at ? l(delivery.contract_clicked_at, format: :short) : '-'
+                  td= delivery.status
+      - if @follow_up_unsubscribes.any?
+        h3.admin-card-title style="font-size: 1rem; margin-top: 20px;" 導入見送り履歴
+        ul
+          - @follow_up_unsubscribes.each do |record|
+            li= "#{l(record.unsubscribed_at, format: :short)} / #{record.source}"
+
   .admin-actions
     = link_to '一覧に戻る', dashboard_deal_user_progresses_path(@deal), class: 'btn-secondary-custom'
     = link_to '商談詳細に戻る', dashboard_deal_path(@deal), class: 'btn-primary-custom'
