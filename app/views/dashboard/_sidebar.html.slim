@@ -6,8 +6,7 @@
 
   .db-v2-sidebar__inner
     = link_to dashboard_index_path, class: "db-v2-sidebar__logo-area" do
-      span.db-v2-sidebar__logo-mark M
-      span.db-v2-sidebar__logo-text Meetia
+      = image_tag "meetia_logo.png", alt: "Meetia", class: "db-v2-sidebar__logo-image"
 
     nav.db-v2-sidebar__nav aria-label="メインメニュー"
       .db-v2-sidebar__section

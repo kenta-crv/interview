@@ -153,28 +153,14 @@ html.dashboard-html {
 .dashboard-v2-container .db-v2-sidebar__logo-area {
   display: flex;
   align-items: center;
-  gap: 10px;
   padding: 4px 8px 24px;
 }
 
-.dashboard-v2-container .db-v2-sidebar__logo-mark {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, #7c3aed, #a855f7);
-  box-shadow: 0 0 18px rgba(168, 85, 247, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 17px;
-  color: #fff;
-}
-
-.dashboard-v2-container .db-v2-sidebar__logo-text {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+.dashboard-v2-container .db-v2-sidebar__logo-image {
+  display: block;
+  width: 160px;
+  height: auto;
+  filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.35));
 }
 
 .dashboard-v2-container .db-v2-sidebar__nav {
