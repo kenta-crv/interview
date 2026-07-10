@@ -109,6 +109,11 @@ class Subscription < ApplicationRecord
       public_plans
     end
 
+    # LP・料金セクションで表示するプラン（/plans と同じカタログ順）
+    def lp_display_plans
+      PLAN_CATALOG.select { |_key, config| config[:public_on_lp] }.to_a
+    end
+
     def purchasable_plans
       PLAN_CATALOG.select { |_key, config| config[:purchasable] }
     end

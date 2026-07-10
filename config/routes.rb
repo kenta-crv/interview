@@ -15,7 +15,14 @@ Rails.application.routes.draw do
   }
 
   root to: 'tops#index'
-  # --- 各ジャンルLPの定義 ---
+  # --- Meetia LP (single page; legacy paths redirect to anchors) ---
+  get 'whats', to: redirect('/#whats')
+  get 'service', to: redirect('/#service')
+  get 'features', to: redirect('/#features')
+  get 'pricing', to: redirect('/#pricing')
+  get 'reviews', to: redirect('/#reviews')
+  get 'faq', to: redirect('/#faq')
+  get 'company', to: redirect('/#company')
   get 'interview', to: 'tops#interview'
 
 
@@ -89,6 +96,8 @@ Rails.application.routes.draw do
     get 'index', to: 'dashboard#index', as: :index
     root to: 'dashboard#index'
 
+    resource :account, only: [:show, :update]
+    get "management", to: "management#index", as: :management
     resource :subscription, only: [:show, :update] do
       get :cancel_confirm
       post :cancel
@@ -116,6 +125,7 @@ Rails.application.routes.draw do
         post :regenerate_audio
         post :publish
         post :reprocess
+        post :reset_processing
         post :upload_documents
         post :upload_supplement_documents
         patch :update_presentation_settings

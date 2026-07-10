@@ -1,45 +1,57 @@
-h1 Interview Result ##{@result.id}
+.db-v2-header
+  .db-v2-header__left
+    h1.db-v2-header__title 面接結果 ##{@result.id}
+    p.db-v2-header__subtitle = @result.interview.situation&.title
+  .db-v2-header__right
+    = render "/dashboard/theme_switch"
+    = link_to admin_interview_results_path, class: "db-v2-btn db-v2-btn--ghost" do
+      i.fa-solid.fa-arrow-left aria-hidden="true"
+      span 一覧へ戻る
 
-p
-  strong Applicant:
-  = @result.interview.user&.email
-p
-  strong Situation:
-  = @result.interview.situation&.title
-p
-  strong Status:
-  = @result.final_status
-p
-  strong Average Score:
-  = @result.average_score
+.db-v2-bottom-card
+  .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title サマリー
+  .db-v2-bottom-card__body
+    .db-v2-summary-grid
+      .db-v2-summary-card
+        span.db-v2-summary-card__label 応募者
+        span.db-v2-summary-card__value = @result.interview.user&.email
+      .db-v2-summary-card
+        span.db-v2-summary-card__label ステータス
+        span.db-v2-summary-card__value = @result.final_status
+      .db-v2-summary-card
+        span.db-v2-summary-card__label 平均スコア
+        span.db-v2-summary-card__value = @result.average_score
 
-h2 Summary
-p= @result.summary
+    - if @result.summary.present?
+      p = @result.summary
 
-h3 Strengths
-ul
-  - Array(@result.strengths).each do |item|
-    li= item
+    - if Array(@result.strengths).any?
+      h3 強み
+      ul
+        - Array(@result.strengths).each do |item|
+          li = item
 
-h3 Weaknesses
-ul
-  - Array(@result.weaknesses).each do |item|
-    li= item
+    - if Array(@result.weaknesses).any?
+      h3 弱み
+      ul
+        - Array(@result.weaknesses).each do |item|
+          li = item
 
-h3 Recommendation
-p= @result.recommendation
+    - if @result.recommendation.present?
+      h3 推薦
+      p = @result.recommendation
 
-h2 Responses
-ul
-  - @result.interview.interview_responses.in_order.each do |resp|
-    li
-      strong= resp.question.question_text
-      |  — Score: #{resp.score}
-      br
-      | Answer: #{resp.audio_transcript}
-      - if resp.answer_audio.attached?
-        br
-        = link_to 'Audio', rails_blob_path(resp.answer_audio, disposition: 'attachment', only_path: true)
-      - if resp.answer_video.attached?
-        br
-        = link_to 'Video', rails_blob_path(resp.answer_video, disposition: 'attachment', only_path: true)
+.db-v2-bottom-card
+  .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title 回答一覧
+  .db-v2-bottom-card__body
+    - @result.interview.interview_responses.in_order.each do |resp|
+      .db-v2-lead-card
+        p.db-v2-lead-card__title = resp.question.question_text
+        p スコア: #{resp.score}
+        p = resp.audio_transcript
+        - if resp.answer_audio.attached?
+          p = link_to "音声", rails_blob_path(resp.answer_audio, disposition: "attachment", only_path: true), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"
+        - if resp.answer_video.attached?
+          p = link_to "動画", rails_blob_path(resp.answer_video, disposition: "attachment", only_path: true), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"

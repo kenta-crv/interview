@@ -1,0 +1,35 @@
+.meetia-features-showcase
+  .meetia-features-showcase__grid
+    - TopsHelper::FEATURE_ROWS.each do |(num, icon, title, body, _)|
+      - if num == "03"
+        article.meetia-feature-focus data-feature=num
+          .meetia-feature-focus__head
+            .meetia-feature-focus__head-icon
+              i.fa-solid class=icon aria-hidden="true"
+            .meetia-feature-focus__head-main
+              p.meetia-feature-focus__num = num
+              h2.meetia-feature-focus__title = title
+              p.meetia-feature-focus__body = body
+          .meetia-feature-focus__screen
+            = image_tag "top_hero_portal.png", alt: "24時間AI商談ルームのイメージ", class: "meetia-feature-focus__image"
+      - else
+        article.meetia-feature-card data-feature=num
+          .meetia-feature-card__icon
+            i.fa-solid class=icon aria-hidden="true"
+          .meetia-feature-card__content
+            p.meetia-feature-card__num = num
+            h3.meetia-feature-card__title = title
+            p.meetia-feature-card__body = body
+          span.meetia-feature-card__arrow aria-hidden="true"
+            i.fa-solid.fa-chevron-right
+
+  - if local_assigns.fetch(:show_cta, false)
+    .meetia-features-showcase__cta
+      p.meetia-features-showcase__cta-copy すべての機能を体験して、営業の未来を変えましょう。
+      .meetia-features-showcase__cta-actions
+        = link_to lp_sign_up_path, class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-btn--pill" do
+          | 無料でMeetiaを始める
+          i.fa-solid.fa-chevron-right aria-hidden="true"
+        = link_to plans_path, class: "meetia-btn meetia-btn--outline meetia-btn--lg meetia-btn--pill" do
+          i.fa-solid.fa-download aria-hidden="true"
+          | 資料をダウンロード

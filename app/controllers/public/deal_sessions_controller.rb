@@ -1,9 +1,6 @@
 # app/controllers/public/deal_sessions_controller.rb
 module Public
   class DealSessionsController < ApplicationController
-    layout 'deal_public', only: [:show, :create_user_info]
-    layout 'presentation', only: [:conversation]
-
     skip_before_action :verify_authenticity_token, only: [:respond, :evaluate, :track_event]
     before_action :set_deal_by_token
     before_action :require_registered_user, only: [:conversation, :playback, :respond, :evaluate]
@@ -186,7 +183,13 @@ module Public
     end
 
     def client_preview?
-      params[:preview].present? && client_signed_in? && @deal.client_id == current_client.id
+      return false unless params[:preview].present?
+
+      if admin_signed_in?
+        return true
+      end
+
+      client_signed_in? && @deal.client_id == current_client.id
     end
 
     def user_params

@@ -1,0 +1,36 @@
+.meetia-modern-lp
+  = render "tops/shared/nav"
+  = render "tops/shared/page_hero", eyebrow: "FAQ", title: "よくあるご質問", lead: "AIアシスタントがお答えします。気になる項目を選んでください。"
+
+  section.meetia-section
+    .meetia-section__inner.meetia-faq-layout
+      .meetia-faq-chat
+        .meetia-faq-chat__head
+          = image_tag "avatar_2_trim.png", alt: "", class: "meetia-faq-chat__avatar"
+          div
+            strong Meetia AI
+            span サポートアシスタント
+        .meetia-faq-chat__body data-faq-chat=""
+          .meetia-faq-chat__bubble.meetia-faq-chat__bubble--ai
+            p こんにちは。Meetiaについて、何でもお聞きください。
+          .meetia-faq-chat__bubble.meetia-faq-chat__bubble--user.is-hidden data-faq-user=""
+            p data-faq-user-text=""
+          .meetia-faq-chat__bubble.meetia-faq-chat__bubble--ai.is-hidden data-faq-answer=""
+            p data-faq-answer-text=""
+        .meetia-faq-chat__chips
+          - TopsHelper::FAQ_ITEMS.first(4).each do |q, a|
+            button.meetia-faq-chat__chip type="button" data-faq-q=q data-faq-a=a = q.truncate(18)
+      .meetia-faq-topics
+        h2 トピックから探す
+        .meetia-faq-topics__grid
+          - TopsHelper::FAQ_TOPICS.each do |_key, label|
+            span.meetia-faq-topics__item = label
+        details.meetia-faq-list
+          summary すべての質問を見る
+          - TopsHelper::FAQ_ITEMS.each do |q, a|
+            .meetia-faq__item
+              h3.meetia-faq__q = q
+              p.meetia-faq__a = a
+
+  = render "tops/shared/cta_band"
+  = render "tops/shared/footer"

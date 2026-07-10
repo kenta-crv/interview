@@ -1,51 +1,74 @@
+- nav_deal = sidebar_nav_deal
+
 .db-v2-sidebar
   button.db-v2-sidebar__close type="button" aria-label="メニューを閉じる" data-dashboard-sidebar-close=""
-    i.fas.fa-times
+    i.fa-solid.fa-xmark
+
   .db-v2-sidebar__inner
-    / ロゴエリア
-    .db-v2-sidebar__logo-area
-      = image_tag "dashboard.png", alt: "Dashboard Logo", class: "db-v2-sidebar__logo"
+    = link_to dashboard_index_path, class: "db-v2-sidebar__logo-area" do
+      span.db-v2-sidebar__logo-mark M
+      span.db-v2-sidebar__logo-text Meetia
 
-    / ナビゲーションメニュー
-    nav.db-v2-sidebar__nav
-      = link_to dashboard_index_path, class: "db-v2-sidebar__link #{current_page?(dashboard_index_path) ? 'db-v2-sidebar__link--active' : ''}" do
-        i.fas.fa-chart-pie
-        span 使い方
-      
-      / @deal が存在する場合のみ、その商談に紐づくアクションメニューを生成
-      - if @deal.present? && @deal.id.present?
-        = link_to dashboard_deal_path(@deal.id), class: "db-v2-sidebar__link #{current_page?(dashboard_deal_path(@deal.id)) ? 'db-v2-sidebar__link--active' : ''}" do
-          i.fas.fa-file-upload
-          span 商談管理・台本編集
-        
-        - preview_url = conversation_public_deal_session_path(token: @deal.access_token, preview: 1)
-        = link_to preview_url, class: "db-v2-sidebar__link #{request.path.include?('/public/deal/') && params[:preview].present? ? 'db-v2-sidebar__link--active' : ''}", target: '_blank', rel: 'noopener', data: { turbo: false } do
-          i.fas.fa-laptop-code
-          span シミュレーションテスト
+    nav.db-v2-sidebar__nav aria-label="メインメニュー"
+      .db-v2-sidebar__section
+        p.db-v2-sidebar__section-label 概要
+        = link_to dashboard_index_path, class: sidebar_link_class(:dashboard) do
+          i.fa-solid.fa-gauge-high aria-hidden="true"
+          span ダッシュボード
+
+      .db-v2-sidebar__section
+        p.db-v2-sidebar__section-label 商談
+        = link_to dashboard_deals_path, class: sidebar_link_class(:deals) do
+          i.fa-solid.fa-briefcase aria-hidden="true"
+          span 商談一覧
+        = link_to sidebar_leads_path, class: sidebar_link_class(:leads) do
+          i.fa-solid.fa-users aria-hidden="true"
+          span リード管理
+          - if client_signed_in? && !nav_deal
+            span.db-v2-sidebar__hint 商談作成後
+
+      - if client_signed_in? && sidebar_show_deal_context? && nav_deal
+        .db-v2-sidebar__section.db-v2-sidebar__section--deal
+          p.db-v2-sidebar__section-label 現在の商談
+          .db-v2-sidebar__deal-title title=nav_deal.title = truncate(nav_deal.title, length: 24)
+          = link_to dashboard_deal_path(nav_deal), class: sidebar_link_class(:deal_studio, "db-v2-sidebar__link--nested") do
+            i.fa-solid.fa-clapperboard aria-hidden="true"
+            span スタジオ
+          = link_to dashboard_deal_user_progresses_path(nav_deal), class: sidebar_link_class(:leads, "db-v2-sidebar__link--nested") do
+            i.fa-solid.fa-address-book aria-hidden="true"
+            span リード
+
+      .db-v2-sidebar__section
+        p.db-v2-sidebar__section-label アカウント
+        - if client_signed_in? && !admin_signed_in?
+          = link_to dashboard_account_path, class: sidebar_link_class(:account) do
+            i.fa-solid.fa-building aria-hidden="true"
+            span 企業情報
+          = link_to dashboard_subscription_path, class: sidebar_link_class(:subscription) do
+            i.fa-solid.fa-credit-card aria-hidden="true"
+            span プラン・契約
+        - if admin_signed_in?
+          = link_to dashboard_management_path, class: sidebar_link_class(:management) do
+            i.fa-solid.fa-building-columns aria-hidden="true"
+            span 契約企業
+          = link_to admin_interview_results_path, class: sidebar_link_class(:admin_interview_results) do
+            i.fa-solid.fa-clipboard-list aria-hidden="true"
+            span 面接結果
+
+    .db-v2-sidebar__footer
+      .db-v2-sidebar__user
+        .db-v2-sidebar__user-avatar
+          - avatar_name = admin_signed_in? ? current_admin.email : sidebar_user_display_name
+          img src="https://ui-avatars.com/api/?name=#{CGI.escape(avatar_name)}&background=7c3aed&color=fff&size=64" alt=""
+        .db-v2-sidebar__user-meta
+          - if admin_signed_in?
+            span.db-v2-sidebar__user-name = current_admin.email
+            span.db-v2-sidebar__user-role Admin
+          - else
+            span.db-v2-sidebar__user-name = sidebar_user_display_name
+            span.db-v2-sidebar__user-role = sidebar_plan_label
+
+      - if admin_signed_in?
+        = render "shared/sign_out_button", path: destroy_admin_session_path, variant: :sidebar
       - else
-        = link_to dashboard_deals_path, class: "db-v2-sidebar__link #{current_page?(dashboard_deals_path) ? 'db-v2-sidebar__link--active' : ''}" do
-          i.fas.fa-list
-          span 商談を選択する
-
-      = link_to "#", class: "db-v2-sidebar__link" do
-        i.fas.fa-sliders-h
-        span カスタマイズ
-      
-      = link_to "#", class: "db-v2-sidebar__link" do
-        i.fas.fa-chart-line
-        span 顧客進捗
-      
-      = link_to "#", class: "db-v2-sidebar__link" do
-        i.fas.fa-link
-        span 埋込URL発行
-
-  / ログアウトエリア（ClientとAdminのセッションを判定して適切なトップ・ログイン画面へ飛ばす）
-  .db-v2-sidebar__footer
-    - if defined?(current_admin) && current_admin.present?
-      = link_to destroy_admin_session_path, class: "db-v2-sidebar__link db-v2-sidebar__link--logout", data: { turbo_method: :delete } do
-        i.fas.fa-sign-out-alt
-        span 管理者ログアウト
-    - else
-      = link_to destroy_client_session_path, class: "db-v2-sidebar__link db-v2-sidebar__link--logout", data: { turbo_method: :delete } do
-        i.fas.fa-sign-out-alt
-        span ログアウト
+        = render "shared/sign_out_button", path: destroy_client_session_path, variant: :sidebar

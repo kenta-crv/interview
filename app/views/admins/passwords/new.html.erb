@@ -1,16 +1,25 @@
-<h2>Forgot your password?</h2>
+<div class="meetia-auth__page">
+  <%= link_to root_path, class: "meetia-auth__brand" do %>
+    <%= image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-auth__logo" %>
+  <% end %>
 
-<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
-  <%= render "admins/shared/error_messages", resource: resource %>
+  <div class="meetia-auth__card">
+    <h1 class="meetia-auth__title">パスワードをお忘れですか？</h1>
+    <p class="meetia-auth__lead">登録メールアドレスに再設定用の案内を送信します</p>
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+      <%= render "admins/shared/error_messages", resource: resource %>
+
+      <div class="meetia-auth__field">
+        <%= f.label :email, "メールアドレス", class: "meetia-auth__label" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "meetia-auth__input" %>
+      </div>
+
+      <%= f.submit "再設定メールを送信", class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit" %>
+    <% end %>
   </div>
 
-  <div class="actions">
-    <%= f.submit "Send me reset password instructions" %>
+  <div class="meetia-auth__links">
+    <%= render "admins/shared/links" %>
   </div>
-<% end %>
-
-<%= render "admins/shared/links" %>
+</div>

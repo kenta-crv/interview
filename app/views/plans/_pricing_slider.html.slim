@@ -1,0 +1,55 @@
+- visible_plans = Subscription.lp_display_plans
+- current_plan = current_client.subscription_plan.to_s
+
+.db-v2-bottom-card.db-v2-pricing-panel
+  .db-v2-bottom-card__body
+    .db-v2-pricing__slider data-pricing-slider=""
+      p.db-v2-pricing__hint 最初の3プランを表示し、4つ目の途中まで見えます。右矢印で続きを確認できます
+      .db-v2-pricing__slider-body
+        button.db-v2-pricing__arrow.db-v2-pricing__arrow--prev type="button" aria-label="前のプラン" data-pricing-prev=""
+          i.fa-solid.fa-chevron-left aria-hidden="true"
+        .db-v2-pricing__viewport
+          .db-v2-pricing__track
+            - visible_plans.each do |plan_key, config|
+              - is_trial = plan_key == :trial
+              - next if is_trial && !@is_new_account
+              - card_classes = []
+              - card_classes << "db-v2-pricing__card--popular" if config[:popular]
+              - card_classes << "db-v2-pricing__card--featured" if config[:featured]
+              - card_classes << "db-v2-pricing__card--trial" if is_trial
+              - card_classes << "db-v2-pricing__card--current" if current_plan == plan_key.to_s
+              .db-v2-pricing__card class=card_classes.join(" ")
+                - if config[:popular]
+                  span.db-v2-pricing__badge.db-v2-pricing__badge--popular POPULAR
+                - if config[:featured]
+                  span.db-v2-pricing__badge.db-v2-pricing__badge--featured RECOMMENDED
+                - if is_trial
+                  span.db-v2-pricing__badge.db-v2-pricing__badge--trial FREE TRIAL
+                - if current_plan == plan_key.to_s
+                  span.db-v2-pricing__badge 現在のプラン
+                .db-v2-pricing__card-head
+                  h3.db-v2-pricing__plan = config[:name]
+                  .db-v2-pricing__price
+                    span.db-v2-pricing__currency ¥
+                    span.db-v2-pricing__amount = number_with_delimiter(config[:price])
+                    - if is_trial
+                      span.db-v2-pricing__period
+                        |  / #{Subscription::TRIAL_DAYS}日間
+                    - else
+                      span.db-v2-pricing__period
+                        |  / 月
+                  p.db-v2-pricing__desc = config[:description]
+                ul.db-v2-pricing__features
+                  - Subscription::LP_COMPARISON_FEATURES.each do |feature|
+                    li.db-v2-pricing__feature
+                      span.db-v2-pricing__feature-label = feature[:label]
+                      span.db-v2-pricing__feature-value = Subscription.format_feature_value(plan_key, feature[:key])
+                .db-v2-pricing__card-foot
+                  - if current_plan == plan_key.to_s
+                    span.db-v2-btn.db-v2-btn--ghost.db-v2-btn--block.is-disabled 選択中
+                  - elsif is_trial
+                    = button_to "トライアルを開始", select_plan_path, method: :post, params: { plan_type: "trial" }, class: "db-v2-btn db-v2-btn--primary db-v2-btn--block"
+                  - elsif config[:purchasable]
+                    = button_to "このプランを選択", select_plan_path, method: :post, params: { plan_type: plan_key }, class: "db-v2-btn db-v2-btn--primary db-v2-btn--block"
+        button.db-v2-pricing__arrow.db-v2-pricing__arrow--next type="button" aria-label="次のプラン" data-pricing-next=""
+          i.fa-solid.fa-chevron-right aria-hidden="true"

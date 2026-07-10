@@ -1,0 +1,14 @@
+header.meetia-nav
+  .meetia-nav__inner
+    = link_to root_path, class: "meetia-nav__logo" do
+      = image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-nav__logo-image"
+    button.meetia-nav__toggle type="button" aria-label="メニュー" data-lp-nav-toggle=""
+      span
+      span
+      span
+    nav.meetia-nav__menu data-lp-nav-menu=""
+      - TopsHelper::LP_NAV_ITEMS.each do |item|
+        = link_to item[:label], item[:href], class: "meetia-nav__item"
+      .meetia-nav__menu-actions
+        = link_to lp_login_label, lp_login_path, class: "meetia-btn meetia-btn--ghost meetia-btn--sm"
+        = link_to "無料トライアル", lp_sign_up_path, class: "meetia-btn meetia-btn--primary meetia-btn--sm"

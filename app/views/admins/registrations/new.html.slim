@@ -1,26 +1,29 @@
-.auth-wrapper
-  .auth-forms
-    / Sign Up Form
-    .auth-card
-      h2 Sign up
-      = form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f|
-        = render "admins/shared/error_messages", resource: resource
+.meetia-auth__page
+  = link_to root_path, class: "meetia-auth__brand" do
+    = image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-auth__logo"
 
-        .field
-          = f.label :email
-          = f.email_field :email, autofocus: true, autocomplete: "email", class: "input-field"
+  .meetia-auth__card
+    h1.meetia-auth__title 管理者登録
+    p.meetia-auth__lead 管理者アカウントを作成
 
-        .field
-          = f.label :password
-          - if @minimum_password_length
-            em= "(#{@minimum_password_length} characters minimum)"
-          = f.password_field :password, autocomplete: "new-password", class: "input-field"
+    = form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f|
+      = render "admins/shared/error_messages", resource: resource
 
-        .field
-          = f.label :password_confirmation
-          = f.password_field :password_confirmation, autocomplete: "new-password", class: "input-field"
+      .meetia-auth__field
+        = f.label :email, "メールアドレス", class: "meetia-auth__label"
+        = f.email_field :email, autofocus: true, autocomplete: "email", class: "meetia-auth__input"
 
-        .actions
-          = f.submit "Sign up", class: "btn btn-primary"
+      .meetia-auth__field
+        = f.label :password, "パスワード", class: "meetia-auth__label"
+        - if @minimum_password_length
+          em.meetia-auth__hint = "（#{@minimum_password_length}文字以上）"
+        = f.password_field :password, autocomplete: "new-password", class: "meetia-auth__input"
 
-      = render "admins/shared/links"
+      .meetia-auth__field
+        = f.label :password_confirmation, "パスワード（確認）", class: "meetia-auth__label"
+        = f.password_field :password_confirmation, autocomplete: "new-password", class: "meetia-auth__input"
+
+      = f.submit "アカウントを作成", class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit"
+
+  .meetia-auth__links
+    = render "admins/shared/links"

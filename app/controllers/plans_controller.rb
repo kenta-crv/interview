@@ -1,27 +1,22 @@
 class PlansController < ApplicationController
+  layout "dashboard_focus"
+
   before_action :authenticate_client!
 
   def index
-    @is_new_account = current_client.created_at > Subscription::TRIAL_DAYS.days.ago
+    @is_new_account = current_client.new_account?
 
-    # =========================
-    # 現在のサブスク（必ず実データ）
-    # =========================
     @subscription = current_client.subscriptions
                                  .where(status: :active)
                                  .order(created_at: :desc)
                                  .first
 
-    # fallback（念のため）
     if @subscription.nil?
       @subscription = current_client.subscriptions
                                    .order(created_at: :desc)
                                    .first
     end
 
-    # =========================
-    # 支払い履歴
-    # =========================
     @payments = current_client.payments
                               .order(created_at: :desc)
                               .limit(50)
@@ -35,24 +30,13 @@ class PlansController < ApplicationController
       return
     end
 
-    if plan_type == "trial" && current_client.created_at > Subscription::TRIAL_DAYS.days.ago
+    if plan_type == "trial"
+      unless current_client.new_account?
+        redirect_to plans_path, alert: "無料トライアルは新規アカウントのみ利用できます。"
+        return
+      end
 
-      current_client.subscriptions.where(status: :active).update_all(status: :cancelled)
-
-      trial_end = Subscription::TRIAL_DAYS.days.from_now
-
-      current_client.subscriptions.create!(
-        plan_type: :trial,
-        status: :active,
-        trial_ends_at: trial_end
-      )
-
-      current_client.update!(
-        subscription_plan: "trial",
-        subscription_status: "active"
-      )
-
-      redirect_to plans_path, notice: "無料トライアルを開始しました。"
+      redirect_to checkout_confirmation_path(plan_type: "trial")
       return
     end
 

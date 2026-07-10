@@ -62,10 +62,12 @@ class WebhooksController < ApplicationController
 
           client.subscriptions.where.not(id: sub.id).update_all(status: :cancelled)
 
+          trial_ends_at = plan_type.to_s == "trial" ? resolve_trial_ends_at(session.subscription) : nil
+
           sub.update!(
             plan_type: plan_type,
             status: :active,
-            trial_ends_at: nil
+            trial_ends_at: trial_ends_at
           )
 
           client.update!(
@@ -207,6 +209,8 @@ class WebhooksController < ApplicationController
   def resolve_plan_type_from_session(session)
     metadata_plan = session.metadata["plan_type"].presence
 
+    return metadata_plan if metadata_plan == "trial"
+
     if session.subscription.present?
       stripe_sub = Stripe::Subscription.retrieve(session.subscription)
       price_id = stripe_sub.items&.data&.first&.price&.id
@@ -224,5 +228,19 @@ class WebhooksController < ApplicationController
   rescue Stripe::StripeError => e
     Rails.logger.error "[Webhook] Failed to resolve plan type: #{e.message}"
     metadata_plan
+  end
+
+  def resolve_trial_ends_at(stripe_subscription_id)
+    return nil if stripe_subscription_id.blank?
+
+    stripe_sub = Stripe::Subscription.retrieve(stripe_subscription_id)
+    if stripe_sub.trial_end.present?
+      Time.at(stripe_sub.trial_end)
+    else
+      Subscription::TRIAL_DAYS.days.from_now
+    end
+  rescue Stripe::StripeError => e
+    Rails.logger.error "[Webhook] Failed to resolve trial end: #{e.message}"
+    Subscription::TRIAL_DAYS.days.from_now
   end
 end

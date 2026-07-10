@@ -1,26 +1,55 @@
-.auth-wrapper
-  .auth-forms
-    / Sign Up Form
-    .auth-card
-      h2 Sign up
-      = form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f|
-        = render "clients/shared/error_messages", resource: resource
+.meetia-auth__page
+  = link_to root_path, class: "meetia-auth__brand" do
+    = image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-auth__logo"
 
-        .field
-          = f.label :email
-          = f.email_field :email, autofocus: true, autocomplete: "email", class: "input-field"
+  .meetia-auth__card.meetia-auth__card--wide
+    h1.meetia-auth__title 新規登録
+    p.meetia-auth__lead 企業情報を入力してアカウントを作成してください
 
-        .field
-          = f.label :password
+    = form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f|
+      = render "clients/shared/error_messages", resource: resource
+
+      .meetia-auth__section
+        p.meetia-auth__section-title 企業情報
+
+        .meetia-auth__field
+          = f.label :company, "会社名", class: "meetia-auth__label"
+          = f.text_field :company, autocomplete: "organization", class: "meetia-auth__input", required: true
+
+        .meetia-auth__field
+          = f.label :name, "担当者名", class: "meetia-auth__label"
+          = f.text_field :name, autocomplete: "name", class: "meetia-auth__input", required: true
+
+        .meetia-auth__field
+          = f.label :tel, "電話番号", class: "meetia-auth__label"
+          = f.telephone_field :tel, autocomplete: "tel", class: "meetia-auth__input", required: true
+
+        .meetia-auth__field
+          = f.label :address, "住所", class: "meetia-auth__label"
+          = f.text_field :address, autocomplete: "street-address", class: "meetia-auth__input", required: true
+
+        .meetia-auth__field
+          = f.label :url, "URL", class: "meetia-auth__label"
+          = f.url_field :url, autocomplete: "url", class: "meetia-auth__input", placeholder: "https://example.com"
+
+      .meetia-auth__section
+        p.meetia-auth__section-title ログイン情報
+
+        .meetia-auth__field
+          = f.label :email, "メールアドレス", class: "meetia-auth__label"
+          = f.email_field :email, autofocus: true, autocomplete: "email", class: "meetia-auth__input", required: true
+
+        .meetia-auth__field
+          = f.label :password, "パスワード", class: "meetia-auth__label"
           - if @minimum_password_length
-            em= "(#{@minimum_password_length} characters minimum)"
-          = f.password_field :password, autocomplete: "new-password", class: "input-field"
+            em.meetia-auth__hint = "（#{@minimum_password_length}文字以上）"
+          = f.password_field :password, autocomplete: "new-password", class: "meetia-auth__input", required: true
 
-        .field
-          = f.label :password_confirmation
-          = f.password_field :password_confirmation, autocomplete: "new-password", class: "input-field"
+        .meetia-auth__field
+          = f.label :password_confirmation, "パスワード（確認）", class: "meetia-auth__label"
+          = f.password_field :password_confirmation, autocomplete: "new-password", class: "meetia-auth__input", required: true
 
-        .actions
-          = f.submit "Sign up", class: "btn btn-primary"
+      = f.submit "アカウントを作成", class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit"
 
-      = render "clients/shared/links"
+  .meetia-auth__links
+    = render "clients/shared/links"

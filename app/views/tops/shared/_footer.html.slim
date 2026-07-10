@@ -1,0 +1,31 @@
+footer.meetia-footer
+  .meetia-footer__glow aria-hidden="true"
+  .meetia-footer__inner
+    .meetia-footer__brand
+      = link_to root_path, class: "meetia-footer__logo-link" do
+        = image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-footer__logo-image"
+      p.meetia-footer__tagline 資料を見ながら、AIと本格商談
+      p.meetia-footer__desc BtoB向けAI商談代行サービス。資料アップロードから音声商談・分析・フォローまで。
+    nav.meetia-footer__nav aria-label="フッターナビ"
+      h3.meetia-footer__nav-title プロダクト
+      .meetia-footer__nav-links
+        - TopsHelper::LP_NAV_ITEMS.first(4).each do |item|
+          = link_to item[:label], item[:href], class: "meetia-footer__link"
+    nav.meetia-footer__nav aria-label="サポート"
+      h3.meetia-footer__nav-title サポート
+      .meetia-footer__nav-links
+        - TopsHelper::LP_NAV_ITEMS.last(3).each do |item|
+          = link_to item[:label], item[:href], class: "meetia-footer__link"
+    .meetia-footer__cta
+      h3.meetia-footer__nav-title 今すぐ体験
+      p = "#{Subscription::TRIAL_DAYS}日間、無料でAI商談をお試しください。"
+      = link_to lp_trial_experience_path, lp_trial_experience_link_options.merge(class: "meetia-btn meetia-btn--primary meetia-btn--sm") do
+        i.fa-solid.fa-bolt aria-hidden="true"
+        span 無料で商談体験
+  .meetia-footer__bottom
+    p.meetia-footer__copy © #{Time.current.year} Meetia Inc.
+    .meetia-footer__bottom-links
+      = link_to "#faq", class: "meetia-footer__bottom-link" do
+        | FAQ
+      = link_to "#company", class: "meetia-footer__bottom-link" do
+        | 会社概要

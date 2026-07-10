@@ -1,0 +1,15 @@
+- if client_signed_in?
+  nav.db-v2-onboarding-nav aria-label="契約フロー"
+    = link_to root_path, class: "db-v2-onboarding-nav__link" do
+      i.fa-solid.fa-house aria-hidden="true"
+      span トップ
+    = link_to plans_path, class: "db-v2-onboarding-nav__link" do
+      i.fa-solid.fa-tags aria-hidden="true"
+      span プラン選択
+    = link_to dashboard_subscription_path, class: "db-v2-onboarding-nav__link" do
+      i.fa-solid.fa-credit-card aria-hidden="true"
+      span 契約状況
+    = link_to dashboard_account_path, class: "db-v2-onboarding-nav__link" do
+      i.fa-solid.fa-building aria-hidden="true"
+      span 企業情報
+    = render "shared/sign_out_button", path: destroy_client_session_path, variant: :nav

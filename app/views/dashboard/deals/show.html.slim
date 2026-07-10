@@ -1,279 +1,365 @@
-.admin-container data-deal-dashboard="" data-processing-status-url=processing_status_dashboard_deal_path(@deal) data-is-processing=@deal.processing?
-  .admin-header.ai-header-theme
-    .header-main-info
-      span.ai-badge-tech AI DEAL
-      h1.admin-title = @deal.title
-      p.admin-subtitle = @deal.description.present? ? @deal.description : "商談の作成・資料アップロード・台本編集・公開"
-    .admin-actions.header-actions-row
-      = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: 'btn-secondary-custom', target: '_blank', rel: 'noopener', data: { turbo: false } do
-        span 🔮 シミュレーション
-      = link_to edit_dashboard_deal_path(@deal), class: 'btn-secondary-custom' do
-        span ⚙️ 基本情報
-      = link_to '共有URL', '#', class: 'btn-secondary-custom', id: 'share-url-btn'
-      = link_to dashboard_deals_path, class: 'btn-secondary-custom' do
-        span 一覧に戻る
+.db-v2-deal-show data-deal-dashboard="" data-processing-status-url=processing_status_dashboard_deal_path(@deal) data-is-processing=@deal.processing?
+  .db-v2-header.db-v2-header--deal
+    .db-v2-header__left
+      .db-v2-deal-show__meta
+        span.db-v2-deal-show__badge AI商談
+        - if @deal.playback_ready?
+          span.db-v2-status-badge.db-v2-status-badge--live 公開中
+        - elsif @deal.processing?
+          span.db-v2-status-badge.db-v2-status-badge--progress 処理中
+        - elsif @deal.failed?
+          span.db-v2-status-badge.db-v2-status-badge--fail 失敗
+        - else
+          span.db-v2-status-badge.db-v2-status-badge--ready 編集中
+      h1.db-v2-header__title = @deal.title
+      p.db-v2-header__subtitle = @deal.description.presence || "資料アップロード・台本編集・公開設定"
+    .db-v2-header__right
+      = render "/dashboard/theme_switch"
+      .db-v2-deal-show__actions
+        = link_to presentation_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--primary", target: "_blank", rel: "noopener", data: { turbo: false } do
+          i.fa-solid.fa-play aria-hidden="true"
+          span 即時プレゼン
+        = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener", data: { turbo: false } do
+          i.fa-solid.fa-wand-magic-sparkles aria-hidden="true"
+          span シミュレーション
+        = link_to edit_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
+          i.fa-solid.fa-gear aria-hidden="true"
+          span 基本情報
+        = link_to dashboard_deals_path, class: "db-v2-btn db-v2-btn--ghost" do
+          i.fa-solid.fa-arrow-left aria-hidden="true"
+          span 一覧
+
+  .db-v2-share-strip
+    .db-v2-share-strip__label
+      i.fa-solid.fa-link aria-hidden="true"
+      span 共有URL
+    .db-v2-copy-row
+      input.db-v2-form-control type="text" id="deal-share-url-field" value=public_deal_session_url(@deal.access_token) readonly=true
+      button.db-v2-btn.db-v2-btn--primary type="button" id="deal-share-url-copy" コピー
+      = link_to "開く", public_deal_session_path(@deal.access_token), class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener", data: { turbo: false }
 
   - if @deal.processing?
-    .status-alert-box.info#processing-banner
-      span.icon ⏳
-      p#processing-message AI処理中です（要約・台本・音声生成）。このページは自動更新されます。
+    .db-v2-alert.db-v2-alert--info#processing-banner
+      i.fa-solid.fa-spinner.fa-spin aria-hidden="true"
+      div
+        p#processing-message AI処理中です（要約・台本・音声生成）。このページは自動更新されます。
+        - if client_signed_in?
+          .db-v2-form-actions.db-v2-form-actions--inline
+            = button_to "処理が止まっている場合はリセット", reset_processing_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", data: { turbo: false, confirm: "処理状態をリセットして再度アップロードできるようにします。よろしいですか？" }
   - elsif @deal.failed?
-    .status-alert-box style="background:#fff5f5;border-color:#fecdd3;"
-      p.text-danger AI処理に失敗しました。「PDFを再処理」から再実行してください。
+    .db-v2-alert.db-v2-alert--danger
+      i.fa-solid.fa-circle-exclamation aria-hidden="true"
+      p AI処理に失敗しました。「PDFを再処理」から再実行してください。
 
-  .ai-dashboard-grid
-    .ai-grid-main
-      .admin-card.ai-card-glow
-        .card-header-mix
-          h2.admin-card-title 📄 資料アップロード
-          span.lang-badge = @deal.language.upcase
+  nav.db-v2-tabs role="tablist" aria-label="商談管理タブ"
+    button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="studio" aria-selected="true"
+      i.fa-solid.fa-clapperboard aria-hidden="true"
+      span スタジオ
+    button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="distribution" aria-selected="false"
+      i.fa-solid.fa-tower-broadcast aria-hidden="true"
+      span 配信設定
+    button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="follow-up" aria-selected="false"
+      i.fa-solid.fa-envelope aria-hidden="true"
+      span フォローメール
+    button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="analytics" aria-selected="false"
+      i.fa-solid.fa-chart-line aria-hidden="true"
+      span ログ/分析
 
-        = form_tag upload_documents_dashboard_deal_path(@deal), multipart: true, id: 'documents-upload-form', class: 'ai-upload-dropzone', data: { turbo: false } do
-          .form-group.upload-zone-wrapper
-            label.form-label.upload-box-label
-              span.icon-cloud-upload 📤
-              span.main-msg PDFをアップロード（バックグラウンドでAI処理）
-              span.sub-msg 処理には数分かかります。アップロード後すぐに画面が戻ります。
-            = file_field_tag 'files[]', multiple: true, accept: '.pdf', class: 'form-control file-input-hidden', disabled: @deal.processing?
-          .form-actions.action-right-align
-            = submit_tag 'アップロードしてAI処理開始', class: 'btn-info-custom', disabled: @deal.processing?
+  .db-v2-tab-panels
+    #deal-tab-studio.db-v2-tab-panel.is-active role="tabpanel"
+      .db-v2-deal-grid
+        .db-v2-deal-grid__main
+          .db-v2-bottom-card
+            .db-v2-bottom-card__header.db-v2-bottom-card__header--split
+              h2.db-v2-bottom-card__title
+                i.fa-solid.fa-file-arrow-up aria-hidden="true"
+                |  資料アップロード
+              span.db-v2-lang-badge = @deal.language.upcase
+            .db-v2-bottom-card__body
+              - if admin_signed_in? && !client_signed_in?
+                .db-v2-alert.db-v2-alert--warning.db-v2-alert--compact
+                  i.fa-solid.fa-circle-info aria-hidden="true"
+                  p 資料アップロードは企業アカウントでのログインが必要です。
+              - if @deal.processing?
+                .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
+                  i.fa-solid.fa-spinner.fa-spin aria-hidden="true"
+                  p AI処理中のため、新しい資料はアップロードできません。完了後に再度お試しください。
+              = form_tag upload_documents_dashboard_deal_path(@deal), multipart: true, id: "documents-upload-form", class: "db-v2-upload-form", data: { turbo: false } do
+                .db-v2-upload-form__panel
+                  p.db-v2-upload-form__lead
+                    i.fa-solid.fa-cloud-arrow-up aria-hidden="true"
+                    |  PDFをアップロード（バックグラウンドでAI処理）
+                  p.db-v2-upload-form__hint 処理には数分かかります。アップロード後すぐに画面が戻ります。
+                  .db-v2-upload-form__controls
+                    label.db-v2-form-label for="deal-documents-input" PDFファイル
+                    = file_field_tag "files[]", multiple: true, accept: ".pdf,application/pdf", class: "db-v2-form-control db-v2-upload-form__input", id: "deal-documents-input", disabled: @deal.processing?
+                    button.db-v2-btn.db-v2-btn--ghost type="button" id="deal-documents-pick" disabled=@deal.processing?
+                      i.fa-solid.fa-folder-open aria-hidden="true"
+                      span ファイルを選択
+                #deal-documents-selected.db-v2-upload-zone__selected hidden=true
+                  p.db-v2-upload-zone__selected-label 選択中のファイル
+                  ul#deal-documents-file-list.db-v2-upload-zone__file-list
+                #deal-documents-error.db-v2-upload-zone__error hidden=true
+                  p PDFファイルを選択してください
+                .db-v2-form-actions
+                  = submit_tag "アップロードしてAI処理開始", class: "db-v2-btn db-v2-btn--primary", id: "deal-documents-submit", disabled: @deal.processing?
 
-      - if @deal.deal_documents.any?
-        .admin-card.ai-card-flat
-          h2.admin-card-title 📦 アップロード済み資料
-          .document-list
-            - @deal.deal_documents.each do |doc|
-              .document-item.ai-doc-row
-                .doc-info-block
-                  span.doc-icon 📑
-                  .doc-meta
-                    .document-name = File.basename(doc.file.filename.to_s)
-                    .document-size = number_to_human_size(doc.file_size)
-                - if doc.file.attached?
-                  .doc-actions
-                    = link_to 'PDFを開く', rails_blob_path(doc.file, disposition: 'inline'), class: 'btn-secondary-custom btn-sm', target: '_blank', rel: 'noopener'
-                    = link_to 'ダウンロード', rails_blob_path(doc.file, disposition: 'attachment'), class: 'btn-secondary-custom btn-sm'
+          - if @deal.deal_documents.any?
+            .db-v2-bottom-card
+              .db-v2-bottom-card__header
+                h2.db-v2-bottom-card__title アップロード済み資料
+              .db-v2-bottom-card__body
+                .db-v2-doc-list
+                  - @deal.deal_documents.each do |doc|
+                    .db-v2-doc-row
+                      .db-v2-doc-row__info
+                        i.fa-solid.fa-file-pdf aria-hidden="true"
+                        div
+                          .db-v2-doc-row__name = File.basename(doc.file.filename.to_s)
+                          .db-v2-doc-row__meta = number_to_human_size(doc.file_size)
+                      - if doc.file.attached?
+                        .db-v2-doc-row__actions
+                          = link_to "PDFを開く", rails_blob_path(doc.file, disposition: "inline"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", target: "_blank", rel: "noopener"
+                          = link_to "DL", rails_blob_path(doc.file, disposition: "attachment"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs"
 
-          - @deal.deal_documents.select { |doc| doc.file.attached? }.each do |doc|
-            .pdf-preview-section
-              h3.admin-card-title = "📖 PDFプレビュー: #{File.basename(doc.file.filename.to_s)}"
-              .pdf-preview-frame
-                iframe.pdf-preview-embed src=rails_blob_path(doc.file, disposition: 'inline') title=File.basename(doc.file.filename.to_s)
-              - related_pages = @deal.deal_pages.select { |p| p.deal_document_id == doc.id }.sort_by(&:page_number)
-              - if related_pages.any?
-                p.pdf-preview-meta 抽出ページ: #{related_pages.map(&:page_number).join(', ')}（全#{related_pages.size}面）
+                - @deal.deal_documents.select { |doc| doc.file.attached? }.each do |doc|
+                  .db-v2-pdf-preview
+                    h3.db-v2-pdf-preview__title = "PDFプレビュー: #{File.basename(doc.file.filename.to_s)}"
+                    .db-v2-pdf-preview__frame
+                      iframe src=rails_blob_path(doc.file, disposition: "inline") title=File.basename(doc.file.filename.to_s)
+                    - related_pages = @deal.deal_pages.select { |p| p.deal_document_id == doc.id }.sort_by(&:page_number)
+                    - if related_pages.any?
+                      p.db-v2-pdf-preview__meta 抽出ページ: #{related_pages.map(&:page_number).join(", ")}（全#{related_pages.size}面）
 
-          .pdf-process-actions.ai-action-bar
-            - if @deal.deal_pages.any?
-              .status-alert-box.success
-                span.icon ✅
-                p.text-success
-                  | 処理済み（#{@deal.deal_pages.count}ページ）
-                  - if @deal.playback_ready
-                    | ／ 公開中
+                .db-v2-form-actions.db-v2-form-actions--split
+                  - if @deal.deal_pages.any?
+                    .db-v2-alert.db-v2-alert--success.db-v2-alert--compact
+                      i.fa-solid.fa-circle-check aria-hidden="true"
+                      p
+                        | 処理済み（#{@deal.deal_pages.count}ページ）
+                        - if @deal.playback_ready
+                          | ／ 公開中
+                        - else
+                          | ／ 編集・公開待ち
+                  - elsif @deal.processing?
+                    .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
+                      i.fa-solid.fa-spinner.fa-spin aria-hidden="true"
+                      p AI処理中です。完了までお待ちください。
                   - else
-                    | ／ 編集・公開待ち
-            - elsif @deal.processing?
-              .status-alert-box.info
-                span.icon ⏳
-                p AI処理中です。完了までお待ちください。
+                    .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
+                      p 未処理です。「PDFを再処理」を実行してください。
+                  = button_to (@deal.deal_pages.any? ? "PDFを再処理" : "PDFを処理開始"),
+                    reprocess_dashboard_deal_path(@deal),
+                    method: :post,
+                    class: "db-v2-btn db-v2-btn--ghost",
+                    disabled: @deal.processing?,
+                    data: { turbo: false, confirm: "PDFを再処理します。バックグラウンドで実行されます。よろしいですか？" },
+                    form: { data: { turbo: false } }
+
+          .db-v2-deal-form-surface
+            = render "deal_knowledge"
+
+          - if @deal.deal_pages.any?
+            .db-v2-bottom-card#content-edit
+              .db-v2-bottom-card__header.db-v2-bottom-card__header--split
+                h2.db-v2-bottom-card__title 台本・音声編集
+                .db-v2-deal-show__actions
+                  - if deal_owner.faq_required_for_publish? && @deal.low_knowledge_coverage?
+                    - publish_confirm = "ナレッジ完成度が#{@knowledge_coverage}%です。このまま公開しますか？"
+                  - else
+                    - publish_confirm = "商談URLを公開しますか？"
+                  = button_to "公開する", publish_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: publish_confirm, turbo: false }
+                  = button_to "全音声再生成", regenerate_audio_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost", data: { turbo: false }
+
+              .db-v2-bottom-card__body
+                = form_with url: update_content_dashboard_deal_path(@deal), method: :patch, local: true, html: { id: "deal-content-form", data: { turbolinks: false }, class: "db-v2-deal-form-surface" } do
+                  .db-v2-form-section
+                    h3.db-v2-form-section__title 冒頭パート
+                    - [["greeting", "挨拶"], ["company_overview", "会社概要"], ["usage_guide", "操作案内"]].each do |key, label|
+                      .db-v2-form-group
+                        .db-v2-form-group__head
+                          label.db-v2-form-label = label
+                          = link_to "AI改善", ai_rewrite_dashboard_deal_path(@deal, target: key), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs btn-ai-rewrite", data: { turbolinks: false, confirm: "AIで台本を改善します。数秒〜数十秒かかる場合があります。" }
+                        = text_area_tag "deal[#{key}_script]", @deal.public_send("#{key}_script").presence || @deal.public_send("default_#{key}_text"), class: "db-v2-form-control", rows: 3
+                        - audio_url = @deal.opening_speech_url(key)
+                        - if audio_url
+                          audio.db-v2-audio-player controls=true
+                            source src=audio_url type="audio/mpeg"
+
+                  .db-v2-form-section
+                    h3.db-v2-form-section__title スライド台本（#{@deal_pages.count}面）
+                    - @deal_pages.each do |page|
+                      .db-v2-page-card
+                        span.db-v2-page-card__badge P. #{page.page_number}
+                        .db-v2-form-group
+                          label.db-v2-form-label タイトル
+                          = text_field_tag "pages[#{page.id}][title]", page.title, class: "db-v2-form-control", placeholder: "スライド #{page.page_number}"
+                        .db-v2-form-group
+                          .db-v2-form-group__head
+                            label.db-v2-form-label 読み上げ台本
+                            .db-v2-deal-show__actions
+                              = link_to "AI改善", ai_rewrite_dashboard_deal_path(@deal, target: "page", page_id: page.id), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs btn-ai-rewrite", data: { turbolinks: false, confirm: "AIで台本を改善します。数秒〜数十秒かかる場合があります。" }
+                              = link_to "音声再生成", regenerate_audio_dashboard_deal_path(@deal, page_id: page.id), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", data: { turbolinks: false, confirm: "このページの音声を再生成しますか？" }
+                          = text_area_tag "pages[#{page.id}][script]", page.script, class: "db-v2-form-control", rows: 4
+                          - if page.page_audio.attached?
+                            audio.db-v2-audio-player controls=true
+                              source src=rails_blob_path(page.page_audio, only_path: true) type="audio/mpeg"
+
+                  .db-v2-form-actions
+                    = submit_tag "変更を保存", class: "db-v2-btn db-v2-btn--primary"
+
+    #deal-tab-distribution.db-v2-tab-panel role="tabpanel"
+      .db-v2-deal-grid.db-v2-deal-grid--single
+        .db-v2-bottom-card
+          .db-v2-bottom-card__header
+            h2.db-v2-bottom-card__title 公開ステータス
+          .db-v2-bottom-card__body
+            - if @deal.playback_ready?
+              .db-v2-alert.db-v2-alert--success.db-v2-alert--compact
+                i.fa-solid.fa-circle-check aria-hidden="true"
+                p 商談URLは公開中です
             - else
-              .status-alert-box.info
-                span.icon ⏳
-                p 未処理です。「PDFを再処理」を実行してください。
+              .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
+                p 台本確認後、スタジオタブの「公開する」を押してください
+            .db-v2-form-group
+              label.db-v2-form-label 商談URL（LPに貼り付け）
+              .db-v2-copy-row
+                input.db-v2-form-control type="text" value=public_deal_session_url(@deal.access_token) readonly=true
+                button.db-v2-btn.db-v2-btn--primary type="button" data-copy-share-url="" コピー
 
-            = button_to (@deal.deal_pages.any? ? '🔄 PDFを再処理' : '🔄 PDFを処理開始'),
-              reprocess_dashboard_deal_path(@deal),
-              method: :post,
-              class: 'btn-secondary-custom w-full',
-              disabled: @deal.processing?,
-              data: { turbo: false, confirm: 'PDFを再処理します。バックグラウンドで実行されます。よろしいですか？' },
-              form: { data: { turbo: false }, class: 'w-full' }
+        .db-v2-bottom-card
+          .db-v2-bottom-card__header
+            h2.db-v2-bottom-card__title AI要約
+          .db-v2-bottom-card__body
+            - if @deal.deal_summary
+              .db-v2-text-block = @deal.deal_summary.summary
+            - else
+              p.db-v2-muted 資料アップロード後に自動生成されます
 
-      = render 'deal_knowledge'
+        .db-v2-bottom-card#presentation-cta
+          .db-v2-bottom-card__header
+            h2.db-v2-bottom-card__title プレゼンCTA
+          .db-v2-bottom-card__body.db-v2-deal-form-surface
+            p.db-v2-muted 契約ボタン・終了モーダルの文言とリンク先
+            = form_with model: @deal, url: update_presentation_settings_dashboard_deal_path(@deal), method: :patch, local: true do |f|
+              .db-v2-form-group
+                = f.label :presentation_cta_label, "CTAボタン文言", class: "db-v2-form-label"
+                = f.text_field :presentation_cta_label, class: "db-v2-form-control"
+              .db-v2-form-group
+                = f.label :presentation_cta_url, "リンク先URL", class: "db-v2-form-label"
+                = f.url_field :presentation_cta_url, class: "db-v2-form-control", placeholder: "https://"
+              .db-v2-form-group
+                = f.label :exit_contract_label, "終了：契約ボタン", class: "db-v2-form-label"
+                = f.text_field :exit_contract_label, class: "db-v2-form-control"
+              .db-v2-form-group
+                = f.label :exit_sales_call_label, "終了：担当者商談", class: "db-v2-form-label"
+                = f.text_field :exit_sales_call_label, class: "db-v2-form-control"
+              .db-v2-form-actions
+                = f.submit "保存", class: "db-v2-btn db-v2-btn--primary"
 
-    .ai-grid-sidebar
-      .admin-card.ai-card-gradient
-        h2.admin-card-title 🔗 公開ステータス
-        - if @deal.playback_ready
-          .status-alert-box.success
-            p 商談URLは公開中です
+    #deal-tab-follow-up.db-v2-tab-panel role="tabpanel"
+      .db-v2-deal-grid.db-v2-deal-grid--single
+        - if deal_owner.prospect_follow_up_enabled?
+          .db-v2-bottom-card#follow-up-settings
+            .db-v2-bottom-card__header
+              h2.db-v2-bottom-card__title 商談後フォローメール
+            .db-v2-bottom-card__body.db-v2-deal-form-surface
+              p.db-v2-muted 商談終了後、見込み客のメールアドレスへ最大4通（初回＋追客3回）を送信します。
+              = form_with url: update_follow_up_settings_dashboard_deal_path(@deal), method: :patch, local: true do
+                .db-v2-form-group
+                  = label_tag "deal[follow_up_sales_url]", "担当者に繋ぐリンク先URL", class: "db-v2-form-label"
+                  = url_field_tag "deal[follow_up_sales_url]", @deal.follow_up_sales_url, class: "db-v2-form-control", placeholder: "https://calendly.com/... など"
+                  small.db-v2-muted 未設定の場合は契約CTAのURLを使用します
+                - @follow_up_templates.each do |template|
+                  .db-v2-follow-up-card
+                    .db-v2-form-group
+                      = hidden_field_tag "templates[#{template.id}][enabled]", "0"
+                      label.db-v2-check-label
+                        = check_box_tag "templates[#{template.id}][enabled]", "1", template.enabled
+                        strong = template.label
+                    .db-v2-form-row
+                      = label_tag "templates_#{template.id}_delay_days", "送信タイミング", class: "db-v2-form-label"
+                      .db-v2-form-row__field
+                        = number_field_tag "templates[#{template.id}][delay_days]", template.delay_days, class: "db-v2-form-control", min: 0, max: 365
+                        span.db-v2-muted 日後（商談終了から）
+                    .db-v2-form-group
+                      = label_tag "templates[#{template.id}_subject]", "件名", class: "db-v2-form-label"
+                      = text_field_tag "templates[#{template.id}][subject]", template.subject, class: "db-v2-form-control"
+                    .db-v2-form-group
+                      = label_tag "templates[#{template.id}_body]", "本文", class: "db-v2-form-label"
+                      = text_area_tag "templates[#{template.id}][body]", template.body, class: "db-v2-form-control", rows: 5
+                      small.db-v2-muted 利用可能: {{user_name}} / {{deal_title}} / {{company_name}}
+                    .db-v2-form-group.db-v2-form-group--checks
+                      label.db-v2-check-label
+                        = hidden_field_tag "templates[#{template.id}][include_sales_call_link]", "0"
+                        = check_box_tag "templates[#{template.id}][include_sales_call_link]", "1", template.include_sales_call_link?
+                        | 担当者に繋ぐボタン
+                      label.db-v2-check-label
+                        = hidden_field_tag "templates[#{template.id}][include_contract_link]", "0"
+                        = check_box_tag "templates[#{template.id}][include_contract_link]", "1", template.include_contract_link?
+                        | 契約を進めるボタン
+                .db-v2-form-actions
+                  = submit_tag "フォローアップ設定を保存", class: "db-v2-btn db-v2-btn--primary"
         - else
-          .status-alert-box.info
-            p 台本確認後、下部の「公開する」を押してください
+          .db-v2-bottom-card#follow-up-settings
+            .db-v2-bottom-card__header
+              h2.db-v2-bottom-card__title 商談後フォローメール
+            .db-v2-bottom-card__body
+              p.db-v2-muted Businessプラン以上で、商談終了後のメール追客・開封トラッキングが利用できます。
 
-        .form-group style="margin-top: 16px;"
-          label.form-label 商談URL（LPに貼り付け）
-          input.form-control type="text" value="#{public_deal_session_url(@deal.access_token)}" readonly
+    #deal-tab-analytics.db-v2-tab-panel role="tabpanel"
+      .db-v2-deal-grid.db-v2-deal-grid--single
+        .db-v2-bottom-card
+          .db-v2-bottom-card__header.db-v2-bottom-card__header--split
+            h2.db-v2-bottom-card__title リード・セッション
+            = link_to dashboard_deal_user_progresses_path(@deal), class: "db-v2-card-link" do
+              span リード一覧を見る
+              i.fa-solid.fa-chevron-right aria-hidden="true"
+          .db-v2-bottom-card__body
+            p.db-v2-muted 商談を完了した見込み客の一覧・詳細分析はリード管理から確認できます。
 
-      .admin-card.ai-card-flat
-        h2.admin-card-title 🎙️ AI要約
-        - if @deal.deal_summary
-          .transcript-content.ai-scrollbar
-            p = @deal.deal_summary.summary
+        - if @presentation_events&.any?
+          .db-v2-bottom-card#presentation-analytics
+            .db-v2-bottom-card__header
+              h2.db-v2-bottom-card__title プレゼン操作ログ（直近#{@presentation_events.size}件）
+            .db-v2-bottom-card__body
+              p.db-v2-muted ユーザーのトピッククリック・離脱タイミングなどを記録しています
+              .db-v2-leads-table-wrap
+                table.db-v2-leads-table
+                  thead
+                    tr
+                      th 日時
+                      th ユーザー
+                      th 種別
+                      th ページ
+                      th トピック / ラベル
+                      th 詳細
+                  tbody
+                    - @presentation_events.each do |event|
+                      tr
+                        td= l(event.occurred_at, format: :short)
+                        td= event.user&.name.presence || event.user&.email || "プレビュー"
+                        td= event.display_event_type
+                        td= event.page_number.presence || "-"
+                        td
+                          - if event.label.present?
+                            = event.label
+                          - elsif event.topic.present?
+                            = event.topic
+                          - else
+                            | -
+                        td
+                          - if event.event_type == "session_close" && event.metadata.present?
+                            | P.#{event.metadata["current_page_number"]} / #{event.metadata["duration_ms"]}ms
+                          - elsif event.event_type == "free_text_send"
+                            = event.message.to_s.truncate(40)
+                          - elsif event.event_type.in?(%w[cta_click exit_contract_click exit_sales_call_click])
+                            = event.label.presence || event.metadata&.dig("url").to_s.truncate(40)
+                          - elsif event.metadata.present?
+                            = event.metadata.to_json.truncate(60)
         - else
-          p.text-muted 資料アップロード後に自動生成されます
-
-      .admin-card.ai-card-flat#presentation-cta
-        h2.admin-card-title 🎯 プレゼンCTA
-        p.admin-subtitle style="font-size: 13px; margin-bottom: 12px;" 契約ボタン・終了モーダルの文言とリンク先
-        = form_with model: @deal, url: update_presentation_settings_dashboard_deal_path(@deal), method: :patch, local: true do |f|
-          .form-group
-            = f.label :presentation_cta_label, 'CTAボタン文言', class: 'form-label'
-            = f.text_field :presentation_cta_label, class: 'form-control'
-          .form-group
-            = f.label :presentation_cta_url, 'リンク先URL', class: 'form-label'
-            = f.url_field :presentation_cta_url, class: 'form-control', placeholder: 'https://'
-          .form-group
-            = f.label :exit_contract_label, '終了：契約ボタン', class: 'form-label'
-            = f.text_field :exit_contract_label, class: 'form-control'
-          .form-group
-            = f.label :exit_sales_call_label, '終了：担当者商談', class: 'form-label'
-            = f.text_field :exit_sales_call_label, class: 'form-control'
-          = f.submit '保存', class: 'btn-primary-custom btn-sm'
-
-      - if current_client.prospect_follow_up_enabled?
-        .admin-card.ai-card-flat#follow-up-settings
-          h2.admin-card-title 📬 商談後フォローメール
-          p.admin-subtitle style="font-size: 13px; margin-bottom: 12px;"
-            | 商談終了後、見込み客のメールアドレスへ最大4通（初回＋追客3回）を送信します。開封・クリック・配信停止を記録します。
-          = form_with url: update_follow_up_settings_dashboard_deal_path(@deal), method: :patch, local: true do
-            .form-group
-              = label_tag 'deal[follow_up_sales_url]', '担当者に繋ぐリンク先URL', class: 'form-label'
-              = url_field_tag 'deal[follow_up_sales_url]', @deal.follow_up_sales_url, class: 'form-control', placeholder: 'https://calendly.com/... など'
-              small.text-muted 未設定の場合は契約CTAのURLを使用します
-            - @follow_up_templates.each do |template|
-              .follow-up-template-card style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px;background:#f8fafc;"
-                .form-group style="margin-bottom:8px;"
-                  = hidden_field_tag "templates[#{template.id}][enabled]", '0'
-                  label style="display:flex;align-items:center;gap:8px;font-weight:700;"
-                    = check_box_tag "templates[#{template.id}][enabled]", '1', template.enabled
-                    = template.label
-                .form-row style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;margin-bottom:12px;"
-                  = label_tag "templates_#{template.id}_delay_days", '送信タイミング', class: 'form-label', style: 'margin:0;'
-                  .input-group
-                    = number_field_tag "templates[#{template.id}][delay_days]", template.delay_days, class: 'form-control', min: 0, max: 365
-                    span style="margin-left:8px;align-self:center;" 日後（商談終了から）
-                .form-group
-                  = label_tag "templates_#{template.id}_subject", '件名', class: 'form-label'
-                  = text_field_tag "templates[#{template.id}][subject]", template.subject, class: 'form-control'
-                .form-group
-                  = label_tag "templates_#{template.id}_body", '本文', class: 'form-label'
-                  = text_area_tag "templates[#{template.id}][body]", template.body, class: 'form-control', rows: 5
-                  small.text-muted 利用可能: {{user_name}} / {{deal_title}} / {{company_name}}
-                .form-group style="display:flex;gap:16px;flex-wrap:wrap;"
-                  label style="display:flex;align-items:center;gap:8px;"
-                    = hidden_field_tag "templates[#{template.id}][include_sales_call_link]", '0'
-                    = check_box_tag "templates[#{template.id}][include_sales_call_link]", '1', template.include_sales_call_link?
-                    | 担当者に繋ぐボタン（担当者URL設定時のみ表示）
-                  label style="display:flex;align-items:center;gap:8px;"
-                    = hidden_field_tag "templates[#{template.id}][include_contract_link]", '0'
-                    = check_box_tag "templates[#{template.id}][include_contract_link]", '1', template.include_contract_link?
-                    | 契約を進めるボタン（契約CTA URL設定時のみ表示）
-            = submit_tag 'フォローアップ設定を保存', class: 'btn-primary-custom btn-sm'
-      - else
-        .admin-card.ai-card-flat#follow-up-settings
-          h2.admin-card-title 📬 商談後フォローメール
-          p.text-muted Businessプラン以上で、商談終了後のメール追客・開封トラッキングが利用できます。
-
-  - if @deal.deal_pages.any?
-    .admin-card.ai-card-timeline#content-edit
-      .card-header-mix
-        h2.admin-card-title ✏️ 台本・音声編集（唯一の編集画面）
-        .header-actions-row
-          - if current_client.faq_required_for_publish? && @deal.low_knowledge_coverage?
-            - publish_confirm = "ナレッジ完成度が#{@knowledge_coverage}%です。このまま公開しますか？"
-          - else
-            - publish_confirm = '商談URLを公開しますか？'
-          = button_to '公開する', publish_dashboard_deal_path(@deal), method: :post, class: 'btn-primary-custom', data: { confirm: publish_confirm, turbo: false }
-          = button_to '全音声再生成', regenerate_audio_dashboard_deal_path(@deal), method: :post, class: 'btn-secondary-custom'
-
-      = form_with url: update_content_dashboard_deal_path(@deal), method: :patch, local: true, html: { id: 'deal-content-form', data: { turbolinks: false } } do
-        .content-edit-section
-          h3.admin-card-title 冒頭パート
-          - [['greeting', '挨拶'], ['company_overview', '会社概要'], ['usage_guide', '操作案内']].each do |key, label|
-            .form-group
-              .studio-field-header
-                label.form-label = label
-                = link_to 'AI改善', ai_rewrite_dashboard_deal_path(@deal, target: key), method: :post, class: 'btn-info-custom btn-sm btn-ai-rewrite', data: { turbolinks: false, confirm: 'AIで台本を改善します。数秒〜数十秒かかる場合があります。' }
-              = text_area_tag "deal[#{key}_script]", @deal.public_send("#{key}_script").presence || @deal.public_send("default_#{key}_text"), class: 'form-control', rows: 3
-              - audio_url = @deal.opening_speech_url(key)
-              - if audio_url
-                audio.ai-player controls=true
-                  source src=audio_url type="audio/mpeg"
-
-        .content-edit-section
-          h3.admin-card-title スライド台本（#{@deal_pages.count}面）
-          - @deal_pages.each do |page|
-            .deal-page-card
-              .page-badge-index P. #{page.page_number}
-              .form-group
-                label.form-label タイトル
-                = text_field_tag "pages[#{page.id}][title]", page.title, class: 'form-control', placeholder: "スライド #{page.page_number}"
-              .form-group
-                .studio-field-header
-                  label.form-label 読み上げ台本
-                  .studio-actions
-                    = link_to 'AI改善', ai_rewrite_dashboard_deal_path(@deal, target: 'page', page_id: page.id), method: :post, class: 'btn-info-custom btn-sm btn-ai-rewrite', data: { turbolinks: false, confirm: 'AIで台本を改善します。数秒〜数十秒かかる場合があります。' }
-                    = link_to '音声再生成', regenerate_audio_dashboard_deal_path(@deal, page_id: page.id), method: :post, class: 'btn-secondary-custom btn-sm', data: { turbolinks: false, confirm: 'このページの音声を再生成しますか？' }
-                = text_area_tag "pages[#{page.id}][script]", page.script, class: 'form-control', rows: 4
-                - if page.page_audio.attached?
-                  audio.ai-player controls=true
-                    source src=rails_blob_path(page.page_audio, only_path: true) type="audio/mpeg"
-
-        .form-actions.action-right-align
-          = submit_tag '変更を保存', class: 'btn-primary-custom'
-
-  - if @presentation_events&.any?
-    .admin-card.ai-card-flat#presentation-analytics
-      h2.admin-card-title 📊 プレゼン操作ログ（直近#{@presentation_events.size}件）
-      p.admin-subtitle ユーザーのトピッククリック・離脱タイミングなどを記録しています
-      .table-responsive
-        table.admin-table
-          thead
-            tr
-              th 日時
-              th ユーザー
-              th 種別
-              th ページ
-              th トピック / ラベル
-              th 詳細
-          tbody
-            - @presentation_events.each do |event|
-              tr
-                td= l(event.occurred_at, format: :short)
-                td= event.user&.name.presence || event.user&.email || 'プレビュー'
-                td= event.display_event_type
-                td= event.page_number.presence || '-'
-                td
-                  - if event.label.present?
-                    = event.label
-                  - elsif event.topic.present?
-                    = event.topic
-                  - else
-                    | -
-                td
-                  - if event.event_type == 'session_close' && event.metadata.present?
-                    | P.#{event.metadata['current_page_number']} / #{event.metadata['duration_ms']}ms
-                  - elsif event.event_type == 'free_text_send'
-                    = event.message.to_s.truncate(40)
-                  - elsif event.event_type.in?(%w[cta_click exit_contract_click exit_sales_call_click])
-                    = event.label.presence || event.metadata&.dig('url').to_s.truncate(40)
-                  - elsif event.metadata.present?
-                    = event.metadata.to_json.truncate(60)
-
-.modal id='share-url-modal' style='display: none;'
-  .modal-backdrop
-  .modal-content.ai-modal-glass
-    .modal-header
-      h2 🔗 商談URL
-      = button_tag '×', class: 'modal-close', id: 'close-share-modal'
-    .modal-body
-      .form-group
-        label.form-label LPに貼り付けるURL
-        .input-group-copy
-          input.form-control type='text' value="#{public_deal_session_url(@deal.access_token)}" readonly
-          = button_tag 'コピー', class: 'btn-primary-custom', id: 'copy-url-btn'
-
-= javascript_include_tag 'meetia_page_init'
-= javascript_include_tag 'deal_dashboard'
+          .db-v2-bottom-card#presentation-analytics
+            .db-v2-bottom-card__header
+              h2.db-v2-bottom-card__title プレゼン操作ログ
+            .db-v2-bottom-card__body
+              p.db-v2-muted 商談セッション開始後、操作ログがここに表示されます。

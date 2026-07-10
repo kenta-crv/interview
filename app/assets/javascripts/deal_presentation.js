@@ -781,6 +781,16 @@
       });
 
       if (freeTextBtn && freeTextInput) {
+        var isComposing = false;
+
+        freeTextInput.addEventListener('compositionstart', function() {
+          isComposing = true;
+        });
+
+        freeTextInput.addEventListener('compositionend', function() {
+          isComposing = false;
+        });
+
         freeTextBtn.addEventListener('click', function() {
           var message = freeTextInput.value.trim();
           if (!message) return;
@@ -791,6 +801,8 @@
         });
 
         freeTextInput.addEventListener('keydown', function(e) {
+          // IME変換中のEnter（確定）は送信しない
+          if (e.isComposing || isComposing || e.keyCode === 229) return;
           if (e.key === 'Enter') freeTextBtn.click();
         });
       }

@@ -1,0 +1,39 @@
+- slide_title = local_assigns[:slide_title] || "Meetiaで商談を次のステージへ"
+- slide_tags = local_assigns[:slide_tags] || %w[資料理解 自然な対話 成約加速]
+- chat_ai = local_assigns[:chat_ai] || "資料に基づき、導入フローと料金体系をご説明します。"
+- chat_user = local_assigns[:chat_user] || "セキュリティ面について詳しく知りたいです。"
+.meetia-room-mock
+  .meetia-room-mock__chrome
+    span.meetia-room-mock__dot
+    span.meetia-room-mock__dot
+    span.meetia-room-mock__dot
+    span.meetia-room-mock__title Meetia — AI商談ルーム
+    span.meetia-room-mock__status
+      span.meetia-room-mock__status-dot aria-hidden="true"
+      | 接続中
+  .meetia-room-mock__body
+    .meetia-room-mock__main
+      .meetia-room-mock__slide-label 商談資料
+      .meetia-room-mock__slide
+        p.meetia-room-mock__slide-title = slide_title
+        .meetia-room-mock__slide-icons
+          - slide_tags.first(3).each do |tag|
+            span = tag
+      .meetia-room-mock__wave
+        span.meetia-room-mock__wave-icon aria-hidden="true"
+        span.meetia-room-mock__wave-bars aria-hidden="true"
+          i
+          i
+          i
+          i
+          i
+        span AIが話しています…
+    .meetia-room-mock__side
+      = image_tag "avatar_2_trim.png", alt: "AIアシスタント", class: "meetia-room-mock__avatar"
+      .meetia-room-mock__chat
+        .meetia-room-mock__bubble.meetia-room-mock__bubble--ai
+          span AI
+          p = chat_ai
+        .meetia-room-mock__bubble.meetia-room-mock__bubble--user
+          span あなた
+          p = chat_user

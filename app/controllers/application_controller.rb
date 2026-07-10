@@ -1,6 +1,8 @@
 class ApplicationController < ActionController::Base
   include MetaTags::ControllerHelper
 
+  layout :layout_for_request
+
   before_action :init_breadcrumbs
   helper_method :breadcrumbs
   before_action :check_trial_expiration
@@ -29,7 +31,22 @@ class ApplicationController < ActionController::Base
       root_path
     end
   end
-  
+
+  def after_sign_out_path_for(_resource_or_scope)
+    root_path
+  end
+
+  def layout_for_request
+    return "auth" if devise_controller?
+
+    if controller_path == "public/deal_sessions"
+      return "presentation" if action_name == "conversation"
+      return "deal_public" if %w[show create_user_info].include?(action_name)
+    end
+
+    "application"
+  end
+
   private
 
   def init_breadcrumbs

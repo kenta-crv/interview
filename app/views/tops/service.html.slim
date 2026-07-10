@@ -1,0 +1,48 @@
+.meetia-modern-lp
+  = render "tops/shared/nav"
+  = render "tops/shared/page_hero", eyebrow: "SERVICE", title: "Meetiaが提供するAI商談サービス", lead: "資料アップロードから商談・分析・フォローまで、一気通貫で自動化します。"
+
+  section.meetia-section
+    .meetia-section__inner
+      .meetia-service-flow
+        .meetia-service-flow__step
+          span.meetia-service-flow__num 1
+          .meetia-glass-card
+            h3 資料アップロード → AI学習
+            p PDFやFAQをアップロードするだけ。AIが内容を読解し、商談台本とナレッジを生成します。
+        .meetia-service-flow__step
+          span.meetia-service-flow__num 2
+          .meetia-glass-card
+            h3 AI商談ルームで音声対話
+            p 訪問者はURLから入室。資料を見せながらAIが音声で提案・ヒアリングを行います。
+        .meetia-service-flow__step
+          span.meetia-service-flow__num 3
+          .meetia-glass-card
+            h3 見込み度分析・フォロー自動化
+            p 商談ログから関心度を分析。見込み度判定とフォローメール配信まで自動で完結します。
+
+  section.meetia-section.meetia-section--alt
+    .meetia-section__inner
+      h2.meetia-section__title 従来の商談 vs Meetia
+      .meetia-compare
+        .meetia-compare__col
+          h3 従来
+          ul
+            li 資料請求後に架電までタイムラグ
+            li 営業担当の稼働時間に依存
+            li 議事録・分析が属人化
+        .meetia-compare__col.meetia-compare__col--highlight
+          h3 Meetia
+          ul
+            li
+              i.fa-solid.fa-check aria-hidden="true"
+              |  アクセス直後にAI商談開始
+            li
+              i.fa-solid.fa-check aria-hidden="true"
+              |  24時間365日対応
+            li
+              i.fa-solid.fa-check aria-hidden="true"
+              |  ログ・見込み度を自動可視化
+
+  = render "tops/shared/cta_band"
+  = render "tops/shared/footer"

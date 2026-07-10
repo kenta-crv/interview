@@ -1,0 +1,60 @@
+.meetia-flow-room aria-hidden="true"
+  header.meetia-flow-room__header
+    .meetia-flow-room__status
+      span.meetia-flow-room__status-dot
+      span AI商談中
+      span.meetia-flow-room__timer 00:08:42
+    button.meetia-flow-room__exit type="button" tabindex="-1"
+      span ↗
+      span 退出する
+
+  .meetia-flow-room__body
+    .meetia-flow-room__deck
+      .meetia-flow-room__deck-label 商談資料
+      .meetia-flow-room__slide
+        span.meetia-flow-room__slide-company 株式会社 Meetia
+        strong.meetia-flow-room__slide-title サービス紹介資料
+        h3 AIが、商談を変える。
+      .meetia-flow-room__deck-foot
+        .meetia-flow-room__pager
+          button type="button" tabindex="-1" ‹
+          span 1 / 24
+          button type="button" tabindex="-1" ›
+        .meetia-flow-room__deck-actions
+          button type="button" tabindex="-1"
+            i.fa-solid.fa-magnifying-glass-plus aria-hidden="true"
+            | 拡大
+          button type="button" tabindex="-1"
+            i.fa-solid.fa-download aria-hidden="true"
+            | ダウンロード
+
+    aside.meetia-flow-room__agent
+      = image_tag "avatar_3.png", alt: "", class: "meetia-flow-room__avatar"
+      .meetia-flow-room__chat
+        .meetia-flow-room__chat-head
+          i.fa-solid.fa-robot aria-hidden="true"
+          span AIアシスタント（Meetia）
+        .meetia-flow-room__messages
+          .meetia-flow-room__message.meetia-flow-room__message--ai
+            p 本日はMeetiaのサービス紹介をさせていただきます。まずはサービス概要からご説明しますね。
+        .meetia-flow-room__input
+          input type="text" placeholder="質問を入力してください..." disabled=""
+          button type="button" tabindex="-1" aria-label="送信"
+            i.fa-solid.fa-paper-plane aria-hidden="true"
+
+  .meetia-flow-room__footer
+    p.meetia-flow-room__topics-label 話したいトピックを選んでください
+    .meetia-flow-room__topics
+      span サービス概要
+      span 導入事例
+      span 料金プラン
+      span セキュリティ
+      span 他サービスとの違い
+    .meetia-flow-room__voice
+      .meetia-flow-room__wave aria-hidden="true"
+        i
+        i
+        i
+        i
+        i
+      span AIが話しています…

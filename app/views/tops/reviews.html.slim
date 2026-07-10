@@ -1,0 +1,34 @@
+.meetia-modern-lp
+  = render "tops/shared/nav"
+  = render "tops/shared/page_hero", eyebrow: "REVIEWS", title: "導入企業の声", lead: "Meetiaをご利用いただいている企業様からのフィードバックです。"
+
+  section.meetia-section
+    .meetia-section__inner
+      .meetia-reviews-summary
+        .meetia-reviews-summary__stat
+          span.meetia-reviews-summary__value 4.8
+          span.meetia-reviews-summary__label
+            | / 5.0
+        .meetia-reviews-summary__stat
+          span.meetia-reviews-summary__value 1,200+
+          span.meetia-reviews-summary__label 導入企業
+        .meetia-reviews-summary__stat
+          span.meetia-reviews-summary__value 98%
+          span.meetia-reviews-summary__label 継続率
+
+      .meetia-cases__grid
+        .meetia-cases__card
+          .meetia-cases__meta IT・SaaSベンダー（マーケティング責任者）
+          .meetia-cases__stars ★★★★★
+          h3 問い合わせ直後の離脱が激減。商談獲得コストが半減しました
+          p 「資料請求後に架電するまでにタイムラグがあり、競合に流れるケースが多くありました。Meetia導入後は、その場でAI商談が始まるため、熱量が最も高い状態を逃さず移行率が跳ね上がりました。」
+          span.meetia-cases__metric +35% 商談化率
+        .meetia-cases__card
+          .meetia-cases__meta 人材紹介・コンサルティング（営業取締役）
+          .meetia-cases__stars ★★★★★
+          h3 営業負担がゼロになり、夜間・土日の取りこぼしが利益に
+          p 「深夜や休日のWebアクセスに対して、AIが完璧なヒアリングと初期提案を代行。月曜朝には見込み度の高い商談結果が管理画面に並んでいる状態は、これまでの営業の常識を覆す体験です。」
+          span.meetia-cases__metric 24h 対応実現
+
+  = render "tops/shared/cta_band"
+  = render "tops/shared/footer"

@@ -82,17 +82,14 @@ class Client < ApplicationRecord
         Rails.logger.error "Client #{id} trial expired but Stripe charge failed: #{charge.failure_message}"
 
         subscriptions.where(status: :active).update_all(status: :cancelled)
-
-        subscriptions.create!(
-          plan_type: upgrade_plan,
-          status: :active,
-          trial_ends_at: nil
-        )
+        update_columns(subscription_plan: nil, subscription_status: "cancelled")
 
         nil
       end
     rescue => e
       Rails.logger.error "Error upgrading trial via Stripe for client #{id}: #{e.message}"
+      subscriptions.where(status: :active).update_all(status: :cancelled)
+      update_columns(subscription_plan: nil, subscription_status: "cancelled")
       nil
     end
   end
@@ -103,20 +100,33 @@ class Client < ApplicationRecord
     created_at > Subscription::TRIAL_DAYS.days.ago
   end
 
-  after_create :initialize_trial_subscription
+  def dashboard_accessible?
+    subscription = subscriptions.find_by(status: :active)
+    return false unless subscription
+    return false if stripe_customer_id.blank?
+    return false if subscription.stripe_subscription_id.blank?
+    return false if subscription.trial_expired?
+
+    true
+  end
+
+  def reconcile_invalid_subscriptions!
+    subscriptions.where(status: :active, stripe_subscription_id: nil).update_all(status: :cancelled)
+  end
+
+  def subscription_cancellable?
+    subscriptions.exists?(status: :active) || on_trial?
+  end
+
+  validates :company, :name, :tel, :address, presence: true, on: :create
+  validates :company, :name, :tel, :address, presence: true, on: :profile_update
+  validates :url, format: { with: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true }
+
   before_create :generate_api_key_if_blank
 
   private
 
   def generate_api_key_if_blank
     self.api_key = SecureRandom.hex(32) if api_key.blank?
-  end
-
-  def initialize_trial_subscription
-    subscriptions.create!(
-      plan_type: :trial,
-      status: :active,
-      trial_ends_at: Subscription::TRIAL_DAYS.days.from_now
-    )
   end
 end

@@ -1,46 +1,71 @@
-.admin-container
-  h1.admin-title ユーザー進捗詳細
-  p.admin-subtitle = @deal.title
+- lead_name = @user_progress.user&.name.presence || "リード ##{@user_progress.id}"
 
-  .admin-card
+.db-v2-header
+  .db-v2-header__left
+    nav.db-v2-breadcrumb aria-label="パンくず"
+      = link_to dashboard_index_path, class: "db-v2-breadcrumb__link" do
+        i.fa-solid.fa-gauge-high aria-hidden="true"
+        span ダッシュボード
+      i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
+      = link_to @deal.title.truncate(24), dashboard_deal_path(@deal), class: "db-v2-breadcrumb__link"
+      i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
+      = link_to "リード管理", dashboard_deal_user_progresses_path(@deal), class: "db-v2-breadcrumb__link"
+      i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
+      span.db-v2-breadcrumb__current 詳細
+    h1.db-v2-header__title = lead_name
+    p.db-v2-header__subtitle = @deal.title
+  .db-v2-header__right
+    = render "/dashboard/theme_switch"
+    = link_to dashboard_deal_user_progresses_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
+      i.fa-solid.fa-arrow-left aria-hidden="true"
+      span 一覧に戻る
+
+.db-v2-bottom-card
+  .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title 基本情報
+  .db-v2-bottom-card__body
     .user-info
       .info-row
-        .info-label ユーザー名:
-        .info-value = @user_progress.user&.name
+        .info-label ユーザー名
+        .info-value = @user_progress.user&.name.presence || "—"
       .info-row
-        .info-label 会社名:
-        .info-value = @user_progress.user&.company
+        .info-label 会社名
+        .info-value = @user_progress.user&.company.presence || "—"
       .info-row
-        .info-label メール:
-        .info-value = @user_progress.user&.email
+        .info-label メール
+        .info-value = @user_progress.user&.email.presence || "—"
       .info-row
-        .info-label 電話:
-        .info-value = @user_progress.user&.tel
+        .info-label 電話
+        .info-value = @user_progress.user&.tel.presence || "—"
       .info-row
-        .info-label 住所:
-        .info-value = @user_progress.user&.address
+        .info-label 住所
+        .info-value = @user_progress.user&.address.presence || "—"
       .info-row
-        .info-label Webサイト:
-        .info-value = @user_progress.user&.url
+        .info-label Webサイト
+        .info-value = @user_progress.user&.url.presence || "—"
 
-  .admin-card
-    h2.admin-card-title 進捗情報
+.db-v2-bottom-card
+  .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title 進捗情報
+  .db-v2-bottom-card__body
     .progress-info
       .info-row
-        .info-label 検討フェーズ:
-        .info-value = @user_progress.consideration_phase&.humanize
+        .info-label 検討フェーズ
+        .info-value = @user_progress.consideration_phase&.humanize.presence || "—"
       .info-row
-        .info-label 導入予定日:
-        .info-value = @user_progress.planned_introduction_date&.strftime('%Y/%m/%d')
+        .info-label 導入予定日
+        .info-value = @user_progress.planned_introduction_date&.strftime("%Y/%m/%d") || "—"
       .info-row
-        .info-label 重要ポイント:
-        .info-value = simple_format(@user_progress.key_points_for_application)
+        .info-label 重要ポイント
+        .info-value = simple_format(@user_progress.key_points_for_application.presence || "—")
 
-  - if @presentation_events.any?
-    .admin-card
-      h2.admin-card-title プレゼン操作ログ
-      .table-responsive
-        table.admin-table
+- if @presentation_events.any?
+  .db-v2-bottom-card
+    .db-v2-bottom-card__header
+      h2.db-v2-bottom-card__title プレゼン操作ログ
+    .db-v2-bottom-card__body
+      .db-v2-leads-table-wrap
+        table.db-v2-leads-table
           thead
             tr
               th 日時
@@ -53,29 +78,32 @@
               tr
                 td= l(event.occurred_at, format: :short)
                 td= event.event_type
-                td= event.page_number.presence || '-'
-                td= event.label.presence || event.topic.presence || '-'
+                td= event.page_number.presence || "-"
+                td= event.label.presence || event.topic.presence || "-"
                 td
-                  - if event.event_type == 'session_close'
-                    | P.#{event.metadata['current_page_number']} で離脱（#{event.metadata['duration_ms']}ms）
-                  - elsif event.event_type == 'free_text_send'
+                  - if event.event_type == "session_close"
+                    | P.#{event.metadata["current_page_number"]} で離脱（#{event.metadata["duration_ms"]}ms）
+                  - elsif event.event_type == "free_text_send"
                     = event.message.to_s.truncate(50)
                   - else
                     | -
 
-  - if @follow_up_deliveries.any? || @follow_up_unsubscribes.any? || @user_progress.session_ended_at.present?
-    .admin-card
-      h2.admin-card-title フォローメール履歴
+- if @follow_up_deliveries.any? || @follow_up_unsubscribes.any? || @user_progress.session_ended_at.present?
+  .db-v2-bottom-card
+    .db-v2-bottom-card__header
+      h2.db-v2-bottom-card__title フォローメール履歴
+    .db-v2-bottom-card__body
       - if @user_progress.session_ended_at.present?
-        .info-row
-          .info-label 商談終了:
-          .info-value= l(@user_progress.session_ended_at, format: :short)
+        .progress-info
+          .info-row
+            .info-label 商談終了
+            .info-value= l(@user_progress.session_ended_at, format: :short)
       - if @user_progress.follow_up_unsubscribed?
-        .status-alert-box.warning style="margin-bottom: 16px;"
+        .status-alert-box.warning
           p 導入見送り（#{l(@user_progress.follow_up_unsubscribed_at, format: :short)}）
       - if @follow_up_deliveries.any?
-        .table-responsive
-          table.admin-table
+        .db-v2-leads-table-wrap
+          table.db-v2-leads-table
             thead
               tr
                 th 通数
@@ -96,16 +124,20 @@
                     - else
                       = l(delivery.scheduled_at, format: :short)
                       |  予定
-                  td= delivery.opened_at ? l(delivery.opened_at, format: :short) : '-'
-                  td= delivery.sales_call_clicked_at ? l(delivery.sales_call_clicked_at, format: :short) : '-'
-                  td= delivery.contract_clicked_at ? l(delivery.contract_clicked_at, format: :short) : '-'
+                  td= delivery.opened_at ? l(delivery.opened_at, format: :short) : "-"
+                  td= delivery.sales_call_clicked_at ? l(delivery.sales_call_clicked_at, format: :short) : "-"
+                  td= delivery.contract_clicked_at ? l(delivery.contract_clicked_at, format: :short) : "-"
                   td= delivery.status
       - if @follow_up_unsubscribes.any?
-        h3.admin-card-title style="font-size: 1rem; margin-top: 20px;" 導入見送り履歴
-        ul
+        h3.admin-card-title.db-v2-subsection-title 導入見送り履歴
+        ul.deal-supplement-list
           - @follow_up_unsubscribes.each do |record|
             li= "#{l(record.unsubscribed_at, format: :short)} / #{record.source}"
 
-  .admin-actions
-    = link_to '一覧に戻る', dashboard_deal_user_progresses_path(@deal), class: 'btn-secondary-custom'
-    = link_to '商談詳細に戻る', dashboard_deal_path(@deal), class: 'btn-primary-custom'
+.db-v2-form-actions
+  = link_to dashboard_deal_user_progresses_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
+    i.fa-solid.fa-list aria-hidden="true"
+    span 一覧に戻る
+  = link_to dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--primary" do
+    i.fa-solid.fa-clapperboard aria-hidden="true"
+    span 商談スタジオへ

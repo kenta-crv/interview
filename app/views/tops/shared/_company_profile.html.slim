@@ -1,0 +1,23 @@
+- heading_tag = local_assigns.fetch(:heading_tag, :h2)
+
+.meetia-company-profile
+  .meetia-company-profile__head
+    p.meetia-company-profile__eyebrow COMPANY
+    - if heading_tag == :h1
+      h1.meetia-company-profile__title 会社概要
+    - else
+      h2.meetia-company-profile__title 会社概要
+    p.meetia-company-profile__lead AIと人の営業体験を融合し、商談機会の取りこぼしをゼロに。
+
+  .meetia-company-profile__body
+    .meetia-company-profile__mission
+      p.meetia-company-profile__mission-label MISSION
+      h3.meetia-company-profile__mission-title 営業の未来を、AIと共に。
+      p.meetia-company-profile__mission-text Meetiaは、営業資料をもとにAIが音声商談を代行するBtoB向けサービスです。24時間体制で商談機会を逃さず、データに基づく営業改善を支援します。
+
+    .meetia-company-profile__facts
+      dl.meetia-company-profile__list
+        - TopsHelper::COMPANY_PROFILE.each do |label, value|
+          .meetia-company-profile__row
+            dt = label
+            dd = value

@@ -1,0 +1,20 @@
+section.meetia-cta-band
+  .meetia-cta-band__inner
+    span.meetia-cta-band__badge
+      i.fa-solid.fa-sparkles aria-hidden="true"
+      = "#{Subscription::TRIAL_DAYS}日間無料トライアル"
+    h2.meetia-cta-band__title AIアバター「ミーティア」で、商談機会を逃さない。
+    p.meetia-cta-band__lead 資料をアップロードするだけ。24時間、あなたの営業資料で音声商談が始まります。
+    = link_to lp_sign_up_path, class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-cta-band__btn" do
+      i.fa-solid.fa-rocket aria-hidden="true"
+      span 無料トライアルを開始
+    .meetia-cta-band__tags
+      span.meetia-cta-band__tag
+        i.fa-solid.fa-clock aria-hidden="true"
+        | 即日スタート
+      span.meetia-cta-band__tag
+        i.fa-solid.fa-shield-halved aria-hidden="true"
+        | セキュア設計
+      span.meetia-cta-band__tag
+        i.fa-solid.fa-chart-simple aria-hidden="true"
+        | 成果を可視化

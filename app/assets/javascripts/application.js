@@ -13,6 +13,8 @@
 //= require rails-ujs
 //= require activestorage
 //= require meetia_page_init
+//= require db_v2_pricing_slider
+//= require deal_dashboard
 //= stub deal_presentation
 //= stub deal_dashboard
 //= require_tree .
@@ -387,39 +389,154 @@ document.addEventListener('turbo:load', function() {
   });
 });
 
+var MEETIA_DASHBOARD_THEME_KEY = 'meetia-dashboard-theme';
+
+function getDashboardTheme() {
+  try {
+    var stored = localStorage.getItem(MEETIA_DASHBOARD_THEME_KEY);
+    return stored === 'light' ? 'light' : 'dark';
+  } catch (e) {
+    return 'dark';
+  }
+}
+
+function applyDashboardTheme(theme) {
+  var nextTheme = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-dashboard-theme', nextTheme);
+
+  try {
+    localStorage.setItem(MEETIA_DASHBOARD_THEME_KEY, nextTheme);
+  } catch (e) {
+    /* ignore */
+  }
+
+  document.querySelectorAll('[data-dashboard-theme-value]').forEach(function(btn) {
+    var isActive = btn.getAttribute('data-dashboard-theme-value') === nextTheme;
+    btn.classList.toggle('is-active', isActive);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  });
+}
+
+function initDashboardTheme() {
+  if (!document.getElementById('dashboard-v2-container')) return;
+  applyDashboardTheme(getDashboardTheme());
+}
+
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-dashboard-theme-value]');
+  if (!btn || !document.getElementById('dashboard-v2-container')) return;
+  applyDashboardTheme(btn.getAttribute('data-dashboard-theme-value'));
+});
+
 function initDashboardSidebar() {
-  const container = document.getElementById('dashboard-v2-container');
+  var container = document.getElementById('dashboard-v2-container');
   if (!container || container.dataset.dashboardSidebarReady === 'true') return;
 
   container.dataset.dashboardSidebarReady = 'true';
 
-  const open = () => {
+  var open = function() {
     container.classList.add('db-v2-sidebar--open');
     document.body.style.overflow = 'hidden';
   };
 
-  const close = () => {
+  var close = function() {
     container.classList.remove('db-v2-sidebar--open');
     document.body.style.overflow = '';
   };
 
-  container.querySelectorAll('[data-dashboard-sidebar-toggle]').forEach((btn) => {
+  container.querySelectorAll('[data-dashboard-sidebar-toggle]').forEach(function(btn) {
     btn.addEventListener('click', open);
   });
 
-  container.querySelectorAll('[data-dashboard-sidebar-close]').forEach((btn) => {
+  container.querySelectorAll('[data-dashboard-sidebar-close]').forEach(function(btn) {
     btn.addEventListener('click', close);
   });
 
-  const overlay = container.querySelector('[data-dashboard-sidebar-overlay]');
+  var overlay = container.querySelector('[data-dashboard-sidebar-overlay]');
   if (overlay) overlay.addEventListener('click', close);
 
-  container.querySelectorAll('.db-v2-sidebar__link').forEach((link) => {
-    link.addEventListener('click', () => {
+  container.querySelectorAll('.db-v2-sidebar__link').forEach(function(link) {
+    link.addEventListener('click', function() {
       if (window.matchMedia('(max-width: 1023px)').matches) close();
     });
   });
 }
 
+var DEAL_SHOW_TAB_ALIASES = {
+  'content-edit': 'studio',
+  'deal-knowledge': 'studio',
+  'presentation-cta': 'distribution',
+  'follow-up-settings': 'follow-up',
+  'presentation-analytics': 'analytics'
+};
+
+function scrollDashboardAnchor() {
+  if (!document.getElementById('dashboard-v2-container') || !window.location.hash) return;
+  var el = document.querySelector(window.location.hash);
+  if (el) {
+    window.setTimeout(function() {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  }
+}
+
+function resolveDealShowTabId(raw) {
+  if (!raw) return 'studio';
+  var id = raw.replace(/^#/, '');
+  var mapped = DEAL_SHOW_TAB_ALIASES[id] || id;
+  var valid = ['studio', 'distribution', 'follow-up', 'analytics'];
+  return valid.indexOf(mapped) >= 0 ? mapped : 'studio';
+}
+
+function activateDealShowTab(tabId) {
+  var root = document.querySelector('.db-v2-deal-show');
+  if (!root) return;
+
+  var nextTab = resolveDealShowTabId(tabId);
+  var buttons = root.querySelectorAll('[data-deal-tab]');
+  var panels = root.querySelectorAll('.db-v2-tab-panel');
+
+  buttons.forEach(function(btn) {
+    var isActive = btn.getAttribute('data-deal-tab') === nextTab;
+    btn.classList.toggle('is-active', isActive);
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+
+  panels.forEach(function(panel) {
+    var isActive = panel.id === 'deal-tab-' + nextTab;
+    panel.classList.toggle('is-active', isActive);
+    panel.hidden = !isActive;
+  });
+
+  if (window.history && window.history.replaceState) {
+    window.history.replaceState(null, '', '#' + nextTab);
+  }
+}
+
+function initDealShowTabs() {
+  var root = document.querySelector('.db-v2-deal-show');
+  if (!root || root.dataset.dealTabsReady === 'true') return;
+
+  root.dataset.dealTabsReady = 'true';
+
+  root.querySelectorAll('[data-deal-tab]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      activateDealShowTab(btn.getAttribute('data-deal-tab'));
+    });
+  });
+
+  activateDealShowTab(window.location.hash || 'studio');
+}
+
 document.addEventListener('DOMContentLoaded', initDashboardSidebar);
+document.addEventListener('DOMContentLoaded', initDashboardTheme);
+document.addEventListener('DOMContentLoaded', initDealShowTabs);
+document.addEventListener('DOMContentLoaded', scrollDashboardAnchor);
+document.addEventListener('turbo:load', initDashboardSidebar);
+document.addEventListener('turbo:load', initDashboardTheme);
+document.addEventListener('turbo:load', initDealShowTabs);
+document.addEventListener('turbo:load', scrollDashboardAnchor);
 document.addEventListener('turbolinks:load', initDashboardSidebar);
+document.addEventListener('turbolinks:load', initDashboardTheme);
+document.addEventListener('turbolinks:load', initDealShowTabs);
+document.addEventListener('turbolinks:load', scrollDashboardAnchor);

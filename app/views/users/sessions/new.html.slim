@@ -1,22 +1,26 @@
-.auth-wrapper
-  .auth-forms
-    .auth-card
-      h2 Log in
-      = form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
-        .field
-          = f.label :email
-          = f.email_field :email, autofocus: true, autocomplete: "email", class: "input-field"
+.meetia-auth__page
+  = link_to root_path, class: "meetia-auth__brand" do
+    = image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-auth__logo"
 
-        .field
-          = f.label :password
-          = f.password_field :password, autocomplete: "current-password", class: "input-field"
+  .meetia-auth__card
+    h1.meetia-auth__title ログイン
+    p.meetia-auth__lead 応募者アカウントでサインイン
 
-        - if devise_mapping.rememberable?
-          .field.remember
-            = f.check_box :remember_me
-            = f.label :remember_me
+    = form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
+      .meetia-auth__field
+        = f.label :email, "メールアドレス", class: "meetia-auth__label"
+        = f.email_field :email, autofocus: true, autocomplete: "email", class: "meetia-auth__input"
 
-        .actions
-          = f.submit "Log in", class: "btn btn-primary"
+      .meetia-auth__field
+        = f.label :password, "パスワード", class: "meetia-auth__label"
+        = f.password_field :password, autocomplete: "current-password", class: "meetia-auth__input"
 
-      = render "admins/shared/links"
+      - if devise_mapping.rememberable?
+        .meetia-auth__remember
+          = f.check_box :remember_me
+          = f.label :remember_me, "ログイン状態を保持"
+
+      = f.submit "ログイン", class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit"
+
+  .meetia-auth__links
+    = render "users/shared/links"

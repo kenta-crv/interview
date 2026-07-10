@@ -1,36 +1,57 @@
-.admin-container
-  h1.admin-title ユーザー進捗一覧
-  p.admin-subtitle = @deal.title
+.db-v2-header
+  .db-v2-header__left
+    nav.db-v2-breadcrumb aria-label="パンくず"
+      = link_to dashboard_index_path, class: "db-v2-breadcrumb__link" do
+        i.fa-solid.fa-gauge-high aria-hidden="true"
+        span ダッシュボード
+      i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
+      = link_to @deal.title.truncate(28), dashboard_deal_path(@deal), class: "db-v2-breadcrumb__link"
+      i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
+      span.db-v2-breadcrumb__current リード管理
+    h1.db-v2-header__title リード管理
+    p.db-v2-header__subtitle = @deal.title
+  .db-v2-header__right
+    = render "/dashboard/theme_switch"
+    = link_to dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
+      i.fa-solid.fa-arrow-left aria-hidden="true"
+      span 商談に戻る
 
-  .admin-card
+.db-v2-bottom-card
+  .db-v2-bottom-card__header.db-v2-bottom-card__header--split
+    h2.db-v2-bottom-card__title リード一覧
+    span.db-v2-deals-count = "#{@user_progresses.size} 件"
+  .db-v2-bottom-card__body
     - if @user_progresses.empty?
-      .empty-state
-        p まだ進捗情報がありません
+      .db-v2-empty-state
+        .db-v2-empty-state__icon
+          i.fa-solid.fa-user-group aria-hidden="true"
+        p.db-v2-empty-state__text まだリード情報がありません
     - else
-      table.admin-table
-        thead
-          tr
-            th ID
-            th ユーザー名
-            th 会社名
-            th メール
-            th 検討フェーズ
-            th 導入予定日
-            th 重要ポイント
-            th 作成日
-        tbody
-          - @user_progresses.each do |progress|
+      .db-v2-leads-table-wrap
+        table.db-v2-leads-table
+          thead
             tr
-              td= progress.id
-              td= progress.user&.name
-              td= progress.user&.company
-              td= progress.user&.email
-              td= progress.consideration_phase&.humanize
-              td= progress.planned_introduction_date&.strftime('%Y/%m/%d')
-              td= progress.key_points_for_application&.truncate(50)
-              td= l(progress.created_at, format: :short)
-              td
-                = link_to '詳細', dashboard_deal_user_progress_path(@deal, progress), class: 'btn-primary-custom btn-sm'
-
-  .admin-actions
-    = link_to '商談詳細に戻る', dashboard_deal_path(@deal), class: 'btn-secondary-custom'
+              th ID
+              th リード名
+              th 会社名
+              th メール
+              th 検討フェーズ
+              th 導入予定日
+              th 重要ポイント
+              th 作成日
+              th 操作
+          tbody
+            - @user_progresses.each do |progress|
+              tr
+                td= progress.id
+                td= progress.user&.name.presence || "—"
+                td= progress.user&.company.presence || "—"
+                td= progress.user&.email.presence || "—"
+                td= progress.consideration_phase&.humanize.presence || "—"
+                td= progress.planned_introduction_date&.strftime("%Y/%m/%d") || "—"
+                td= progress.key_points_for_application&.truncate(50).presence || "—"
+                td= l(progress.created_at, format: :short)
+                td
+                  = link_to dashboard_deal_user_progress_path(@deal, progress), class: "db-v2-deals-table__link" do
+                    i.fa-solid.fa-arrow-up-right-from-square aria-hidden="true"
+                    span 詳細

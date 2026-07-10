@@ -3340,3 +3340,200 @@ small {
     padding: 24px 20px;
   }
 }
+
+/* =========================================================================
+   Auth Dark Theme (Devise screens)
+   ========================================================================= */
+.auth-wrapper {
+  background: radial-gradient(circle at 20% 20%, #1f2937 0%, #0b1120 45%, #05070f 100%);
+}
+
+.auth-wrapper .auth-card {
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  box-shadow: 0 24px 48px rgba(2, 6, 23, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.auth-wrapper .auth-card h2 {
+  color: #f8fafc;
+}
+
+.auth-wrapper .auth-card .field label {
+  color: #cbd5e1;
+}
+
+.auth-wrapper .auth-card .field em {
+  color: #94a3b8;
+}
+
+.auth-wrapper .auth-card .input-field,
+.auth-wrapper .auth-card input[type="email"],
+.auth-wrapper .auth-card input[type="password"],
+.auth-wrapper .auth-card input[type="text"] {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+}
+
+.auth-wrapper .auth-card .input-field:focus,
+.auth-wrapper .auth-card input[type="email"]:focus,
+.auth-wrapper .auth-card input[type="password"]:focus,
+.auth-wrapper .auth-card input[type="text"]:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.22);
+}
+
+.auth-wrapper .auth-card .actions .btn,
+.auth-wrapper .auth-card .actions input[type="submit"] {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #f8fafc;
+  border: none;
+}
+
+.auth-wrapper .auth-card .actions .btn:hover,
+.auth-wrapper .auth-card .actions input[type="submit"]:hover {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+}
+
+.auth-wrapper .auth-links {
+  margin-top: 14px;
+  line-height: 1.9;
+}
+
+.auth-wrapper .auth-links a {
+  color: #93c5fd;
+  text-decoration: none;
+}
+
+.auth-wrapper .auth-links a:hover {
+  color: #bfdbfe;
+  text-decoration: underline;
+}
+
+.auth-wrapper #error_explanation {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  background: rgba(127, 29, 29, 0.26);
+  color: #fecaca;
+}
+
+.auth-wrapper #error_explanation h2 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: #fda4af;
+}
+
+.auth-wrapper #error_explanation ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+/* Hard override for Devise auth screens */
+.auth-wrapper {
+  min-height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 40px 20px !important;
+  background: radial-gradient(circle at 20% 20%, #1f2937 0%, #0b1120 45%, #05070f 100%) !important;
+}
+
+.auth-wrapper .auth-forms {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.auth-wrapper .auth-card {
+  width: 100% !important;
+  max-width: 520px !important;
+  padding: 36px 30px !important;
+  border-radius: 18px !important;
+  background: rgba(15, 23, 42, 0.94) !important;
+  border: 1px solid rgba(125, 211, 252, 0.28) !important;
+  box-shadow: 0 24px 52px rgba(2, 6, 23, 0.58) !important;
+  color: #e2e8f0 !important;
+}
+
+.auth-wrapper .auth-card h2 {
+  color: #f8fafc !important;
+  font-weight: 700 !important;
+}
+
+.auth-wrapper .auth-card .field label,
+.auth-wrapper .auth-card .remember label,
+.auth-wrapper .auth-card .auth-checkbox-label {
+  color: #cbd5e1 !important;
+}
+
+.auth-wrapper .auth-card .field em {
+  color: #94a3b8 !important;
+}
+
+.auth-wrapper .auth-card .input-field,
+.auth-wrapper .auth-card input[type="email"],
+.auth-wrapper .auth-card input[type="password"],
+.auth-wrapper .auth-card input[type="text"] {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 13px 14px !important;
+  border-radius: 10px !important;
+  background: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+.auth-wrapper .auth-card .input-field::placeholder,
+.auth-wrapper .auth-card input::placeholder {
+  color: #94a3b8 !important;
+}
+
+.auth-wrapper .auth-card .input-field:focus,
+.auth-wrapper .auth-card input[type="email"]:focus,
+.auth-wrapper .auth-card input[type="password"]:focus,
+.auth-wrapper .auth-card input[type="text"]:focus {
+  outline: none !important;
+  border-color: #a78bfa !important;
+  box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.24) !important;
+}
+
+.auth-wrapper .auth-card .actions .btn,
+.auth-wrapper .auth-card .actions input[type="submit"] {
+  width: 100% !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 14px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
+}
+
+.auth-wrapper .auth-card .actions .btn:hover,
+.auth-wrapper .auth-card .actions input[type="submit"]:hover {
+  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important;
+}
+
+.auth-wrapper .auth-links {
+  margin-top: 14px !important;
+  line-height: 1.9 !important;
+}
+
+.auth-wrapper .auth-links a,
+.auth-wrapper .auth-card a {
+  color: #c4b5fd !important;
+}
+
+.auth-wrapper .auth-links a:hover,
+.auth-wrapper .auth-card a:hover {
+  color: #ddd6fe !important;
+}
+
+.auth-wrapper #error_explanation {
+  border: 1px solid rgba(248, 113, 113, 0.45) !important;
+  background: rgba(127, 29, 29, 0.28) !important;
+  color: #fecaca !important;
+}

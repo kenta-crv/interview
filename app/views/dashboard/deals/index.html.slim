@@ -1,80 +1,86 @@
-.admin-container
-  h1.admin-title 商談一覧
-  p.admin-subtitle AI商談の管理・確認ができます
+- plan = client_signed_in? ? current_client.current_plan_config : nil
+- deal_limit = client_signed_in? ? current_client.deal_limit : nil
 
-  - plan = current_client.current_plan_config
-  - deal_limit = current_client.deal_limit
-  - if deal_limit
-    p.admin-subtitle
-      | プラン: #{plan[:name]} ／ 商談 #{current_client.deals_count} / #{deal_limit} 件
-  - else
-    p.admin-subtitle
-      | プラン: #{plan[:name]} ／ 商談 #{current_client.deals_count} 件（無制限）
+.db-v2-header
+  .db-v2-header__left
+    h1.db-v2-header__title 商談管理
+    p.db-v2-header__subtitle
+      - if admin_signed_in?
+        | 全契約企業の商談一覧
+      - elsif deal_limit
+        | プラン: #{plan[:name]} ／ 商談 #{current_client.deals_count} / #{deal_limit} 件
+      - else
+        | プラン: #{plan[:name]} ／ 商談 #{current_client.deals_count} 件（無制限）
+  .db-v2-header__right
+    = render "/dashboard/theme_switch"
+    - if client_signed_in?
+      = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary" do
+        i.fa-solid.fa-plus aria-hidden="true"
+        span 商談を新規作成
 
-  .admin-card
-    .admin-actions
-      = link_to '新規商談作成', new_dashboard_deal_path, class: 'btn-primary-custom'
+.db-v2-bottom-card
+  .db-v2-bottom-card__header.db-v2-bottom-card__header--split
+    h2.db-v2-bottom-card__title 商談一覧
+    span.db-v2-deals-count = "#{@deals.size} 件"
 
+  .db-v2-bottom-card__body
     - if @deals.empty?
-      .empty-state
-        p まだ商談がありません
-        = link_to '最初の商談を作成', new_dashboard_deal_path, class: 'btn-primary-custom'
+      .db-v2-empty-state
+        .db-v2-empty-state__icon
+          i.fa-solid.fa-briefcase aria-hidden="true"
+        p.db-v2-empty-state__text まだ商談がありません
+        - if client_signed_in?
+          = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary" do
+            i.fa-solid.fa-plus aria-hidden="true"
+            span 最初の商談を作成
     - else
-      .table-responsive
-        table.admin-table
+      .db-v2-leads-table-wrap
+        table.db-v2-leads-table.db-v2-deals-table
           thead
             tr
               th ID
               th タイトル
               th ステータス
               th 言語
-              th 資料数
-              th 音声
-              th 要約
+              th 資料
+              th 公開
               th 作成日
               th 操作
           tbody
             - @deals.each do |deal|
               tr
-                td= deal.id
-                td= deal.title
+                td.db-v2-deals-table__id = deal.id
+                td.db-v2-deals-table__title
+                  = link_to deal.title, dashboard_deal_path(deal), class: "db-v2-deals-table__link"
                 td
                   - case deal.status
-                  - when 'uploading'
-                    span.status-badge.status-badge--progress アップロード中
-                  - when 'processing'
-                    span.status-badge.status-badge--progress 処理中
-                  - when 'transcribing'
-                    span.status-badge.status-badge--progress 文字起こし中
-                  - when 'summarizing'
-                    span.status-badge.status-badge--progress 要約生成中
-                  - when 'completed'
-                    span.status-badge.status-badge--pass 完了
-                  - when 'failed'
-                    span.status-badge.status-badge--fail 失敗
+                  - when "uploading", "processing", "transcribing", "summarizing"
+                    span.db-v2-status-badge.db-v2-status-badge--progress 処理中
+                  - when "completed"
+                    - if deal.playback_ready?
+                      span.db-v2-status-badge.db-v2-status-badge--live 公開中
+                    - else
+                      span.db-v2-status-badge.db-v2-status-badge--ready 準備完了
+                  - when "failed"
+                    span.db-v2-status-badge.db-v2-status-badge--fail 失敗
                   - else
-                    span.status-badge= deal.status
+                    span.db-v2-status-badge = deal.status
                 td= deal.language.upcase
                 td= deal.deal_documents.count
                 td
-                  - if deal.deal_audios.any?
-                    span ✓
+                  - if deal.playback_ready?
+                    i.fa-solid.fa-circle-check.db-v2-deals-table__ok aria-hidden="true"
                   - else
-                    span -
-                td
-                  - if deal.deal_summary.present?
-                    span ✓
-                  - else
-                    span -
+                    span.db-v2-deals-table__muted —
                 td= l(deal.created_at, format: :short)
                 td
-                  .admin-operations style="display: flex; gap: 4px; align-items: center;"
-                    = link_to '詳細', dashboard_deal_path(deal), class: 'btn-primary-custom btn-sm'
-
-                    / 確実にDELETEリクエストを送るためにbutton_toを使用（dashboard_deal_pathに変更）
-                    = button_to '削除', dashboard_deal_path(deal), method: :delete, data: { turbo_confirm: '本当にこの商談を削除しますか？', confirm: '本当にこの商談を削除しますか？' }, class: 'btn-danger-custom btn-sm', form: { style: 'display: inline;' }
-
+                  .db-v2-deals-table__actions
+                    = link_to dashboard_deal_path(deal), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs" do
+                      span 詳細
+                    = link_to presentation_dashboard_deal_path(deal), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", target: "_blank", rel: "noopener", data: { turbo: false } do
+                      span プレゼン
                     - if deal.access_token.present?
-                      = link_to '共有リンク', public_deal_session_path(deal.access_token), class: 'btn-secondary-custom btn-sm', target: '_blank'
-                    - else
-                      span.text-muted （リンクなし）
+                      = link_to public_deal_session_path(deal.access_token), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", target: "_blank", rel: "noopener" do
+                        span 共有
+                    = button_to dashboard_deal_path(deal), method: :delete, class: "db-v2-btn db-v2-btn--danger db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo_confirm: "本当にこの商談を削除しますか？", confirm: "本当にこの商談を削除しますか？" } do
+                      span 削除

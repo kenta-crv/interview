@@ -2,8 +2,8 @@ require 'rails_helper'
 
 RSpec.describe Subscription, type: :model do
   describe 'PLAN_CATALOG' do
-    it 'includes trial and paid plans for LP' do
-      expect(Subscription.public_plans.keys).to contain_exactly(:trial, :starter, :standard, :business, :enterprise)
+    it 'returns LP display plans in catalog order' do
+      expect(Subscription.lp_display_plans.map(&:first)).to eq(%i[trial starter standard business enterprise])
     end
 
     it 'has expected trial limits' do
@@ -62,7 +62,7 @@ RSpec.describe Subscription, type: :model do
   end
 
   describe 'client without subscription' do
-    let(:client) { Client.create!(email: "no-sub@example.com", password: "password123") }
+    let(:client) { create(:client, email: "no-sub@example.com") }
 
     it 'falls back to trial plan config' do
       expect(client.current_plan_config[:deal_limit]).to eq(3)

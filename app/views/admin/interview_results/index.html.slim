@@ -1,23 +1,41 @@
-h1 Interview Results (Admin)
+.db-v2-header
+  .db-v2-header__left
+    h1.db-v2-header__title 面接結果
+    p.db-v2-header__subtitle 全応募者の面接結果一覧
+  .db-v2-header__right
+    = render "/dashboard/theme_switch"
 
-.table-wrapper
-  table
-    thead
-      tr
-        th ID
-        th Applicant
-        th Situation
-        th Status
-        th Average Score
-        th Created
-        th
-    tbody
-      - @results.each do |result|
-        tr
-          td= result.id
-          td= result.interview.user&.email
-          td= result.interview.situation&.title
-          td= result.final_status
-          td= result.average_score
-          td= l(result.created_at, format: :short)
-          td= link_to 'View', admin_interview_result_path(result)
+.db-v2-bottom-card
+  .db-v2-bottom-card__header.db-v2-bottom-card__header--split
+    h2.db-v2-bottom-card__title 面接結果一覧
+    span.db-v2-deals-count = "#{@results.size} 件"
+
+  .db-v2-bottom-card__body
+    - if @results.empty?
+      .db-v2-empty-state
+        .db-v2-empty-state__icon
+          i.fa-solid.fa-clipboard-list aria-hidden="true"
+        p.db-v2-empty-state__text 面接結果はまだありません
+    - else
+      .db-v2-leads-table-wrap
+        table.db-v2-leads-table.db-v2-deals-table
+          thead
+            tr
+              th ID
+              th 応募者
+              th シナリオ
+              th ステータス
+              th 平均スコア
+              th 作成日
+              th
+          tbody
+            - @results.each do |result|
+              tr
+                td = result.id
+                td = result.interview.user&.email
+                td = result.interview.situation&.title
+                td = result.final_status
+                td = result.average_score
+                td = l(result.created_at, format: :short)
+                td
+                  = link_to "詳細", admin_interview_result_path(result), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"

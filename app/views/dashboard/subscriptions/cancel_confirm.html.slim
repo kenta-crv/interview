@@ -1,19 +1,22 @@
-.admin-container
-  h1.admin-title サブスクリプション解約確認
-  p.admin-subtitle 解約手続きの最終確認です
+.db-v2-bottom-card
+  .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title 解約の確認
+  .db-v2-bottom-card__body
+    .db-v2-alert.db-v2-alert--info
+      i.fa-solid.fa-circle-info aria-hidden="true"
+      div
+        p 解約手続きを完了すると、自動更新が停止されます。
+        p
+          strong 最終利用可能日： #{@available_until.strftime("%Y年%m月%d日")}
+        p.db-v2-checkout-alert-note この日付まで、有料機能を引き続きご利用いただけます。
 
-  .admin-card
-    p
-      | 解約手続きを完了すると、自動更新が停止されます。
-      br
-      strong 最終利用可能日： #{@available_until.strftime("%Y年%m月%d日")}
-      br
-      span この日付まで、有料機能を引き続きご利用いただけます。
+    .db-v2-subscription-status
+      .db-v2-subscription-status__row
+        span.db-v2-subscription-status__label 現在のプラン
+        span.db-v2-subscription-status__value = @target_client.current_plan_config[:name]
 
-    p
-      strong 現在のプラン：
-      = @target_client.subscription_plan&.capitalize || 'None'
-
-    .admin-actions
-      = link_to 'サブスクリプション管理へ戻る', dashboard_subscription_path(client_id: params[:client_id]), class: 'btn-secondary-custom'
-      = button_to '解約を確定する', cancel_dashboard_subscription_path(client_id: params[:client_id]), method: :post, class: 'btn-danger-custom', data: { confirm: '本当に解約しますか？' }
+    .db-v2-checkout-form__actions
+      = link_to dashboard_subscription_path(subscription_path_options), class: "db-v2-btn db-v2-btn--ghost" do
+        span 戻る
+      = button_to cancel_dashboard_subscription_path(subscription_path_options), method: :post, class: "db-v2-btn db-v2-btn--danger", data: { turbo_confirm: "本当に解約しますか？", confirm: "本当に解約しますか？" } do
+        span 解約を確定する

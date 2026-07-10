@@ -1,84 +1,85 @@
-.sc-detect.container.py-5.min-vh-100
-  .row.justify-content-center
-    .col-lg-10
-      h1.sc-detect__title サブスクリプション管理
+- is_trial = @target_client.on_trial? || (@subscription&.trial? && !@subscription&.cancelled?)
+- is_active = @subscription&.active? || @target_client.on_trial?
+- can_cancel = subscription_can_cancel?(@target_client)
 
-      / --- 現在のプランセクション ---
-      .sc-detect__card.mb-5
-        .sc-detect__card-header
-          h5
-            i.fas.fa-id-card.me-2 style="color: #38bdf8;"
-            | 現在のプラン
+.db-v2-bottom-card
+  .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title
+      i.fa-solid.fa-id-card aria-hidden="true"
+      |  現在のプラン
+  .db-v2-bottom-card__body
+    - if @subscription.present? || @target_client.on_trial?
+      .db-v2-subscription-status
+        .db-v2-subscription-status__row
+          span.db-v2-subscription-status__label プランタイプ
+          span.db-v2-subscription-status__value
+            - if is_trial
+              = Subscription::PLAN_NAMES[:trial]
+            - else
+              = @subscription&.plan_name || "—"
 
-        .sc-detect__card-body.p-4
-          - is_trial = (@subscription&.trial?) || (@target_client.subscription_plan == 'trial')
-          - is_active = @subscription.present? ? @subscription.active? : (@target_client.subscription_status == 'active' || is_trial)
+        .db-v2-subscription-status__row
+          span.db-v2-subscription-status__label ステータス
+          span.db-v2-subscription-status__value class=("db-v2-subscription-status__value--trial" if is_trial)
+            - if is_trial
+              | トライアル中
+            - elsif @subscription&.cancelled?
+              | 解約手続き済み
+            - elsif is_active
+              | 有効
+            - else
+              = @subscription&.status || "—"
 
-          - if @subscription.present? || is_trial
-            .row.g-4
-              .col-md-6
-                .sc-detect__label プランタイプ
-                p.h4.fw-bold style="color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);"
-                  - if is_trial
-                    = Subscription::PLAN_NAMES[:trial]
-                  - else
-                    = @subscription.plan_name
+        - current_trial_ends_at = nil
+        - if is_trial
+          - current_trial_ends_at = @subscription&.trial_ends_at || @target_client.trial_ends_at || (@subscription&.created_at&.+ Subscription::TRIAL_DAYS.days)
 
-              .col-md-6
-                .sc-detect__label ステータス
-                - status_class = is_active ? 'success' : 'danger'
-                span.sc-detect__badge class="sc-detect__badge--#{status_class}"
-                  - if is_trial
-                    | トライアル中
-                  - else
-                    = @subscription.status.capitalize
+        - if current_trial_ends_at.present?
+          .db-v2-subscription-status__row
+            span.db-v2-subscription-status__label トライアル終了日
+            span.db-v2-subscription-status__value = current_trial_ends_at.strftime("%Y年%m月%d日")
 
-              / --- 修正ポイント（10日固定） ---
-              - current_trial_ends_at = nil
-              - if is_trial && @subscription.present?
-                - current_trial_ends_at = @subscription.created_at + Subscription::TRIAL_DAYS.days
+      - unless admin_signed_in?
+        .db-v2-subscription-upgrade
+          h3.db-v2-subscription-upgrade__title プランのアップグレード・変更
+          = link_to plans_path, class: "db-v2-btn db-v2-btn--primary" do
+            i.fa-solid.fa-tags aria-hidden="true"
+            span プランを変更する
 
-              - if current_trial_ends_at.present?
-                .col-12.mt-3
-                  .sc-detect__label トライアル終了日
-                  p.h5.fw-bold style="color: #ffffff;"
-                    = current_trial_ends_at.strftime("%Y年%m月%d日")
+        - if can_cancel
+          .db-v2-subscription-cancel
+            p.db-v2-subscription-cancel__note
+              - if is_trial
+                | トライアル期間中でも解約できます。解約後はトライアル終了時の自動課金が停止されます。
+              - else
+                | 解約手続き後も、契約期間の終了日まではご利用いただけます。
+            = link_to "サブスクリプションを解約する", cancel_confirm_dashboard_subscription_path(subscription_path_options), class: "db-v2-btn db-v2-btn--danger"
 
-            .mt-5.pt-4 style="border-top: 1px solid rgba(56, 189, 248, 0.2);"
-              h3.sc-detect__label.mb-3 プランのアップグレード・変更
-              = render "dashboard/subscriptions/upgrade_links", subscription: @subscription, target_client: @target_client, client_id: params[:client_id]
+    - else
+      .db-v2-empty-state
+        p.db-v2-empty-state__text アクティブなサブスクリプションがありません。
+        = link_to plans_path, class: "db-v2-btn db-v2-btn--primary" do
+          span プランを選択する
 
-            - if is_active
-              .mt-4.pt-4 style="border-top: 1px solid rgba(56, 189, 248, 0.1);"
-                = link_to "サブスクリプションを解約する", cancel_confirm_dashboard_subscription_path(client_id: params[:client_id]), class: "sc-detect__btn sc-detect__btn--danger"
-
-          - else
-            .text-center.py-5
-              p style="color: rgba(229, 231, 235, 0.5);" アクティブなサブスクリプションがありません。
-              = link_to plans_path(client_id: params[:client_id]), class: "sc-detect__btn sc-detect__btn--warning mt-3", style: "text-decoration: none; justify-content: center; min-width: 200px;" do
-                | プランを選択する
-
-      h2.sc-detect__title style="font-size: 20px;" 支払い履歴
-
-      .sc-detect__table-wrapper
-        - if @payments.present?
-          table.sc-detect__table
-            thead
+.db-v2-bottom-card
+  .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title 支払い履歴
+  .db-v2-bottom-card__body
+    - if @payments.present?
+      .db-v2-leads-table-wrap
+        table.db-v2-leads-table
+          thead
+            tr
+              th 日付
+              th 金額
+              th 説明
+              th ステータス
+          tbody
+            - @payments.each do |payment|
               tr
-                th 日付
-                th 金額
-                th 説明
-                th ステータス
-            tbody
-              - @payments.each do |payment|
-                tr
-                  td = payment.created_at.strftime("%Y/%m/%d")
-                  td.fw-bold style="color: #ffffff;" = payment.formatted_amount
-                  td = payment.description
-                  td
-                    - p_status = payment.succeeded? ? 'success' : 'danger'
-                    span.sc-detect__badge class="sc-detect__badge--#{p_status}"
-                      = payment.status.capitalize
-        - else
-          .p-4.text-center style="color: rgba(229, 231, 235, 0.4);"
-            | 支払い履歴がありません。
+                td = payment.created_at.strftime("%Y/%m/%d")
+                td = payment.respond_to?(:formatted_amount) ? payment.formatted_amount : "¥#{number_with_delimiter(payment.amount)}"
+                td = payment.try(:description) || "—"
+                td = payment.status
+    - else
+      p.db-v2-empty-state__text 支払い履歴はありません。

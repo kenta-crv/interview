@@ -1,54 +1,57 @@
-/ data-turbo="false" で遷移時の不具合を物理的に遮断
-.sc-detect.container.py-5 data-turbo="false"
-  .row.justify-content-center
-    .col-md-8.col-lg-6
-      .sc-detect__card
-        .sc-detect__card-header
-          h5
-            i.fas.fa-shield-alt.me-2
-            | お支払い内容の確認
+.db-v2-header
+  .db-v2-header__left
+    h1.db-v2-header__title お支払い内容の確認
+    p.db-v2-header__subtitle 選択したプラン内容をご確認のうえ、お手続きへ進んでください
+  .db-v2-header__right
+    = render "/dashboard/theme_switch"
+    = link_to plans_path, class: "db-v2-btn db-v2-btn--ghost" do
+      i.fa-solid.fa-arrow-left aria-hidden="true"
+      span プラン選択へ戻る
 
-        .sc-detect__card-body.p-4
+- if @plan_type.to_s == "trial"
+  .db-v2-alert.db-v2-alert--info
+    i.fa-solid.fa-circle-info aria-hidden="true"
+    div
+      p
+        strong 無料トライアル
+        | の期間は費用は発生しません。
+      p.db-v2-checkout-alert-note
+        | #{Subscription::TRIAL_DAYS}日間・商談#{@plan_config[:deal_limit]}件・サービス#{@plan_config[:service_limit]}件まで。終了後はスタンダードプランへ自動移行します。
+      p.db-v2-checkout-alert-note
+        | クレジットカードの登録が必要です（トライアル期間中は課金されません）。
 
-          - if @plan_type.to_s == "trial"
-            .sc-detect__alert.sc-detect__alert--info.mb-4
-              .trial-main
-                i.fas.fa-info-circle.me-2
-                strong.trial-highlight 無料トライアル
-                | の期間は費用発生しません。
-              span.trial-note
-                | #{Subscription::TRIAL_DAYS}日間・商談#{@plan_config[:deal_limit]}件・サービス#{@plan_config[:service_limit]}件まで。
+.db-v2-bottom-card.db-v2-checkout-card data-turbo="false"
+  .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title
+      i.fa-solid.fa-shield-halved aria-hidden="true"
+      |  プラン内容
+  .db-v2-bottom-card__body
+    .db-v2-checkout-summary
+      .db-v2-checkout-summary__row
+        span.db-v2-checkout-summary__label 選択プラン
+        span.db-v2-checkout-summary__value = @plan_config[:name]
+      .db-v2-checkout-summary__row.db-v2-checkout-summary__row--price
+        span.db-v2-checkout-summary__label お支払い金額
+        .db-v2-checkout-summary__price
+          span.db-v2-checkout-summary__amount
+            = @plan_type.to_s == "trial" ? "¥0" : "¥#{number_with_delimiter(@amount)}"
+          span.db-v2-checkout-summary__tax （税込）
 
-          .sc-detect__table-wrapper.sc-detect__table-wrapper--preview.p-4.mb-4
-            .d-flex.justify-content-between.mb-2
-              span.sc-detect__label 選択プラン
-              span.fw-bold.sc-detect__plan-name = @plan_config[:name]
+    ul.db-v2-checkout-features
+      li
+        i.fa-solid.fa-circle-check aria-hidden="true"
+        span 商談 #{Subscription.format_limit(@plan_config[:deal_limit])} 件
+      li
+        i.fa-solid.fa-circle-check aria-hidden="true"
+        span サービス #{@plan_config[:service_limit]} 件
+      li
+        i.fa-solid.fa-circle-check aria-hidden="true"
+        span クリック履歴分析
 
-            .d-flex.justify-content-between.align-items-center
-              span.sc-detect__label お支払い金額
-              .text-end
-                span.h2.fw-bold.sc-detect__amount-display
-                  = @plan_type.to_s == "trial" ? "¥0" : "¥#{number_with_delimiter(@amount)}"
-                span.small.ms-1.sc-detect__tax-label (税込)
-
-          ul.list-unstyled.mb-4
-            li
-              i.fas.fa-check-circle.me-2 style="color: #10b981;"
-              | 商談 #{Subscription.format_limit(@plan_config[:deal_limit])} 件
-            li
-              i.fas.fa-check-circle.me-2 style="color: #10b981;"
-              | サービス #{@plan_config[:service_limit]} 件
-            li
-              i.fas.fa-check-circle.me-2 style="color: #10b981;"
-              | クリック履歴分析
-
-          hr.sc-detect__divider
-
-          = form_with url: checkout_create_path, method: :post, local: true do |f|
-            = hidden_field_tag :plan_type, @plan_type
-
-            .sc-detect__form-actions
-              - if @plan_type.to_s == "trial"
-                = f.submit "無料トライアルを開始", class: "sc-detect__btn sc-detect__btn--warning w-100"
-              - else
-                = f.submit "Stripeで決済へ進む", class: "sc-detect__btn sc-detect__btn--warning w-100"
+    = form_with url: checkout_create_path, method: :post, local: true, class: "db-v2-checkout-form" do |f|
+      = hidden_field_tag :plan_type, @plan_type
+      .db-v2-checkout-form__actions
+        - if @plan_type.to_s == "trial"
+          = f.submit "クレジットカードを登録してトライアル開始", class: "db-v2-btn db-v2-btn--primary db-v2-btn--block"
+        - else
+          = f.submit "Stripeで決済へ進む", class: "db-v2-btn db-v2-btn--primary db-v2-btn--block"

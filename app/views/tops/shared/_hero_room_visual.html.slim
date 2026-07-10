@@ -1,0 +1,50 @@
+.meetia-hero-room aria-hidden="true"
+  .meetia-hero-room__halo
+  .meetia-hero-room__panel
+    header.meetia-hero-room__header
+      .meetia-hero-room__brand
+        h2.meetia-hero-room__title 商談ルーム
+        p.meetia-hero-room__status
+          span.meetia-hero-room__status-dot
+          span AI商談中
+        span.meetia-hero-room__timer 00:12:48
+      button.meetia-hero-room__exit type="button" tabindex="-1"
+        span ↗
+        span 終了する
+    .meetia-hero-room__stage
+      .meetia-hero-room__deck
+        .meetia-hero-room__document
+          .meetia-hero-room__doc-head
+            span.meetia-hero-room__doc-label 商談資料
+            strong サービス概要
+          .meetia-hero-room__doc-body
+            h3 Meetiaで商談を次のステージへ
+            ul
+              li 24時間、資料連動の音声商談
+              li 導入フロー・料金体系をその場で説明
+              li 質問にはAIが即座に回答
+            .meetia-hero-room__doc-tags
+              span 資料理解
+              span 自然な対話
+              span 成約加速
+        .meetia-hero-room__controls
+          .meetia-hero-room__chips
+            span 導入フロー
+            span 料金体系
+          = render "tops/shared/presentation_play_btn", btn_id: "hero-presentation-voice-btn", grad_id: "heroPlayGrad", auto_play: true
+          .meetia-hero-room__chips.meetia-hero-room__chips--right
+            span セキュリティ
+            span 導入期間
+      aside.meetia-hero-room__agent
+        = image_tag "avatar_3.png", alt: "", class: "meetia-hero-room__avatar"
+        .meetia-hero-room__chat
+          .meetia-hero-room__chat-head
+            i.fa-solid.fa-comments aria-hidden="true"
+            span メッセージ履歴
+          .meetia-hero-room__messages
+            .meetia-hero-room__message.meetia-hero-room__message--ai
+              span AIアシスタント
+              p 資料に基づき、導入フローと料金体系をご説明します。
+            .meetia-hero-room__message.meetia-hero-room__message--user
+              span あなた
+              p セキュリティ面について詳しく知りたいです。

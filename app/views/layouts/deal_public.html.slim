@@ -2,15 +2,40 @@ doctype html
 html lang="ja" data-turbo="false"
   head
     = render "layouts/head"
+    link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin=""
+    link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer"
     meta name="turbo-visit-control" content="reload"
     style type="text/css"
-      | #presentation-start-overlay{position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(15,23,42,.55)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important}
+      | html,body.deal-public-body{margin:0!important;padding:0!important;min-height:100vh!important;background:#0a0a12!important;color:#e2e8f0!important;font-family:"Noto Sans JP",system-ui,sans-serif!important}
+      | body.deal-public-body .custom-navbar,body.deal-public-body header.custom-navbar,body.deal-public-body .hero{display:none!important}
+      | .deal-public-page{position:relative;min-height:100vh;padding:32px 16px 48px;box-sizing:border-box;background:radial-gradient(circle at 20% 10%,rgba(124,58,237,.22),transparent 42%),radial-gradient(circle at 80% 0%,rgba(99,102,241,.16),transparent 36%),linear-gradient(180deg,#0a0a12 0%,#12101f 100%)}
+      | .deal-public-page__shell{position:relative;z-index:1;width:min(760px,100%);margin:0 auto}
+      | .deal-public-page__brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+      | .deal-public-page__logo-mark{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 0 24px rgba(168,85,247,.45)}
+      | .deal-public-page__brand-label{margin:0;font-size:18px;font-weight:800;color:#f8fafc}
+      | .deal-public-page__brand-sub{margin:2px 0 0;font-size:12px;color:#a5b4fc}
+      | .deal-public-page__title{margin:0 0 8px;font-size:clamp(28px,4vw,34px);font-weight:800;color:#f8fafc}
+      | .deal-public-page__deal-title{margin:0 0 8px;font-size:16px;font-weight:700;color:#c4b5fd}
+      | .deal-public-page__lead{margin:0;font-size:14px;line-height:1.7;color:#94a3b8}
+      | .deal-public-page__card{border-radius:18px;padding:24px;background:rgba(18,16,32,.82);border:1px solid rgba(139,92,246,.28);box-shadow:0 24px 60px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.03)}
+      | .deal-public-form__section-title{margin:0 0 16px;font-size:15px;font-weight:700;color:#e9d5ff}
+      | .deal-public-form__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+      | .deal-public-form__group{display:flex;flex-direction:column;gap:6px}
+      | .deal-public-form__group--full{grid-column:1/-1}
+      | .deal-public-form__label{font-size:12px;font-weight:700;color:#cbd5e1}
+      | .deal-public-form__control{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:10px;border:1px solid rgba(139,92,246,.22);background:rgba(10,10,18,.72);color:#f8fafc;font-size:14px;font-family:inherit}
+      | .deal-public-form__control:focus{outline:none;border-color:rgba(168,85,247,.65);box-shadow:0 0 0 3px rgba(139,92,246,.18)}
+      | .deal-public-form__section+.deal-public-form__section{margin-top:24px;padding-top:24px;border-top:1px solid rgba(139,92,246,.14)}
+      | .deal-public-form__actions{margin-top:24px;display:flex;justify-content:flex-end}
+      | .deal-public-form__submit{border:none;border-radius:12px;padding:14px 22px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(135deg,#7c3aed 0%,#a855f7 100%);box-shadow:0 12px 30px rgba(124,58,237,.35)}
+      | @media (max-width:720px){.deal-public-form__grid{grid-template-columns:1fr}.deal-public-page__card{padding:18px}}
+      | #presentation-start-overlay{position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(8,6,18,.82)!important;backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important}
       | #presentation-start-overlay[hidden]{display:none!important}
-      | #presentation-start-overlay .presentation-start-card{display:block!important;background:#fff!important;border:none!important;border-radius:24px!important;padding:48px 56px!important;text-align:center!important;box-shadow:0 25px 50px -12px rgba(15,23,42,.45)!important;max-width:440px!important;cursor:pointer!important}
+      | #presentation-start-overlay .presentation-start-card{display:block!important;background:#fff!important;border:1px solid rgba(139,92,246,.25)!important;border-radius:24px!important;padding:48px 56px!important;text-align:center!important;box-shadow:0 25px 60px rgba(0,0,0,.5),0 0 40px rgba(139,92,246,.18)!important;max-width:440px!important;cursor:pointer!important}
       | #presentation-start-overlay .presentation-start-title{font-size:24px!important;font-weight:700!important;color:#0f172a!important;margin:0 0 8px!important}
       | #presentation-start-overlay .presentation-start-desc{font-size:14px!important;color:#64748b!important;margin:0!important}
       | #presentation-start-overlay .presentation-start-icon{display:block!important;font-size:40px!important;margin-bottom:16px!important}
-      | body.deal-public-locked .admin-container{filter:blur(8px)!important;pointer-events:none!important}
+      | body.deal-public-locked .deal-public-page{filter:blur(8px)!important;pointer-events:none!important}
   body.deal-public-body data-turbo="false"
     = yield
     script

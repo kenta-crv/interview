@@ -1,106 +1,109 @@
-.admin-card.ai-card-flat#deal-knowledge
-  .card-header-mix
-    h2.admin-card-title 💡 ナレッジ補完（FAQ）
-    - if current_client.show_knowledge_coverage? && @deal.deal_faqs.where(source: Deal::SYSTEM_FAQ_SOURCES).exists?
-      span.lang-badge style="background:#eef2ff;color:#4338ca;" 完成度 #{@knowledge_coverage}%
+.db-v2-bottom-card#deal-knowledge
+  .db-v2-bottom-card__header.db-v2-bottom-card__header--split
+    h2.db-v2-bottom-card__title
+      i.fa-solid.fa-lightbulb aria-hidden="true"
+      |  ナレッジ補完（FAQ）
+    - if deal_owner.show_knowledge_coverage? && @deal.deal_faqs.where(source: Deal::SYSTEM_FAQ_SOURCES).exists?
+      span.db-v2-lang-badge 完成度 #{@knowledge_coverage}%
 
-  - if current_client.knowledge_section_optional?
-    .status-alert-box.info style="margin-bottom:16px;"
-      span.icon ✨
-      p style="margin:0;"
-        | トライアル中はFAQ入力は<strong>任意</strong>です。PDFアップロード後、まず
-        = link_to "シミュレーション", conversation_public_deal_session_path(token: @deal.access_token, preview: 1), target: "_blank", rel: "noopener", data: { turbo: false }
-        |  をお試しください。
-  - elsif @pending_faq_count.positive?
-    .status-alert-box.info style="margin-bottom:16px;"
-      span.icon 📝
-      p style="margin:0;" 未回答FAQが #{@pending_faq_count} 件あります。クリックして回答してください。
+  .db-v2-bottom-card__body
+    - if deal_owner.knowledge_section_optional?
+      .status-alert-box.info
+        span.icon ✨
+        p
+          | トライアル中はFAQ入力は<strong>任意</strong>です。PDFアップロード後、まず
+          = link_to "シミュレーション", conversation_public_deal_session_path(token: @deal.access_token, preview: 1), target: "_blank", rel: "noopener", data: { turbo: false }
+          |  をお試しください。
+    - elsif @pending_faq_count.positive?
+      .status-alert-box.info
+        span.icon 📝
+        p 未回答FAQが #{@pending_faq_count} 件あります。クリックして回答してください。
 
-  .deal-knowledge-settings
-    = form_with model: @deal, url: dashboard_deal_path(@deal), method: :patch, local: true, html: { class: "deal-industry-form" } do |f|
-      .form-group style="margin-bottom:0;"
-        = f.label :industry, "業種（必須FAQチェックリスト）", class: "form-label"
-        .deal-industry-row
-          = f.select :industry, Deal::INDUSTRIES.map { |k, v| [v, k] }, {}, class: "form-control"
-          = f.submit "業種を保存", class: "btn-secondary-custom btn-sm"
-    - if @checklist_coverage[:total].positive?
-      p.deal-checklist-meta
-        | 業種チェックリスト: #{@checklist_coverage[:answered]}/#{@checklist_coverage[:total]}（#{@checklist_coverage[:percent]}%）
+    .deal-knowledge-settings
+      = form_with model: @deal, url: dashboard_deal_path(@deal), method: :patch, local: true, html: { class: "deal-industry-form" } do |f|
+        .form-group.deal-knowledge-settings__field
+          = f.label :industry, "業種（必須FAQチェックリスト）", class: "form-label"
+          .deal-industry-row
+            = f.select :industry, Deal::INDUSTRIES.map { |k, v| [v, k] }, {}, class: "form-control"
+            = f.submit "業種を保存", class: "btn-secondary-custom btn-sm"
+      - if @checklist_coverage[:total].positive?
+        p.deal-checklist-meta
+          | 業種チェックリスト: #{@checklist_coverage[:answered]}/#{@checklist_coverage[:total]}（#{@checklist_coverage[:percent]}%）
 
-  .deal-knowledge-supplement
-    h3.admin-card-title style="font-size:15px;margin:16px 0 8px;" 📎 補足資料（FAQ自動抽出）
-    p.text-muted style="font-size:13px;margin-bottom:8px;" 料金表・仕様書・FAQ PDFなど。スライドには使わずFAQのみ抽出します。
-    = form_tag upload_supplement_documents_dashboard_deal_path(@deal), multipart: true, class: "deal-supplement-upload", data: { turbo: false } do
-      .form-group
-        = file_field_tag "files[]", multiple: true, accept: ".pdf", class: "form-control"
-      = submit_tag "補足PDFをアップロード", class: "btn-info-custom btn-sm", data: { turbo: false }
-    - if @supplement_documents.any?
-      ul.deal-supplement-list
-        - @supplement_documents.each do |doc|
-          li = File.basename(doc.file.filename.to_s)
-
-  - if @deal_faqs.any?
-    .deal-faq-list
-      - @deal_faqs.each do |faq|
-        details.deal-faq-item class=("deal-faq-item--pending" if faq.pending?)
-          summary.deal-faq-item__summary
-            span.deal-faq-item__toggle aria-hidden="true"
-            .deal-faq-item__summary-main
-              span.deal-faq-item__question = faq.question.truncate(72)
-              .deal-faq-item__meta
-                span.deal-faq-item__category = faq.category_label
-                span.deal-faq-item__badge class=("deal-faq-item__badge--muted" if faq.source == "template") = faq.source_label
-                - if faq.pending?
-                  span.deal-faq-item__badge.deal-faq-item__badge--warn 未回答
-                - elsif faq.answered?
-                  span.deal-faq-item__badge.deal-faq-item__badge--ok 回答済
-
-          .deal-faq-item__body
-            = form_with model: faq, url: dashboard_deal_deal_faq_path(@deal, faq), method: :patch, local: true, html: { class: "deal-faq-form" } do |f|
-              .form-group
-                = f.label :question, "質問", class: "form-label"
-                = f.text_area :question, class: "form-control", rows: 2, readonly: faq.ai_gap? && faq.pending?
-              .form-group
-                = f.label :answer, "回答", class: "form-label"
-                = f.text_area :answer, class: "form-control", rows: 3, placeholder: (faq.pending? ? "Buyer向けの回答を入力してください" : "")
-              .form-group
-                = f.label :category, "カテゴリ", class: "form-label"
-                = f.select :category, DealFaq::CATEGORIES.map { |k, v| [v, k] }, {}, class: "form-control"
-              .deal-faq-item__actions
-                = f.submit "保存", class: "btn-primary-custom btn-sm"
-                - if faq.pending?
-                  = button_to "スキップ", skip_dashboard_deal_deal_faq_path(@deal, faq), method: :post, class: "btn-secondary-custom btn-sm", data: { turbo: false }
-                = button_to "削除", dashboard_deal_deal_faq_path(@deal, faq), method: :delete, class: "btn-secondary-custom btn-sm", data: { turbo: false, confirm: "このFAQを削除しますか？" }
-  - else
-    p.text-muted style="margin-bottom:16px;"
-      - if @deal.deal_summary.present?
-        | 資料処理が完了しました。下のツールでFAQを充実させられます。
-      - else
-        | 資料アップロード後、FAQの提案・追加ができます。
-
-  details.deal-faq-advanced class=(current_client.gap_analysis_suggest_only? ? "deal-faq-advanced--trial" : "")
-    summary.deal-faq-advanced__summary
-      - if current_client.gap_analysis_suggest_only?
-        | 🛠 精度を上げる（任意）
-      - else
-        | AI分析・FAQ追加ツール
-    .deal-faq-advanced__body
-      .deal-faq-tools
-        = button_to "AIギャップ分析", analyze_gaps_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", disabled: @deal.deal_summary.blank?, data: { turbo: false }
-        = button_to "商談ログから提案", suggest_from_events_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", data: { turbo: false }
-        = button_to "Buyerストレステスト", stress_test_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", disabled: @deal.deal_summary.blank?, data: { turbo: false }
-        = button_to "業種チェックリスト適用", apply_checklist_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", data: { turbo: false }
-        - if current_client.gap_analysis_suggest_only?
-          span.deal-faq-analyze-hint トライアルは各分析が軽量モードです
-
-      = form_with model: DealFaq.new, url: dashboard_deal_deal_faqs_path(@deal), local: true, html: { class: "deal-faq-create-form" } do |f|
+    .deal-knowledge-supplement
+      h3.admin-card-title.db-v2-subsection-title 📎 補足資料（FAQ自動抽出）
+      p.text-muted.deal-knowledge-supplement__hint 料金表・仕様書・FAQ PDFなど。スライドには使わずFAQのみ抽出します。
+      = form_tag upload_supplement_documents_dashboard_deal_path(@deal), multipart: true, class: "deal-supplement-upload", data: { turbo: false } do
         .form-group
-          = f.label :question, "質問を手動追加", class: "form-label"
-          = f.text_area :question, class: "form-control", rows: 2, placeholder: "例: 最低契約期間はありますか？"
-        .form-group
-          = f.label :answer, "回答", class: "form-label"
-          = f.text_area :answer, class: "form-control", rows: 3, placeholder: "Buyer向けの回答"
-        .form-group
-          = f.label :category, "カテゴリ", class: "form-label"
-          = f.select :category, DealFaq::CATEGORIES.map { |k, v| [v, k] }, {}, class: "form-control"
-        = f.submit "FAQを追加", class: "btn-info-custom btn-sm"
+          = file_field_tag "files[]", multiple: true, accept: ".pdf", class: "form-control"
+        = submit_tag "補足PDFをアップロード", class: "btn-info-custom btn-sm", data: { turbo: false }
+      - if @supplement_documents.any?
+        ul.deal-supplement-list
+          - @supplement_documents.each do |doc|
+            li = File.basename(doc.file.filename.to_s)
+
+    - if @deal_faqs.any?
+      .deal-faq-list
+        - @deal_faqs.each do |faq|
+          details.deal-faq-item class=("deal-faq-item--pending" if faq.pending?)
+            summary.deal-faq-item__summary
+              span.deal-faq-item__toggle aria-hidden="true"
+              .deal-faq-item__summary-main
+                span.deal-faq-item__question = faq.question.truncate(72)
+                .deal-faq-item__meta
+                  span.deal-faq-item__category = faq.category_label
+                  span.deal-faq-item__badge class=("deal-faq-item__badge--muted" if faq.source == "template") = faq.source_label
+                  - if faq.pending?
+                    span.deal-faq-item__badge.deal-faq-item__badge--warn 未回答
+                  - elsif faq.answered?
+                    span.deal-faq-item__badge.deal-faq-item__badge--ok 回答済
+
+            .deal-faq-item__body
+              = form_with model: faq, url: dashboard_deal_deal_faq_path(@deal, faq), method: :patch, local: true, html: { class: "deal-faq-form" } do |f|
+                .form-group
+                  = f.label :question, "質問", class: "form-label"
+                  = f.text_area :question, class: "form-control", rows: 2, readonly: faq.ai_gap? && faq.pending?
+                .form-group
+                  = f.label :answer, "回答", class: "form-label"
+                  = f.text_area :answer, class: "form-control", rows: 3, placeholder: (faq.pending? ? "Buyer向けの回答を入力してください" : "")
+                .form-group
+                  = f.label :category, "カテゴリ", class: "form-label"
+                  = f.select :category, DealFaq::CATEGORIES.map { |k, v| [v, k] }, {}, class: "form-control"
+                .deal-faq-item__actions
+                  = f.submit "保存", class: "btn-primary-custom btn-sm"
+                  - if faq.pending?
+                    = button_to "スキップ", skip_dashboard_deal_deal_faq_path(@deal, faq), method: :post, class: "btn-secondary-custom btn-sm", data: { turbo: false }
+                  = button_to "削除", dashboard_deal_deal_faq_path(@deal, faq), method: :delete, class: "btn-secondary-custom btn-sm", data: { turbo: false, confirm: "このFAQを削除しますか？" }
+    - else
+      p.text-muted.deal-knowledge-empty
+        - if @deal.deal_summary.present?
+          | 資料処理が完了しました。下のツールでFAQを充実させられます。
+        - else
+          | 資料アップロード後、FAQの提案・追加ができます。
+
+    details.deal-faq-advanced class=(deal_owner.gap_analysis_suggest_only? ? "deal-faq-advanced--trial" : "")
+      summary.deal-faq-advanced__summary
+        - if deal_owner.gap_analysis_suggest_only?
+          | 🛠 精度を上げる（任意）
+        - else
+          | AI分析・FAQ追加ツール
+      .deal-faq-advanced__body
+        .deal-faq-tools
+          = button_to "AIギャップ分析", analyze_gaps_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", disabled: @deal.deal_summary.blank?, data: { turbo: false }
+          = button_to "商談ログから提案", suggest_from_events_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", data: { turbo: false }
+          = button_to "Buyerストレステスト", stress_test_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", disabled: @deal.deal_summary.blank?, data: { turbo: false }
+          = button_to "業種チェックリスト適用", apply_checklist_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", data: { turbo: false }
+          - if deal_owner.gap_analysis_suggest_only?
+            span.deal-faq-analyze-hint トライアルは各分析が軽量モードです
+
+        = form_with model: DealFaq.new, url: dashboard_deal_deal_faqs_path(@deal), local: true, html: { class: "deal-faq-create-form" } do |f|
+          .form-group
+            = f.label :question, "質問を手動追加", class: "form-label"
+            = f.text_area :question, class: "form-control", rows: 2, placeholder: "例: 最低契約期間はありますか？"
+          .form-group
+            = f.label :answer, "回答", class: "form-label"
+            = f.text_area :answer, class: "form-control", rows: 3, placeholder: "Buyer向けの回答"
+          .form-group
+            = f.label :category, "カテゴリ", class: "form-label"
+            = f.select :category, DealFaq::CATEGORIES.map { |k, v| [v, k] }, {}, class: "form-control"
+          = f.submit "FAQを追加", class: "btn-info-custom btn-sm"

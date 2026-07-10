@@ -1,5 +1,7 @@
 # app/controllers/admin/interview_results_controller.rb
 class Admin::InterviewResultsController < ApplicationController
+  layout "dashboard"
+
   before_action :authenticate_admin!
 
   def index

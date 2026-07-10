@@ -1,0 +1,65 @@
+.db-v2-header
+  .db-v2-header__left
+    h1.db-v2-header__title Management
+    p.db-v2-header__subtitle 契約企業の一覧と使用状況
+  .db-v2-header__right
+    = render "/dashboard/theme_switch"
+
+.db-v2-bottom-card
+  .db-v2-bottom-card__header.db-v2-bottom-card__header--split
+    h2.db-v2-bottom-card__title 契約企業一覧
+    span.db-v2-deals-count = "#{@clients.size} 社"
+
+  .db-v2-bottom-card__body
+    - if @clients.empty?
+      .db-v2-empty-state
+        .db-v2-empty-state__icon
+          i.fa-solid.fa-building aria-hidden="true"
+        p.db-v2-empty-state__text 登録されている契約企業はありません
+    - else
+      .db-v2-leads-table-wrap
+        table.db-v2-leads-table.db-v2-deals-table
+          thead
+            tr
+              th 企業名
+              th メールアドレス
+              th 担当者
+              th プラン
+              th 契約状態
+              th 商談数
+              th 公開中
+              th リード数
+              th 登録日
+              th 操作
+          tbody
+            - @clients.each do |client|
+              - plan_config = client.current_plan_config
+              - deal_count = @deal_counts[client.id] || 0
+              - published_count = @published_deal_counts[client.id] || 0
+              - lead_count = @lead_counts[client.id] || 0
+              - deal_limit = plan_config[:deal_limit]
+              tr
+                td.db-v2-deals-table__title
+                  = client.company.presence || "—"
+                td = client.email
+                td = client.name.presence || "—"
+                td = plan_config[:name]
+                td
+                  - if client.dashboard_accessible?
+                    span.db-v2-status-badge.db-v2-status-badge--live 有効
+                  - elsif client.subscription_status == "cancelled"
+                    span.db-v2-status-badge.db-v2-status-badge--fail 解約済
+                  - elsif client.on_trial?
+                    span.db-v2-status-badge.db-v2-status-badge--progress トライアル
+                  - else
+                    span.db-v2-status-badge = client.subscription_status.presence || "未契約"
+                td
+                  - if deal_limit
+                    = "#{deal_count} / #{deal_limit}"
+                  - else
+                    = "#{deal_count}（無制限）"
+                td = published_count
+                td = lead_count
+                td= l(client.created_at, format: :short)
+                td
+                  = link_to "詳細", dashboard_subscription_path(client_id: client.id), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"

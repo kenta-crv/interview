@@ -1,12 +1,12 @@
 module Dashboard
-  class SubscriptionsController < ApplicationController
-    before_action :authenticate_any!
+  class SubscriptionsController < Dashboard::BaseController
     before_action :set_target_client
     before_action :set_subscription, only: [:show, :update, :cancel, :cancel_confirm]
 
     def show
-      @subscription = @target_client.subscriptions.order(created_at: :desc).first
+      @subscription = cancellable_subscription
       @payments = @target_client.payments.order(created_at: :desc).limit(10)
+      @plan_config = @target_client.current_plan_config
     end
 
     def update
@@ -26,10 +26,12 @@ module Dashboard
     end
 
     def cancel_confirm
-      unless @subscription&.status == 'active'
+      unless cancellable_subscription
         redirect_to dashboard_subscription_path(client_id: params[:client_id]), alert: "現在有効なサブスクリプションはありません。"
         return
       end
+
+      @subscription = cancellable_subscription
 
       # トライアル中の場合はStripeにサブスクリプションが存在しない（IDが無い）ケースを考慮
       if @subscription.stripe_subscription_id.blank?
@@ -61,11 +63,13 @@ module Dashboard
     end
 
     def cancel
-      unless @subscription&.status == 'active'
+      unless cancellable_subscription
         redirect_to dashboard_subscription_path(client_id: params[:client_id]),
                     alert: "サブスクリプションが存在しません。"
         return
       end
+
+      @subscription = cancellable_subscription
 
       begin
         if @subscription.stripe_subscription_id.present?
@@ -76,7 +80,7 @@ module Dashboard
         end
 
         if @subscription.update(status: :cancelled)
-          @target_client.update(
+          @target_client.update_columns(
             subscription_status: "cancelled",
             subscription_plan: "none"
           )
@@ -98,18 +102,12 @@ module Dashboard
 
     private
 
-    def authenticate_any!
-      unless admin_signed_in? || client_signed_in?
-        redirect_to root_path, alert: "権限がありません。"
-      end
-    end
-
     def set_target_client
       if admin_signed_in?
         if params[:client_id].present?
           @target_client = Client.find(params[:client_id])
         else
-          redirect_to root_path, alert: "クライアントを指定してください。"
+          redirect_to dashboard_management_path, alert: "クライアントを指定してください。"
         end
       else
         @target_client = current_client
@@ -117,7 +115,18 @@ module Dashboard
     end
 
     def set_subscription
-      @subscription = @target_client.subscriptions.order(created_at: :desc).first
+      @subscription = cancellable_subscription
+    end
+
+    def cancellable_subscription
+      active = @target_client.subscriptions.find_by(status: :active)
+      return active if active
+
+      if @target_client.on_trial?
+        @target_client.subscriptions.where(plan_type: :trial).order(created_at: :desc).first
+      else
+        @target_client.subscriptions.order(created_at: :desc).first
+      end
     end
   end
 end

@@ -1,0 +1,6 @@
+section.meetia-page-hero
+  .meetia-page-hero__inner
+    span.meetia-page-hero__eyebrow = eyebrow
+    h1.meetia-page-hero__title = title
+    - if local_assigns[:lead].present?
+      p.meetia-page-hero__lead = lead

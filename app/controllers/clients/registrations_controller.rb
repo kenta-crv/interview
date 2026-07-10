@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class Clients::RegistrationsController < Devise::RegistrationsController
+  layout "auth"
 
   # =========================
   # Sign Up (create)

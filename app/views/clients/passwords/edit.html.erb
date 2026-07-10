@@ -1,25 +1,34 @@
-<h2>Change your password</h2>
+<div class="meetia-auth__page">
+  <%= link_to root_path, class: "meetia-auth__brand" do %>
+    <%= image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-auth__logo" %>
+  <% end %>
 
-<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
-  <%= render "clients/shared/error_messages", resource: resource %>
-  <%= f.hidden_field :reset_password_token %>
+  <div class="meetia-auth__card">
+    <h1 class="meetia-auth__title">パスワードを変更</h1>
+    <p class="meetia-auth__lead">新しいパスワードを設定してください</p>
 
-  <div class="field">
-    <%= f.label :password, "New password" %><br />
-    <% if @minimum_password_length %>
-      <em>(<%= @minimum_password_length %> characters minimum)</em><br />
+    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
+      <%= render "clients/shared/error_messages", resource: resource %>
+      <%= f.hidden_field :reset_password_token %>
+
+      <div class="meetia-auth__field">
+        <%= f.label :password, "新しいパスワード", class: "meetia-auth__label" %>
+        <% if @minimum_password_length %>
+          <em class="meetia-auth__hint">（<%= @minimum_password_length %>文字以上）</em>
+        <% end %>
+        <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class: "meetia-auth__input" %>
+      </div>
+
+      <div class="meetia-auth__field">
+        <%= f.label :password_confirmation, "新しいパスワード（確認）", class: "meetia-auth__label" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "meetia-auth__input" %>
+      </div>
+
+      <%= f.submit "パスワードを更新", class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit" %>
     <% end %>
-    <%= f.password_field :password, autofocus: true, autocomplete: "new-password" %>
   </div>
 
-  <div class="field">
-    <%= f.label :password_confirmation, "Confirm new password" %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+  <div class="meetia-auth__links">
+    <%= render "clients/shared/links" %>
   </div>
-
-  <div class="actions">
-    <%= f.submit "Change my password" %>
-  </div>
-<% end %>
-
-<%= render "clients/shared/links" %>
+</div>

@@ -1,0 +1,39 @@
+.db-v2-bottom-card
+  .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title
+      i.fa-solid.fa-building aria-hidden="true"
+      |  企業情報
+  .db-v2-bottom-card__body
+    = form_with model: @client, url: dashboard_account_path, method: :patch, local: true do |f|
+      - if @client.errors.any?
+        .db-v2-alert.db-v2-alert--danger
+          ul
+            - @client.errors.full_messages.each do |message|
+              li = message
+
+      .db-v2-form-group
+        = f.label :company, "会社名", class: "db-v2-form-label"
+        = f.text_field :company, class: "db-v2-form-control", required: true
+
+      .db-v2-form-group
+        = f.label :name, "担当者名", class: "db-v2-form-label"
+        = f.text_field :name, class: "db-v2-form-control", required: true
+
+      .db-v2-form-group
+        = f.label :email, "メールアドレス", class: "db-v2-form-label"
+        = f.email_field :email, class: "db-v2-form-control", required: true
+
+      .db-v2-form-group
+        = f.label :tel, "電話番号", class: "db-v2-form-label"
+        = f.telephone_field :tel, class: "db-v2-form-control", required: true
+
+      .db-v2-form-group
+        = f.label :address, "住所", class: "db-v2-form-label"
+        = f.text_field :address, class: "db-v2-form-control", required: true
+
+      .db-v2-form-group
+        = f.label :url, "URL", class: "db-v2-form-label"
+        = f.url_field :url, class: "db-v2-form-control", placeholder: "https://example.com"
+
+      .db-v2-form-actions
+        = f.submit "保存する", class: "db-v2-btn db-v2-btn--primary"

@@ -5,8 +5,8 @@
   opening_payload: @opening_payload,
   opening_segments: @opening_segments,
   opening_messages: @conversation_messages,
-  respond_url: respond_public_deal_session_path(token: @deal.access_token),
-  evaluate_url: evaluate_public_deal_session_path(token: @deal.access_token),
-  track_url: track_event_public_deal_session_path(token: @deal.access_token),
+  respond_url: respond_public_deal_session_path(token: @deal.access_token, preview: params[:preview].presence),
+  evaluate_url: evaluate_public_deal_session_path(token: @deal.access_token, preview: params[:preview].presence),
+  track_url: track_event_public_deal_session_path(token: @deal.access_token, preview: params[:preview].presence),
   finish_url: nil,
   public_mode: true

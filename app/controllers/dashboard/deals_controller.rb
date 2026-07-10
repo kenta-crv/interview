@@ -1,38 +1,49 @@
 class Dashboard::DealsController < Dashboard::BaseController
   include FileUploadValidation
 
-  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_follow_up_settings, :processing_status]
+  before_action :authenticate_client_only!, except: [:index, :show, :presentation]
+  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_follow_up_settings, :processing_status]
   before_action :load_deal_associations, only: [:show]
   before_action :ensure_deal_quota!, only: [:new, :create]
 
   def index
-    @deals = current_client.deals.includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
+    @deals = if admin_signed_in?
+               Deal.includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
+             else
+               current_client.deals.includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
+             end
   end
 
   def show
+    owner = deal_owner
     @deal_audio = @deal.deal_audios.first
     @segments = @deal_audio&.deal_segments&.in_order || []
-    @situations = current_client.situations.active
+    @situations = owner.situations.active
     @deal_pages = @deal.deal_pages.order(:page_number)
     @deal_faqs = @deal.deal_faqs.ordered
     @knowledge_coverage = @deal.knowledge_coverage_percent
     @pending_faq_count = @deal.pending_faq_count
     @checklist_coverage = @deal.checklist_coverage
     @supplement_documents = @deal.deal_documents.supplements
-    @presentation_events = if current_client.click_analytics_enabled?
+    @presentation_events = if owner.click_analytics_enabled?
       @deal.deal_presentation_events.includes(:user).recent_first.limit(100)
     else
       []
     end
-    if current_client.prospect_follow_up_enabled?
+    if owner.prospect_follow_up_enabled?
       @deal.ensure_follow_up_templates!
       @follow_up_templates = @deal.deal_follow_up_templates.ordered
     end
   end
 
   def presentation
+    unless client_signed_in? || admin_signed_in?
+      redirect_to new_client_session_path, alert: "ログインが必要です。"
+      return
+    end
+
     redirect_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1),
-                notice: '共有商談URLと同じ画面でプレビューします'
+                notice: "即時プレゼン画面を開きます"
   end
 
   def update_content
@@ -129,6 +140,16 @@ class Dashboard::DealsController < Dashboard::BaseController
     @deal.start_processing!
     ProcessDealJob.perform_later(@deal.id)
     redirect_to dashboard_deal_path(@deal), notice: 'AI処理を開始しました。完了まで数分かかる場合があります'
+  end
+
+  def reset_processing
+    unless @deal.processing?
+      redirect_to dashboard_deal_path(@deal), alert: '処理中ではありません'
+      return
+    end
+
+    @deal.fail!
+    redirect_to dashboard_deal_path(@deal), notice: '処理状態をリセットしました。再度アップロードできます。'
   end
 
   def update_presentation_settings
@@ -269,7 +290,13 @@ class Dashboard::DealsController < Dashboard::BaseController
   private
 
   def set_deal
-    @deal = current_client.deals.find(params[:id])
+    @deal = if admin_signed_in?
+              Deal.find(params[:id])
+            else
+              current_client.deals.find(params[:id])
+            end
+  rescue ActiveRecord::RecordNotFound
+    redirect_to dashboard_deals_path, alert: "商談が見つかりません。"
   end
 
   def load_deal_associations

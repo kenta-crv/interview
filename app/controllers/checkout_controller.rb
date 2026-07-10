@@ -1,4 +1,6 @@
 class CheckoutController < ApplicationController
+  layout "dashboard_focus"
+
   before_action :authenticate_client!
 
   def confirmation
@@ -25,7 +27,7 @@ class CheckoutController < ApplicationController
       @description = "無料トライアル (#{Subscription::TRIAL_DAYS}日間)"
       @amount = 0
 
-      if current_client.created_at < Subscription::TRIAL_DAYS.days.ago || current_client.subscriptions.where(plan_type: :trial, status: :active).count > 1
+      if current_client.new_account? == false || current_client.subscriptions.where(plan_type: :trial).exists?
         redirect_to plans_path,
                     alert: "無料トライアルは新規アカウントのみ利用できます。"
         return
@@ -53,7 +55,7 @@ class CheckoutController < ApplicationController
     end
 
     if plan_type == "trial"
-      activate_trial!
+      process_trial_checkout!
       return
     end
 
@@ -134,24 +136,46 @@ class CheckoutController < ApplicationController
   private
 
   def activate_trial!
-    if current_client.created_at < Subscription::TRIAL_DAYS.days.ago || current_client.subscriptions.where(plan_type: :trial, status: :active).count > 1
+    process_trial_checkout!
+  end
+
+  def process_trial_checkout!
+    unless current_client.new_account?
       redirect_to plans_path, alert: "無料トライアルは新規アカウントのみ利用できます。"
       return
     end
 
-    trial_end = Subscription::TRIAL_DAYS.days.from_now
-
-    Subscription.transaction do
-      current_client.subscriptions.where(status: :active).update_all(status: :cancelled)
-      current_client.subscriptions.create!(
-        plan_type: :trial,
-        status: :active,
-        trial_ends_at: trial_end
-      )
-      current_client.update!(subscription_plan: "trial", subscription_status: "active")
+    if current_client.subscriptions.where(plan_type: :trial).exists?
+      redirect_to plans_path, alert: "無料トライアルは既に利用済みです。"
+      return
     end
 
-    redirect_to dashboard_root_path, notice: "無料トライアルを開始しました（#{Subscription::TRIAL_DAYS}日間）。"
+    post_trial_plan = Subscription.plan_config(:trial)&.dig(:post_trial_plan) || :standard
+    stripe_price_id = Subscription.stripe_price_id_for(post_trial_plan)
+
+    unless stripe_price_id.present?
+      redirect_to plans_path, alert: "Stripe Price ID が未設定です。"
+      return
+    end
+
+    customer = ensure_stripe_customer!
+
+    session = Stripe::Checkout::Session.create(
+      mode: "subscription",
+      customer: customer.id,
+      payment_method_types: ["card"],
+      line_items: [{ price: stripe_price_id, quantity: 1 }],
+      subscription_data: { trial_period_days: Subscription::TRIAL_DAYS },
+      metadata: {
+        client_id: current_client.id,
+        plan_type: "trial",
+        payment_type: "subscription"
+      },
+      success_url: "#{checkout_success_url}?session_id={CHECKOUT_SESSION_ID}",
+      cancel_url: checkout_cancel_url
+    )
+
+    redirect_to session.url, allow_other_host: true
   end
 
   def process_subscription_payment(plan_type)
@@ -170,14 +194,7 @@ class CheckoutController < ApplicationController
       return
     end
 
-    customer_id = current_client.stripe_customer_id
-    customer = if customer_id.present?
-                 Stripe::Customer.retrieve(customer_id)
-               else
-                 new_cust = Stripe::Customer.create(email: current_client.email, metadata: { client_id: current_client.id })
-                 current_client.update!(stripe_customer_id: new_cust.id)
-                 new_cust
-               end
+    customer = ensure_stripe_customer!
 
     session = Stripe::Checkout::Session.create(
       mode: "subscription",
@@ -194,5 +211,15 @@ class CheckoutController < ApplicationController
     )
 
     redirect_to session.url, allow_other_host: true
+  end
+
+  def ensure_stripe_customer!
+    if current_client.stripe_customer_id.present?
+      Stripe::Customer.retrieve(current_client.stripe_customer_id)
+    else
+      customer = Stripe::Customer.create(email: current_client.email, metadata: { client_id: current_client.id })
+      current_client.update!(stripe_customer_id: customer.id)
+      customer
+    end
   end
 end
