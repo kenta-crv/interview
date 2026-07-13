@@ -38,7 +38,6 @@
       - %w[TechCorp NextVision CloudScale DataBridge InnovateX GlobalNet FutureWorks SmartBiz].each do |name|
         span.meetia-logos__item = name
 
-
         
 
   section#whats.meetia-section.meetia-section--strip
@@ -97,36 +96,82 @@
       = render "shared/pricing_plans"
 
   section#compare.meetia-section
-    .meetia-section__inner
+    .meetia-section__inner.meetia-section__inner--wide
       .meetia-section__head
-        span.meetia-page-hero__eyebrow COMPARE
-        h2.meetia-section__title 従来の商談 vs Meetia
-        p.meetia-section__lead 営業プロセスのどこが変わるのか、一目で比較できます。
-      .meetia-compare-showcase
-        .meetia-compare-showcase__glow aria-hidden="true"
-        .meetia-compare-showcase__head
-          span.meetia-compare-showcase__head-label 比較項目
-          .meetia-compare-showcase__col.meetia-compare-showcase__col--legacy
-            span.meetia-compare-showcase__col-badge 従来の商談
-          .meetia-compare-showcase__col.meetia-compare-showcase__col--meetia
-            span.meetia-compare-showcase__col-badge
-              i.fa-solid.fa-sparkles aria-hidden="true"
-              | Meetia
-        .meetia-compare-showcase__body
-          - TopsHelper::COMPARE_ROWS.each do |row|
-            .meetia-compare-showcase__row
-              .meetia-compare-showcase__topic
-                span.meetia-compare-showcase__icon aria-hidden="true"
-                  i.fa-solid class=row[:icon]
-                span = row[:label]
-              .meetia-compare-showcase__cell.meetia-compare-showcase__cell--legacy
-                span.meetia-compare-showcase__mark.meetia-compare-showcase__mark--legacy aria-hidden="true"
-                  i.fa-solid.fa-xmark
-                p = row[:legacy]
-              .meetia-compare-showcase__cell.meetia-compare-showcase__cell--meetia
-                span.meetia-compare-showcase__mark.meetia-compare-showcase__mark--meetia aria-hidden="true"
-                  i.fa-solid.fa-check
-                p = row[:meetia]
+        span.meetia-page-hero__eyebrow WHY MEETIA?
+        h2.meetia-section__title
+          | 他社との違いは、圧倒的な
+          span.meetia-text-gradient 「AI商談体験」
+        p.meetia-section__lead Meetiaは、AIが商談の質と成果を最大化するための機能をオールインワンで提供します。
+      
+      .meetia-compare-layout
+        .meetia-compare-main
+          .meetia-compare-showcase
+            .meetia-compare-showcase__glow aria-hidden="true"
+            .meetia-compare-showcase__head
+              span.meetia-compare-showcase__head-label 比較項目
+              .meetia-compare-showcase__col.meetia-compare-showcase__col--meetia
+                .meetia-compare-showcase__brand Meetia.
+              .meetia-compare-showcase__col.meetia-compare-showcase__col--competitor
+                span.meetia-compare-showcase__comp-name A社
+                span.meetia-compare-showcase__comp-type AIチャットツール
+              .meetia-compare-showcase__col.meetia-compare-showcase__col--competitor
+                span.meetia-compare-showcase__comp-name B社
+                span.meetia-compare-showcase__comp-type Web会議システム
+            
+            .meetia-compare-showcase__body
+              - TopsHelper::COMPARE_ROWS.each do |row|
+                .meetia-compare-showcase__row
+                  .meetia-compare-showcase__topic
+                    span.meetia-compare-showcase__icon aria-hidden="true"
+                      i.fa-solid class=row[:icon]
+                    span = row[:label]
+                  
+                  /-- Meetia カラム --/
+                  .meetia-compare-showcase__cell.meetia-compare-showcase__cell--meetia
+                    span.meetia-compare-showcase__mark.meetia-compare-showcase__mark--meetia aria-hidden="true"
+                      i.fa-solid.fa-circle-check
+                    p = row[:meetia]
+                  
+                  /-- A社 カラム (マークはrow内のステータス等で切り替え可、一旦画像基準) --/
+                  .meetia-compare-showcase__cell.meetia-compare-showcase__cell--competitor
+                    span.meetia-compare-showcase__mark.meetia-compare-showcase__mark--triangle aria-hidden="true"
+                      i.fa-solid.fa-triangle
+                    p = row[:legacy]
+                  
+                  /-- B社 カラム --/
+                  .meetia-compare-showcase__cell.meetia-compare-showcase__cell--competitor
+                    span.meetia-compare-showcase__mark.meetia-compare-showcase__mark--cross aria-hidden="true"
+                      i.fa-solid.fa-xmark
+                    p = row[:legacy]
+
+          /-- 下部 CTA エリア --/
+          .meetia-compare-cta
+            .meetia-compare-cta__text-block
+              span.meetia-compare-cta__badge まずは体験！
+              p.meetia-compare-cta__lead AIによる本格商談を、ぜひご体感ください。
+            .meetia-compare-cta__actions
+              a.meetia-btn.meetia-btn--primary.meetia-btn--lg href="#"
+                | 無料で商談体験をする
+                i.fa-solid.fa-chevron-right style="font-size: 0.8rem; margin-left: 4px;"
+              a.meetia-btn.meetia-btn--outline.meetia-btn--lg href="#"
+                | 資料をダウンロードする
+                i.fa-solid.fa-download style="font-size: 0.85rem; margin-left: 4px;"
+
+        /-- 右側 サイドバーエリア --/
+        .meetia-compare-sidebar
+          .meetia-reason-card
+            h3.meetia-reason-card__title 選ばれる理由
+            p.meetia-reason-card__text
+              | Meetiaは、AIが商談の
+              br
+              | すべてを支援する
+              br
+              | 唯一のパートナーです。
+            span.meetia-reason-card__spark
+              i.fa-solid.fa-sparkles
+          .meetia-compare-avatar
+            img src="/images/avatar_2.png" alt="Meetia AI" class="meetia-compare-avatar__img"
 
   section#reviews.meetia-section.meetia-section--strip
     .meetia-section__inner
