@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@import "./application.css";
+@import "./tops.css";
+@import "./admin_common.css";
+@import "./dashboard.css";
+@import "./interview.css";
+@import "./auth.css";
