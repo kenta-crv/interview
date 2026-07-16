@@ -38,6 +38,17 @@ class Deal < ApplicationRecord
   scope :by_status, ->(status) { where(status: status) }
   scope :by_token, ->(token) { where(access_token: token) }
 
+  def publicly_accessible?
+    playback_ready? && deal_pages.exists?
+  end
+
+  def record_public_page_view!
+    return false unless publicly_accessible?
+
+    self.class.increment_counter(:page_views_count, id)
+    true
+  end
+
   before_create :generate_access_token
   after_create :ensure_follow_up_templates!
 
@@ -52,15 +63,26 @@ class Deal < ApplicationRecord
   DEFAULT_EXIT_CONTRACT_LABEL = "契約へ進む".freeze
   DEFAULT_EXIT_SALES_CALL_LABEL = "担当者と商談を希望".freeze
 
-  INDUSTRIES = {
-    "general" => "一般",
-    "saas" => "SaaS・IT",
-    "hr" => "人材・採用",
-    "consulting" => "コンサル",
-    "manufacturing" => "製造・メーカー"
+  TTS_VOICE_GENDERS = {
+    "female" => "女性",
+    "male" => "男性"
   }.freeze
 
+  OPENAI_TTS_VOICE_BY_GENDER = {
+    "female" => "coral",
+    "male" => "ash"
+  }.freeze
+
+  DEFAULT_TTS_VOICE_GENDER = "female"
+
   SYSTEM_FAQ_SOURCES = %w[ai_gap template supplement_pdf session_log stress_test checklist].freeze
+
+  validates :tts_voice_gender, inclusion: { in: TTS_VOICE_GENDERS.keys }
+
+  def openai_tts_voice
+    OPENAI_TTS_VOICE_BY_GENDER[tts_voice_gender.presence || DEFAULT_TTS_VOICE_GENDER] ||
+      OPENAI_TTS_VOICE_BY_GENDER[DEFAULT_TTS_VOICE_GENDER]
+  end
 
   def presentation_cta_payload
     {
@@ -87,14 +109,6 @@ class Deal < ApplicationRecord
 
     answered = suggested.where(status: "approved").where.not(answer: [nil, ""]).count
     ((answered.to_f / suggested.count) * 100).round
-  end
-
-  def industry_label
-    INDUSTRIES[industry] || INDUSTRIES["general"]
-  end
-
-  def checklist_coverage
-    DealEngine::IndustryFaqChecklist.coverage(self)
   end
 
   def unanswered_free_text_questions(limit: 20)
@@ -227,10 +241,11 @@ class Deal < ApplicationRecord
   def inline_audio_path(attachment)
     return nil unless attachment&.attached?
 
-    Rails.application.routes.url_helpers.rails_blob_path(
+    path = Rails.application.routes.url_helpers.rails_blob_path(
       attachment,
       only_path: true
     )
+    "#{path}?v=#{attachment.blob.checksum}"
   end
 
   def page_audio_path(page)
@@ -255,7 +270,7 @@ class Deal < ApplicationRecord
           page_number: page.page_number,
           title: page.title,
           script: page.script,
-          audio_url: page.page_audio.attached? ? Rails.application.routes.url_helpers.rails_blob_path(page.page_audio, only_path: true) : page.audio_url
+          audio_url: page_audio_path(page)
         }
       end,
       playback_ready: playback_ready

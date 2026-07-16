@@ -29,14 +29,14 @@
           i.fa-solid.fa-arrow-left aria-hidden="true"
           span 一覧
 
-  .db-v2-share-strip
+  .db-v2-share-strip data-share-ready=(@deal.publicly_accessible? ? "true" : "false")
     .db-v2-share-strip__label
       i.fa-solid.fa-link aria-hidden="true"
       span 共有URL
     .db-v2-copy-row
       input.db-v2-form-control type="text" id="deal-share-url-field" value=public_deal_session_url(@deal.access_token) readonly=true
       button.db-v2-btn.db-v2-btn--primary type="button" id="deal-share-url-copy" コピー
-      = link_to "開く", public_deal_session_path(@deal.access_token), class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener", data: { turbo: false }
+      = link_to "開く", public_deal_session_path(@deal.access_token), class: "db-v2-btn db-v2-btn--ghost", id: "deal-share-url-open", target: "_blank", rel: "noopener", data: { turbo: false }
 
   - if @deal.processing?
     .db-v2-alert.db-v2-alert--info#processing-banner
@@ -169,9 +169,19 @@
                   - else
                     - publish_confirm = "商談URLを公開しますか？"
                   = button_to "公開する", publish_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: publish_confirm, turbo: false }
-                  = button_to "全音声再生成", regenerate_audio_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost", data: { turbo: false }
 
               .db-v2-bottom-card__body
+                .db-v2-voice-bar
+                  .db-v2-voice-bar__copy
+                    p.db-v2-voice-bar__label
+                      i.fa-solid.fa-microphone-lines aria-hidden="true"
+                      |  AIナレーションの声
+                    p.db-v2-voice-bar__hint
+                      | 現在: #{Deal::TTS_VOICE_GENDERS[@deal.tts_voice_gender]}。サイトのAIアバターに寄せたトーンです。変更後は完了まで数十秒かかります。
+                  = form_with url: regenerate_audio_dashboard_deal_path(@deal), method: :post, local: true, html: { class: "db-v2-voice-bar__form", data: { turbo: false, turbolinks: false } } do
+                    = select_tag :tts_voice_gender, options_for_select(Deal::TTS_VOICE_GENDERS.map { |k, v| [v, k] }, @deal.tts_voice_gender), class: "db-v2-form-control db-v2-voice-bar__select", aria: { label: "AIナレーションの声" }
+                    = submit_tag "この声で読み上げを作り直す", class: "db-v2-btn db-v2-btn--primary db-v2-voice-bar__submit", data: { disable_with: "作り直し中（完了までお待ちください）...", confirm: "選択した声で、冒頭〜全スライドの読み上げを作り直します。完了まで数十秒かかります。よろしいですか？" }
+
                 = form_with url: update_content_dashboard_deal_path(@deal), method: :patch, local: true, html: { id: "deal-content-form", data: { turbolinks: false }, class: "db-v2-deal-form-surface" } do
                   .db-v2-form-section
                     h3.db-v2-form-section__title 冒頭パート
@@ -199,11 +209,11 @@
                             label.db-v2-form-label 読み上げ台本
                             .db-v2-deal-show__actions
                               = link_to "AI改善", ai_rewrite_dashboard_deal_path(@deal, target: "page", page_id: page.id), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs btn-ai-rewrite", data: { turbolinks: false, confirm: "AIで台本を改善します。数秒〜数十秒かかる場合があります。" }
-                              = link_to "音声再生成", regenerate_audio_dashboard_deal_path(@deal, page_id: page.id), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", data: { turbolinks: false, confirm: "このページの音声を再生成しますか？" }
+                              = link_to "このページだけ作り直す", regenerate_audio_dashboard_deal_path(@deal, page_id: page.id), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", data: { turbolinks: false, confirm: "このページの読み上げだけ作り直しますか？" }
                           = text_area_tag "pages[#{page.id}][script]", page.script, class: "db-v2-form-control", rows: 4
                           - if page.page_audio.attached?
                             audio.db-v2-audio-player controls=true
-                              source src=rails_blob_path(page.page_audio, only_path: true) type="audio/mpeg"
+                              source src=@deal.page_audio_path(page) type="audio/mpeg"
 
                   .db-v2-form-actions
                     = submit_tag "変更を保存", class: "db-v2-btn db-v2-btn--primary"
@@ -214,7 +224,7 @@
           .db-v2-bottom-card__header
             h2.db-v2-bottom-card__title 公開ステータス
           .db-v2-bottom-card__body
-            - if @deal.playback_ready?
+            - if @deal.publicly_accessible?
               .db-v2-alert.db-v2-alert--success.db-v2-alert--compact
                 i.fa-solid.fa-circle-check aria-hidden="true"
                 p 商談URLは公開中です
@@ -223,7 +233,7 @@
                 p 台本確認後、スタジオタブの「公開する」を押してください
             .db-v2-form-group
               label.db-v2-form-label 商談URL（LPに貼り付け）
-              .db-v2-copy-row
+              .db-v2-copy-row data-share-ready=(@deal.publicly_accessible? ? "true" : "false")
                 input.db-v2-form-control type="text" value=public_deal_session_url(@deal.access_token) readonly=true
                 button.db-v2-btn.db-v2-btn--primary type="button" data-copy-share-url="" コピー
 
@@ -308,7 +318,44 @@
               p.db-v2-muted Businessプラン以上で、商談終了後のメール追客・開封トラッキングが利用できます。
 
     #deal-tab-analytics.db-v2-tab-panel role="tabpanel"
+      - a = @analytics
       .db-v2-deal-grid.db-v2-deal-grid--single
+        .db-v2-summary-grid.db-v2-summary-grid--5
+          .db-v2-summary-card
+            .db-v2-summary-card__content
+              .db-v2-summary-card__label URLアクセス
+              .db-v2-summary-card__value-row
+                span.db-v2-summary-card__value = a[:page_views]
+          .db-v2-summary-card
+            .db-v2-summary-card__content
+              .db-v2-summary-card__label 登録リード
+              .db-v2-summary-card__value-row
+                span.db-v2-summary-card__value = a[:leads_count]
+              .db-v2-summary-card__trend
+                span.db-v2-summary-card__trend-label = a[:lead_rate] ? "登録率 #{a[:lead_rate]}%" : "—"
+          .db-v2-summary-card
+            .db-v2-summary-card__content
+              .db-v2-summary-card__label セッション開始
+              .db-v2-summary-card__value-row
+                span.db-v2-summary-card__value = a[:sessions_started]
+              .db-v2-summary-card__trend
+                span.db-v2-summary-card__trend-label = a[:start_rate] ? "開始率 #{a[:start_rate]}%" : "—"
+          .db-v2-summary-card
+            .db-v2-summary-card__content
+              .db-v2-summary-card__label セッション完了
+              .db-v2-summary-card__value-row
+                span.db-v2-summary-card__value = a[:sessions_completed]
+              .db-v2-summary-card__trend
+                span.db-v2-summary-card__trend-label = a[:completion_rate] ? "完了率 #{a[:completion_rate]}%" : "—"
+          .db-v2-summary-card
+            .db-v2-summary-card__content
+              .db-v2-summary-card__label 平均評価
+              .db-v2-summary-card__value-row
+                span.db-v2-summary-card__value = a[:average_evaluation] || "—"
+                - if a[:average_evaluation]
+                  span.db-v2-summary-card__unit
+                    | / 5
+
         .db-v2-bottom-card
           .db-v2-bottom-card__header.db-v2-bottom-card__header--split
             h2.db-v2-bottom-card__title リード・セッション
@@ -316,21 +363,76 @@
               span リード一覧を見る
               i.fa-solid.fa-chevron-right aria-hidden="true"
           .db-v2-bottom-card__body
-            p.db-v2-muted 商談を完了した見込み客の一覧・詳細分析はリード管理から確認できます。
-            .progress-info style="margin-top:12px;"
+            - segments = a[:funnel_segments]
+            - if segments.present?
+              .db-v2-funnel-pie
+                .db-v2-funnel-pie__chart style="background: #{funnel_pie_gradient(segments)};"
+                  .db-v2-funnel-pie__inner
+                    .db-v2-funnel-pie__center
+                      span.db-v2-funnel-pie__prefix = funnel_pie_center_label(a)
+                      span.db-v2-funnel-pie__number = funnel_pie_center_value(a)
+                .db-v2-funnel-pie__legends
+                  - segments.each do |seg|
+                    .db-v2-funnel-pie__legend
+                      span.db-v2-funnel-pie__badge style="background: #{seg[:color]};"
+                      .db-v2-funnel-pie__legend-body
+                        span.db-v2-funnel-pie__legend-label = seg[:label]
+                        span.db-v2-funnel-pie__legend-meta = "#{seg[:count]}件（#{seg[:share]}%）"
+                  .db-v2-funnel-pie__rates
+                    span = a[:lead_rate] ? "登録率 #{a[:lead_rate]}%" : "登録率 —"
+                    span = a[:start_rate] ? "開始率 #{a[:start_rate]}%" : "開始率 —"
+                    span = a[:completion_rate] ? "完了率 #{a[:completion_rate]}%" : "完了率 —"
+            - else
+              p.db-v2-muted まだファネルデータがありません。
+
+            .progress-info style="margin-top:16px;"
               .info-row
-                .info-label 平均満足度
-                .info-value = @average_evaluation ? "#{@average_evaluation} / 5（#{@evaluation_count}件）" : "まだ評価がありません"
+                .info-label 高見込リード（A+B）
+                .info-value = a[:high_prospect_count]
               .info-row
                 .info-label 見込み度分布
                 .info-value
-                  - if @prospect_grade_counts.present?
+                  - if a[:prospect_grade_counts].values.any?(&:positive?)
                     - %w[A B C D].each do |grade|
-                      - count = @prospect_grade_counts[grade].to_i
+                      - count = a[:prospect_grade_counts][grade].to_i
                       - next if count.zero?
                       span style="margin-right:12px;" #{grade}: #{count}
                   - else
                     | まだ分析結果がありません
+              .info-row
+                .info-label CTAクリック
+                .info-value = a[:cta_clicks]
+              .info-row
+                .info-label フォロー開封 / クリック
+                .info-value = "#{a[:follow_up_opened]} / #{a[:follow_up_clicked]}（送信 #{a[:follow_up_sent]}）"
+              .info-row
+                .info-label 平均滞在時間
+                .info-value = a[:average_duration_label]
+              .info-row
+                .info-label 平均満足度
+                .info-value = a[:average_evaluation] ? "#{a[:average_evaluation]} / 5（#{a[:evaluation_count]}件）" : "まだ評価がありません"
+
+        - if a[:drop_offs].any?
+          .db-v2-bottom-card
+            .db-v2-bottom-card__header
+              h2.db-v2-bottom-card__title 離脱ページ
+            .db-v2-bottom-card__body
+              p.db-v2-muted セッション終了時にいたページです。どこで離脱が多いか把握できます。
+              .db-v2-leads-table-wrap
+                table.db-v2-leads-table
+                  thead
+                    tr
+                      th ページ
+                      th タイトル
+                      th 離脱数
+                      th 割合
+                  tbody
+                    - a[:drop_offs].each do |row|
+                      tr
+                        td = "P.#{row[:page_number]}"
+                        td = row[:title]
+                        td = row[:count]
+                        td = "#{row[:share]}%"
 
         - if @deal_evaluations&.any?
           .db-v2-bottom-card

@@ -2,13 +2,39 @@
 require 'openai'
 
 module DealEngine
-  class TtsService
-    OPENAI_TTS_URL = 'https://api.openai.com/v1/audio/speech'
+  class TTSService
+    MODEL = 'gpt-4o-mini-tts'.freeze
 
-    def initialize(text:, voice: 'alloy', language: 'en')
+    FEMALE_INSTRUCTIONS_JA = <<~TEXT.freeze
+      You are the Meetia AI sales avatar: a gentle Japanese woman around 22-25 years old.
+      Visual match: soft smile, warm eyes, neat bob hair, navy business suit, helpful presenter pose.
+      Voice must be clearly feminine, soft, bright, and youthful. Mid-to-high female pitch.
+      Never sound male, deep, husky, stern, or announcer-like.
+      Speak natural Tokyo Japanese (標準語), polite and friendly, like a kind modern AI host guiding a product demo.
+      Pace: calm and clear, lightly warm, easy to listen to. Not childish, not overly cute, not robotic.
+    TEXT
+
+    MALE_INSTRUCTIONS_JA = <<~TEXT.freeze
+      You are a Meetia AI sales avatar: a calm Japanese man around late 20s.
+      Voice must be clearly masculine but approachable. Natural Tokyo Japanese.
+      Polite product presenter. Moderate pace. Not theatrical.
+    TEXT
+
+    FEMALE_INSTRUCTIONS_EN = <<~TEXT.freeze
+      Speak as a gentle woman around 22-25: soft, bright, clearly feminine, warm AI sales host.
+      Polite modern presenter. Never male or deep.
+    TEXT
+
+    MALE_INSTRUCTIONS_EN = <<~TEXT.freeze
+      Speak as a calm approachable man in his late 20s. Polite modern presenter.
+    TEXT
+
+    def initialize(text:, voice: nil, language: 'ja', gender: nil)
       @text = text
-      @voice = voice
-      @language = language
+      @language = language.to_s.presence || 'ja'
+      @gender = gender.presence || Deal::DEFAULT_TTS_VOICE_GENDER
+      @voice = voice.presence || Deal::OPENAI_TTS_VOICE_BY_GENDER[@gender] ||
+               Deal::OPENAI_TTS_VOICE_BY_GENDER[Deal::DEFAULT_TTS_VOICE_GENDER]
     end
 
     def generate_speech
@@ -17,30 +43,31 @@ module DealEngine
 
       client = OpenAI::Client.new(access_token: api_key)
 
-      response = client.audio.speech(
+      client.audio.speech(
         parameters: {
-          model: 'tts-1',
+          model: MODEL,
           input: @text,
-          voice: @voice
+          voice: @voice,
+          instructions: instructions_for_voice,
+          response_format: 'mp3'
         }
       )
-
-      response
-    rescue OpenAI::Error => e
-      Rails.logger.error("OpenAI TTS Error: #{e.message}")
+    rescue => e
+      Rails.logger.error("OpenAI TTS Error (model=#{MODEL} voice=#{@voice} gender=#{@gender}): #{e.class}: #{e.message}")
       raise
     end
 
     def self.generate_from_deal_summary(deal)
       return nil unless deal.deal_summary.present?
 
-      # 要約から読み上げテキストを生成
       text = build_speech_text(deal)
 
-      # 言語に応じて音声を選択
-      voice = deal.language == 'ja' ? 'alloy' : 'alloy'
-
-      new(text: text, voice: voice, language: deal.language).generate_speech
+      new(
+        text: text,
+        voice: deal.openai_tts_voice,
+        language: deal.language,
+        gender: deal.tts_voice_gender
+      ).generate_speech
     end
 
     def self.build_speech_text(deal)
@@ -66,6 +93,17 @@ module DealEngine
           Here are the next steps.
           #{summary.next_steps}
         TEXT
+      end
+    end
+
+    private
+
+    def instructions_for_voice
+      japanese = @language.to_s.downcase.start_with?('ja')
+      if @gender == 'male'
+        japanese ? MALE_INSTRUCTIONS_JA : MALE_INSTRUCTIONS_EN
+      else
+        japanese ? FEMALE_INSTRUCTIONS_JA : FEMALE_INSTRUCTIONS_EN
       end
     end
   end

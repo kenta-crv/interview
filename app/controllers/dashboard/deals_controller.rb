@@ -23,7 +23,6 @@ class Dashboard::DealsController < Dashboard::BaseController
     @deal_faqs = @deal.deal_faqs.ordered
     @knowledge_coverage = @deal.knowledge_coverage_percent
     @pending_faq_count = @deal.pending_faq_count
-    @checklist_coverage = @deal.checklist_coverage
     @supplement_documents = @deal.deal_documents.supplements
     @presentation_events = if owner.click_analytics_enabled?
       @deal.deal_presentation_events.includes(:user).recent_first.limit(100)
@@ -31,9 +30,10 @@ class Dashboard::DealsController < Dashboard::BaseController
       []
     end
     @deal_evaluations = @deal.deal_evaluations.includes(:user).order(created_at: :desc).limit(50)
-    @evaluation_count = @deal.deal_evaluations.count
-    @average_evaluation = @deal.deal_evaluations.average(:rating)&.round(1)
-    @prospect_grade_counts = @deal.user_progresses.where.not(prospect_grade: nil).group(:prospect_grade).count
+    @analytics = DealEngine::AnalyticsSummaryService.call(deal_ids: [@deal.id])
+    @evaluation_count = @analytics[:evaluation_count]
+    @average_evaluation = @analytics[:average_evaluation]
+    @prospect_grade_counts = @analytics[:prospect_grade_counts]
     if owner.prospect_follow_up_enabled?
       @deal.ensure_follow_up_templates!
       @follow_up_templates = @deal.deal_follow_up_templates.ordered
@@ -108,16 +108,34 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def regenerate_audio
+    if params[:tts_voice_gender].present?
+      gender = params[:tts_voice_gender].to_s
+      unless Deal::TTS_VOICE_GENDERS.key?(gender)
+        redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: '声の設定が不正です'
+        return
+      end
+      @deal.update!(tts_voice_gender: gender)
+    end
+
+    voice_label = Deal::TTS_VOICE_GENDERS[@deal.tts_voice_gender] || '選択した声'
+
     if params[:page_id].present?
       page = @deal.deal_pages.find(params[:page_id])
       DealEngine::AudioGeneratorService.new(@deal).generate_for_page!(page)
+      redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'),
+                  notice: "このページを#{voice_label}の声で作り直しました"
     else
+      # Sidekiqに頼ると完了前に画面へ戻り、古い音声のまま聞こえるため同期実行する
       DealEngine::AudioGeneratorService.new(@deal).generate_all!
+      @deal.touch
+      redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'),
+                  notice: "#{voice_label}の声で読み上げを作り直しました。下のプレイヤーで確認できます。"
     end
-
-    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), notice: '音声を再生成しました'
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: e.message
   rescue => e
-    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: "音声生成に失敗しました: #{e.message}"
+    Rails.logger.error("regenerate_audio failed: #{e.class}: #{e.message}\n#{e.backtrace&.first(8)&.join("\n")}")
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: "読み上げの作成に失敗しました: #{e.message}"
   end
 
   def processing_status
@@ -308,7 +326,7 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def deal_params
-    params.require(:deal).permit(:title, :description, :deal_date, :language, :industry)
+    params.require(:deal).permit(:title, :description, :deal_date, :language, :tts_voice_gender)
   end
 
   def deal_content_params
@@ -316,7 +334,12 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def presentation_settings_params
-    params.require(:deal).permit(:presentation_cta_label, :presentation_cta_url, :exit_contract_label, :exit_sales_call_label)
+    params.require(:deal).permit(
+      :presentation_cta_label,
+      :presentation_cta_url,
+      :exit_contract_label,
+      :exit_sales_call_label
+    )
   end
 
   def follow_up_settings_params

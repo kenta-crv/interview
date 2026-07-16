@@ -91,4 +91,21 @@ module DashboardHelper
 
     client.subscription_cancellable?
   end
+
+  def funnel_pie_gradient(segments)
+    return "var(--db-surface-soft, #e2e8f0)" if segments.blank?
+
+    stops = segments.map { |s| "#{s[:color]} #{s[:start_pct]}% #{s[:end_pct]}%" }
+    "conic-gradient(#{stops.join(', ')})"
+  end
+
+  def funnel_pie_center_value(analytics)
+    return analytics[:completion_rate] ? "#{analytics[:completion_rate]}%" : "—" if analytics[:sessions_started].to_i.positive?
+
+    analytics[:page_views].to_i
+  end
+
+  def funnel_pie_center_label(analytics)
+    analytics[:sessions_started].to_i.positive? ? "完了率" : "アクセス"
+  end
 end

@@ -7,10 +7,11 @@ module DealEngine
     def generate_for_page!(deal_page)
       return unless deal_page.script.present?
 
-      audio_data = TtsService.new(
+      audio_data = ::DealEngine::TTSService.new(
         text: deal_page.script,
-        voice: 'alloy',
-        language: @deal.language || 'ja'
+        voice: @deal.openai_tts_voice,
+        language: @deal.language || 'ja',
+        gender: @deal.tts_voice_gender
       ).generate_speech
 
       attach_audio(deal_page, audio_data, "page_#{deal_page.page_number}_audio.mp3")
@@ -24,10 +25,11 @@ module DealEngine
       }.each do |kind, script|
         next if script.blank?
 
-        audio_data = TtsService.new(
+        audio_data = ::DealEngine::TTSService.new(
           text: script,
-          voice: 'alloy',
-          language: @deal.language || 'ja'
+          voice: @deal.openai_tts_voice,
+          language: @deal.language || 'ja',
+          gender: @deal.tts_voice_gender
         ).generate_speech
 
         speech = @deal.deal_speeches.find_or_initialize_by(voice: kind.to_s)
@@ -47,10 +49,12 @@ module DealEngine
     end
 
     def generate_all!
-      @deal.deal_pages.order(:page_number).find_each do |page|
+      Rails.logger.info("[AudioGenerator] deal=#{@deal.id} voice=#{@deal.openai_tts_voice} gender=#{@deal.tts_voice_gender} pages=#{@deal.deal_pages.count}")
+      @deal.deal_pages.order(:page_number).each do |page|
         generate_for_page!(page)
       end
       generate_opening_audios!
+      Rails.logger.info("[AudioGenerator] deal=#{@deal.id} completed")
     end
 
     private

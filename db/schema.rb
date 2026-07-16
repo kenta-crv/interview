@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_07_16_220000) do
+ActiveRecord::Schema.define(version: 2026_07_16_234000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -305,6 +305,8 @@ ActiveRecord::Schema.define(version: 2026_07_16_220000) do
     t.string "exit_sales_call_label", default: "担当者と商談を希望", null: false
     t.string "industry", default: "general", null: false
     t.string "follow_up_sales_url"
+    t.string "tts_voice_gender", default: "female", null: false
+    t.integer "page_views_count", default: 0, null: false
     t.index ["access_token"], name: "index_deals_on_access_token", unique: true
     t.index ["client_id", "status"], name: "index_deals_on_client_id_and_status"
     t.index ["client_id"], name: "index_deals_on_client_id"

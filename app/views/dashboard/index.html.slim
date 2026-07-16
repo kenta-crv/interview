@@ -1,50 +1,160 @@
 .db-v2-header
   .db-v2-header__left
     h1.db-v2-header__title こんにちは、#{@display_name} さん
-    p.db-v2-header__subtitle AI商談の全体概要
+    p.db-v2-header__subtitle AI商談の成果サマリー
   .db-v2-header__right
     = render "/dashboard/theme_switch"
+
+- a = @analytics
 
 .db-v2-summary-grid
   .db-v2-summary-card
     .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--blue
-      i.fa-solid.fa-briefcase aria-hidden="true"
+      i.fa-solid.fa-link aria-hidden="true"
     .db-v2-summary-card__content
-      .db-v2-summary-card__label 総商談数
+      .db-v2-summary-card__label URLアクセス
       .db-v2-summary-card__value-row
-        span.db-v2-summary-card__value = @deals_count
+        span.db-v2-summary-card__value = a[:page_views]
       .db-v2-summary-card__trend
-        span.db-v2-summary-card__trend-label 登録商談
-
-  .db-v2-summary-card
-    .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--green
-      i.fa-solid.fa-circle-check aria-hidden="true"
-    .db-v2-summary-card__content
-      .db-v2-summary-card__label 公開中
-      .db-v2-summary-card__value-row
-        span.db-v2-summary-card__value = @published_deals_count
-      .db-v2-summary-card__trend
-        span.db-v2-summary-card__trend-label 配信可能
-
-  .db-v2-summary-card
-    .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--purple
-      i.fa-solid.fa-spinner aria-hidden="true"
-    .db-v2-summary-card__content
-      .db-v2-summary-card__label 処理中
-      .db-v2-summary-card__value-row
-        span.db-v2-summary-card__value = @processing_deals_count
-      .db-v2-summary-card__trend
-        span.db-v2-summary-card__trend-label AI処理
+        span.db-v2-summary-card__trend-label 公開URLの閲覧数
 
   .db-v2-summary-card
     .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--gold
-      i.fa-solid.fa-users aria-hidden="true"
+      i.fa-solid.fa-user-plus aria-hidden="true"
     .db-v2-summary-card__content
-      .db-v2-summary-card__label リード数
+      .db-v2-summary-card__label 登録リード
       .db-v2-summary-card__value-row
-        span.db-v2-summary-card__value = @leads_count
+        span.db-v2-summary-card__value = a[:leads_count]
       .db-v2-summary-card__trend
-        span.db-v2-summary-card__trend-label 登録リード数
+        span.db-v2-summary-card__trend-label
+          - if a[:lead_rate]
+            | 登録率 #{a[:lead_rate]}%
+          - else
+            | 情報登録した見込み客
+
+  .db-v2-summary-card
+    .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--green
+      i.fa-solid.fa-play aria-hidden="true"
+    .db-v2-summary-card__content
+      .db-v2-summary-card__label セッション開始
+      .db-v2-summary-card__value-row
+        span.db-v2-summary-card__value = a[:sessions_started]
+      .db-v2-summary-card__trend
+        span.db-v2-summary-card__trend-label
+          - if a[:start_rate]
+            | 開始率 #{a[:start_rate]}%
+          - else
+            | プレゼン開始数
+
+  .db-v2-summary-card
+    .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--purple
+      i.fa-solid.fa-flag-checkered aria-hidden="true"
+    .db-v2-summary-card__content
+      .db-v2-summary-card__label セッション完了
+      .db-v2-summary-card__value-row
+        span.db-v2-summary-card__value = a[:sessions_completed]
+      .db-v2-summary-card__trend
+        span.db-v2-summary-card__trend-label
+          - if a[:completion_rate]
+            | 完了率 #{a[:completion_rate]}%
+          - else
+            | 評価付き終了
+
+  .db-v2-summary-card
+    .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--gold
+      i.fa-solid.fa-star aria-hidden="true"
+    .db-v2-summary-card__content
+      .db-v2-summary-card__label 平均評価
+      .db-v2-summary-card__value-row
+        span.db-v2-summary-card__value = a[:average_evaluation] || "—"
+        - if a[:average_evaluation]
+          span.db-v2-summary-card__unit
+            | / 5
+      .db-v2-summary-card__trend
+        span.db-v2-summary-card__trend-label = "#{a[:evaluation_count]}件の評価"
+
+  .db-v2-summary-card.db-v2-summary-card--span-3.db-v2-summary-card--funnel
+    .db-v2-summary-card__content.db-v2-summary-card__content--funnel
+      .db-v2-summary-card__label ファネル
+      - segments = a[:funnel_segments]
+      - if segments.present?
+        .db-v2-funnel-pie
+          .db-v2-funnel-pie__chart style="background: #{funnel_pie_gradient(segments)};"
+            .db-v2-funnel-pie__inner
+              .db-v2-funnel-pie__center
+                span.db-v2-funnel-pie__prefix = funnel_pie_center_label(a)
+                span.db-v2-funnel-pie__number = funnel_pie_center_value(a)
+          .db-v2-funnel-pie__legends
+            - segments.each do |seg|
+              .db-v2-funnel-pie__legend
+                span.db-v2-funnel-pie__badge style="background: #{seg[:color]};"
+                .db-v2-funnel-pie__legend-body
+                  span.db-v2-funnel-pie__legend-label = seg[:label]
+                  span.db-v2-funnel-pie__legend-meta = "#{seg[:count]}件（#{seg[:share]}%）"
+            .db-v2-funnel-pie__rates
+              span = a[:lead_rate] ? "登録率 #{a[:lead_rate]}%" : "登録率 —"
+              span = a[:start_rate] ? "開始率 #{a[:start_rate]}%" : "開始率 —"
+              span = a[:completion_rate] ? "完了率 #{a[:completion_rate]}%" : "完了率 —"
+      - else
+        p.db-v2-muted style="margin:8px 0 0;" まだファネルデータがありません
+
+.db-v2-summary-grid
+  .db-v2-summary-card
+    .db-v2-summary-card__content
+      .db-v2-summary-card__label 高見込リード（A+B）
+      .db-v2-summary-card__value-row
+        span.db-v2-summary-card__value = a[:high_prospect_count]
+      .db-v2-summary-card__trend
+        span.db-v2-summary-card__trend-label
+          - %w[A B C D].each do |grade|
+            | #{grade}:#{a[:prospect_grade_counts][grade].to_i}
+            |  
+
+  .db-v2-summary-card
+    .db-v2-summary-card__content
+      .db-v2-summary-card__label CTAクリック
+      .db-v2-summary-card__value-row
+        span.db-v2-summary-card__value = a[:cta_clicks]
+      .db-v2-summary-card__trend
+        span.db-v2-summary-card__trend-label 契約・担当者商談など
+
+  .db-v2-summary-card
+    .db-v2-summary-card__content
+      .db-v2-summary-card__label フォロー開封 / クリック
+      .db-v2-summary-card__value-row
+        span.db-v2-summary-card__value = "#{a[:follow_up_opened]} / #{a[:follow_up_clicked]}"
+      .db-v2-summary-card__trend
+        span.db-v2-summary-card__trend-label = "送信 #{a[:follow_up_sent]} 通"
+
+  .db-v2-summary-card
+    .db-v2-summary-card__content
+      .db-v2-summary-card__label 平均滞在時間
+      .db-v2-summary-card__value-row
+        span.db-v2-summary-card__value = a[:average_duration_label]
+      .db-v2-summary-card__trend
+        span.db-v2-summary-card__trend-label セッション離脱時の計測
+
+- if a[:drop_offs].any?
+  .db-v2-bottom-card
+    .db-v2-bottom-card__header
+      h2.db-v2-bottom-card__title 離脱ページ
+      p.db-v2-muted style="margin:0;" セッション終了時にいたページ（多い順）
+    .db-v2-bottom-card__body
+      .db-v2-leads-table-wrap
+        table.db-v2-leads-table
+          thead
+            tr
+              th ページ
+              th タイトル
+              th 離脱数
+              th 割合
+          tbody
+            - a[:drop_offs].first(8).each do |row|
+              tr
+                td = "P.#{row[:page_number]}"
+                td = row[:title]
+                td = row[:count]
+                td = "#{row[:share]}%"
 
 #deals-hub.db-v2-bottom-card.db-v2-deals-hub
   .db-v2-bottom-card__header.db-v2-deals-hub__header

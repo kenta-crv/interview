@@ -18,7 +18,8 @@ RSpec.describe 'Deal experience smoke', type: :request do
       title: 'AI商談デモ',
       description: 'テスト用商談',
       language: 'ja',
-      status: :completed
+      status: :completed,
+      playback_ready: true
     )
   end
 
@@ -54,6 +55,21 @@ RSpec.describe 'Deal experience smoke', type: :request do
   end
 
   describe 'public conversation flow' do
+    it 'blocks unpublished deals without materials' do
+      unpublished = Deal.create!(
+        client: client,
+        title: '未公開商談',
+        language: 'ja',
+        status: :uploading,
+        playback_ready: false
+      )
+
+      get public_deal_session_path(token: unpublished.access_token)
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to include('商談はまだ公開されていません')
+      expect(response.body).not_to include('登録してAI商談を開始')
+    end
+
     it 'shows registration form without start overlay' do
       get public_deal_session_path(token: deal.access_token)
       expect(response).to have_http_status(:ok)
@@ -61,10 +77,29 @@ RSpec.describe 'Deal experience smoke', type: :request do
       expect(response.body).not_to include('id="presentation-start-overlay"')
     end
 
+    it 'increments page views for anonymous visitors' do
+      expect(deal.record_public_page_view!).to eq(true)
+      expect(deal.reload.page_views_count).to eq(1)
+    end
+
+    it 'does not count page views for deal owner session guard' do
+      # 所有者アクセス時の除外はコントローラ側。未公開ではカウントしないことを確認する。
+      unpublished = Deal.create!(
+        client: client,
+        title: '未公開PV',
+        language: 'ja',
+        status: :uploading,
+        playback_ready: false
+      )
+      expect(unpublished.record_public_page_view!).to eq(false)
+      expect(unpublished.reload.page_views_count).to eq(0)
+    end
+
     it 'shows unified deal experience after registration' do
       post create_user_info_public_deal_session_path(token: deal.access_token), params: {
         user: {
           name: 'テスト太郎',
+          job_title: '営業部長',
           company: 'テスト株式会社',
           email: "user_#{SecureRandom.hex(4)}@example.com",
           tel: '090-0000-0000',

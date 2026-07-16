@@ -3,11 +3,13 @@ module Public
   class DealSessionsController < ApplicationController
     skip_before_action :verify_authenticity_token, only: [:respond, :evaluate, :track_event]
     before_action :set_deal_by_token
+    before_action :require_publicly_ready
     before_action :require_registered_user, only: [:conversation, :playback, :respond, :evaluate]
     before_action :load_tracking_context, only: [:track_event]
 
     def show
       @user_progress = @deal.user_progresses.find_or_initialize_by(user: current_user)
+      record_public_page_view!
     end
 
     def create_user_info
@@ -160,6 +162,18 @@ module Public
       redirect_to root_path, alert: '無効なリンクです'
     end
 
+    def require_publicly_ready
+      return if client_preview?
+      return if @deal.publicly_accessible?
+
+      if action_name == 'show'
+        @deal_not_ready = true
+        render :show, status: :forbidden
+      else
+        redirect_to public_deal_session_path(token: @deal.access_token), alert: 'この商談はまだ公開されていません'
+      end
+    end
+
     def require_registered_user
       return if client_preview?
 
@@ -191,6 +205,14 @@ module Public
       end
 
       client_signed_in? && @deal.client_id == current_client.id
+    end
+
+    def record_public_page_view!
+      return if client_preview?
+      return if admin_signed_in?
+      return if client_signed_in? && @deal.client_id == current_client.id
+
+      @deal.record_public_page_view!
     end
 
     def user_params
