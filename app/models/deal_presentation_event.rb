@@ -7,6 +7,7 @@ class DealPresentationEvent < ApplicationRecord
     presentation_start
     topic_click
     free_text_send
+    ai_reply
     chat_toggle
     page_view
     session_close
@@ -20,6 +21,7 @@ class DealPresentationEvent < ApplicationRecord
     'presentation_start' => 'プレゼン開始',
     'topic_click' => 'トピッククリック',
     'free_text_send' => '自由入力',
+    'ai_reply' => 'AI回答',
     'chat_toggle' => 'チャット開閉',
     'page_view' => 'ページ閲覧',
     'session_close' => '離脱',
@@ -34,6 +36,7 @@ class DealPresentationEvent < ApplicationRecord
   validates :session_key, :event_type, :occurred_at, presence: true
   validates :event_type, inclusion: { in: EVENT_TYPES }
 
+  after_create_commit :enqueue_session_analysis, if: :session_analysis_trigger?
   after_create_commit :enqueue_follow_up_campaign, if: :follow_up_trigger?
 
   scope :recent_first, -> { order(occurred_at: :desc) }
@@ -58,6 +61,12 @@ class DealPresentationEvent < ApplicationRecord
 
   private
 
+  def session_analysis_trigger?
+    event_type == FOLLOW_UP_TRIGGER_EVENT &&
+      user_progress.present? &&
+      !preview_event?
+  end
+
   def follow_up_trigger?
     event_type == FOLLOW_UP_TRIGGER_EVENT &&
       user_progress.present? &&
@@ -71,6 +80,10 @@ class DealPresentationEvent < ApplicationRecord
 
   def preview_event?
     metadata.is_a?(Hash) && metadata["preview"]
+  end
+
+  def enqueue_session_analysis
+    AnalyzeUserProgressSessionJob.perform_later(user_progress_id)
   end
 
   def enqueue_follow_up_campaign

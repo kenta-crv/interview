@@ -14,10 +14,6 @@
         = f.text_area :description, class: 'form-control', rows: 4
 
       .form-group
-        = f.label :deal_date, '商談日', class: 'form-label'
-        = f.date_field :deal_date, class: 'form-control'
-
-      .form-group
         = f.label :language, '言語', class: 'form-label'
         = f.select :language, Deal.languages.map { |k, v| [k.upcase, v] }, {}, class: 'form-control'
 

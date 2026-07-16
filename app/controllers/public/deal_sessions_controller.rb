@@ -12,11 +12,8 @@ module Public
 
     def create_user_info
       @user = User.find_or_initialize_by(email: user_params[:email])
-
-      if @user.new_record?
-        @user.assign_attributes(user_params.except(:email))
-        @user.password = SecureRandom.hex(16)
-      end
+      @user.assign_attributes(user_params.except(:email))
+      @user.password = SecureRandom.hex(16) if @user.new_record?
 
       if @user.save
         @user_progress = @deal.user_progresses.find_or_initialize_by(user: @user)
@@ -45,6 +42,7 @@ module Public
       topic = params[:topic]
       message = params[:message]
       page_number = params[:page_number]
+      history = conversation_history_param
 
       if page_number.blank? && topic.present?
         menu_item = @deal.presentation_menu_items.find { |item| item['key'] == topic.to_s }
@@ -55,8 +53,11 @@ module Public
       result = service.respond(
         topic: topic,
         message: message,
-        page_number: page_number
+        page_number: page_number,
+        history: history
       )
+
+      log_ai_reply!(result, message: message, page_number: page_number)
 
       render json: result
     end
@@ -193,7 +194,53 @@ module Public
     end
 
     def user_params
-      params.require(:user).permit(:name, :company, :tel, :address, :email, :url)
+      params.require(:user).permit(:name, :job_title, :company, :tel, :address, :email, :url)
+    end
+
+    def log_ai_reply!(result, message:, page_number:)
+      return if client_preview?
+      return unless @user_progress
+      return unless result.is_a?(Hash) && result[:type].to_s == 'ai'
+      return if result[:text].blank?
+
+      session_key = params[:session_key].presence
+      return if session_key.blank?
+
+      @deal.deal_presentation_events.create!(
+        user: @user,
+        user_progress: @user_progress,
+        session_key: session_key,
+        event_type: 'ai_reply',
+        page_number: page_number,
+        message: result[:text].to_s.truncate(2000),
+        metadata: { user_message: message.to_s.truncate(500) },
+        occurred_at: Time.current
+      )
+    rescue StandardError => e
+      Rails.logger.warn("Failed to log ai_reply: #{e.message}")
+    end
+
+    def conversation_history_param
+      raw = params[:history]
+      return [] if raw.blank?
+
+      list = if raw.is_a?(Array)
+               raw
+             elsif raw.respond_to?(:values)
+               raw.values
+             else
+               Array(raw)
+             end
+
+      list.map do |item|
+        if item.respond_to?(:to_unsafe_h)
+          item.to_unsafe_h
+        elsif item.respond_to?(:to_h)
+          item.to_h
+        else
+          item
+        end
+      end
     end
   end
 end

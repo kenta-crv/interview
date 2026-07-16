@@ -4,7 +4,11 @@ RSpec.describe 'Deal experience smoke', type: :request do
   let(:client) do
     Client.create!(
       email: "client_#{SecureRandom.hex(4)}@example.com",
-      password: 'password123'
+      password: 'password123',
+      name: 'テスト太郎',
+      company: 'テスト株式会社',
+      tel: '03-0000-0000',
+      address: '東京都'
     )
   end
 

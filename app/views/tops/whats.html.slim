@@ -1,9 +1,192 @@
 .meetia-modern-lp
   = render "tops/shared/nav"
 
-  section.meetia-section.meetia-section--strip
-    .meetia-section__inner.meetia-section__inner--wide
-      = render "tops/shared/ai_deal_flow"
+  / --- 画像のメインビジュアル & 4つの魅力セクション ---
+  section.meetia-hero-section
+    .meetia-hero-inner
+      / 上部：メインビジュアル
+      .meetia-main-visual
+        .meetia-mv-text
+          span.meetia-badge What's Meetia?
+          h1.meetia-mv-title
+            | Meetia
+            span とは？
+          p.meetia-mv-catch AIが変える営業の未来
+          p.meetia-mv-desc
+            | Meetiaは、最先端のAI技術を活用したAIセールスエージェントです。
+            br
+            | 人間のような自然な対話で、24時間365日、見込み客との商談を自動で行います。
+            br
+            | 営業資料の送付から、アポイント獲得まで、すべてAIにお任せいただけます。
+
+          / 実績・数値
+          .meetia-stats-grid
+            .meetia-stat-card
+              .meetia-stat-icon
+                i.fa-solid.fa-clock-rotate-left
+                span 24h
+              .meetia-stat-info
+                span.meetia-stat-label 24時間365日
+                strong.meetia-stat-value いつでも稼働
+            .meetia-stat-card
+              .meetia-stat-icon
+                i.fa-solid.fa-users
+              .meetia-stat-info
+                span.meetia-stat-label 見込み客対応数
+                strong.meetia-stat-value 300%向上
+            .meetia-stat-card
+              .meetia-stat-icon
+                i.fa-solid.fa-chart-line
+              .meetia-stat-info
+                span.meetia-stat-label アポイント獲得率
+                strong.meetia-stat-value 250%向上
+
+        .meetia-mv-image
+          / 指示通りイメージ画像はSample.pngとして配置
+          img src="Sample.png" alt="Meetia AI Agent" class="meetia-agent-img"
+
+      / 下部：Meetiaの魅力（4つのカード）
+      .meetia-features-section
+        h2.meetia-features-title Meetiaの魅力
+        .meetia-features-grid
+          .meetia-feature-card
+            .meetia-feature-icon
+              i.fa-solid.fa-comments
+            h3.meetia-feature-name 自然な対話力
+            p.meetia-feature-text 人間のような自然な会話で、見込み客との信頼関係を構築します。
+          .meetia-feature-card
+            .meetia-feature-icon
+              i.fa-solid.fa-circle-notch
+              span.meetia-inner-icon-text 24
+            h3.meetia-feature-name 24時間稼働
+            p.meetia-feature-text 時間や場所を問わず、いつでも見込み客にアプローチ。
+          .meetia-feature-card
+            .meetia-feature-icon
+              i.fa-solid.fa-bullseye
+            h3.meetia-feature-name 高精度なアプローチ
+            p.meetia-feature-text AIが見込み客の興味・関心を分析し、最適なアプローチを実行。
+          .meetia-feature-card
+            .meetia-feature-icon
+              i.fa-solid.fa-chart-pie
+            h3.meetia-feature-name 成果の可視化
+            p.meetia-feature-text リアルタイムで成果を可視化、営業活動の改善に活用できます。
+
+  / --- 既存のステップフロー・商談セクション ---
+  section.meetia-ai-deal-flow
+    .meetia-ai-deal-flow__inner
+      .meetia-ai-deal-flow__head
+        h2.meetia-ai-deal-flow__title これがMeetiaのAI商談
+        p.meetia-ai-deal-flow__subtitle
+          span 資料提示
+          span.meetia-ai-deal-flow__subtitle-x ×
+          span 音声対話
+          span.meetia-ai-deal-flow__subtitle-x ×
+          span 自動分析
+
+      .meetia-ai-deal-flow__steps
+        / ステップ 1
+        .meetia-ai-deal-flow__step
+          .meetia-ai-deal-flow__step-label
+            span.meetia-ai-deal-flow__step-num 1
+            p Webサイトから「商談を始める」をクリック
+          .meetia-ai-deal-flow__panel.meetia-ai-deal-flow__panel--entry
+            .meetia-ai-deal-flow__phone
+              .meetia-ai-deal-flow__phone-notch aria-hidden="true"
+              .meetia-ai-deal-flow__phone-screen
+                .meetia-ai-deal-flow__phone-logo
+                  span.meetia-ai-deal-flow__phone-logo-mark aria-hidden="true"
+                  | Meetia
+                h3.meetia-ai-deal-flow__phone-title
+                  | AIが、商談を
+                  br
+                  | もっと成果に。
+                p.meetia-ai-deal-flow__phone-lead Meetiaは、AIが商談を代行するワンストッププラットフォームです。
+                .meetia-ai-deal-flow__phone-cta
+                  | 商談を始める
+                  i.fa-solid.fa-arrow-pointer.meetia-ai-deal-flow__phone-cursor aria-hidden="true"
+                ul.meetia-ai-deal-flow__phone-list
+                  li
+                    i.fa-solid.fa-file-lines aria-hidden="true"
+                    | 資料をそのまま提示
+                  li
+                    i.fa-solid.fa-microphone-lines aria-hidden="true"
+                    | AIが音声でご案内
+                  li
+                    i.fa-solid.fa-chart-line aria-hidden="true"
+                    | 自動で分析・記録
+
+        span.meetia-ai-deal-flow__arrow aria-hidden="true"
+          i.fa-solid.fa-chevron-right
+
+        / ステップ 2 (インライン化統合)
+        .meetia-ai-deal-flow__step.meetia-ai-deal-flow__step--room
+          .meetia-ai-deal-flow__step-label
+            span.meetia-ai-deal-flow__step-num 2
+            p Meetiaの商談ルームで、AIとリアルタイムに商談
+          .meetia-ai-deal-flow__panel.meetia-ai-deal-flow__panel--room
+            .meetia-room-mock
+              .meetia-room-header
+                span.meetia-room-status ● AI Agent Connected
+              .meetia-room-body
+                .meetia-room-doc-share
+                  i.fa-solid.fa-file-pdf
+                  span 提案資料.pdf
+                .meetia-room-wave
+                  span
+                  span
+                  span
+                  span
+              .meetia-room-footer
+                i.fa-solid.fa-microphone
+                i.fa-solid.fa-video
+                i.fa-solid.fa-phone-slash
+
+        span.meetia-ai-deal-flow__arrow aria-hidden="true"
+          i.fa-solid.fa-chevron-right
+
+        / ステップ 3
+        .meetia-ai-deal-flow__step
+          .meetia-ai-deal-flow__step-label
+            span.meetia-ai-deal-flow__step-num 3
+            p
+              | AIが商談内容を自動で分析
+              br
+              | 結果をダッシュボードで確認
+          .meetia-ai-deal-flow__panel.meetia-ai-deal-flow__panel--dashboard
+            .meetia-ai-deal-flow__dash-card
+              .meetia-ai-deal-flow__dash-head
+                span 見込み度
+                strong A
+              p.meetia-ai-deal-flow__dash-grade 非常に高い関心を示しています
+              .meetia-ai-deal-flow__dash-bar aria-hidden="true"
+                span
+            h4.meetia-ai-deal-flow__dash-section 商談サマリー
+            ul.meetia-ai-deal-flow__dash-list
+              li
+                i.fa-solid.fa-check aria-hidden="true"
+                span 課題：営業プロセスの非効率・属人化
+              li
+                i.fa-solid.fa-check aria-hidden="true"
+                span 関心：AIによる自動化・可視化
+              li
+                i.fa-solid.fa-check aria-hidden="true"
+                span 検討：料金体系・導入スケジュール
+              li
+                i.fa-solid.fa-check aria-hidden="true"
+                span 次アクション：トライアル申込
+            .meetia-ai-deal-flow__dash-follow
+              span.meetia-ai-deal-flow__dash-follow-label フォローアップ（自動実行）
+              .meetia-ai-deal-flow__dash-follow-box
+                i.fa-solid.fa-envelope aria-hidden="true"
+                p
+                  strong フォローメール
+                  |  2025/05/28（水）15:00 予約済み
+            button.meetia-ai-deal-flow__dash-btn type="button" tabindex="-1" 詳細レポートを表示
+
+      p.meetia-ai-deal-flow__foot
+        | 資料を見せながら、AIが音声でご案内。
+        br
+        | リアルな商談体験で、成果につながる。
 
   = render "tops/shared/cta_band"
   = render "tops/shared/footer"

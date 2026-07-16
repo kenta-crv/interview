@@ -380,11 +380,45 @@ html.dashboard-html {
   transition: background 0.25s ease;
 }
 
+.dashboard-v2-container--no-sidebar {
+  justify-content: center;
+}
+
 .dashboard-v2-container--no-sidebar .db-v2-main-content {
   max-width: 1180px;
   width: 100%;
+  flex: 0 1 1180px;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Focus pages (plans / checkout): keep header aligned with centered content frames */
+.dashboard-v2-container--no-sidebar .db-v2-header {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
   margin-left: auto;
   margin-right: auto;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.dashboard-v2-container--no-sidebar .db-v2-header__left {
+  flex: none;
+  width: 100%;
+  text-align: center;
+}
+
+.dashboard-v2-container--no-sidebar .db-v2-header__right {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.dashboard-v2-container--no-sidebar .db-v2-header:has(+ .db-v2-checkout-card),
+.dashboard-v2-container--no-sidebar .db-v2-header:has(+ .db-v2-alert + .db-v2-checkout-card) {
+  max-width: 720px;
 }
 
 .dashboard-v2-container .db-v2-mobile-bar {
@@ -2776,9 +2810,23 @@ html[data-dashboard-theme="light"] .dashboard-v2-container .deal-faq-item__badge
   gap: 12px;
 }
 
+.dashboard-v2-container .db-v2-pricing-panel {
+  width: 100%;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .dashboard-v2-container .db-v2-pricing-panel .db-v2-bottom-card__body {
   padding-top: 4px;
   overflow: visible;
+}
+
+.dashboard-v2-container .db-v2-alert:has(+ .db-v2-pricing-panel) {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 
 /* Plans page — static pricing grid */
@@ -3333,6 +3381,16 @@ html[data-dashboard-theme="light"] .dashboard-v2-container .db-v2-subscription-s
 /* Checkout confirmation / success */
 .dashboard-v2-container .db-v2-checkout-card {
   max-width: 720px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dashboard-v2-container .db-v2-alert:has(+ .db-v2-checkout-card) {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 
 .dashboard-v2-container .db-v2-checkout-alert-note {

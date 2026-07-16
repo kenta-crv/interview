@@ -219,6 +219,7 @@
         try { sessionStorage.setItem(storageKey, generated); } catch (_e2) {}
         return generated;
       })();
+      var conversationHistory = [];
       var closeLogged = false;
       var exitModalShown = false;
 
@@ -700,12 +701,22 @@
           body: JSON.stringify({
             topic: options.topic || null,
             message: options.message || null,
-            page_number: options.pageNumber || null
+            page_number: options.pageNumber || null,
+            session_key: sessionKey,
+            history: conversationHistory.slice(-8)
           })
         }).then(function(response) {
           if (!response.ok) throw new Error('respond error');
           return response.json();
         });
+      }
+
+      function pushHistory(role, content) {
+        if (!content) return;
+        conversationHistory.push({ role: role, content: String(content) });
+        if (conversationHistory.length > 16) {
+          conversationHistory = conversationHistory.slice(-16);
+        }
       }
 
       function handleTopicChoice(button) {
@@ -737,9 +748,11 @@
       function handleFreeText(message) {
         trackEvent('free_text_send', { message: message, page_number: currentPageNumber });
         appendChatMessage(message, 'user');
+        pushHistory('user', message);
         return fetchResponse({ message: message }).then(function(result) {
           if (result.page_number) presentPage(result.page_number);
           appendChatMessage(result.text, 'assistant', result.audio_url);
+          pushHistory('assistant', result.text);
         }).catch(function() {
           appendChatMessage('回答を取得できませんでした。', 'assistant', null);
         });

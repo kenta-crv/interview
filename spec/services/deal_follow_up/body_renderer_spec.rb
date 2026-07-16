@@ -1,7 +1,16 @@
 require "rails_helper"
 
 RSpec.describe DealFollowUp::BodyRenderer do
-  let(:client) { Client.create!(email: "provider@example.com", password: "password123") }
+  let(:client) do
+    Client.create!(
+      email: "provider@example.com",
+      password: "password123",
+      name: "テスト太郎",
+      company: "テスト株式会社",
+      tel: "03-0000-0000",
+      address: "東京都"
+    )
+  end
   let(:deal) do
     client.deals.create!(
       title: "Demo Deal",
@@ -30,6 +39,25 @@ RSpec.describe DealFollowUp::BodyRenderer do
     expect(html).to include("担当者に繋ぐ")
     expect(html).to include("契約を進める")
     expect(html).to include("興味がない・導入を見送る場合はこちら")
+  end
+
+  it "appends session summary when available" do
+    user_progress.update!(
+      prospect_grade: "A",
+      prospect_score: 88,
+      session_summary: {
+        "challenge" => "営業属人化",
+        "interest" => "自動化",
+        "consideration" => "料金",
+        "next_action" => "トライアル"
+      },
+      session_analyzed_at: Time.current
+    )
+
+    text = described_class.new(delivery).text_body
+    expect(text).to include("見込み度 A")
+    expect(text).to include("課題：営業属人化")
+    expect(text).to include("次アクション：トライアル")
   end
 
   it "hides contract button when contract url is blank" do

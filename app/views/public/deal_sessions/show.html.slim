@@ -15,6 +15,9 @@
               = label_tag "user[name]", "お名前", class: "deal-public-form__label"
               = text_field_tag "user[name]", "", class: "deal-public-form__control", required: true
             .deal-public-form__group
+              = label_tag "user[job_title]", "役職", class: "deal-public-form__label"
+              = text_field_tag "user[job_title]", "", class: "deal-public-form__control", placeholder: "例: 営業部長 / 情報システム担当"
+            .deal-public-form__group
               = label_tag "user[company]", "会社名", class: "deal-public-form__label"
               = text_field_tag "user[company]", "", class: "deal-public-form__control", required: true
             .deal-public-form__group

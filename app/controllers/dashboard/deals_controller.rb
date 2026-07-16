@@ -30,6 +30,10 @@ class Dashboard::DealsController < Dashboard::BaseController
     else
       []
     end
+    @deal_evaluations = @deal.deal_evaluations.includes(:user).order(created_at: :desc).limit(50)
+    @evaluation_count = @deal.deal_evaluations.count
+    @average_evaluation = @deal.deal_evaluations.average(:rating)&.round(1)
+    @prospect_grade_counts = @deal.user_progresses.where.not(prospect_grade: nil).group(:prospect_grade).count
     if owner.prospect_follow_up_enabled?
       @deal.ensure_follow_up_templates!
       @follow_up_templates = @deal.deal_follow_up_templates.ordered

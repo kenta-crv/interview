@@ -10,7 +10,12 @@ module DealFollowUpTemplateDefaults
         {{user_name}} 様
 
         先ほどは「{{deal_title}}」のAI商談にご参加いただき、ありがとうございました。
-        ご検討の参考になれば幸いです。ご不明点があればお気軽にお問い合わせください。
+
+        【商談サマリー】
+        {{session_summary}}
+
+        特に「{{interest_topics}}」について関心をお持ちのようでした。
+        次のステップとして「{{next_action}}」をご案内できます。ご不明点があればお気軽にお問い合わせください。
       BODY
       include_sales_call_link: true,
       include_contract_link: true
@@ -22,8 +27,8 @@ module DealFollowUpTemplateDefaults
       body: <<~BODY.strip,
         {{user_name}} 様
 
-        先日はAI商談にご参加いただきありがとうございました。
-        導入時期や活用方法について、担当者が個別にご案内できます。
+        先日はAI商談にご参加いただきありがとうございました（見込み度：{{prospect_grade}}）。
+        「{{interest_topics}}」について、導入時期や活用方法を担当者が個別にご案内できます。
       BODY
       include_sales_call_link: true,
       include_contract_link: true
@@ -36,7 +41,7 @@ module DealFollowUpTemplateDefaults
         {{user_name}} 様
 
         前回のAI商談から少しお時間が経ちました。
-        ご検討の進捗に合わせて、次のステップをご提案できます。
+        推奨アクションは「{{next_action}}」です。ご検討の進捗に合わせて次のステップをご提案できます。
       BODY
       include_sales_call_link: true,
       include_contract_link: false
@@ -50,6 +55,8 @@ module DealFollowUpTemplateDefaults
         {{user_name}} 様
 
         最後のご案内です。ご契約や担当者との商談をご希望の場合は、下記よりお進みください。
+        参考：前回サマリー（{{prospect_grade}}）
+        {{session_summary}}
       BODY
       include_sales_call_link: true,
       include_contract_link: true

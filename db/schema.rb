@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_07_10_190000) do
+ActiveRecord::Schema.define(version: 2026_07_16_220000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -499,6 +499,10 @@ ActiveRecord::Schema.define(version: 2026_07_10_190000) do
     t.datetime "session_ended_at"
     t.string "follow_up_unsubscribe_token"
     t.datetime "follow_up_unsubscribed_at"
+    t.string "prospect_grade"
+    t.integer "prospect_score"
+    t.json "session_summary", default: {}
+    t.datetime "session_analyzed_at"
     t.index ["deal_id"], name: "index_user_progresses_on_deal_id"
     t.index ["follow_up_unsubscribe_token"], name: "index_user_progresses_on_follow_up_unsubscribe_token", unique: true
     t.index ["user_id", "deal_id"], name: "index_user_progresses_on_user_id_and_deal_id", unique: true

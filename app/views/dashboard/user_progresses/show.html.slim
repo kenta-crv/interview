@@ -1,4 +1,6 @@
 - lead_name = @user_progress.user&.name.presence || "リード ##{@user_progress.id}"
+- summary = @user_progress.session_summary_hash
+- evaluation = @user_progress.deal_evaluation
 
 .db-v2-header
   .db-v2-header__left
@@ -22,12 +24,62 @@
 
 .db-v2-bottom-card
   .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title 商談サマリー・見込み度
+  .db-v2-bottom-card__body
+    .progress-info
+      .info-row
+        .info-label 見込み度
+        .info-value
+          - if @user_progress.prospect_grade.present?
+            | #{@user_progress.prospect_grade}（#{@user_progress.prospect_score}点）
+          - else
+            | 分析待ち
+      .info-row
+        .info-label 分析日時
+        .info-value = @user_progress.session_analyzed_at ? l(@user_progress.session_analyzed_at, format: :short) : "—"
+      - if summary.present?
+        .info-row
+          .info-label 課題
+          .info-value = summary["challenge"].presence || "—"
+        .info-row
+          .info-label 関心
+          .info-value = summary["interest"].presence || "—"
+        .info-row
+          .info-label 検討
+          .info-value = summary["consideration"].presence || "—"
+        .info-row
+          .info-label 次アクション
+          .info-value = summary["next_action"].presence || "—"
+        - if Array(summary["topics"]).any?
+          .info-row
+            .info-label 関心トピック
+            .info-value = Array(summary["topics"]).join(" / ")
+        - if Array(summary["questions"]).any?
+          .info-row
+            .info-label 主な質問
+            .info-value = Array(summary["questions"]).join(" / ")
+      - else
+        p.db-v2-muted 商談終了後に自動分析されます。
+    - if evaluation
+      .progress-info style="margin-top:16px;"
+        .info-row
+          .info-label 満足度評価
+          .info-value
+            | #{evaluation.rating} / 5
+            - if evaluation.feedback.present?
+              | （#{evaluation.feedback.truncate(80)}）
+
+.db-v2-bottom-card
+  .db-v2-bottom-card__header
     h2.db-v2-bottom-card__title 基本情報
   .db-v2-bottom-card__body
     .user-info
       .info-row
         .info-label ユーザー名
         .info-value = @user_progress.user&.name.presence || "—"
+      .info-row
+        .info-label 役職
+        .info-value = @user_progress.user&.job_title.presence || "—"
       .info-row
         .info-label 会社名
         .info-value = @user_progress.user&.company.presence || "—"
@@ -77,13 +129,13 @@
             - @presentation_events.each do |event|
               tr
                 td= l(event.occurred_at, format: :short)
-                td= event.event_type
+                td= event.display_event_type
                 td= event.page_number.presence || "-"
                 td= event.label.presence || event.topic.presence || "-"
                 td
                   - if event.event_type == "session_close"
                     | P.#{event.metadata["current_page_number"]} で離脱（#{event.metadata["duration_ms"]}ms）
-                  - elsif event.event_type == "free_text_send"
+                  - elsif %w[free_text_send ai_reply].include?(event.event_type)
                     = event.message.to_s.truncate(50)
                   - else
                     | -

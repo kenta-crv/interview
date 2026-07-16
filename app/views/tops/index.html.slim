@@ -2,7 +2,20 @@
 - set_meta_tags description: '資料をアップロードするだけで、AIアバターが24時間365日あなたの営業資料で音声商談。商談結果の分析・見込み度判定・自動フォローまで一気通貫で営業工数を削減します。'
 
 .meetia-modern-lp
-  = render "tops/shared/nav"
+  header.meetia-nav
+    .meetia-nav__inner
+      = link_to root_path, class: "meetia-nav__logo" do
+        = image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-nav__logo-image"
+      button.meetia-nav__toggle type="button" aria-label="メニュー" data-lp-nav-toggle=""
+        span
+        span
+        span
+      nav.meetia-nav__menu data-lp-nav-menu=""
+        - TopsHelper::LP_NAV_ITEMS.each do |item|
+          = link_to item[:label], item[:href], class: "meetia-nav__item"
+        .meetia-nav__menu-actions
+          = link_to lp_login_label, lp_login_path, class: "meetia-btn meetia-btn--ghost meetia-btn--sm"
+          = link_to "無料トライアル", lp_sign_up_path, class: "meetia-btn meetia-btn--primary meetia-btn--sm"
 
   section#top.meetia-hero.meetia-hero--diagonal
     .meetia-hero__diagonal-bg aria-hidden="true"
@@ -35,7 +48,7 @@
           h3.meetia-hero__feature-title = title
           p.meetia-hero__feature-body = body
 
-  .meetia-logos
+  /.meetia-logos
     p.meetia-logos__title 多くの企業様にご利用いただいています
     .meetia-logos__wrapper
       - %w[TechCorp NextVision CloudScale DataBridge InnovateX GlobalNet FutureWorks SmartBiz].each do |name|
@@ -43,143 +56,499 @@
 
         
 
+  section.meetia-whats
+    .meetia-whats__inner
+      span.meetia-section__eyebrow What's Meetia?
+
+      /-- 背景枠カード --/
+      .meetia-whats__container-card
+        
+        /-- 完全に右側背景としてなじませるアバター（左側のテキスト領域に干渉させない） --/
+        .meetia-whats__backdrop-visual
+          .meetia-whats__glow-effect
+          = image_tag "whats.png", class: "meetia-whats__avatar-backdrop", alt: ""
+
+        /-- 枠内コンテンツ（z-indexでアバターより必ず前面に表示） --/
+        .meetia-whats__card-body
+          
+          /-- 上半分のテキスト ＋ 実績エリア --/
+          .meetia-whats__hero-block
+            .meetia-whats__text-group
+              h2.meetia-whats__main-title
+                = image_tag "meetia_logo.png", class: "meetia-whats__logo-graphics", alt: "Meetia"
+                span とは？
+              p.meetia-whats__catch AIが変える営業の未来
+              p.meetia-whats__description
+                | Meetiaは、最先端のAI技術を活用したAIセールスエージェントです。
+                span.meetia-whats__description-more
+                  br
+                  | 人間のような自然な対話で、24時間365日、見込み客との商談を自動で行います。
+                  br
+                  | 営業資料の送付から、アポイント獲得まで、すべてAIにお任せいただけます。
+
+            /-- 実績数値メーター --/
+            .meetia-whats__metrics-row
+              .meetia-whats__metric-item
+                .meetia-whats__metric-icon-wrap
+                  i.fa-solid.fa-clock-rotate-left
+                  span 24h
+                .meetia-whats__metric-texts
+                  span.meetia-whats__metric-label 24時間365日
+                  span.meetia-whats__metric-value いつでも稼働
+              .meetia-whats__metric-item
+                .meetia-whats__metric-icon-wrap
+                  i.fa-solid.fa-users
+                .meetia-whats__metric-texts
+                  span.meetia-whats__metric-label 見込み客対応数
+                  span.meetia-whats__metric-value 300%向上
+              .meetia-whats__metric-item
+                .meetia-whats__metric-icon-wrap
+                  i.fa-solid.fa-chart-line
+                .meetia-whats__metric-texts
+                  span.meetia-whats__metric-label アポイント獲得率
+                  span.meetia-whats__metric-value 250%向上
+
+          /-- 魅力カードグリッド（等幅・等高で枠の中に綺麗に収める） --/
+          .meetia-whats__features-grid
+            .meetia-whats__feature-box
+              .meetia-whats__feature-icon-circle
+                i.fa-solid.fa-comments
+              h4.meetia-whats__feature-box-title 自然な対話力
+              p.meetia-whats__feature-box-desc 人間のような自然な会話で、見込み客との信頼関係を構築します。
+
+            .meetia-whats__feature-box
+              .meetia-whats__feature-icon-circle
+                i.fa-solid.fa-clock
+              h4.meetia-whats__feature-box-title 24時間稼働
+              p.meetia-whats__feature-box-desc 時間や場所を問わず、いつでも見込み客にアプローチ。
+
+            .meetia-whats__feature-box
+              .meetia-whats__feature-icon-circle
+                i.fa-solid.fa-bullseye
+              h4.meetia-whats__feature-box-title 高精度なアプローチ
+              p.meetia-whats__feature-box-desc AIが見込み客の興味・関心を分析し、最適なアプローチを実行。
+
+            .meetia-whats__feature-box
+              .meetia-whats__feature-icon-circle
+                i.fa-solid.fa-chart-column
+              h4.meetia-whats__feature-box-title 成果の可視化
+              p.meetia-whats__feature-box-desc リアルタイムで成果を可視化、営業活動の改善に活用できます。
+
+
+
+  section#problems.meetia-section.meetia-problems
+    .meetia-section__inner
+      .meetia-section__head
+        span.meetia-section__eyebrow こんなお悩みありませんか？
+        h2.meetia-section__title
+          | 営業活動で、こんな
+          span.meetia-text-gradient 壁
+          | にぶつかっていませんか？
+      .meetia-problems__scroll-wrap
+        button.meetia-problems__scroll-btn.meetia-problems__scroll-btn--prev type="button" aria-label="前へ" data-lp-scroll-prev=".meetia-problems__grid"
+          i.fa-solid.fa-chevron-left aria-hidden="true"
+        .meetia-problems__grid
+          - TopsHelper::PROBLEM_ITEMS.each do |item|
+            .meetia-problems__card
+              .meetia-problems__icon
+                i.fa-solid class=item[:icon] aria-hidden="true"
+              .meetia-problems__content
+                .meetia-problems__check-line
+                  span.meetia-problems__check aria-hidden="true"
+                  p.meetia-problems__title == item[:text]
+                p.meetia-problems__desc = item[:desc]
+        button.meetia-problems__scroll-btn.meetia-problems__scroll-btn--next type="button" aria-label="次へ" data-lp-scroll-next=".meetia-problems__grid"
+          i.fa-solid.fa-chevron-right aria-hidden="true"
+      .meetia-problems__arrow aria-hidden="true"
+        i.fa-solid.fa-caret-down
+      .meetia-problems__solution
+        .meetia-problems__solution-copy
+          .meetia-problems__solution-lead
+            span そのお悩み、
+            span.meetia-text-gradient AI商談の一気通貫
+          .meetia-problems__solution-brand
+            span.meetia-problems__solution-mark aria-hidden="true"
+              i.fa-solid.fa-headset
+            strong.meetia-problems__solution-name Meetia
+            span.meetia-problems__solution-suffix がすべて
+            span.meetia-text-gradient 解決
+            span.meetia-problems__solution-suffix します。
+        .meetia-problems__solution-visual aria-hidden="true"
+          .meetia-problems__solution-mock
+            .meetia-problems__solution-mock-head
+              span
+              span
+              span
+            .meetia-problems__solution-mock-row
+              i.fa-solid.fa-file-lines
+              span 資料提示
+            .meetia-problems__solution-mock-row
+              i.fa-solid.fa-microphone-lines
+              span 音声対話
+            .meetia-problems__solution-mock-row
+              i.fa-solid.fa-chart-line
+              span 自動分析
+          .meetia-problems__solution-deco.meetia-problems__solution-deco--sparkle
+            i.fa-solid.fa-sparkles
+          .meetia-problems__solution-deco.meetia-problems__solution-deco--chat
+            i.fa-solid.fa-comments
+          .meetia-problems__solution-deco.meetia-problems__solution-deco--chart
+            i.fa-solid.fa-chart-column
+
+
+
+
+
+
   section#whats.meetia-section.meetia-section--strip
     .meetia-section__inner.meetia-section__inner--wide
-      = render "tops/shared/ai_deal_flow"
+      section.meetia-ai-deal-flow
+        .meetia-ai-deal-flow__inner
+          .meetia-ai-deal-flow__head
+            span.meetia-section__eyebrow AI DEAL FLOW
+            h2.meetia-ai-deal-flow__title これがMeetiaのAI商談
+            p.meetia-ai-deal-flow__subtitle
+              span 資料提示
+              span.meetia-ai-deal-flow__subtitle-x ×
+              span 音声対話
+              span.meetia-ai-deal-flow__subtitle-x ×
+              span 自動分析
 
-  section#service.meetia-section
+
+          .meetia-ai-deal-flow__scroll-wrap
+            button.meetia-ai-deal-flow__scroll-btn.meetia-ai-deal-flow__scroll-btn--prev type="button" aria-label="前へ" data-lp-scroll-prev=".meetia-ai-deal-flow__steps"
+              i.fa-solid.fa-chevron-left aria-hidden="true"
+            .meetia-ai-deal-flow__steps
+              .meetia-ai-deal-flow__step
+                .meetia-ai-deal-flow__step-label
+                  span.meetia-ai-deal-flow__step-num 1
+                  p Webサイトから「商談を始める」をクリック
+                .meetia-ai-deal-flow__panel.meetia-ai-deal-flow__panel--entry
+                  .meetia-ai-deal-flow__phone
+                    .meetia-ai-deal-flow__phone-notch aria-hidden="true"
+                    .meetia-ai-deal-flow__phone-screen
+                      .meetia-ai-deal-flow__phone-logo
+                        span.meetia-ai-deal-flow__phone-logo-mark aria-hidden="true"
+                        | Meetia
+                      h3.meetia-ai-deal-flow__phone-title
+                        | AIが、商談を
+                        br
+                        | もっと成果に。
+                      p.meetia-ai-deal-flow__phone-lead Meetiaは、AIが商談を代行するワンストッププラットフォームです。
+                      .meetia-ai-deal-flow__phone-cta
+                        | 商談を始める
+                        i.fa-solid.fa-arrow-pointer.meetia-ai-deal-flow__phone-cursor aria-hidden="true"
+                      ul.meetia-ai-deal-flow__phone-list
+                        li
+                          i.fa-solid.fa-file-lines aria-hidden="true"
+                          | 資料をそのまま提示
+                        li
+                          i.fa-solid.fa-microphone-lines aria-hidden="true"
+                          | AIが音声でご案内
+                        li
+                          i.fa-solid.fa-chart-line aria-hidden="true"
+                          | 自動で分析・記録
+
+              span.meetia-ai-deal-flow__arrow aria-hidden="true"
+                i.fa-solid.fa-chevron-right
+
+              .meetia-ai-deal-flow__step.meetia-ai-deal-flow__step--room
+                .meetia-ai-deal-flow__step-label
+                  span.meetia-ai-deal-flow__step-num 2
+                  p Meetiaの商談ルームで、AIとリアルタイムに商談
+                .meetia-ai-deal-flow__panel.meetia-ai-deal-flow__panel--room
+                  .meetia-flow-room aria-hidden="true"
+                    header.meetia-flow-room__header
+                      .meetia-flow-room__status
+                        span.meetia-flow-room__status-dot
+                        span AI商談中
+                        span.meetia-flow-room__timer 00:08:42
+                      button.meetia-flow-room__exit type="button" tabindex="-1"
+                        span ↗
+                        span 退出する
+
+                    .meetia-flow-room__body
+                      .meetia-flow-room__deck
+                        .meetia-flow-room__deck-label 商談資料
+                        .meetia-flow-room__slide
+                          span.meetia-flow-room__slide-company 株式会社 Meetia
+                          strong.meetia-flow-room__slide-title サービス紹介資料
+                          h3 AIが、商談を変える。
+                        .meetia-flow-room__deck-foot
+                          .meetia-flow-room__pager
+                            button type="button" tabindex="-1" ‹
+                            span 1 / 24
+                            button type="button" tabindex="-1" ›
+                          .meetia-flow-room__deck-actions
+                            button type="button" tabindex="-1"
+                              i.fa-solid.fa-magnifying-glass-plus aria-hidden="true"
+                              | 拡大
+                            button type="button" tabindex="-1"
+                              i.fa-solid.fa-download aria-hidden="true"
+                              | ダウンロード
+
+                      aside.meetia-flow-room__agent
+                        = image_tag "avatar_3.png", alt: "", class: "meetia-flow-room__avatar"
+                        .meetia-flow-room__chat
+                          .meetia-flow-room__chat-head
+                            i.fa-solid.fa-robot aria-hidden="true"
+                            span AIアシスタント（Meetia）
+                          .meetia-flow-room__messages
+                            .meetia-flow-room__message.meetia-flow-room__message--ai
+                              p 本日はMeetiaのサービス紹介をさせていただきます。まずはサービス概要からご説明しますね。
+                          .meetia-flow-room__input
+                            input type="text" placeholder="質問を入力してください..." disabled=""
+                            button type="button" tabindex="-1" aria-label="送信"
+                              i.fa-solid.fa-paper-plane aria-hidden="true"
+
+                    .meetia-flow-room__footer
+                      p.meetia-flow-room__topics-label 話したいトピックを選んでください
+                      .meetia-flow-room__topics
+                        span サービス概要
+                        span 導入事例
+                        span 料金プラン
+                        span セキュリティ
+                        span 他サービスとの違い
+                      .meetia-flow-room__voice
+                        .meetia-flow-room__wave aria-hidden="true"
+                          i
+                          i
+                          i
+                          i
+                          i
+                        span AIが話しています…
+
+              span.meetia-ai-deal-flow__arrow aria-hidden="true"
+                i.fa-solid.fa-chevron-right
+
+              .meetia-ai-deal-flow__step
+                .meetia-ai-deal-flow__step-label
+                  span.meetia-ai-deal-flow__step-num 3
+                  p
+                    | AIが商談内容を自動で分析
+                    br
+                    | 結果をダッシュボードで確認
+                .meetia-ai-deal-flow__panel.meetia-ai-deal-flow__panel--dashboard
+                  .meetia-ai-deal-flow__dash-card
+                    .meetia-ai-deal-flow__dash-head
+                      span 見込み度
+                      strong A
+                    p.meetia-ai-deal-flow__dash-grade 非常に高い関心を示しています
+                    .meetia-ai-deal-flow__dash-bar aria-hidden="true"
+                      span
+                  h4.meetia-ai-deal-flow__dash-section 商談サマリー
+                  ul.meetia-ai-deal-flow__dash-list
+                    li
+                      i.fa-solid.fa-check aria-hidden="true"
+                      span 課題：営業プロセスの非効率・属人化
+                    li
+                      i.fa-solid.fa-check aria-hidden="true"
+                      span 関心：AIによる自動化・可視化
+                    li
+                      i.fa-solid.fa-check aria-hidden="true"
+                      span 検討：料金体系・導入スケジュール
+                    li
+                      i.fa-solid.fa-check aria-hidden="true"
+                      span 次アクション：トライアル申込
+                  .meetia-ai-deal-flow__dash-follow
+                    span.meetia-ai-deal-flow__dash-follow-label フォローアップ（自動実行）
+                    .meetia-ai-deal-flow__dash-follow-box
+                      i.fa-solid.fa-envelope aria-hidden="true"
+                      p
+                        strong フォローメール
+                        |  2025/05/28（水）15:00 予約済み
+                  button.meetia-ai-deal-flow__dash-btn type="button" tabindex="-1" 詳細レポートを表示
+            button.meetia-ai-deal-flow__scroll-btn.meetia-ai-deal-flow__scroll-btn--next type="button" aria-label="次へ" data-lp-scroll-next=".meetia-ai-deal-flow__steps"
+              i.fa-solid.fa-chevron-right aria-hidden="true"
+
+          p.meetia-ai-deal-flow__foot
+            | 資料を見せながら、AIが音声でご案内。
+            br
+            | リアルな商談体験で、成果につながる。
+
+
+  section#service.meetia-section.meetia-service-concept
     .meetia-section__inner
       .meetia-section__head.meetia-service-head
-        span.meetia-page-hero__eyebrow SERVICE
-        h2.meetia-section__title Meetiaが提供するAI商談サービス
+        span.meetia-section__eyebrow SERVICE
+        h2.meetia-section__title
+          | Meetiaが提供する
+          span.meetia-text-gradient AI商談サービス
         p.meetia-section__lead 資料アップロードから商談・分析・フォローまで、一気通貫で自動化します。
-      .meetia-service-flow
-        .meetia-service-flow__step
-          .meetia-glass-card
-            .meetia-service-flow__head
-              .meetia-icon-ring.meetia-icon-ring--purple
-                i.fa-solid.fa-cloud-arrow-up aria-hidden="true"
-              span.meetia-service-flow__num STEP 1
-            h3 資料アップロード → AI学習
-            p PDFやFAQをアップロードするだけ。AIが内容を読解し、商談台本とナレッジを生成します。
-        .meetia-service-flow__step
-          .meetia-glass-card
-            .meetia-service-flow__head
-              .meetia-icon-ring.meetia-icon-ring--purple
-                i.fa-solid.fa-microphone-lines aria-hidden="true"
-              span.meetia-service-flow__num STEP 2
-            h3 AI商談ルームで音声対話
-            p 訪問者はURLから入室。資料を見せながらAIが音声で提案・ヒアリングを行います。
-        .meetia-service-flow__step
-          .meetia-glass-card
-            .meetia-service-flow__head
-              .meetia-icon-ring.meetia-icon-ring--violet
-                i.fa-solid.fa-envelope-circle-check aria-hidden="true"
-              span.meetia-service-flow__num STEP 3
-            h3 見込み度分析・フォロー自動化
-            p 商談ログから関心度を分析。見込み度判定とフォローメール配信まで自動で完結します。
+      .meetia-service-concept__scroll-wrap
+        button.meetia-service-concept__scroll-btn.meetia-service-concept__scroll-btn--prev type="button" aria-label="前へ" data-lp-scroll-prev=".meetia-service-concept__grid"
+          i.fa-solid.fa-chevron-left aria-hidden="true"
+        .meetia-service-concept__grid
+          - TopsHelper::SERVICE_CARDS.each do |card|
+            .meetia-service-concept__card
+              .meetia-service-concept__header
+                span.meetia-service-concept__num = card[:num]
+                h3.meetia-service-concept__title = card[:title]
+              p.meetia-service-concept__desc = card[:desc]
+              .meetia-service-concept__illust aria-hidden="true"
+                .meetia-service-concept__icon-stage
+                  span.meetia-service-concept__icon-ring
+                    i.fa-solid class=card[:icon]
+                  span.meetia-service-concept__icon-orbit
+                    i.fa-solid class=card[:orbit]
+        button.meetia-service-concept__scroll-btn.meetia-service-concept__scroll-btn--next type="button" aria-label="次へ" data-lp-scroll-next=".meetia-service-concept__grid"
+          i.fa-solid.fa-chevron-right aria-hidden="true"
 
   section#features.meetia-section.meetia-section--strip.meetia-features-page
     .meetia-section__inner.meetia-section__inner--wide
       .meetia-features-page__head
-        p.meetia-features-page__eyebrow FEATURES
+        span.meetia-section__eyebrow FEATURES
         h2.meetia-features-page__title Meetiaの機能一覧
         p.meetia-features-page__lead
           | AIが営業プロセスを革新し、資料解析から商談、フォローまでを自動化。
           br
           | 成果につながる機能を詳しくご紹介します。
-      = render "tops/shared/features_showcase", show_cta: true
+      .meetia-features-showcase
+        .meetia-features-showcase__grid
+          - TopsHelper::FEATURE_ROWS.each do |(num, icon, title, body, _)|
+            - if num == "03"
+              article.meetia-feature-focus data-feature=num
+                .meetia-feature-focus__head
+                  .meetia-feature-focus__head-icon
+                    i.fa-solid class=icon aria-hidden="true"
+                  .meetia-feature-focus__head-main
+                    p.meetia-feature-focus__num = num
+                    h2.meetia-feature-focus__title = title
+                    p.meetia-feature-focus__body = body
+                .meetia-feature-focus__screen
+                  = image_tag "top_hero_portal.png", alt: "24時間AI商談ルームのイメージ", class: "meetia-feature-focus__image"
+            - else
+              article.meetia-feature-card data-feature=num
+                .meetia-feature-card__icon
+                  i.fa-solid class=icon aria-hidden="true"
+                .meetia-feature-card__content
+                  p.meetia-feature-card__num = num
+                  h3.meetia-feature-card__title = title
+                  p.meetia-feature-card__body = body
+                span.meetia-feature-card__arrow aria-hidden="true"
+                  i.fa-solid.fa-chevron-right
+
+        .meetia-features-showcase__cta
+          p.meetia-features-showcase__cta-copy すべての機能を体験して、営業の未来を変えましょう。
+          .meetia-features-showcase__cta-actions
+            = link_to lp_sign_up_path, class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-btn--pill" do
+              | 無料でMeetiaを始める
+              i.fa-solid.fa-chevron-right aria-hidden="true"
+            = link_to plans_path, class: "meetia-btn meetia-btn--outline meetia-btn--lg meetia-btn--pill" do
+              i.fa-solid.fa-download aria-hidden="true"
+              | 資料をダウンロード
 
   section#pricing.meetia-section.meetia-pricing-section
     .meetia-section__inner.meetia-section__inner--wide
       .meetia-section__head
-        span.meetia-page-hero__eyebrow PRICING
+        span.meetia-section__eyebrow PRICING
         h2.meetia-section__title 料金プラン
         p.meetia-section__lead トライアルから始めて、チームの規模に合わせてアップグレードできます。
-      = render "shared/pricing_plans"
+      / Subscription::PLAN_CATALOG から LP 料金セクションを描画（/plans と同一ソース）
+      - visible_plans = Subscription.lp_display_plans
+
+      .meetia-pricing__slider data-pricing-slider=""
+        p.meetia-pricing__scroll-hint 最初の3プランを表示し、4つ目の途中まで見えます。右矢印で続きを確認できます
+        .meetia-pricing__slider-body
+          button.meetia-pricing__arrow.meetia-pricing__arrow--prev type="button" aria-label="前のプラン" data-pricing-prev=""
+            svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+              polyline points="15 18 9 12 15 6"
+          .meetia-pricing__viewport
+            .meetia-pricing__track
+              - visible_plans.each do |plan_key, config|
+                - is_trial = plan_key == :trial
+                - card_classes = []
+                - card_classes << 'meetia-pricing__card--popular' if config[:popular]
+                - card_classes << 'meetia-pricing__card--featured' if config[:featured]
+                - card_classes << 'meetia-pricing__card--trial' if is_trial
+                .meetia-pricing__card class=card_classes.join(' ')
+                  - if config[:popular]
+                    .meetia-pricing__badge.meetia-pricing__badge--popular POPULAR
+                  - if config[:featured]
+                    .meetia-pricing__badge RECOMMENDED
+                  - if is_trial
+                    .meetia-pricing__badge.meetia-pricing__badge--trial FREE TRIAL
+                  .meetia-pricing__card-head
+                    h3.meetia-pricing__plan = config[:name]
+                    .meetia-pricing__price
+                      span.meetia-pricing__currency ¥
+                      span.meetia-pricing__amount = number_with_delimiter(config[:price])
+                      - if is_trial
+                        span.meetia-pricing__period = " / #{Subscription::TRIAL_DAYS}日間"
+                      - else
+                        span.meetia-pricing__period = " / 月"
+                    p.meetia-pricing__desc = config[:description]
+                  ul.meetia-pricing__features
+                    - Subscription::LP_COMPARISON_FEATURES.each do |feature|
+                      li.meetia-pricing__feature
+                        span.meetia-pricing__feature-label = feature[:label]
+                        span.meetia-pricing__feature-value = Subscription.format_feature_value(plan_key, feature[:key])
+                  .meetia-pricing__card-foot
+                    - cta_label = config[:lp_cta].presence || "このプランで始める"
+                    - btn_class = is_trial ? "meetia-btn meetia-btn--secondary meetia-pricing__card-btn" : "meetia-btn meetia-btn--primary meetia-pricing__card-btn"
+                    = link_to cta_label, new_client_registration_path, class: btn_class
+          button.meetia-pricing__arrow.meetia-pricing__arrow--next type="button" aria-label="次のプラン" data-pricing-next=""
+            svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+              polyline points="9 18 15 12 9 6"
+
+      .meetia-pricing__cta
+        = link_to "無料トライアルを開始", new_client_registration_path, class: "meetia-btn meetia-btn--primary meetia-btn--lg"
 
   section#compare.meetia-section
-    .meetia-section__inner.meetia-section__inner--wide
+    .meetia-section__inner
       .meetia-section__head
-        span.meetia-page-hero__eyebrow WHY MEETIA?
+        span.meetia-section__eyebrow WHY MEETIA?
         h2.meetia-section__title
           | 他社との違いは、圧倒的な
           span.meetia-text-gradient 「AI商談体験」
         p.meetia-section__lead Meetiaは、AIが商談の質と成果を最大化するための機能をオールインワンで提供します。
-      
-      .meetia-compare-layout
-        .meetia-compare-main
-          .meetia-compare-showcase
-            .meetia-compare-showcase__glow aria-hidden="true"
-            .meetia-compare-showcase__head
-              span.meetia-compare-showcase__head-label 比較項目
-              .meetia-compare-showcase__col.meetia-compare-showcase__col--meetia
-                .meetia-compare-showcase__brand Meetia.
-              .meetia-compare-showcase__col.meetia-compare-showcase__col--competitor
-                span.meetia-compare-showcase__comp-name A社
-                span.meetia-compare-showcase__comp-type AIチャットツール
-              .meetia-compare-showcase__col.meetia-compare-showcase__col--competitor
-                span.meetia-compare-showcase__comp-name B社
-                span.meetia-compare-showcase__comp-type Web会議システム
-            
-            .meetia-compare-showcase__body
-              - TopsHelper::COMPARE_ROWS.each do |row|
-                .meetia-compare-showcase__row
-                  .meetia-compare-showcase__topic
-                    span.meetia-compare-showcase__icon aria-hidden="true"
-                      i.fa-solid class=row[:icon]
-                    span = row[:label]
-                  
-                  /-- Meetia カラム --/
-                  .meetia-compare-showcase__cell.meetia-compare-showcase__cell--meetia
-                    span.meetia-compare-showcase__mark.meetia-compare-showcase__mark--meetia aria-hidden="true"
-                      i.fa-solid.fa-circle-check
-                    p = row[:meetia]
-                  
-                  /-- A社 カラム (マークはrow内のステータス等で切り替え可、一旦画像基準) --/
-                  .meetia-compare-showcase__cell.meetia-compare-showcase__cell--competitor
-                    span.meetia-compare-showcase__mark.meetia-compare-showcase__mark--triangle aria-hidden="true"
-                      i.fa-solid.fa-triangle
-                    p = row[:legacy]
-                  
-                  /-- B社 カラム --/
-                  .meetia-compare-showcase__cell.meetia-compare-showcase__cell--competitor
-                    span.meetia-compare-showcase__mark.meetia-compare-showcase__mark--cross aria-hidden="true"
-                      i.fa-solid.fa-xmark
-                    p = row[:legacy]
 
-          /-- 下部 CTA エリア --/
-          .meetia-compare-cta
-            .meetia-compare-cta__text-block
-              span.meetia-compare-cta__badge まずは体験！
-              p.meetia-compare-cta__lead AIによる本格商談を、ぜひご体感ください。
-            .meetia-compare-cta__actions
-              a.meetia-btn.meetia-btn--primary.meetia-btn--lg href="#"
-                | 無料で商談体験をする
-                i.fa-solid.fa-chevron-right style="font-size: 0.8rem; margin-left: 4px;"
-              a.meetia-btn.meetia-btn--outline.meetia-btn--lg href="#"
-                | 資料をダウンロードする
-                i.fa-solid.fa-download style="font-size: 0.85rem; margin-left: 4px;"
+      .meetia-compare-scroll-wrap
+        button.meetia-compare-scroll-btn.meetia-compare-scroll-btn--prev type="button" aria-label="前へ" data-lp-scroll-prev=".meetia-compare-scroll"
+          i.fa-solid.fa-chevron-left aria-hidden="true"
+        .meetia-compare-scroll
+          .meetia-compare-table
+            .meetia-compare-table__glow aria-hidden="true"
+            .meetia-compare-table__head
+              span.meetia-compare-table__label 比較項目
+              span.meetia-compare-table__col.meetia-compare-table__col--meetia
+                span.meetia-compare-table__brand
+                  i.fa-solid.fa-sparkles aria-hidden="true"
+                  | Meetia
+              span.meetia-compare-table__col 従来の営業 / 他社ツール
+            - TopsHelper::COMPARE_ROWS.each do |row|
+              .meetia-compare-table__row
+                .meetia-compare-table__topic
+                  span.meetia-compare-table__icon aria-hidden="true"
+                    i.fa-solid class=row[:icon]
+                  span = row[:label]
+                .meetia-compare-table__cell.meetia-compare-table__cell--meetia
+                  span.meetia-compare-table__mark.meetia-compare-table__mark--ok aria-hidden="true"
+                    i.fa-solid.fa-check
+                  span = row[:meetia]
+                .meetia-compare-table__cell
+                  span.meetia-compare-table__mark.meetia-compare-table__mark--ng aria-hidden="true"
+                    i.fa-solid.fa-xmark
+                  span = row[:legacy]
+        button.meetia-compare-scroll-btn.meetia-compare-scroll-btn--next type="button" aria-label="次へ" data-lp-scroll-next=".meetia-compare-scroll"
+          i.fa-solid.fa-chevron-right aria-hidden="true"
 
-        /-- 右側 サイドバーエリア --/
-        .meetia-compare-sidebar
-          .meetia-reason-card
-            h3.meetia-reason-card__title 選ばれる理由
-            p.meetia-reason-card__text
-              | Meetiaは、AIが商談の
-              br
-              | すべてを支援する
-              br
-              | 唯一のパートナーです。
-            span.meetia-reason-card__spark
-              i.fa-solid.fa-sparkles
-          .meetia-compare-avatar
-            img src="/images/avatar_2.png" alt="Meetia AI" class="meetia-compare-avatar__img"
+      .meetia-compare-cta
+        .meetia-compare-cta__text-block
+          span.meetia-compare-cta__badge まずは体験！
+          p.meetia-compare-cta__lead AIによる本格商談を、ぜひご体感ください。
+        .meetia-compare-cta__actions
+          = link_to lp_trial_experience_path, lp_trial_experience_link_options.merge(class: "meetia-btn meetia-btn--primary meetia-btn--lg") do
+            | 無料で商談体験をする
+            i.fa-solid.fa-chevron-right aria-hidden="true"
+          = link_to "#features", class: "meetia-btn meetia-btn--outline meetia-btn--lg" do
+            | 機能を見る
+            i.fa-solid.fa-arrow-right aria-hidden="true"
 
   section#reviews.meetia-section.meetia-section--strip
     .meetia-section__inner
       .meetia-section__head
-        span.meetia-page-hero__eyebrow REVIEWS
+        span.meetia-section__eyebrow REVIEWS
         h2.meetia-section__title 導入企業の声
         p.meetia-section__lead Meetiaをご利用いただいている企業様からのフィードバックです。
       .meetia-reviews-summary
@@ -193,51 +562,187 @@
         .meetia-reviews-summary__stat
           span.meetia-reviews-summary__value 98%
           span.meetia-reviews-summary__label 継続率
-      .meetia-cases__grid
-        .meetia-cases__card
-          .meetia-cases__meta IT・SaaSベンダー（マーケティング責任者）
-          .meetia-cases__stars ★★★★★
-          h3 問い合わせ直後の離脱が激減。商談獲得コストが半減しました
-          p 「資料請求後に架電するまでにタイムラグがあり、競合に流れるケースが多くありました。Meetia導入後は、その場でAI商談が始まるため、熱量が最も高い状態を逃さず移行率が跳ね上がりました。」
-          span.meetia-cases__metric +35% 商談化率
-        .meetia-cases__card
-          .meetia-cases__meta 人材紹介・コンサルティング（営業取締役）
-          .meetia-cases__stars ★★★★★
-          h3 営業負担がゼロになり、夜間・休日の取りこぼしが利益に
-          p 「深夜や休日のWebアクセスに対して、AIが完璧なヒアリングと初期提案を代行。月曜朝には見込み度の高い商談結果が管理画面に並んでいる状態は、これまでの営業の常識を覆す体験です。」
-          span.meetia-cases__metric 24h 対応実現
+      .meetia-reviews-slider data-reviews-slider=""
+        button.meetia-reviews-slider__btn.meetia-reviews-slider__btn--prev type="button" aria-label="前のレビュー" data-reviews-prev=""
+          i.fa-solid.fa-chevron-left aria-hidden="true"
+        .meetia-reviews-slider__viewport
+          .meetia-reviews-slider__track
+            - TopsHelper::REVIEW_CARDS.each do |card|
+              .meetia-cases__card
+                .meetia-cases__meta = card[:meta]
+                .meetia-cases__stars ★★★★★
+                h3 = card[:title]
+                p = card[:quote]
+                span.meetia-cases__metric = card[:metric]
+        button.meetia-reviews-slider__btn.meetia-reviews-slider__btn--next type="button" aria-label="次のレビュー" data-reviews-next=""
+          i.fa-solid.fa-chevron-right aria-hidden="true"
 
   section#faq.meetia-section
     .meetia-section__inner
       .meetia-section__head
-        span.meetia-page-hero__eyebrow FAQ
+        span.meetia-section__eyebrow FAQ
         h2.meetia-section__title よくあるご質問
         p.meetia-section__lead Meetiaに関してよくいただくご質問にお答えします。
       .meetia-faq-search
         input.meetia-faq-search__input type="search" placeholder="キーワードで検索（例：料金、セキュリティ、導入期間など）" data-faq-search=""
         i.fa-solid.fa-magnifying-glass aria-hidden="true"
-      .meetia-faq-layout
+      .meetia-faq-layout data-faq-root=""
         nav.meetia-faq-categories aria-label="FAQカテゴリ"
           h3 カテゴリ
-          - TopsHelper::FAQ_CATEGORIES.each_with_index do |(_key, label, icon), idx|
-            button.meetia-faq-categories__btn type="button" class=("is-active" if idx.zero?)
+          - TopsHelper::FAQ_CATEGORIES.each_with_index do |(key, label, icon), idx|
+            button.meetia-faq-categories__btn type="button" class=("is-active" if idx.zero?) data-faq-category=key
               i.fa-solid class=icon aria-hidden="true"
               span = label
               i.fa-solid.fa-chevron-right aria-hidden="true"
         .meetia-faq-panel
-          - TopsHelper::FAQ_ITEMS.each_with_index do |(q, a), idx|
-            details.meetia-faq-panel__item class=("is-open-default" if idx.zero?)
-              summary.meetia-faq-panel__q = q
-              p.meetia-faq-panel__a = a
+          - TopsHelper::FAQ_ITEMS.each_with_index do |item, idx|
+            details.meetia-faq-panel__item class=("is-open-default" if idx.zero?) data-faq-item=item[:category] open=(idx.zero? || nil)
+              summary.meetia-faq-panel__q = item[:q]
+              p.meetia-faq-panel__a = item[:a]
       .meetia-faq-contact
         p 解決しない場合は、お気軽にお問い合わせください。
         = link_to "#company", class: "meetia-btn meetia-btn--primary meetia-btn--lg" do
           i.fa-solid.fa-envelope aria-hidden="true"
           span お問い合わせ
 
+
+
+
+  section.meetia-deal-flow
+    .meetia-deal-flow__inner
+      /-- セクションタイトル部 --/
+      .meetia-deal-flow__head
+        span.meetia-section__eyebrow HOW IT WORKS
+        h2.meetia-deal-flow__title AI音声商談の流れ
+        p.meetia-deal-flow__lead 面倒な準備は不要。URLを共有するだけで、AIが自動で音声商談から結果の分析・通知までを行います。
+
+      /-- 3ステップフローコンテナ --/
+      .meetia-deal-flow__scroll-wrap
+        button.meetia-deal-flow__scroll-btn.meetia-deal-flow__scroll-btn--prev type="button" aria-label="前へ" data-lp-scroll-prev=".meetia-deal-flow__container"
+          i.fa-solid.fa-chevron-left aria-hidden="true"
+        .meetia-deal-flow__container
+        
+          /-- STEP 1 --/
+          .meetia-deal-flow__step-card
+            .meetia-deal-flow__step-num STEP 01
+            .meetia-deal-flow__icon-wrap
+              i.fa-solid.fa-link
+            h3.meetia-deal-flow__step-title URL共有でルームを作成
+            p.meetia-deal-flow__step-desc 独自の専用商談URLを発行し、お客様へ送るだけ。面倒なカレンダー調整やパスワード設定は一切不要です。
+
+          /-- 矢印（デスクトップでは横、スマホでは非表示） --/
+          .meetia-deal-flow__arrow
+            i.fa-solid.fa-chevron-right
+
+          /-- STEP 2 --/
+          .meetia-deal-flow__step-card
+            .meetia-deal-flow__step-num STEP 02
+            .meetia-deal-flow__icon-wrap
+              i.fa-solid.fa-microphone-lines
+            h3.meetia-deal-flow__step-title AIが自動で音声商談を進行
+            p.meetia-deal-flow__step-desc お客様がURLにアクセスすると、AIアバターが営業資料に沿って自然な音声対話でヒアリングと提案を行います。
+
+          /-- 矢印 --/
+          .meetia-deal-flow__arrow
+            i.fa-solid.fa-chevron-right
+
+          /-- STEP 3 --/
+          .meetia-deal-flow__step-card
+            .meetia-deal-flow__step-num STEP 03
+            .meetia-deal-flow__icon-wrap
+              i.fa-solid.fa-chart-pie
+            h3.meetia-deal-flow__step-title 終了後に結果を自動分析・通知
+            p.meetia-deal-flow__step-desc 録音、テキスト書き起こし、顧客の関心度（見込み度判定）を自動解析。結果は即座にダッシュボードに反映されます。
+        button.meetia-deal-flow__scroll-btn.meetia-deal-flow__scroll-btn--next type="button" aria-label="次へ" data-lp-scroll-next=".meetia-deal-flow__container"
+          i.fa-solid.fa-chevron-right aria-hidden="true"
+
+
+
+
   section#company.meetia-section.meetia-section--strip
     .meetia-section__inner.meetia-section__inner--wide
-      = render "tops/shared/company_profile"
 
-  = render "tops/shared/cta_band"
-  = render "tops/shared/footer"
+      .meetia-company-profile
+        .meetia-company-profile__head
+          span.meetia-section__eyebrow ABOUT US
+          h2.meetia-company-profile__title 会社概要
+          p.meetia-company-profile__lead AIと人の営業体験を融合し、商談機会の取りこぼしをゼロに。
+
+        .meetia-company-profile__grid
+          .meetia-company-profile__left
+            h3.meetia-company-profile__catch
+              | 営業の未来を、
+              br
+              | AIと共に
+              span.meetia-text-gradient 創る。
+            p.meetia-company-profile__mission-text Meetiaは、営業資料をもとにAIが音声商談を代行するBtoB向けサービスです。24時間体制で商談機会を逃さず、データに基づく営業改善を支援します。
+            .meetia-company-profile__stats
+              - TopsHelper::COMPANY_STATS.each do |stat|
+                .meetia-company-profile__stat
+                  .meetia-company-profile__stat-icon
+                    i.fa-solid class=stat[:icon] aria-hidden="true"
+                  span.meetia-company-profile__stat-label = stat[:label]
+                  .meetia-company-profile__stat-num
+                    span = stat[:num]
+                    small = stat[:unit]
+
+          .meetia-company-profile__right
+            .meetia-company-profile__facts
+              - TopsHelper::COMPANY_PROFILE.each do |label, value|
+                .meetia-company-profile__row
+                  .meetia-company-profile__th = label
+                  .meetia-company-profile__td = value
+
+  section.meetia-cta-band
+    .meetia-cta-band__inner
+      .meetia-cta-band__header
+        span.meetia-cta-band__badge
+          i.fa-solid.fa-bolt aria-hidden="true"
+          | TRIAL
+        h2.meetia-cta-band__title
+          = "#{Subscription::TRIAL_DAYS}日間の無料トライアルを今すぐ体験"
+        p.meetia-cta-band__lead AIアバター「ミーティア」で、商談機会を逃さない。資料をアップロードするだけ。24時間、あなたの営業資料で音声商談が始まります。
+
+      .meetia-cta-band__features
+        - TopsHelper::TRIAL_FEATURES.each do |feature|
+          .meetia-cta-band__feature
+            .meetia-cta-band__feature-icon
+              i.fa-solid class=feature[:icon] aria-hidden="true"
+            h3.meetia-cta-band__feature-label = feature[:label]
+            p.meetia-cta-band__feature-desc = feature[:desc]
+
+      .meetia-cta-band__actions
+        = link_to lp_sign_up_path, class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-cta-band__btn" do
+          i.fa-solid.fa-rocket aria-hidden="true"
+          span 無料トライアルを開始
+  footer.meetia-footer
+    .meetia-footer__glow aria-hidden="true"
+    .meetia-footer__inner
+      .meetia-footer__brand
+        = link_to root_path, class: "meetia-footer__logo-link" do
+          = image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-footer__logo-image"
+        p.meetia-footer__tagline 資料を見ながら、AIと本格商談
+        p.meetia-footer__desc BtoB向けAI商談代行サービス。資料アップロードから音声商談・分析・フォローまで。
+      nav.meetia-footer__nav aria-label="フッターナビ"
+        h3.meetia-footer__nav-title プロダクト
+        .meetia-footer__nav-links
+          - TopsHelper::LP_NAV_ITEMS.first(4).each do |item|
+            = link_to item[:label], item[:href], class: "meetia-footer__link"
+      nav.meetia-footer__nav aria-label="サポート"
+        h3.meetia-footer__nav-title サポート
+        .meetia-footer__nav-links
+          - TopsHelper::LP_NAV_ITEMS.last(3).each do |item|
+            = link_to item[:label], item[:href], class: "meetia-footer__link"
+      .meetia-footer__cta
+        h3.meetia-footer__nav-title 今すぐ体験
+        p = "#{Subscription::TRIAL_DAYS}日間、無料でAI商談をお試しください。"
+        = link_to lp_trial_experience_path, lp_trial_experience_link_options.merge(class: "meetia-btn meetia-btn--primary meetia-btn--sm") do
+          i.fa-solid.fa-bolt aria-hidden="true"
+          span 無料で商談体験
+    .meetia-footer__bottom
+      p.meetia-footer__copy © #{Time.current.year} Meetia Inc.
+      .meetia-footer__bottom-links
+        = link_to "#faq", class: "meetia-footer__bottom-link" do
+          | FAQ
+        = link_to "#company", class: "meetia-footer__bottom-link" do
+          | 会社概要

@@ -12,7 +12,7 @@ module DealFollowUp
     end
 
     def text_body
-      [render_text(@delivery.body), cta_text_section, unsubscribe_text].compact.join("\n\n")
+      [render_text(@delivery.body), personalization_appendix, cta_text_section, unsubscribe_text].compact.join("\n\n")
     end
 
     def html_body
@@ -20,7 +20,12 @@ module DealFollowUp
         "<p>#{ERB::Util.html_escape(chunk).gsub(/\n/, '<br>')}</p>"
       end.join
 
-      [paragraphs, cta_html_section, unsubscribe_html].compact.join
+      appendix = personalization_appendix
+      appendix_html = if appendix.present?
+        %(<div style="margin-top:20px;padding:16px;background:#f8fafc;border-radius:8px;"><p style="margin:0;white-space:pre-line;">#{ERB::Util.html_escape(appendix)}</p></div>)
+      end
+
+      [paragraphs, appendix_html, cta_html_section, unsubscribe_html].compact.join
     end
 
     def open_tracking_url
@@ -34,10 +39,26 @@ module DealFollowUp
     end
 
     def render_text(text)
+      summary = @user_progress.session_summary_hash
       text.to_s
           .gsub("{{user_name}}", @user.name.presence || "お客")
           .gsub("{{deal_title}}", @deal.title)
           .gsub("{{company_name}}", @user.company.presence || "")
+          .gsub("{{prospect_grade}}", @user_progress.prospect_grade.presence || "-")
+          .gsub("{{session_summary}}", @user_progress.session_summary_lines.join("\n").presence || "商談内容を確認中です")
+          .gsub("{{interest_topics}}", Array(summary["topics"]).join("、").presence || "ご関心トピック")
+          .gsub("{{next_action}}", summary["next_action"].presence || "ご検討のサポート")
+    end
+
+    def personalization_appendix
+      return nil if @delivery.body.to_s.include?("{{session_summary}}")
+
+      lines = @user_progress.session_summary_lines
+      return nil if lines.blank?
+
+      grade = @user_progress.prospect_grade
+      header = grade.present? ? "【商談サマリー（見込み度 #{grade}）】" : "【商談サマリー】"
+      [header, *lines].join("\n")
     end
 
     def template

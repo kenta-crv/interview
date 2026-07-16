@@ -2,22 +2,34 @@
 
 .meetia-company-profile
   .meetia-company-profile__head
-    p.meetia-company-profile__eyebrow COMPANY
+    p.meetia-company-profile__eyebrow ABOUT US
     - if heading_tag == :h1
       h1.meetia-company-profile__title 会社概要
     - else
       h2.meetia-company-profile__title 会社概要
     p.meetia-company-profile__lead AIと人の営業体験を融合し、商談機会の取りこぼしをゼロに。
 
-  .meetia-company-profile__body
-    .meetia-company-profile__mission
-      p.meetia-company-profile__mission-label MISSION
-      h3.meetia-company-profile__mission-title 営業の未来を、AIと共に。
+  .meetia-company-profile__grid
+    .meetia-company-profile__left
+      h3.meetia-company-profile__catch
+        | 営業の未来を、
+        br
+        | AIと共に
+        span.meetia-text-gradient 創る。
       p.meetia-company-profile__mission-text Meetiaは、営業資料をもとにAIが音声商談を代行するBtoB向けサービスです。24時間体制で商談機会を逃さず、データに基づく営業改善を支援します。
+      .meetia-company-profile__stats
+        - TopsHelper::COMPANY_STATS.each do |stat|
+          .meetia-company-profile__stat
+            .meetia-company-profile__stat-icon
+              i.fa-solid class=stat[:icon] aria-hidden="true"
+            span.meetia-company-profile__stat-label = stat[:label]
+            .meetia-company-profile__stat-num
+              span = stat[:num]
+              small = stat[:unit]
 
-    .meetia-company-profile__facts
-      dl.meetia-company-profile__list
+    .meetia-company-profile__right
+      .meetia-company-profile__facts
         - TopsHelper::COMPANY_PROFILE.each do |label, value|
           .meetia-company-profile__row
-            dt = label
-            dd = value
+            .meetia-company-profile__th = label
+            .meetia-company-profile__td = value

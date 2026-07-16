@@ -3,6 +3,7 @@ class Dashboard::UserProgressesController < Dashboard::BaseController
 
   def index
     @user_progresses = @deal.user_progresses.includes(:user).order(created_at: :desc)
+    @evaluations_by_user_id = @deal.deal_evaluations.index_by(&:user_id)
   end
 
   def show

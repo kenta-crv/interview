@@ -39,6 +39,15 @@
     document.querySelectorAll('[data-pricing-bound]').forEach(function(el) {
       el.removeAttribute('data-pricing-bound');
     });
+    document.querySelectorAll('[data-faq-search-bound]').forEach(function(el) {
+      el.removeAttribute('data-faq-search-bound');
+    });
+    document.querySelectorAll('[data-reviews-bound]').forEach(function(el) {
+      el.removeAttribute('data-reviews-bound');
+    });
+    document.querySelectorAll('[data-lp-scroll-bound]').forEach(function(el) {
+      el.removeAttribute('data-lp-scroll-bound');
+    });
   });
 
   document.addEventListener('turbolinks:before-cache', function() {
@@ -67,7 +76,10 @@
     function layout() {
       var viewportWidth = viewport.clientWidth;
       if (viewportWidth < 640) {
-        return { full: 1, peek: 0.45 };
+        return { full: 1, peek: 0.12 };
+      }
+      if (viewportWidth < 1024) {
+        return { full: 2, peek: 0.25 };
       }
       return { full: initialFullCards, peek: initialPeekRatio };
     }
@@ -242,17 +254,163 @@
   }
 
   function initFaqSearch() {
+    var root = document.querySelector('[data-faq-root]');
     var searchInput = document.querySelector('[data-faq-search]');
     var items = document.querySelectorAll('.meetia-faq-panel__item');
     if (!searchInput || !items.length) return;
 
     MeetiaPageInit.bindOnce(searchInput, 'data-faq-search-bound', function(input) {
-      input.addEventListener('input', function() {
+      var categoryBtns = root ? root.querySelectorAll('[data-faq-category]') : [];
+      var activeCategory = 'service';
+
+      function applyFilters() {
         var q = input.value.trim().toLowerCase();
         items.forEach(function(item) {
+          var category = item.getAttribute('data-faq-item') || '';
           var text = item.textContent.toLowerCase();
-          item.style.display = !q || text.indexOf(q) !== -1 ? '' : 'none';
+          var matchCategory = !activeCategory || category === activeCategory;
+          var matchSearch = !q || text.indexOf(q) !== -1;
+          item.classList.toggle('is-hidden', !(matchCategory && matchSearch));
+          item.style.display = (matchCategory && matchSearch) ? '' : 'none';
         });
+      }
+
+      function setCategory(category) {
+        activeCategory = category;
+        categoryBtns.forEach(function(btn) {
+          btn.classList.toggle('is-active', btn.getAttribute('data-faq-category') === category);
+        });
+        applyFilters();
+      }
+
+      categoryBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          setCategory(btn.getAttribute('data-faq-category'));
+        });
+      });
+
+      input.addEventListener('input', applyFilters);
+
+      if (categoryBtns.length) {
+        setCategory(categoryBtns[0].getAttribute('data-faq-category'));
+      } else {
+        applyFilters();
+      }
+    });
+  }
+
+  function initLpCardScroll() {
+    function scrollToCard(selector, direction) {
+      var grid = document.querySelector(selector);
+      if (!grid) return;
+      var step;
+      if (grid.classList.contains('meetia-compare-scroll')) {
+        step = Math.max(200, grid.clientWidth * 0.75);
+      } else {
+        var card = grid.querySelector('.meetia-problems__card, .meetia-service-concept__card, .meetia-ai-deal-flow__step, .meetia-deal-flow__step-card');
+        if (!card) return;
+        var style = window.getComputedStyle(grid);
+        var gap = parseFloat(style.columnGap || style.gap || '16') || 16;
+        step = card.getBoundingClientRect().width + gap;
+      }
+      grid.scrollBy({ left: direction * step, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('[data-lp-scroll-prev]').forEach(function(btn) {
+      MeetiaPageInit.bindOnce(btn, 'data-lp-scroll-bound', function(el) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          scrollToCard(el.getAttribute('data-lp-scroll-prev'), -1);
+        });
+      });
+    });
+
+    document.querySelectorAll('[data-lp-scroll-next]').forEach(function(btn) {
+      MeetiaPageInit.bindOnce(btn, 'data-lp-scroll-bound', function(el) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          scrollToCard(el.getAttribute('data-lp-scroll-next'), 1);
+        });
+      });
+    });
+  }
+
+  function initReviewsSlider() {
+    document.querySelectorAll('[data-reviews-slider]').forEach(function(root) {
+      MeetiaPageInit.bindOnce(root, 'data-reviews-bound', function(slider) {
+        var viewport = slider.querySelector('.meetia-reviews-slider__viewport');
+        var track = slider.querySelector('.meetia-reviews-slider__track');
+        var prev = slider.querySelector('[data-reviews-prev]');
+        var next = slider.querySelector('[data-reviews-next]');
+        if (!viewport || !track || !prev || !next) return;
+
+        var index = 0;
+        var gap = 16;
+
+        function cards() {
+          return track.querySelectorAll('.meetia-cases__card');
+        }
+
+        function perView() {
+          return viewport.clientWidth < 768 ? 1 : 2;
+        }
+
+        function cardWidth() {
+          var count = perView();
+          return (viewport.clientWidth - gap * (count - 1)) / count;
+        }
+
+        function maxIndex() {
+          return Math.max(0, cards().length - perView());
+        }
+
+        function render() {
+          var width = cardWidth();
+          cards().forEach(function(card) {
+            card.style.flexBasis = width + 'px';
+            card.style.width = width + 'px';
+            card.style.maxWidth = width + 'px';
+          });
+          if (index > maxIndex()) index = maxIndex();
+          track.style.transform = 'translateX(-' + (index * (width + gap)) + 'px)';
+          prev.classList.toggle('is-disabled', index <= 0);
+          next.classList.toggle('is-disabled', index >= maxIndex());
+        }
+
+        prev.addEventListener('click', function() {
+          if (index <= 0) return;
+          index -= 1;
+          render();
+        });
+
+        next.addEventListener('click', function() {
+          if (index >= maxIndex()) return;
+          index += 1;
+          render();
+        });
+
+        var touchStartX = null;
+        viewport.addEventListener('touchstart', function(e) {
+          if (!e.touches.length) return;
+          touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+
+        viewport.addEventListener('touchend', function(e) {
+          if (touchStartX === null || !e.changedTouches.length) return;
+          var delta = e.changedTouches[0].clientX - touchStartX;
+          touchStartX = null;
+          if (Math.abs(delta) < 40) return;
+          if (delta < 0 && index < maxIndex()) {
+            index += 1;
+            render();
+          } else if (delta > 0 && index > 0) {
+            index -= 1;
+            render();
+          }
+        }, { passive: true });
+
+        window.addEventListener('resize', render);
+        requestAnimationFrame(render);
       });
     });
   }
@@ -262,4 +420,6 @@
   MeetiaPageInit.onPageReady(initFaqChat);
   MeetiaPageInit.onPageReady(initHeroPlayButton);
   MeetiaPageInit.onPageReady(initFaqSearch);
+  MeetiaPageInit.onPageReady(initLpCardScroll);
+  MeetiaPageInit.onPageReady(initReviewsSlider);
 })(window);

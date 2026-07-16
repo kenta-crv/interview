@@ -33,23 +33,34 @@
             tr
               th ID
               th リード名
+              th 役職
               th 会社名
               th メール
+              th 見込み度
+              th 満足度
               th 検討フェーズ
               th 導入予定日
-              th 重要ポイント
               th 作成日
               th 操作
           tbody
             - @user_progresses.each do |progress|
+              - evaluation = @evaluations_by_user_id[progress.user_id]
               tr
                 td= progress.id
                 td= progress.user&.name.presence || "—"
+                td= progress.user&.job_title.presence || "—"
                 td= progress.user&.company.presence || "—"
                 td= progress.user&.email.presence || "—"
+                td
+                  - if progress.prospect_grade.present?
+                    | #{progress.prospect_grade}
+                    - if progress.prospect_score.present?
+                      | （#{progress.prospect_score}）
+                  - else
+                    | —
+                td= evaluation ? "#{evaluation.rating}/5" : "—"
                 td= progress.consideration_phase&.humanize.presence || "—"
                 td= progress.planned_introduction_date&.strftime("%Y/%m/%d") || "—"
-                td= progress.key_points_for_application&.truncate(50).presence || "—"
                 td= l(progress.created_at, format: :short)
                 td
                   = link_to dashboard_deal_user_progress_path(@deal, progress), class: "db-v2-deals-table__link" do

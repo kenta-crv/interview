@@ -288,7 +288,7 @@
                     .db-v2-form-group
                       = label_tag "templates[#{template.id}_body]", "本文", class: "db-v2-form-label"
                       = text_area_tag "templates[#{template.id}][body]", template.body, class: "db-v2-form-control", rows: 5
-                      small.db-v2-muted 利用可能: {{user_name}} / {{deal_title}} / {{company_name}}
+                      small.db-v2-muted 利用可能: {{user_name}} / {{deal_title}} / {{company_name}} / {{prospect_grade}} / {{session_summary}} / {{interest_topics}} / {{next_action}}
                     .db-v2-form-group.db-v2-form-group--checks
                       label.db-v2-check-label
                         = hidden_field_tag "templates[#{template.id}][include_sales_call_link]", "0"
@@ -317,6 +317,41 @@
               i.fa-solid.fa-chevron-right aria-hidden="true"
           .db-v2-bottom-card__body
             p.db-v2-muted 商談を完了した見込み客の一覧・詳細分析はリード管理から確認できます。
+            .progress-info style="margin-top:12px;"
+              .info-row
+                .info-label 平均満足度
+                .info-value = @average_evaluation ? "#{@average_evaluation} / 5（#{@evaluation_count}件）" : "まだ評価がありません"
+              .info-row
+                .info-label 見込み度分布
+                .info-value
+                  - if @prospect_grade_counts.present?
+                    - %w[A B C D].each do |grade|
+                      - count = @prospect_grade_counts[grade].to_i
+                      - next if count.zero?
+                      span style="margin-right:12px;" #{grade}: #{count}
+                  - else
+                    | まだ分析結果がありません
+
+        - if @deal_evaluations&.any?
+          .db-v2-bottom-card
+            .db-v2-bottom-card__header
+              h2.db-v2-bottom-card__title 満足度フィードバック（直近）
+            .db-v2-bottom-card__body
+              .db-v2-leads-table-wrap
+                table.db-v2-leads-table
+                  thead
+                    tr
+                      th 日時
+                      th ユーザー
+                      th 評価
+                      th フィードバック
+                  tbody
+                    - @deal_evaluations.each do |evaluation|
+                      tr
+                        td= l(evaluation.created_at, format: :short)
+                        td= evaluation.user&.name.presence || evaluation.user&.email || "—"
+                        td= "#{evaluation.rating}/5"
+                        td= evaluation.feedback.presence&.truncate(80) || "—"
 
         - if @presentation_events&.any?
           .db-v2-bottom-card#presentation-analytics
