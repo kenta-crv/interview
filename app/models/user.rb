@@ -10,6 +10,7 @@ class User < ApplicationRecord
   has_many :user_progresses, dependent: :destroy
 
   validates :name, presence: true
+  validates :job_title, presence: true
   validates :email, presence: true, uniqueness: true
 
   def full_name

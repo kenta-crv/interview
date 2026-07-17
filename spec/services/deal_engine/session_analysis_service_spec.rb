@@ -12,7 +12,7 @@ RSpec.describe DealEngine::SessionAnalysisService do
     )
   end
   let(:deal) { client.deals.create!(title: "Demo Deal", language: "ja") }
-  let(:user) { User.create!(email: "prospect@example.com", password: "password123", name: "太郎") }
+  let(:user) { User.create!(email: "prospect@example.com", password: "password123", name: "太郎", job_title: "担当者") }
   let(:user_progress) do
     deal.user_progresses.create!(
       user: user,

@@ -1,50 +1,61 @@
 .deal-public-page
   .deal-public-page__glow aria-hidden="true"
   .deal-public-page__shell
-    header.deal-public-page__header
-      h1.deal-public-page__title 商談参加登録
-      p.deal-public-page__deal-title = @deal.title
-      p.deal-public-page__lead 必要事項を入力して、音声付きAI商談を開始してください。
+    - if @deal_not_ready
+      header.deal-public-page__header
+        h1.deal-public-page__title 商談はまだ公開されていません
+        p.deal-public-page__deal-title = @deal.title
+        p.deal-public-page__lead
+          | 資料の準備と公開設定が完了するまで、このURLでは商談を開始できません。
+          br
+          | 公開後にもう一度アクセスしてください。
+      .deal-public-page__card
+        p.deal-public-page__lead style="margin:0;" ご不明点は、商談のご案内元へお問い合わせください。
+    - else
+      header.deal-public-page__header
+        h1.deal-public-page__title 商談参加登録
+        p.deal-public-page__deal-title = @deal.title
+        p.deal-public-page__lead 必要事項を入力して、音声付きAI商談を開始してください。
 
-    .deal-public-page__card
-      = form_with url: create_user_info_public_deal_session_path(token: @deal.access_token), local: true, html: { class: "deal-public-form" } do |f|
-        .deal-public-form__section
-          h2.deal-public-form__section-title 参加者情報
-          .deal-public-form__grid
-            .deal-public-form__group
-              = label_tag "user[name]", "お名前", class: "deal-public-form__label"
-              = text_field_tag "user[name]", "", class: "deal-public-form__control", required: true
-            .deal-public-form__group
-              = label_tag "user[job_title]", "役職", class: "deal-public-form__label"
-              = text_field_tag "user[job_title]", "", class: "deal-public-form__control", placeholder: "例: 営業部長 / 情報システム担当"
-            .deal-public-form__group
-              = label_tag "user[company]", "会社名", class: "deal-public-form__label"
-              = text_field_tag "user[company]", "", class: "deal-public-form__control", required: true
-            .deal-public-form__group
-              = label_tag "user[email]", "メールアドレス", class: "deal-public-form__label"
-              = email_field_tag "user[email]", "", class: "deal-public-form__control", required: true
-            .deal-public-form__group
-              = label_tag "user[tel]", "電話番号", class: "deal-public-form__label"
-              = telephone_field_tag "user[tel]", "", class: "deal-public-form__control"
-            .deal-public-form__group.deal-public-form__group--full
-              = label_tag "user[address]", "住所", class: "deal-public-form__label"
-              = text_area_tag "user[address]", "", class: "deal-public-form__control", rows: 3
-            .deal-public-form__group.deal-public-form__group--full
-              = label_tag "user[url]", "WebサイトURL", class: "deal-public-form__label"
-              = url_field_tag "user[url]", "", class: "deal-public-form__control"
+      .deal-public-page__card
+        = form_with url: create_user_info_public_deal_session_path(token: @deal.access_token), local: true, html: { class: "deal-public-form" } do |f|
+          .deal-public-form__section
+            h2.deal-public-form__section-title 参加者情報
+            .deal-public-form__grid
+              .deal-public-form__group
+                = label_tag "user[name]", "お名前", class: "deal-public-form__label"
+                = text_field_tag "user[name]", "", class: "deal-public-form__control", required: true
+              .deal-public-form__group
+                = label_tag "user[job_title]", "役職", class: "deal-public-form__label"
+                = text_field_tag "user[job_title]", "", class: "deal-public-form__control", required: true, placeholder: "例: 営業部長 / 情報システム担当"
+              .deal-public-form__group
+                = label_tag "user[company]", "会社名", class: "deal-public-form__label"
+                = text_field_tag "user[company]", "", class: "deal-public-form__control", required: true
+              .deal-public-form__group
+                = label_tag "user[email]", "メールアドレス", class: "deal-public-form__label"
+                = email_field_tag "user[email]", "", class: "deal-public-form__control", required: true
+              .deal-public-form__group
+                = label_tag "user[tel]", "電話番号", class: "deal-public-form__label"
+                = telephone_field_tag "user[tel]", "", class: "deal-public-form__control"
+              .deal-public-form__group.deal-public-form__group--full
+                = label_tag "user[address]", "住所", class: "deal-public-form__label"
+                = text_area_tag "user[address]", "", class: "deal-public-form__control", rows: 3
+              .deal-public-form__group.deal-public-form__group--full
+                = label_tag "user[url]", "WebサイトURL", class: "deal-public-form__label"
+                = url_field_tag "user[url]", "", class: "deal-public-form__control"
 
-        .deal-public-form__section
-          h2.deal-public-form__section-title 商談進捗情報
-          .deal-public-form__grid
-            .deal-public-form__group
-              = label_tag :consideration_phase, "検討フェーズ", class: "deal-public-form__label"
-              = select_tag :consideration_phase, options_for_select(UserProgress.consideration_phases.map { |k, _v| [k.humanize, k] }), class: "deal-public-form__control"
-            .deal-public-form__group
-              = label_tag :planned_introduction_date, "導入予定日", class: "deal-public-form__label"
-              = date_field_tag :planned_introduction_date, nil, class: "deal-public-form__control"
-            .deal-public-form__group.deal-public-form__group--full
-              = label_tag :key_points_for_application, "申し込みの重要ポイント", class: "deal-public-form__label"
-              = text_area_tag :key_points_for_application, "", class: "deal-public-form__control", rows: 4, placeholder: "申し込みを決める際に重視するポイントを教えてください"
+          .deal-public-form__section
+            h2.deal-public-form__section-title 商談進捗情報
+            .deal-public-form__grid
+              .deal-public-form__group
+                = label_tag :consideration_phase, "検討フェーズ", class: "deal-public-form__label"
+                = select_tag :consideration_phase, options_for_select(UserProgress.consideration_phases.map { |k, _v| [k.humanize, k] }), class: "deal-public-form__control"
+              .deal-public-form__group
+                = label_tag :planned_introduction_date, "導入予定日", class: "deal-public-form__label"
+                = date_field_tag :planned_introduction_date, nil, class: "deal-public-form__control"
+              .deal-public-form__group.deal-public-form__group--full
+                = label_tag :key_points_for_application, "申し込みの重要ポイント", class: "deal-public-form__label"
+                = text_area_tag :key_points_for_application, "", class: "deal-public-form__control", rows: 4, placeholder: "申し込みを決める際に重視するポイントを教えてください"
 
-        .deal-public-form__actions
-          = f.submit "登録してAI商談を開始", class: "deal-public-form__submit", name: "commit"
+          .deal-public-form__actions
+            = f.submit "登録してAI商談を開始", class: "deal-public-form__submit", name: "commit"

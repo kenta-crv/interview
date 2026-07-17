@@ -19,17 +19,6 @@
         span.icon 📝
         p 未回答FAQが #{@pending_faq_count} 件あります。クリックして回答してください。
 
-    .deal-knowledge-settings
-      = form_with model: @deal, url: dashboard_deal_path(@deal), method: :patch, local: true, html: { class: "deal-industry-form" } do |f|
-        .form-group.deal-knowledge-settings__field
-          = f.label :industry, "業種（必須FAQチェックリスト）", class: "form-label"
-          .deal-industry-row
-            = f.select :industry, Deal::INDUSTRIES.map { |k, v| [v, k] }, {}, class: "form-control"
-            = f.submit "業種を保存", class: "btn-secondary-custom btn-sm"
-      - if @checklist_coverage[:total].positive?
-        p.deal-checklist-meta
-          | 業種チェックリスト: #{@checklist_coverage[:answered]}/#{@checklist_coverage[:total]}（#{@checklist_coverage[:percent]}%）
-
     .deal-knowledge-supplement
       h3.admin-card-title.db-v2-subsection-title 📎 補足資料（FAQ自動抽出）
       p.text-muted.deal-knowledge-supplement__hint 料金表・仕様書・FAQ PDFなど。スライドには使わずFAQのみ抽出します。
@@ -89,10 +78,9 @@
           | AI分析・FAQ追加ツール
       .deal-faq-advanced__body
         .deal-faq-tools
-          = button_to "AIギャップ分析", analyze_gaps_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", disabled: @deal.deal_summary.blank?, data: { turbo: false }
+          = button_to "資料からFAQ提案", analyze_gaps_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", disabled: @deal.deal_summary.blank?, data: { turbo: false }
           = button_to "商談ログから提案", suggest_from_events_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", data: { turbo: false }
           = button_to "Buyerストレステスト", stress_test_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", disabled: @deal.deal_summary.blank?, data: { turbo: false }
-          = button_to "業種チェックリスト適用", apply_checklist_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", data: { turbo: false }
           - if deal_owner.gap_analysis_suggest_only?
             span.deal-faq-analyze-hint トライアルは各分析が軽量モードです
 

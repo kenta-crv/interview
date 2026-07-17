@@ -20,7 +20,7 @@ class DealFaq < ApplicationRecord
     "supplement_pdf" => "補足PDF",
     "session_log" => "商談ログ",
     "stress_test" => "ストレステスト",
-    "checklist" => "業種チェック"
+    "checklist" => "チェックリスト"
   }.freeze
   STATUSES = %w[pending approved skipped].freeze
 

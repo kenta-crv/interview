@@ -4,7 +4,7 @@
 - topic_split_at = (topic_items.size / 2.0).ceil
 - left_topics = topic_items.first(topic_split_at)
 - right_topics = topic_items.drop(topic_split_at)
-- config_payload = { pages: deal_pages.map { |p| { page_number: p.page_number, title: p.title, script: p.script, audio_url: (p.page_audio.attached? ? rails_blob_path(p.page_audio, only_path: true) : p.audio_url) } }, opening: opening_payload, opening_segments: opening_segments, respond_url: respond_url, evaluate_url: evaluate_url, track_url: (local_assigns[:track_url].presence), public_mode: public_mode, cta: cta }.to_json
+- config_payload = { pages: deal_pages.map { |p| { page_number: p.page_number, title: p.title, script: p.script, audio_url: (deal_record ? deal_record.page_audio_path(p) : (p.page_audio.attached? ? rails_blob_path(p.page_audio, only_path: true) : p.audio_url)) } }, opening: opening_payload, opening_segments: opening_segments, respond_url: respond_url, evaluate_url: evaluate_url, track_url: (local_assigns[:track_url].presence), public_mode: public_mode, cta: cta }.to_json
 
 script type="application/json" id="deal-presentation-config"
   = raw json_escape(config_payload)

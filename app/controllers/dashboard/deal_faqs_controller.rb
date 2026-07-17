@@ -43,7 +43,7 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
 
     result = DealEngine::FaqGapAnalysisService.new(@deal, client: current_client).analyze!
     notice = if result[:created].to_i.positive?
-      "Buyerが聞きそうな質問を#{result[:created]}件提案しました"
+      "資料をもとにBuyerが聞きそうな質問を#{result[:created]}件提案しました"
     else
       "新しい提案はありません（既存FAQでカバー済みの可能性があります）"
     end
@@ -74,17 +74,6 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
       "厳しいBuyer質問#{result[:tested]}件中、未カバー#{result[:created]}件をFAQ候補に追加しました"
     else
       "ストレステスト完了：主要な質問はFAQでカバーされています"
-    end
-
-    redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: notice
-  end
-
-  def apply_checklist
-    result = DealEngine::IndustryFaqChecklist.apply!(@deal)
-    notice = if result[:created].to_i.positive?
-      "#{@deal.industry_label}向けチェックリストから#{result[:created]}件を追加しました"
-    else
-      "チェックリスト項目は既に追加済みです"
     end
 
     redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: notice

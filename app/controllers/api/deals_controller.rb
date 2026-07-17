@@ -143,7 +143,7 @@ module Api
             filename: "speech_#{@deal.id}.mp3",
             content_type: 'audio/mpeg',
             file_size: audio_data.size,
-            voice: 'alloy',
+            voice: deal.openai_tts_voice,
             language: @deal.language
           )
           deal_speech.audio_file.attach(

@@ -19,7 +19,7 @@ RSpec.describe DealFollowUp::BodyRenderer do
       follow_up_sales_url: "https://example.com/sales"
     )
   end
-  let(:user) { User.create!(email: "prospect@example.com", password: "password123", name: "太郎") }
+  let(:user) { User.create!(email: "prospect@example.com", password: "password123", name: "太郎", job_title: "担当者") }
   let(:user_progress) { deal.user_progresses.create!(user: user, follow_up_unsubscribe_token: "token") }
   let(:template) { deal.deal_follow_up_templates.first }
   let(:delivery) do

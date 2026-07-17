@@ -19,14 +19,14 @@
               - card_classes << "db-v2-pricing__card--trial" if is_trial
               - card_classes << "db-v2-pricing__card--current" if current_plan == plan_key.to_s
               .db-v2-pricing__card class=card_classes.join(" ")
-                - if config[:popular]
-                  span.db-v2-pricing__badge.db-v2-pricing__badge--popular POPULAR
-                - if config[:featured]
-                  span.db-v2-pricing__badge.db-v2-pricing__badge--featured RECOMMENDED
-                - if is_trial
-                  span.db-v2-pricing__badge.db-v2-pricing__badge--trial FREE TRIAL
-                - if current_plan == plan_key.to_s
-                  span.db-v2-pricing__badge 現在のプラン
+                - badge_items = []
+                - badge_items << ["db-v2-pricing__badge--popular", "POPULAR"] if config[:popular]
+                - badge_items << ["db-v2-pricing__badge--featured", "RECOMMENDED"] if config[:featured]
+                - badge_items << ["db-v2-pricing__badge--trial", "FREE TRIAL"] if is_trial
+                - if badge_items.any?
+                  .db-v2-pricing__badges
+                    - badge_items.each do |badge_class, badge_label|
+                      span.db-v2-pricing__badge class=badge_class = badge_label
                 .db-v2-pricing__card-head
                   h3.db-v2-pricing__plan = config[:name]
                   .db-v2-pricing__price

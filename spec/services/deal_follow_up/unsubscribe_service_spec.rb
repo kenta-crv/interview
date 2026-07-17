@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe DealFollowUp::UnsubscribeService do
   let(:client) { Client.create!(email: "biz@example.com", password: "password123") }
   let(:deal) { client.deals.create!(title: "Demo Deal", language: "ja") }
-  let(:user) { User.create!(email: "prospect@example.com", password: "password123", name: "太郎") }
+  let(:user) { User.create!(email: "prospect@example.com", password: "password123", name: "太郎", job_title: "担当者") }
   let(:user_progress) { deal.user_progresses.create!(user: user, follow_up_unsubscribe_token: "token123") }
   let!(:delivery) do
     user_progress.follow_up_deliveries.create!(

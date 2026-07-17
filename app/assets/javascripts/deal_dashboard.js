@@ -101,8 +101,20 @@
 
     var shareUrlField = document.getElementById('deal-share-url-field');
     var shareUrlCopyBtn = document.getElementById('deal-share-url-copy');
+    var shareUrlOpenBtn = document.getElementById('deal-share-url-open');
+    var shareStrip = root.querySelector('.db-v2-share-strip');
 
-    function copyShareUrl(value) {
+    function shareReadyFrom(el) {
+      var host = el && (el.closest('[data-share-ready]') || shareStrip);
+      return !!(host && host.getAttribute('data-share-ready') === 'true');
+    }
+
+    function copyShareUrl(value, triggerEl) {
+      if (!shareReadyFrom(triggerEl || shareStrip)) {
+        alert('公開後にご利用いただけます');
+        return;
+      }
+
       var text = value || '';
       if (!text) return;
 
@@ -129,7 +141,16 @@
 
     if (shareUrlCopyBtn && shareUrlField) {
       shareUrlCopyBtn.addEventListener('click', function() {
-        copyShareUrl(shareUrlField.value);
+        copyShareUrl(shareUrlField.value, shareUrlCopyBtn);
+      });
+    }
+
+    if (shareUrlOpenBtn) {
+      shareUrlOpenBtn.addEventListener('click', function(e) {
+        if (!shareReadyFrom(shareUrlOpenBtn)) {
+          e.preventDefault();
+          alert('公開後にご利用いただけます');
+        }
       });
     }
 
@@ -138,7 +159,7 @@
         var row = btn.closest('.db-v2-copy-row');
         var input = row ? row.querySelector('input[type="text"]') : null;
         if (!input) return;
-        copyShareUrl(input.value);
+        copyShareUrl(input.value, btn);
       });
     });
 

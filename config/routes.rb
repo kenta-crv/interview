@@ -115,7 +115,6 @@ Rails.application.routes.draw do
           post :analyze_gaps
           post :suggest_from_events
           post :stress_test
-          post :apply_checklist
         end
       end
       member do

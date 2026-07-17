@@ -102,10 +102,11 @@ module DealEngine
     def synthesize_reply_audio(text)
       return nil if text.blank?
 
-      audio_data = TtsService.new(
+      audio_data = ::DealEngine::TTSService.new(
         text: text.to_s.truncate(900),
-        voice: 'alloy',
-        language: @language
+        voice: @deal.openai_tts_voice,
+        language: @language,
+        gender: @deal.tts_voice_gender
       ).generate_speech
 
       blob = ActiveStorage::Blob.create_and_upload!(
