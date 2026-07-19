@@ -6,6 +6,17 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# dotenv-rails は本番ではデフォルトで .env を読まない。
+# VPS運用では .env を使うため、ここで明示的に読み込む。
+if defined?(Dotenv)
+  Dotenv.load(
+    File.expand_path('../.env.production.local', __dir__),
+    File.expand_path('../.env.local', __dir__),
+    File.expand_path('../.env.production', __dir__),
+    File.expand_path('../.env', __dir__)
+  )
+end
+
 module Smart
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
