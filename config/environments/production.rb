@@ -4,6 +4,8 @@ Rails.application.configure do
   # Code is not reloaded between requests.
   config.cache_classes = true
   config.hosts << ENV.fetch("RAILS_ALLOWED_HOST", "meetia.pro")
+  # ローカル本番検証用（RAILS_ALLOWED_HOST=localhost のときも IP 直打ちを許可）
+  config.hosts << "127.0.0.1" if ENV["RAILS_ALLOWED_HOST"] == "localhost"
   # Eager load code on boot. This eager loads most of Rails and
   # your application in memory, allowing both threaded web servers
   # and those relying on copy on write to perform better.
@@ -22,9 +24,10 @@ Rails.application.configure do
   # Apache or NGINX already handles this.
   config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
 
-  # Compress JavaScripts and CSS.
-  config.assets.js_compressor = :uglifier
-  # config.assets.css_compressor = :sass
+  # JS/CSS は jsbundling / cssbundling でビルド済みのため Sprockets 圧縮は使わない
+  # （uglifier 未導入 / Tailwind v4 の現代的 CSS を sassc が解釈できない）
+  config.assets.js_compressor = nil
+  config.assets.css_compressor = nil
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
   config.assets.compile = false
@@ -47,7 +50,8 @@ Rails.application.configure do
   # config.action_cable.allowed_request_origins = [ 'http://example.com', /http:\/\/example.*/ ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
+  # ローカル本番検証では FORCE_SSL=false を指定する
+  config.force_ssl = ENV.fetch("FORCE_SSL", "true") != "false"
 
   # Use the lowest log level to ensure availability of diagnostic information
   # when problems arise.

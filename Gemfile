@@ -4,8 +4,8 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 6.1.7'
-# Use PostgreSQL as the database for Active Record (本番)
-gem 'pg', '~> 1.5', group: :production
+# PostgreSQL（本番）。開発でも production 検証できるよう常時インストール
+gem 'pg', '~> 1.5'
 # Use sqlite3 for development/test
 gem 'sqlite3', '~> 1.6', groups: [:development, :test]
 # Use Puma as the app server
@@ -75,7 +75,8 @@ gem 'omniauth-twitter'
 gem 'meta-tags'
 
 gem 'httparty'      # API呼び出し用
-gem 'dotenv-rails', groups: [:development, :test]
+# VPS等で .env から本番設定を読む（クラウドの環境変数注入がある場合も無害）
+gem 'dotenv-rails'
 gem 'kramdown'
 
 # Gemfile

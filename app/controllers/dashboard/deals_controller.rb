@@ -231,7 +231,7 @@ class Dashboard::DealsController < Dashboard::BaseController
   rescue ActiveRecord::RecordInvalid => e
     redirect_to dashboard_deal_path(@deal), alert: e.message
   rescue ActiveRecord::StatementInvalid => e
-    if e.cause.is_a?(SQLite3::BusyException)
+    if defined?(SQLite3) && e.cause.is_a?(SQLite3::BusyException)
       redirect_to dashboard_deal_path(@deal), alert: 'データベースが混雑しています。数秒待ってから再度お試しください'
     else
       redirect_to dashboard_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"

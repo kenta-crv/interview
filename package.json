@@ -6,7 +6,7 @@
   },
   "scripts": {
     "build": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets",
-    "build:scss": "sass --sourcemap=none app/assets/stylesheets/tops.scss app/assets/stylesheets/tops.css && sass --sourcemap=none app/assets/stylesheets/auth.scss app/assets/stylesheets/auth.css",
+    "build:scss": "node -e \"console.log('build:scss skipped (prebuilt css)')\"",
     "build:css": "yarn build:scss && npx @tailwindcss/cli -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify"
   },
   "dependencies": {

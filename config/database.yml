@@ -1,13 +1,10 @@
-# SQLite (development/test) + PostgreSQL (production)
-#
-# 開発・テスト環境: SQLite3（セットアップ不要で手軽）
-# 本番環境: PostgreSQL（同時アクセス対応、データ整合性）
+# development/test: SQLite3（ローカル開発の手軽さ優先）
+# production: PostgreSQL（同時アクセス・データ整合性）
 
 default: &default
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout: 30000
 
-# --- 開発環境 ---
 development:
   <<: *default
   adapter: sqlite3
@@ -16,21 +13,24 @@ development:
     journal_mode: WAL
     synchronous: NORMAL
 
-# --- テスト環境 ---
 test:
   <<: *default
   adapter: sqlite3
   database: db/test.sqlite3
 
-# --- 本番環境 ---
-# DATABASE_URL が設定されている場合はそちらが優先される（Render/Heroku等）
+# DATABASE_URL があれば優先（Render / Heroku / マネージドDB向け）
+# 未設定時は DB_HOST / DB_NAME / DB_USERNAME / DB_PASSWORD を使う
 production:
+  <<: *default
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 15 } %>
-  url: <%= ENV['DATABASE_URL'] %>
-  # DATABASE_URLが未設定の場合の個別設定
-  host: <%= ENV.fetch('DB_HOST', 'localhost') %>
-  database: <%= ENV.fetch('DB_NAME', 'ai_interviewer_production') %>
-  username: <%= ENV.fetch('DB_USERNAME', 'ai_interviewer') %>
-  password: <%= ENV['DB_PASSWORD'] %>
+  <% if ENV["DATABASE_URL"].present? %>
+  url: <%= ENV["DATABASE_URL"] %>
+  <% else %>
+  host: <%= ENV.fetch("DB_HOST", "localhost") %>
+  port: <%= ENV.fetch("DB_PORT", "5432") %>
+  database: <%= ENV.fetch("DB_NAME", "meetia_production") %>
+  username: <%= ENV.fetch("DB_USERNAME", "meetia") %>
+  password: <%= ENV["DB_PASSWORD"] %>
+  <% end %>
