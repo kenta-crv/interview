@@ -69,7 +69,7 @@ class Deal < ApplicationRecord
   }.freeze
 
   OPENAI_TTS_VOICE_BY_GENDER = {
-    "female" => "coral",
+    "female" => "marin",
     "male" => "ash"
   }.freeze
 

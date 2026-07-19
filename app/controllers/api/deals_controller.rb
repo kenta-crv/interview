@@ -4,6 +4,7 @@ module Api
     include FileUploadValidation
     skip_before_action :verify_authenticity_token 
     before_action :authenticate_client!
+    before_action :ensure_deal_quota!, only: [:create]
     before_action :set_deal, only: [:show, :update, :process_pdf]
 
     # POST /api/deals
@@ -235,6 +236,12 @@ module Api
 
     def set_deal
       @deal = current_client.deals.find(params[:id])
+    end
+
+    def ensure_deal_quota!
+      return if current_client.can_create_deal?
+
+      render json: { errors: [current_client.deal_limit_message] }, status: :forbidden
     end
 
     def deal_params
