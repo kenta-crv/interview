@@ -9,7 +9,7 @@ section.meetia-cta-band
       p.meetia-cta-band__lead AIアバター「ミーティア」で、商談機会を逃さない。資料をアップロードするだけ。24時間、あなたの営業資料で音声商談が始まります。
 
     .meetia-cta-band__features
-      - TopsHelper::TRIAL_FEATURES.each do |feature|
+      - trial_features.each do |feature|
         .meetia-cta-band__feature
           .meetia-cta-band__feature-icon
             i.fa-solid class=feature[:icon] aria-hidden="true"

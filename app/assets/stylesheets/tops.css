@@ -170,9 +170,10 @@ html.meetia-lp-html,
     padding-left: 26px;
     padding-right: 26px; }
   .meetia-modern-lp .meetia-btn--sm {
-    padding: 8px 14px;
-    font-size: 0.82rem;
-    border-radius: 8px; }
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    border-radius: 8px;
+    white-space: nowrap; }
   .meetia-modern-lp .meetia-nav {
     position: sticky;
     top: 0;
@@ -182,18 +183,20 @@ html.meetia-lp-html,
     border-bottom: 1px solid rgba(139, 92, 246, 0.22);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(139, 92, 246, 0.15); }
   .meetia-modern-lp .meetia-nav__inner {
-    max-width: 1180px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 14px 20px;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
-    gap: 16px; }
+    gap: 12px;
+    flex-wrap: nowrap; }
   .meetia-modern-lp .meetia-nav__logo {
     display: flex;
     align-items: baseline;
     gap: 6px;
     text-decoration: none;
-    margin-right: auto; }
+    margin-right: auto;
+    flex-shrink: 0; }
   .meetia-modern-lp .meetia-nav__logo-image {
     display: block;
     width: 150px;
@@ -218,20 +221,109 @@ html.meetia-lp-html,
     display: flex;
     align-items: center;
     gap: 6px;
-    flex-wrap: wrap; }
+    flex-wrap: nowrap;
+    min-width: 0; }
   .meetia-modern-lp .meetia-nav__menu-actions {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-left: 8px; }
+    margin-left: 8px;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    white-space: nowrap; }
+
+  /* Language switch — theme-switch style (pill) */
+  .meetia-modern-lp .lang-switch,
+  .lang-switch {
+    display: inline-flex !important;
+    align-items: center;
+    padding: 3px !important;
+    border-radius: 9px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    gap: 2px !important;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+  .meetia-modern-lp .lang-switch__btn,
+  .lang-switch__btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 12px !important;
+    border: none !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.55) !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease;
+  }
+  .meetia-modern-lp .lang-switch__btn:hover,
+  .lang-switch__btn:hover {
+    color: #fff !important;
+    background: transparent !important;
+  }
+  .meetia-modern-lp .lang-switch__btn.is-active,
+  .lang-switch__btn.is-active {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.55), rgba(168, 85, 247, 0.4)) !important;
+    color: #fff !important;
+    box-shadow: 0 0 14px rgba(139, 92, 246, 0.3) !important;
+  }
+  .custom-navbar .lang-switch,
+  .drafify-lp .nav .lang-switch,
+  header.custom-navbar .lang-switch {
+    background: #f3f4f6 !important;
+    border-color: #e5e7eb !important;
+  }
+  .custom-navbar .lang-switch__btn,
+  .drafify-lp .nav .lang-switch__btn,
+  header.custom-navbar .lang-switch__btn {
+    color: #6b7280 !important;
+  }
+  .custom-navbar .lang-switch__btn:hover,
+  .drafify-lp .nav .lang-switch__btn:hover,
+  header.custom-navbar .lang-switch__btn:hover {
+    color: #111827 !important;
+  }
+  .custom-navbar .lang-switch__btn.is-active,
+  .drafify-lp .nav .lang-switch__btn.is-active,
+  header.custom-navbar .lang-switch__btn.is-active {
+    background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
+    color: #fff !important;
+  }
+
+  .locale-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em; }
+  .locale-switcher__link {
+    color: inherit;
+    text-decoration: none;
+    opacity: 0.55; }
+  .locale-switcher__link.is-active,
+  .locale-switcher__link:hover {
+    opacity: 1; }
+  .locale-switcher__sep {
+    opacity: 0.35; }
   .meetia-modern-lp .meetia-nav__item {
-    padding: 8px 12px;
+    padding: 8px 8px;
     border-radius: 8px;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 600;
     color: var(--lp-muted);
     text-decoration: none;
-    transition: color 0.15s, background 0.15s; }
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+    white-space: nowrap; }
     .meetia-modern-lp .meetia-nav__item:hover, .meetia-modern-lp .meetia-nav__item.is-active {
       color: #fff;
       background: rgba(139, 92, 246, 0.12); }
@@ -2450,6 +2542,47 @@ html.meetia-lp-html,
     .meetia-modern-lp .meetia-cta-band__tag i {
       color: var(--lp-cyan);
       font-size: 0.72rem; }
+  .meetia-modern-lp .meetia-columns-seo {
+    position: relative;
+    padding: 72px 20px 64px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: #050505; }
+  .meetia-modern-lp .meetia-columns-seo__inner {
+    max-width: 1100px;
+    margin: 0 auto; }
+  .meetia-modern-lp .meetia-columns-seo__title {
+    margin: 10px 0 12px;
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0.02em; }
+  .meetia-modern-lp .meetia-columns-seo__lead {
+    margin: 0 0 24px;
+    color: var(--lp-muted);
+    font-size: 0.95rem;
+    line-height: 1.7; }
+  .meetia-modern-lp .meetia-columns-seo__list {
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    display: grid;
+    gap: 10px; }
+  .meetia-modern-lp .meetia-columns-seo__list a {
+    display: block;
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: border-color 0.15s, background 0.15s, color 0.15s; }
+    .meetia-modern-lp .meetia-columns-seo__list a:hover {
+      border-color: rgba(34, 211, 238, 0.35);
+      background: rgba(34, 211, 238, 0.06);
+      color: #fff; }
+  .meetia-modern-lp .meetia-columns-seo__more {
+    margin: 0; }
   .meetia-modern-lp .meetia-footer {
     position: relative;
     padding: 48px 20px 24px;
@@ -2462,8 +2595,8 @@ html.meetia-lp-html,
     max-width: 1100px;
     margin: 0 auto 24px;
     display: grid;
-    grid-template-columns: 1.4fr 1fr 1fr 1fr;
-    gap: 28px;
+    grid-template-columns: 1.3fr 0.9fr 0.9fr 1.1fr 1fr;
+    gap: 24px;
     align-items: start; }
   .meetia-modern-lp .meetia-footer__logo-link {
     display: inline-flex;
@@ -2558,7 +2691,11 @@ html.meetia-lp-html,
         display: flex; }
     .meetia-modern-lp .meetia-nav__menu-actions {
       margin-left: 0;
-      margin-top: 8px; }
+      margin-top: 8px;
+      width: 100%;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      display: flex; }
     .meetia-modern-lp .meetia-hero__inner,
     .meetia-modern-lp .meetia-hero__features {
       grid-template-columns: 1fr;
@@ -3747,3 +3884,65 @@ html.meetia-lp-html,
   .meetia-whats__features-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }
+
+/* Language switch — pill (Meetia theme-switch style) */
+.lang-switch {
+  display: inline-flex !important;
+  align-items: center;
+  padding: 3px !important;
+  border-radius: 9px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  gap: 2px !important;
+  flex-shrink: 0;
+}
+.lang-switch__btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 12px !important;
+  border: none !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease;
+}
+.lang-switch__btn:hover {
+  color: #fff !important;
+  background: transparent !important;
+}
+.lang-switch__btn.is-active {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.55), rgba(168, 85, 247, 0.4)) !important;
+  color: #fff !important;
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.3) !important;
+}
+.custom-navbar .lang-switch,
+.drafify-lp .nav .lang-switch,
+header.custom-navbar .lang-switch {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+}
+.custom-navbar .lang-switch__btn,
+.drafify-lp .nav .lang-switch__btn,
+header.custom-navbar .lang-switch__btn {
+  color: #6b7280 !important;
+}
+.custom-navbar .lang-switch__btn:hover,
+.drafify-lp .nav .lang-switch__btn:hover,
+header.custom-navbar .lang-switch__btn:hover {
+  color: #111827 !important;
+}
+.custom-navbar .lang-switch__btn.is-active,
+.drafify-lp .nav .lang-switch__btn.is-active,
+header.custom-navbar .lang-switch__btn.is-active {
+  background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
+  color: #fff !important;
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.25) !important;
+}
+

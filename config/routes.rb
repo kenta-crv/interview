@@ -14,6 +14,20 @@ Rails.application.routes.draw do
     passwords: "clients/passwords"
   }
 
+  # --- Public marketing pages: / = ja, /en/... = English (API/dashboard/webhooks stay outside) ---
+  scope "/:locale", constraints: { locale: /en/ } do
+    get "/", to: "tops#index", as: :localized_root
+    get "plans", to: "plans#index", as: :localized_plans
+    get "interview", to: "tops#interview", as: :localized_interview
+    get "whats", to: redirect { |path_params, _req| "/#{path_params[:locale]}#whats" }
+    get "service", to: redirect { |path_params, _req| "/#{path_params[:locale]}#service" }
+    get "features", to: redirect { |path_params, _req| "/#{path_params[:locale]}#features" }
+    get "pricing", to: redirect { |path_params, _req| "/#{path_params[:locale]}#pricing" }
+    get "reviews", to: redirect { |path_params, _req| "/#{path_params[:locale]}#reviews" }
+    get "faq", to: redirect { |path_params, _req| "/#{path_params[:locale]}#faq" }
+    get "company", to: redirect { |path_params, _req| "/#{path_params[:locale]}#company" }
+  end
+
   root to: 'tops#index'
   # --- Meetia LP (single page; legacy paths redirect to anchors) ---
   get 'whats', to: redirect('/#whats')

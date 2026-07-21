@@ -63,6 +63,7 @@ header.custom-navbar.py-2
             = link_to "ログイン（応募者）", new_user_session_path, class: "btn login-btn"
 
     .d-flex.align-items-center.gap-3.d-none.d-lg-flex
+      = render "shared/lang_switch"
       - if client_signed_in?
         span.nav-link-custom style="color: #333; font-size: 14px;"
           = current_client.email

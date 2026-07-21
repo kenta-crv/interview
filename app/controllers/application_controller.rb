@@ -3,8 +3,9 @@ class ApplicationController < ActionController::Base
 
   layout :layout_for_request
 
+  before_action :set_locale
   before_action :init_breadcrumbs
-  helper_method :breadcrumbs
+  helper_method :breadcrumbs, :current_locale, :locale_root_href, :href_for_locale, :available_ui_locales
   before_action :check_trial_expiration
 
   def check_trial_expiration
@@ -19,7 +20,49 @@ class ApplicationController < ActionController::Base
   def add_breadcrumb(label, path = nil)
     @breadcrumbs << { label: label, path: path }
   end
+
+  def current_locale
+    I18n.locale
+  end
+
+  def available_ui_locales
+    %i[ja en]
+  end
+
+  def locale_root_href
+    if params[:locale].present?
+      localized_root_path(locale: params[:locale])
+    else
+      root_path
+    end
+  end
+
+  # /plans <-> /en/plans 。対象外ページではトップへ。
+  # *_path 名は Rails のルートヘルパーと衝突するため使わない。
+  def href_for_locale(target_locale)
+    target = target_locale.to_s.to_sym
+    return locale_root_href if target.blank?
+
+    path = request.path.to_s.sub(%r{\A/en(?=/|$)}, "")
+    path = "/" if path.blank?
+
+    public_page = controller_path == "tops" || controller_path == "plans"
+    if public_page
+      target == :ja ? path : (path == "/" ? "/en" : "/en#{path}")
+    else
+      target == :ja ? root_path : "/en"
+    end
+  end
   protected
+
+  def set_locale
+    requested = params[:locale].presence&.to_sym
+    I18n.locale = if requested && I18n.available_locales.map(&:to_sym).include?(requested)
+                    requested
+                  else
+                    I18n.default_locale
+                  end
+  end
 
   def after_sign_in_path_for(resource)
     case resource

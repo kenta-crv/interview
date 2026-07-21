@@ -9,3 +9,12 @@ link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;70
 = stylesheet_link_tag "application", media: "all", "data-turbolinks-track": "reload"
 = display_meta_tags default_meta_tags
 = favicon_link_tag "favicon.ico"
+
+- if respond_to?(:href_for_locale)
+  link rel="alternate" hreflang="ja" href="#{request.base_url}#{href_for_locale(:ja)}"
+  link rel="alternate" hreflang="en" href="#{request.base_url}#{href_for_locale(:en)}"
+  link rel="alternate" hreflang="x-default" href="#{request.base_url}#{href_for_locale(:ja)}"
+
+- if defined?(breadcrumbs) && breadcrumbs.present?
+  script type="application/ld+json"
+    = raw(breadcrumb_list_json_ld)

@@ -1,6 +1,6 @@
 .meetia-features-showcase
   .meetia-features-showcase__grid
-    - TopsHelper::FEATURE_ROWS.each do |(num, icon, title, body, _)|
+    - feature_rows.each do |(num, icon, title, body, _)|
       - if num == "03"
         article.meetia-feature-focus data-feature=num
           .meetia-feature-focus__head

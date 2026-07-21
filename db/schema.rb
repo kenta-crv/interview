@@ -12,11 +12,14 @@
 
 ActiveRecord::Schema.define(version: 2026_07_16_234000) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
-    t.integer "record_id", null: false
-    t.integer "blob_id", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
@@ -35,7 +38,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "active_storage_variant_records", force: :cascade do |t|
-    t.integer "blob_id", null: false
+    t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
@@ -74,43 +77,8 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
     t.index ["stripe_customer_id"], name: "index_clients_on_stripe_customer_id", unique: true
   end
 
-  create_table "columns", force: :cascade do |t|
-    t.string "title"
-    t.string "file"
-    t.string "choice"
-    t.string "keyword"
-    t.string "description"
-    t.string "status", default: "draft"
-    t.text "body"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.string "genre"
-    t.string "code"
-    t.string "article_type", default: "cluster", null: false
-    t.integer "parent_id"
-    t.integer "cluster_limit"
-    t.text "prompt"
-    t.index ["article_type"], name: "index_columns_on_article_type"
-    t.index ["code"], name: "index_columns_on_code", unique: true
-    t.index ["parent_id"], name: "index_columns_on_parent_id"
-  end
-
-  create_table "contracts", force: :cascade do |t|
-    t.string "company"
-    t.string "name"
-    t.string "tel"
-    t.string "email"
-    t.string "address"
-    t.string "url"
-    t.string "service"
-    t.string "period"
-    t.string "message"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-  end
-
   create_table "deal_audios", force: :cascade do |t|
-    t.integer "deal_id", null: false
+    t.bigint "deal_id", null: false
     t.string "filename", null: false
     t.string "content_type"
     t.bigint "file_size"
@@ -123,7 +91,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deal_documents", force: :cascade do |t|
-    t.integer "deal_id", null: false
+    t.bigint "deal_id", null: false
     t.string "filename", null: false
     t.string "content_type"
     t.bigint "file_size"
@@ -136,8 +104,8 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deal_evaluations", force: :cascade do |t|
-    t.integer "deal_id", null: false
-    t.integer "user_id", null: false
+    t.bigint "deal_id", null: false
+    t.bigint "user_id", null: false
     t.integer "rating", null: false
     t.text "feedback"
     t.datetime "created_at", precision: 6, null: false
@@ -148,7 +116,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deal_faqs", force: :cascade do |t|
-    t.integer "deal_id", null: false
+    t.bigint "deal_id", null: false
     t.text "question", null: false
     t.text "answer"
     t.string "category", default: "other", null: false
@@ -163,7 +131,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deal_follow_up_templates", force: :cascade do |t|
-    t.integer "deal_id", null: false
+    t.bigint "deal_id", null: false
     t.integer "sequence", null: false
     t.boolean "enabled", default: true, null: false
     t.integer "delay_days", default: 0, null: false
@@ -178,8 +146,8 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deal_pages", force: :cascade do |t|
-    t.integer "deal_id", null: false
-    t.integer "deal_document_id", null: false
+    t.bigint "deal_id", null: false
+    t.bigint "deal_document_id", null: false
     t.integer "page_number", null: false
     t.text "script"
     t.string "audio_url"
@@ -194,9 +162,9 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deal_presentation_events", force: :cascade do |t|
-    t.integer "deal_id", null: false
-    t.integer "user_id"
-    t.integer "user_progress_id"
+    t.bigint "deal_id", null: false
+    t.bigint "user_id"
+    t.bigint "user_progress_id"
     t.string "session_key", null: false
     t.string "event_type", null: false
     t.integer "page_number"
@@ -217,8 +185,8 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deal_presentations", force: :cascade do |t|
-    t.integer "deal_id", null: false
-    t.integer "situation_id", null: false
+    t.bigint "deal_id", null: false
+    t.bigint "situation_id", null: false
     t.integer "status", default: 0
     t.text "current_step"
     t.json "user_choices", default: []
@@ -230,7 +198,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deal_segments", force: :cascade do |t|
-    t.integer "deal_audio_id", null: false
+    t.bigint "deal_audio_id", null: false
     t.integer "segment_number", null: false
     t.float "start_time"
     t.float "end_time"
@@ -246,7 +214,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deal_speeches", force: :cascade do |t|
-    t.integer "deal_id", null: false
+    t.bigint "deal_id", null: false
     t.string "filename"
     t.string "content_type"
     t.bigint "file_size"
@@ -259,7 +227,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deal_summaries", force: :cascade do |t|
-    t.integer "deal_id", null: false
+    t.bigint "deal_id", null: false
     t.text "summary", null: false
     t.text "key_points"
     t.text "action_items"
@@ -272,7 +240,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deal_transcripts", force: :cascade do |t|
-    t.integer "deal_id", null: false
+    t.bigint "deal_id", null: false
     t.text "full_transcript", null: false
     t.integer "segment_count"
     t.float "total_duration_seconds"
@@ -283,7 +251,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "deals", force: :cascade do |t|
-    t.integer "client_id", null: false
+    t.bigint "client_id", null: false
     t.string "title", null: false
     t.text "description"
     t.integer "status", default: 0
@@ -315,8 +283,8 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "follow_up_deliveries", force: :cascade do |t|
-    t.integer "user_progress_id", null: false
-    t.integer "deal_follow_up_template_id", null: false
+    t.bigint "user_progress_id", null: false
+    t.bigint "deal_follow_up_template_id", null: false
     t.integer "sequence", null: false
     t.string "status", default: "scheduled", null: false
     t.string "subject", null: false
@@ -343,7 +311,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "follow_up_unsubscribes", force: :cascade do |t|
-    t.integer "user_progress_id", null: false
+    t.bigint "user_progress_id", null: false
     t.string "token", null: false
     t.datetime "unsubscribed_at", null: false
     t.string "source", default: "email_link", null: false
@@ -355,20 +323,9 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
     t.index ["user_progress_id"], name: "index_follow_up_unsubscribes_on_user_progress_id"
   end
 
-  create_table "friendly_id_slugs", force: :cascade do |t|
-    t.string "slug", null: false
-    t.integer "sluggable_id", null: false
-    t.string "sluggable_type", limit: 50
-    t.string "scope"
-    t.datetime "created_at"
-    t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
-    t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
-    t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
-  end
-
   create_table "interview_responses", force: :cascade do |t|
-    t.integer "interview_id", null: false
-    t.integer "question_id", null: false
+    t.bigint "interview_id", null: false
+    t.bigint "question_id", null: false
     t.text "audio_transcript", null: false
     t.integer "evaluation_status", default: 0
     t.json "evaluation_data", default: {}
@@ -382,7 +339,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "interview_results", force: :cascade do |t|
-    t.integer "interview_id", null: false
+    t.bigint "interview_id", null: false
     t.integer "final_status"
     t.json "results_data", default: {}
     t.datetime "created_at", precision: 6, null: false
@@ -394,8 +351,8 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "interviews", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "situation_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "situation_id", null: false
     t.integer "status", default: 0
     t.datetime "started_at"
     t.datetime "ended_at"
@@ -416,21 +373,22 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "payments", force: :cascade do |t|
+    t.integer "client_id", null: false
+    t.integer "amount", null: false
+    t.string "status", default: "pending", null: false
+    t.text "description"
+    t.string "stripe_payment_intent_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "client_id", null: false
-    t.integer "campaign_id"
-    t.integer "amount", default: 0, null: false
-    t.string "status"
-    t.string "stripe_payment_intent_id"
-    t.string "description"
+    t.bigint "campaign_id"
     t.index ["campaign_id"], name: "index_payments_on_campaign_id"
     t.index ["client_id"], name: "index_payments_on_client_id"
+    t.index ["status"], name: "index_payments_on_status"
     t.index ["stripe_payment_intent_id"], name: "index_payments_on_stripe_payment_intent_id", unique: true
   end
 
   create_table "question_audios", force: :cascade do |t|
-    t.integer "question_id", null: false
+    t.bigint "question_id", null: false
     t.string "language", default: "en", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -439,7 +397,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "questions", force: :cascade do |t|
-    t.integer "situation_id", null: false
+    t.bigint "situation_id", null: false
     t.text "question_text", null: false
     t.string "question_type", null: false
     t.json "options"
@@ -470,7 +428,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
     t.integer "min_required_score", default: 70, null: false
     t.integer "max_consecutive_fails", default: 0, null: false
     t.string "reject_notify_method", default: "in_app", null: false
-    t.integer "deal_id"
+    t.bigint "deal_id"
     t.string "situation_type"
     t.index ["client_id", "archived"], name: "index_situations_on_client_id_and_archived"
     t.index ["client_id"], name: "index_situations_on_client_id"
@@ -491,8 +449,8 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
   end
 
   create_table "user_progresses", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "deal_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "deal_id", null: false
     t.string "consideration_phase"
     t.date "planned_introduction_date"
     t.text "key_points_for_application"
@@ -524,6 +482,7 @@ ActiveRecord::Schema.define(version: 2026_07_16_234000) do
     t.string "tel"
     t.text "address"
     t.string "url"
+    t.string "job_title"
     t.index ["company"], name: "index_users_on_company"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
