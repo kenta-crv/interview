@@ -1,6 +1,5 @@
-# development: DATABASE_URL があれば PostgreSQL、なければ SQLite3
-# test: SQLite3
-# production: PostgreSQL
+# development/test: SQLite3（ローカル開発）
+# production: PostgreSQL（DATABASE_URL 優先）
 
 default: &default
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
@@ -8,18 +7,11 @@ default: &default
 
 development:
   <<: *default
-  <% if ENV["DATABASE_URL"].present? %>
-  url: <%= ENV["DATABASE_URL"] %>
-  adapter: postgresql
-  encoding: unicode
-  <% else %>
   adapter: sqlite3
   database: <%= Rails.root.join('db', 'development.sqlite3').to_s %>
-  # SQLite 専用（PostgreSQL に journal_mode を渡さない）
   variables:
     journal_mode: WAL
     synchronous: NORMAL
-  <% end %>
 
 test:
   <<: *default
