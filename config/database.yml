@@ -1,31 +1,47 @@
-# development/test: SQLite3（ローカル開発）
+# development/test: デフォルトは SQLite3
 # production: PostgreSQL（DATABASE_URL 優先）
+#
+# 重要:
+# - SQLite 専用キー（variables / journal_mode 等）は絶対に書かない
+# - Rails は ENV["DATABASE_URL"] を YAML にマージするため、混ぜると
+#   PG::UndefinedObject: journal_mode が再発する
+# - WAL 等は config/initializers/sqlite.rb が SQLite 接続時のみ設定する
 
 default: &default
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+# data:migrate_sqlite_to_pg 用の名前付き設定（環境としては使わない）
+sqlite:
+  <<: *default
+  adapter: sqlite3
+  database: <%= Rails.root.join("db", "development.sqlite3").to_s %>
   timeout: 30000
 
 development:
+  <% if ENV["DATABASE_URL"].to_s.match?(/postgre/i) %>
+  <<: *default
+  adapter: postgresql
+  encoding: unicode
+  url: <%= ENV["DATABASE_URL"] %>
+  <% else %>
   <<: *default
   adapter: sqlite3
-  database: <%= Rails.root.join('db', 'development.sqlite3').to_s %>
-  variables:
-    journal_mode: WAL
-    synchronous: NORMAL
+  database: <%= Rails.root.join("db", "development.sqlite3").to_s %>
+  timeout: 30000
+  <% end %>
 
 test:
   <<: *default
   adapter: sqlite3
   database: db/test.sqlite3
+  timeout: 30000
 
-# DATABASE_URL があれば優先（Render / Heroku / マネージドDB向け）
-# 未設定時は DB_HOST / DB_NAME / DB_USERNAME / DB_PASSWORD を使う
 production:
   <<: *default
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 15 } %>
-  <% if ENV["DATABASE_URL"].present? %>
+  <% if ENV["DATABASE_URL"].to_s != "" %>
   url: <%= ENV["DATABASE_URL"] %>
   <% else %>
   host: <%= ENV.fetch("DB_HOST", "localhost") %>
