@@ -5,6 +5,11 @@ SitemapGenerator::Sitemap.default_host = "https://meetia.pro"
 
 SitemapGenerator::Sitemap.create do
   add root_path, changefreq: 'weekly', priority: 1.0
+  add '/en', changefreq: 'weekly', priority: 0.9
+  add '/plans', changefreq: 'monthly', priority: 0.7
+  add '/en/plans', changefreq: 'monthly', priority: 0.6
+  add '/interview', changefreq: 'monthly', priority: 0.7
+  add '/en/interview', changefreq: 'monthly', priority: 0.6
 
   add '/columns', changefreq: 'daily', priority: 0.6
 
