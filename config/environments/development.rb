@@ -14,7 +14,7 @@ Rails.application.configure do
 
   # Sidekiqが使えない場合はasync（スレッド）でバックグラウンド実行
   config.active_job.queue_adapter = begin
-    Redis.new(url: ENV.fetch('REDIS_URL', 'redis://127.0.0.1:6379/0')).ping
+    Redis.new(url: ENV.fetch('REDIS_URL', 'redis://127.0.0.1:6379/2')).ping
     :sidekiq
   rescue StandardError
     Rails.logger.warn('[meetia] Redis/Sidekiq unavailable — using :async job adapter')

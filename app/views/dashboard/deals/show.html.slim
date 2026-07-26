@@ -1,4 +1,4 @@
-.db-v2-deal-show data-deal-dashboard="" data-processing-status-url=processing_status_dashboard_deal_path(@deal) data-is-processing=@deal.processing?
+.db-v2-deal-show data-deal-dashboard="" data-processing-status-url=processing_status_dashboard_deal_path(@deal) data-is-processing=(@deal.processing? ? "true" : "false")
   .db-v2-header.db-v2-header--deal
     .db-v2-header__left
       .db-v2-deal-show__meta

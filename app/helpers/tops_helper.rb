@@ -172,14 +172,14 @@ module TopsHelper
   ].freeze
 
   COMPANY_STATS = [
-    { icon: "fa-calendar", label: "サービス開始", num: "2024", unit: "年" },
-    { icon: "fa-building", label: "導入企業", num: "1,200", unit: "+社" },
+    { icon: "fa-calendar", label: "サービス開始", num: "2026", unit: "年" },
+    { icon: "fa-building", label: "導入企業", num: "100", unit: "+社" },
     { icon: "fa-clock", label: "対応体制", num: "24", unit: "時間" }
   ].freeze
 
   COMPANY_STATS_EN = [
-    { icon: "fa-calendar", label: "Launched", num: "2024", unit: "" },
-    { icon: "fa-building", label: "Customers", num: "1,200", unit: "+" },
+    { icon: "fa-calendar", label: "Launched", num: "2026", unit: "" },
+    { icon: "fa-building", label: "Customers", num: "100", unit: "+" },
     { icon: "fa-clock", label: "Coverage", num: "24", unit: "h" }
   ].freeze
 

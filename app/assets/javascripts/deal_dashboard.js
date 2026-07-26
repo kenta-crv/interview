@@ -78,25 +78,40 @@
     if (root.dataset.dealDashboardBound === 'true') return;
     root.dataset.dealDashboardBound = 'true';
 
-    var statusUrl = root.dataset.processingStatusUrl;
-    var isProcessing = root.dataset.isProcessing === 'true';
+    var statusUrl = root.dataset.processingStatusUrl || root.getAttribute('data-processing-status-url');
+    // Slim の boolean true は空属性になることがあるため、"false" 以外は処理中とみなす
+    var rawProcessing = root.getAttribute('data-is-processing');
+    var isProcessing = rawProcessing === 'true' || rawProcessing === '';
     var pollTimer = null;
 
-    if (isProcessing && statusUrl) {
-      pollTimer = setInterval(function() {
-        fetch(statusUrl, {
-          credentials: 'same-origin',
-          headers: { Accept: 'application/json' }
+    function checkProcessingStatus() {
+      if (!statusUrl) return;
+      fetch(statusUrl, {
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' }
+      })
+        .then(function(r) {
+          if (!r.ok) throw new Error('status ' + r.status);
+          return r.json();
         })
-          .then(function(r) { return r.json(); })
-          .then(function(data) {
-            if (!data.processing) {
-              clearInterval(pollTimer);
-              window.location.reload();
+        .then(function(data) {
+          if (!data.processing) {
+            if (pollTimer) clearInterval(pollTimer);
+            var banner = document.getElementById('processing-message');
+            if (banner) {
+              banner.textContent = data.failed
+                ? 'AI処理に失敗しました。ページを更新します…'
+                : 'AI処理が完了しました。ページを更新します…';
             }
-          })
-          .catch(function() {});
-      }, 5000);
+            window.location.reload();
+          }
+        })
+        .catch(function() {});
+    }
+
+    if (isProcessing && statusUrl) {
+      checkProcessingStatus();
+      pollTimer = setInterval(checkProcessingStatus, 3000);
     }
 
     var shareUrlField = document.getElementById('deal-share-url-field');

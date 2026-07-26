@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-redis_url = ENV.fetch('REDIS_URL', 'redis://localhost:6379/0')
+# Meetia は Redis DB 2 を使う（Okurite 等の DB 0 とキュー空間を分離）
+redis_url = ENV.fetch('REDIS_URL', 'redis://localhost:6379/2')
 
 Sidekiq.configure_server do |config|
   config.redis = { url: redis_url }
