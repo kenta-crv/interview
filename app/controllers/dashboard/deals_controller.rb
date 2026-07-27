@@ -74,7 +74,7 @@ class Dashboard::DealsController < Dashboard::BaseController
     generator = DealEngine::ScriptGeneratorService.new(@deal)
 
     case target
-    when 'greeting', 'company_overview', 'usage_guide'
+    when 'greeting', 'company_overview', 'usage_guide', 'closing'
       field = "#{target}_script"
       original = @deal.public_send(field).presence || @deal.public_send("default_#{target}_text")
       rewritten = generator.rewrite_script(original, instruction: instruction)
@@ -213,6 +213,9 @@ class Dashboard::DealsController < Dashboard::BaseController
     end
 
     ActiveRecord::Base.transaction do
+      # 提案資料は差し替え。追記だと欠損PDFや旧版が残り、処理全体が落ちる
+      @deal.deal_documents.proposals.find_each(&:destroy_safely!)
+
       params[:files].each do |file|
         document = @deal.deal_documents.create!(
           filename: file.original_filename,
@@ -227,7 +230,7 @@ class Dashboard::DealsController < Dashboard::BaseController
     @deal.start_processing!
     ProcessDealJob.perform_later(@deal.id)
 
-    redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました。AI処理をバックグラウンドで開始しています'
+    redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました（既存の提案資料は差し替え）。AI処理をバックグラウンドで開始しています'
   rescue ActiveRecord::RecordInvalid => e
     redirect_to dashboard_deal_path(@deal), alert: e.message
   rescue ActiveRecord::StatementInvalid => e
@@ -330,7 +333,7 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def deal_content_params
-    params.require(:deal).permit(:greeting_script, :company_overview_script, :usage_guide_script)
+    params.require(:deal).permit(:greeting_script, :company_overview_script, :usage_guide_script, :closing_script)
   end
 
   def presentation_settings_params

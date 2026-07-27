@@ -1,10 +1,10 @@
 - deal_record = local_assigns[:deal]
 - cta = deal_record ? deal_record.presentation_cta_payload : (local_assigns[:cta_payload] || {})
+- materials = deal_record&.materials_download_payload
+- closing = deal_record ? deal_record.presentation_closing_payload : {}
 - topic_items = menu_items.any? ? menu_items : deal_pages.reject { |p| p.page_number == 1 }.first(6).map { |page| { 'label' => (page.title.presence || "スライド #{page.page_number}"), 'page_number' => page.page_number, 'key' => "page_#{page.page_number}" } }
-- topic_split_at = (topic_items.size / 2.0).ceil
-- left_topics = topic_items.first(topic_split_at)
-- right_topics = topic_items.drop(topic_split_at)
-- config_payload = { pages: deal_pages.map { |p| { page_number: p.page_number, title: p.title, script: p.script, audio_url: (deal_record ? deal_record.page_audio_path(p) : (p.page_audio.attached? ? rails_blob_path(p.page_audio, only_path: true) : p.audio_url)) } }, opening: opening_payload, opening_segments: opening_segments, respond_url: respond_url, evaluate_url: evaluate_url, track_url: (local_assigns[:track_url].presence), public_mode: public_mode, cta: cta }.to_json
+- pages_payload = deal_pages.map { |p| { page_number: p.page_number, title: p.title, script: p.script, audio_url: (deal_record ? deal_record.page_audio_path(p) : (p.page_audio.attached? ? rails_blob_path(p.page_audio, only_path: true) : p.audio_url)), role: (deal_record ? deal_record.page_role_for(p) : nil) } }
+- config_payload = { pages: pages_payload, opening: opening_payload, opening_segments: opening_segments, closing: closing, respond_url: respond_url, evaluate_url: evaluate_url, track_url: (local_assigns[:track_url].presence), public_mode: public_mode, cta: cta, materials: materials }.to_json
 
 script type="application/json" id="deal-presentation-config"
   = raw json_escape(config_payload)
@@ -25,13 +25,9 @@ script type="application/json" id="deal-presentation-config"
         - else
           = button_tag cta['label'], type: 'button', class: 'btn-presentation-cta btn-presentation-cta--header', id: 'presentation-cta-btn', data: { label: cta['label'] }
         - if finish_url
-          = link_to finish_url, class: 'btn-room-exit', data: { turbo: false } do
-            span.btn-room-exit__icon ↗
-            span 終了する
+          = link_to '終了する', finish_url, class: 'btn-room-exit', data: { turbo: false }
         - else
-          = button_tag type: 'button', class: 'btn-room-exit', id: 'end-conversation-btn' do
-            span.btn-room-exit__icon ↗
-            span 終了する
+          = button_tag '終了する', type: 'button', class: 'btn-room-exit', id: 'end-conversation-btn'
 
     .presentation-room-body
       .presentation-left
@@ -45,10 +41,12 @@ script type="application/json" id="deal-presentation-config"
                     span.presentation-page-nav__title = page.title.presence || "スライド #{page.page_number}"
               .document-viewport
                 - deal_pages.each_with_index do |page, index|
-                  - pdf_url = "#{Rails.application.routes.url_helpers.rails_blob_path(page.deal_document.file, only_path: true)}#page=#{page.page_number}&toolbar=0&navpanes=0&scrollbar=0&view=FitV"
-                  .document-slide id="slide-#{page.id}" data-page-number=page.page_number class="#{index == 0 ? 'active' : ''}"
-                    - if page.deal_document.file.attached?
-                      iframe.document-pdf-clean src=pdf_url title="スライド #{page.page_number}"
+                  - pdf_src = page.deal_document.file.attached? ? Rails.application.routes.url_helpers.rails_blob_path(page.deal_document.file, only_path: true) : nil
+                  - pdf_iframe = pdf_src ? "#{pdf_src}#page=#{page.page_number}&toolbar=0&navpanes=0&scrollbar=0&zoom=page-fit&view=Fit" : nil
+                  .document-slide id="slide-#{page.id}" data-page-number=page.page_number data-pdf-url=pdf_src class="#{index == 0 ? 'active' : ''}"
+                    - if pdf_src
+                      iframe.document-pdf-clean src=pdf_iframe title="スライド #{page.page_number}" tabindex="-1"
+                      canvas.document-pdf-canvas aria-hidden="true"
                     - else
                       .document-placeholder 資料データがありません
           - else
@@ -57,13 +55,6 @@ script type="application/json" id="deal-presentation-config"
 
         .presentation-bottom-controls
           .presentation-controls-row
-            .presentation-choice-scroller-wrap.presentation-choice-scroller-wrap--left#presentation-choice-scroller-wrap-left
-              button.presentation-choice-more.presentation-choice-more--prev#presentation-choice-more-left type="button" aria-label="前の選択肢を見る" hidden=true
-                span ‹
-              .presentation-choice-scroller#presentation-choice-scroller-left
-                .presentation-choice-track
-                  - left_topics.each do |item|
-                    = button_tag item['label'], class: 'btn-choice', type: 'button', data: { page_number: item['page_number'], label: item['label'], topic: item['key'], choice: item['key'] }
             button.presentation-play-btn type="button" aria-label="再生" id="presentation-voice-btn"
               svg.presentation-play-btn__svg viewBox="0 0 56 56" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                 defs
@@ -81,13 +72,24 @@ script type="application/json" id="deal-presentation-config"
                 span.presentation-wave-item.presentation-wave-item--bar.presentation-wave-item--center
                 span.presentation-wave-item.presentation-wave-item--bar
                 span.presentation-wave-item.presentation-wave-item--dot
-            .presentation-choice-scroller-wrap.presentation-choice-scroller-wrap--right#presentation-choice-scroller-wrap-right
-              .presentation-choice-scroller#presentation-choice-scroller-right
+
+            .presentation-choice-scroller-wrap#presentation-choice-scroller-wrap
+              button.presentation-choice-more.presentation-choice-more--prev#presentation-choice-more-prev type="button" aria-label="前の選択肢を見る" hidden=true
+                span ‹
+              .presentation-choice-scroller#presentation-choice-scroller
                 .presentation-choice-track#choice-buttons
-                  - right_topics.each do |item|
+                  - topic_items.each do |item|
                     = button_tag item['label'], class: 'btn-choice', type: 'button', data: { page_number: item['page_number'], label: item['label'], topic: item['key'], choice: item['key'] }
-              button.presentation-choice-more#presentation-choice-more-right type="button" aria-label="次の選択肢を見る" hidden=true
+              button.presentation-choice-more#presentation-choice-more-next type="button" aria-label="次の選択肢を見る" hidden=true
                 span ›
+
+            .presentation-action-slot#presentation-action-bar aria-hidden="true"
+              button.btn-closing-chip type="button" id="presentation-last-btn"
+                | 最後に
+              button.btn-presentation-action.btn-presentation-action--primary type="button" id="presentation-side-contract"
+                = cta['exit_contract_label']
+              button.btn-presentation-action.btn-presentation-action--secondary type="button" id="presentation-side-sales"
+                = cta['exit_sales_call_label']
 
           - if public_mode
             .presentation-free-text
@@ -123,10 +125,16 @@ script type="application/json" id="deal-presentation-config"
           | 商談を終了するには、満足度（星）を選び「評価を送信」を押してください。
         .presentation-exit-actions
           - if cta['url'].to_s.strip.present?
-            = link_to cta['exit_contract_label'], cta['url'], target: '_blank', rel: 'noopener noreferrer', class: 'btn-presentation-cta btn-presentation-cta--wide', id: 'exit-contract-btn', data: { turbo: false }
+            = link_to cta['exit_contract_label'], cta['url'], target: '_blank', rel: 'noopener noreferrer', class: 'btn-exit-action btn-exit-action--primary', id: 'exit-contract-btn', data: { turbo: false }
           - else
-            = button_tag cta['exit_contract_label'], type: 'button', class: 'btn-presentation-cta btn-presentation-cta--wide', id: 'exit-contract-btn'
-          = button_tag cta['exit_sales_call_label'], type: 'button', class: 'btn-secondary-custom', id: 'exit-sales-call-btn'
+            = button_tag cta['exit_contract_label'], type: 'button', class: 'btn-exit-action btn-exit-action--primary', id: 'exit-contract-btn'
+          - if cta['sales_url'].to_s.strip.present?
+            = link_to cta['exit_sales_call_label'], cta['sales_url'], target: '_blank', rel: 'noopener noreferrer', class: 'btn-exit-action btn-exit-action--secondary', id: 'exit-sales-call-btn', data: { turbo: false }
+          - else
+            = button_tag cta['exit_sales_call_label'], type: 'button', class: 'btn-exit-action btn-exit-action--secondary', id: 'exit-sales-call-btn'
+        - if materials.present?
+          .presentation-exit-materials
+            = link_to materials['label'], materials['url'], class: 'presentation-exit-materials__link', id: 'presentation-materials-download', data: { turbo: false }, download: materials['filename']
         .presentation-exit-divider
         .form-group
           label.form-label 満足度（星5つ中）

@@ -21,7 +21,8 @@ module DealEngine
       {
         greeting: @deal.greeting_script,
         company_overview: @deal.company_overview_script,
-        usage_guide: @deal.usage_guide_script
+        usage_guide: @deal.usage_guide_script,
+        closing: @deal.closing_script.presence || @deal.default_closing_text
       }.each do |kind, script|
         next if script.blank?
 

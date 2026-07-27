@@ -41,11 +41,14 @@ module Api
 
       # ログのトランザクション開始位置（37行目）に合わせて、全体を明示的に保護
       ActiveRecord::Base.transaction do
+        @deal.deal_documents.proposals.find_each(&:destroy_safely!)
+
         params[:files].each do |file|
           document = @deal.deal_documents.create!(
             filename: file.original_filename,
             content_type: file.content_type,
-            file_size: file.size
+            file_size: file.size,
+            document_kind: "proposal"
           )
           document.file.attach(file)
           documents << document
@@ -55,7 +58,7 @@ module Api
       @deal.start_processing!
       ProcessDealJob.perform_later(@deal.id)
 
-      redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました。AI処理をバックグラウンドで開始しています。'
+      redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました（既存の提案資料は差し替え）。AI処理をバックグラウンドで開始しています。'
     rescue ActiveRecord::RecordInvalid => e
       redirect_to dashboard_deal_path(@deal), alert: e.message
     rescue => e

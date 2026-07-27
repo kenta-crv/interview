@@ -2,7 +2,7 @@
   var init = window.MeetiaPageInit;
 
   function readConfig() {
-    var defaults = { pages: [], opening: {}, opening_segments: [], public_mode: false, cta: {} };
+    var defaults = { pages: [], opening: {}, opening_segments: [], closing: {}, materials: null, public_mode: false, cta: {} };
     var el = document.getElementById('deal-presentation-config');
     if (!el) return defaults;
 
@@ -12,6 +12,8 @@
         pages: data.pages || [],
         opening: data.opening || {},
         opening_segments: data.opening_segments || [],
+        closing: data.closing || {},
+        materials: data.materials || null,
         respond_url: data.respond_url || '',
         evaluate_url: data.evaluate_url || '',
         track_url: data.track_url || '',
@@ -43,12 +45,18 @@
       var pages = config.pages;
       var opening = config.opening;
       var openingSegments = config.opening_segments;
+      var closing = config.closing || {};
+      var materials = config.materials;
       var respondUrl = root.dataset.respondUrl || config.respond_url;
       var evaluateUrl = root.dataset.evaluateUrl || config.evaluate_url;
       var trackUrl = root.dataset.trackUrl || config.track_url;
       var slides = root.querySelectorAll('.document-slide');
-      var choiceButtons = root.querySelectorAll('.btn-choice');
+      var documentViewport = root.querySelector('.document-viewport');
+      var choiceButtons = root.querySelectorAll('.presentation-choice-track .btn-choice');
       var pageNavItems = root.querySelectorAll('.presentation-page-nav__item');
+      var pdfDocCache = {};
+      var pdfRenderTasks = {};
+      var pdfResizeTimer = null;
       var avatar = document.getElementById('presentation-avatar-img');
       var overlay = document.getElementById('presentation-start-overlay');
       var startBtn = document.getElementById('presentation-start-btn');
@@ -64,6 +72,11 @@
       var ctaBtn = document.getElementById('presentation-cta-btn');
       var exitContractBtn = document.getElementById('exit-contract-btn');
       var exitSalesCallBtn = document.getElementById('exit-sales-call-btn');
+      var lastBtn = document.getElementById('presentation-last-btn');
+      var sideContractBtn = document.getElementById('presentation-side-contract');
+      var sideSalesBtn = document.getElementById('presentation-side-sales');
+      var actionBar = document.getElementById('presentation-action-bar');
+      var materialsDownloadLink = document.getElementById('presentation-materials-download');
       var ctaConfig = config.cta || {};
       var currentAudio = null;
       var presentationStarted = false;
@@ -75,6 +88,18 @@
       var isPaused = false;
       var openingQueue = null;
       var currentSpeech = null;
+      var audioCache = {};
+      var autoAdvance = null;
+      var IDLE_BEFORE_AUTO_MS = 2500;
+      var SEGMENT_GAP_MS = 900;
+      var closingPlayed = false;
+      var sideCtasVisible = false;
+      var heat = {
+        viewedPages: {},
+        topicClicks: 0,
+        freeTextCount: 0,
+        roleHits: 0
+      };
 
       function setPlayButtonPlaying(playing) {
         if (!voiceBtn) return;
@@ -131,6 +156,7 @@
         playbackToken += 1;
         isPaused = false;
         currentSpeech = null;
+        cancelAutoAdvance();
         if (currentAudio) {
           currentAudio.pause();
           currentAudio = null;
@@ -138,6 +164,242 @@
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         openingQueue = null;
         setPlayButtonPlaying(false);
+      }
+
+      function wait(ms) {
+        return new Promise(function(resolve) {
+          setTimeout(resolve, ms);
+        });
+      }
+
+      function preloadAudio(url) {
+        if (!url || audioCache[url]) return;
+        try {
+          var audio = new Audio();
+          audio.preload = 'auto';
+          audio.src = url;
+          audioCache[url] = audio;
+        } catch (_e) {}
+      }
+
+      function takeCachedAudio(url) {
+        if (url && audioCache[url]) {
+          var cached = audioCache[url];
+          delete audioCache[url];
+          try { cached.currentTime = 0; } catch (_e) {}
+          return cached;
+        }
+        return url ? new Audio(url) : null;
+      }
+
+      function cancelAutoAdvance() {
+        if (autoAdvance && autoAdvance.timer) {
+          clearTimeout(autoAdvance.timer);
+          autoAdvance.timer = null;
+        }
+        if (autoAdvance) autoAdvance.running = false;
+        autoAdvance = null;
+      }
+
+      function pagesForAutoAdvance() {
+        return pages
+          .slice()
+          .filter(function(page) {
+            return page && page.page_number > 1 && (page.audio_url || page.script);
+          })
+          .sort(function(a, b) {
+            return a.page_number - b.page_number;
+          });
+      }
+
+      function scheduleAutoAdvance(delayMs) {
+        cancelAutoAdvance();
+        var list = pagesForAutoAdvance();
+        var startIdx = 0;
+        while (startIdx < list.length && list[startIdx].page_number <= currentPageNumber) {
+          startIdx += 1;
+        }
+        if (startIdx >= list.length) return;
+
+        autoAdvance = {
+          running: true,
+          pages: list,
+          nextIndex: startIdx,
+          timer: null
+        };
+        autoAdvance.timer = setTimeout(function() {
+          if (!autoAdvance || !autoAdvance.running) return;
+          autoAdvance.timer = null;
+          continueAutoAdvance();
+        }, typeof delayMs === 'number' ? delayMs : IDLE_BEFORE_AUTO_MS);
+      }
+
+      function continueAutoAdvance() {
+        if (!autoAdvance || !autoAdvance.running || isPaused) {
+          return Promise.resolve();
+        }
+
+        var index = autoAdvance.nextIndex;
+        if (index >= autoAdvance.pages.length) {
+          cancelAutoAdvance();
+          setPlayButtonPlaying(false);
+          return playClosing({ source: 'auto_advance_complete' });
+        }
+
+        var page = autoAdvance.pages[index];
+        var nextPage = autoAdvance.pages[index + 1];
+        if (nextPage && nextPage.audio_url) preloadAudio(nextPage.audio_url);
+
+        presentPage(page.page_number, { syncChoice: false });
+        notePageEngagement(page);
+        trackEvent('auto_advance', { page_number: page.page_number });
+
+        var keepUi = index < autoAdvance.pages.length - 1;
+        return playUrl(page.audio_url, page.script, { keepPlayingUi: keepUi }).then(function() {
+          if (!autoAdvance || !autoAdvance.running || isPaused) return;
+          maybeShowSideCtasForPage(page);
+          autoAdvance.nextIndex = index + 1;
+          if (autoAdvance.nextIndex >= autoAdvance.pages.length) {
+            return continueAutoAdvance();
+          }
+          return wait(SEGMENT_GAP_MS).then(function() {
+            if (!autoAdvance || !autoAdvance.running || isPaused) return;
+            return continueAutoAdvance();
+          });
+        });
+      }
+
+      function findPage(pageNumber) {
+        var n = parseInt(pageNumber, 10);
+        if (!n) return null;
+        return pages.find(function(p) {
+          return parseInt(p.page_number, 10) === n;
+        }) || null;
+      }
+
+      function pageRole(page) {
+        if (!page) return null;
+        if (page.role === 'pricing' || page.role === 'flow') return page.role;
+        var hay = [page.title || '', page.script || ''].join(' ');
+        if (/料金|費用|価格|プラン|月額|pricing|price|plan/i.test(hay)) return 'pricing';
+        if (/導入フロー|契約フロー|オンボーディング|導入の流れ|導入手順|flow/i.test(hay)) return 'flow';
+        return null;
+      }
+
+      function isClosingRole(page) {
+        var role = pageRole(page);
+        return role === 'pricing' || role === 'flow';
+      }
+
+      function setActionBar(mode) {
+        if (!actionBar) return;
+        actionBar.classList.remove('is-open', 'is-mode-last', 'is-mode-cta');
+        if (!mode) {
+          actionBar.setAttribute('aria-hidden', 'true');
+        } else {
+          actionBar.classList.add('is-open');
+          actionBar.classList.add(mode === 'cta' ? 'is-mode-cta' : 'is-mode-last');
+          actionBar.setAttribute('aria-hidden', 'false');
+        }
+        // スロット表示でトピック帯の幅が変わるのでスクロール矢印を再計算
+        window.dispatchEvent(new Event('resize'));
+      }
+
+      function notePageEngagement(page) {
+        if (!page || !page.page_number) return;
+        heat.viewedPages[String(page.page_number)] = true;
+        if (isClosingRole(page)) {
+          heat.roleHits += 1;
+        }
+        updateLastButtonVisibility();
+      }
+
+      function heatScore() {
+        return Object.keys(heat.viewedPages).length + (heat.topicClicks * 2) + (heat.freeTextCount * 3) + (heat.roleHits * 3);
+      }
+
+      function isHotEnough() {
+        // 料金・フローに触れたときだけ「最後に」を出す
+        return heat.roleHits > 0;
+      }
+
+      function updateLastButtonVisibility() {
+        if (closingPlayed || sideCtasVisible) {
+          setActionBar('cta');
+          return;
+        }
+        var current = findPage(currentPageNumber);
+        var show = presentationStarted && (isHotEnough() || isClosingRole(current));
+        setActionBar(show ? 'last' : null);
+      }
+
+      function showSideCtas() {
+        sideCtasVisible = true;
+        setActionBar('cta');
+      }
+
+      function maybeShowSideCtasForPage(page) {
+        if (!page) return;
+        if (isClosingRole(page)) {
+          showSideCtas();
+        }
+      }
+
+      function closingText() {
+        return closing.text || closing['text'] || openingValue('closing_text') || '';
+      }
+
+      function closingAudioUrl() {
+        return closing.audio_url || closing['audio_url'] || openingValue('closing_audio') || '';
+      }
+
+      function stopAllSpeech() {
+        openingQueue = null;
+        cancelAutoAdvance();
+        isPaused = false;
+        playbackToken += 1;
+        currentSpeech = null;
+        if (currentAudio) {
+          try { currentAudio.pause(); } catch (_e) {}
+          currentAudio = null;
+        }
+        if ('speechSynthesis' in window) {
+          try { window.speechSynthesis.cancel(); } catch (_e2) {}
+        }
+        setPlayButtonPlaying(false);
+      }
+
+      function playClosing(options) {
+        options = options || {};
+        stopAllSpeech();
+        closingPlayed = true;
+        updateLastButtonVisibility();
+
+        var pageNumber = parseInt(closing.page_number || closing['page_number'] || openingValue('closing_page') || currentPageNumber, 10) || currentPageNumber;
+        presentPage(pageNumber, { syncChoice: false });
+        trackEvent('closing_play', {
+          page_number: pageNumber,
+          metadata: { source: options.source || 'unknown' }
+        });
+        appendChatMessage(closingText(), 'assistant', null);
+
+        return playUrl(closingAudioUrl(), closingText()).then(function() {
+          showSideCtas();
+        });
+      }
+
+      function playCurrentPageAudio() {
+        cancelAutoAdvance();
+        var page = findPage(currentPageNumber);
+        if (!page) return Promise.resolve();
+        notePageEngagement(page);
+        if (page.audio_url || page.script) {
+          return playUrl(page.audio_url, page.script).then(function() {
+            maybeShowSideCtasForPage(page);
+            scheduleAutoAdvance(IDLE_BEFORE_AUTO_MS);
+          });
+        }
+        return Promise.resolve();
       }
 
       if (timerEl) {
@@ -152,63 +414,38 @@
         }, 1000);
       }
 
-      function initChoiceScroller(options) {
-        var scrollerWrap = document.getElementById(options.wrapId);
-        var scroller = document.getElementById(options.scrollerId);
-        var moreBtn = document.getElementById(options.moreId);
-        if (!scrollerWrap || !scroller || !moreBtn) return;
-
-        function alignLeftScroller() {
-          if (options.side !== 'left') return;
-          scroller.scrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
-        }
+      function initChoiceScroller() {
+        var scrollerWrap = document.getElementById('presentation-choice-scroller-wrap');
+        var scroller = document.getElementById('presentation-choice-scroller');
+        var prevBtn = document.getElementById('presentation-choice-more-prev');
+        var nextBtn = document.getElementById('presentation-choice-more-next');
+        if (!scrollerWrap || !scroller || !prevBtn || !nextBtn) return;
 
         function updateChoiceScroller() {
           var overflow = scroller.scrollWidth > scroller.clientWidth + 2;
-
-          if (options.side === 'left') {
-            var atStart = scroller.scrollLeft <= 4;
-            scrollerWrap.classList.toggle('has-overflow', overflow && !atStart);
-            moreBtn.hidden = !overflow || atStart;
-            return;
-          }
-
+          var atStart = scroller.scrollLeft <= 4;
           var atEnd = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 4;
-          scrollerWrap.classList.toggle('has-overflow', overflow && !atEnd);
-          moreBtn.hidden = !overflow || atEnd;
+          scrollerWrap.classList.toggle('has-overflow-left', overflow && !atStart);
+          scrollerWrap.classList.toggle('has-overflow-right', overflow && !atEnd);
+          prevBtn.hidden = !overflow || atStart;
+          nextBtn.hidden = !overflow || atEnd;
         }
 
-        moreBtn.addEventListener('click', function() {
+        prevBtn.addEventListener('click', function() {
           var delta = Math.max(180, scroller.clientWidth * 0.65);
-          scroller.scrollBy({
-            left: options.side === 'left' ? -delta : delta,
-            behavior: 'smooth'
-          });
+          scroller.scrollBy({ left: -delta, behavior: 'smooth' });
+        });
+        nextBtn.addEventListener('click', function() {
+          var delta = Math.max(180, scroller.clientWidth * 0.65);
+          scroller.scrollBy({ left: delta, behavior: 'smooth' });
         });
 
         scroller.addEventListener('scroll', updateChoiceScroller, { passive: true });
-        window.addEventListener('resize', function() {
-          alignLeftScroller();
-          updateChoiceScroller();
-        });
-
-        alignLeftScroller();
+        window.addEventListener('resize', updateChoiceScroller);
         updateChoiceScroller();
       }
 
-      initChoiceScroller({
-        wrapId: 'presentation-choice-scroller-wrap-left',
-        scrollerId: 'presentation-choice-scroller-left',
-        moreId: 'presentation-choice-more-left',
-        side: 'left'
-      });
-
-      initChoiceScroller({
-        wrapId: 'presentation-choice-scroller-wrap-right',
-        scrollerId: 'presentation-choice-scroller-right',
-        moreId: 'presentation-choice-more-right',
-        side: 'right'
-      });
+      initChoiceScroller();
 
       var sessionKey = (function() {
         var storageKey = 'deal-presentation-session';
@@ -331,17 +568,26 @@
         return (ctaConfig.url || '').trim();
       }
 
+      function salesUrl() {
+        return (ctaConfig.sales_url || ctaConfig['sales_url'] || '').trim();
+      }
+
+      function openExternalUrl(url) {
+        if (!url) return false;
+        var opened = window.open(url, '_blank', 'noopener,noreferrer');
+        if (!opened) {
+          window.location.assign(url);
+        }
+        return true;
+      }
+
       function openCtaUrl(source) {
         var url = ctaUrl();
         if (!url) {
           alert('契約ページのURLが設定されていません。');
           return false;
         }
-        var opened = window.open(url, '_blank', 'noopener,noreferrer');
-        if (!opened) {
-          window.location.assign(url);
-        }
-        return true;
+        return openExternalUrl(url);
       }
 
       function trackCtaClick(source, label) {
@@ -381,6 +627,17 @@
         document.body.classList.remove('presentation-locked');
       }
 
+      function hideExitModal() {
+        if (!modal) return;
+        exitModalShown = false;
+        modal.classList.remove('presentation-exit-modal--open');
+        document.body.classList.remove('presentation-exit-open');
+        if (evaluationNotice) {
+          evaluationNotice.classList.remove('is-warning');
+          evaluationNotice.textContent = '商談を終了するには、満足度（星）を選び「評価を送信」を押してください。';
+        }
+      }
+
       function handleCtaClick(source) {
         handleCtaInteraction(null, source);
       }
@@ -401,12 +658,49 @@
         }
       }
 
-      function handleExitSalesCallClick() {
+      function handleExitSalesCallClick(e) {
         var label = ctaConfig.exit_sales_call_label || (exitSalesCallBtn && exitSalesCallBtn.textContent.trim()) || '担当者と商談を希望';
+        var url = salesUrl();
         trackEvent('exit_sales_call_click', {
           label: label,
-          metadata: { status: 'pending_implementation' }
+          metadata: { url: url || null }
         });
+
+        if (url) {
+          openExternalUrl(url);
+          return;
+        }
+
+        if (e) e.preventDefault();
+        alert('担当者より折り返しご連絡いたします。しばらくお待ちください。');
+      }
+
+      function handleSideContractClick(e) {
+        var label = ctaConfig.exit_contract_label || (sideContractBtn && sideContractBtn.textContent.trim()) || '契約へ進む';
+        trackEvent('cta_click', {
+          label: label,
+          metadata: { source: 'side_contract', url: ctaUrl() }
+        });
+        if (!ctaUrl()) {
+          if (e) e.preventDefault();
+          alert('契約ページのURLが設定されていません。');
+          return;
+        }
+        openCtaUrl('side_contract');
+      }
+
+      function handleSideSalesClick(e) {
+        var label = ctaConfig.exit_sales_call_label || (sideSalesBtn && sideSalesBtn.textContent.trim()) || '担当者と商談を希望';
+        var url = salesUrl();
+        trackEvent('exit_sales_call_click', {
+          label: label,
+          metadata: { source: 'side_sales', url: url || null }
+        });
+        if (url) {
+          openExternalUrl(url);
+          return;
+        }
+        if (e) e.preventDefault();
         alert('担当者より折り返しご連絡いたします。しばらくお待ちください。');
       }
 
@@ -494,7 +788,10 @@
         });
       }
 
-      function playUrl(url, textFallback) {
+      function playUrl(url, textFallback, options) {
+        options = options || {};
+        var keepPlayingUi = !!options.keepPlayingUi;
+
         return new Promise(function(resolve) {
           var token = ++playbackToken;
           isPaused = false;
@@ -509,7 +806,7 @@
               return;
             }
             setAvatarSpeaking(false);
-            setPlayButtonPlaying(false);
+            if (!keepPlayingUi) setPlayButtonPlaying(false);
             resolve();
           }
 
@@ -520,7 +817,7 @@
 
           stopCurrentAudio(true);
 
-          var audio = new Audio(url);
+          var audio = takeCachedAudio(url);
           currentAudio = audio;
           setAvatarSpeaking(true);
           setPlayButtonPlaying(true);
@@ -559,6 +856,8 @@
         if (index >= openingQueue.segments.length) {
           openingQueue.running = false;
           setPlayButtonPlaying(false);
+          updateLastButtonVisibility();
+          scheduleAutoAdvance(IDLE_BEFORE_AUTO_MS);
           return Promise.resolve();
         }
 
@@ -566,12 +865,23 @@
         var pageNumber = parseInt(segmentValue(segment, 'page_number'), 10) || 1;
         var url = segmentValue(segment, 'audio_url');
         var text = segmentValue(segment, 'text');
-        presentPage(pageNumber);
+        var nextSegment = openingQueue.segments[index + 1];
+        if (nextSegment) preloadAudio(segmentValue(nextSegment, 'audio_url'));
 
-        return playUrl(url, text).then(function() {
+        // オープニング中はトピック選択の見た目を変えない（中央再生ボタンを維持）
+        presentPage(pageNumber, { syncChoice: false });
+
+        var keepUi = index < openingQueue.segments.length - 1;
+        return playUrl(url, text, { keepPlayingUi: keepUi }).then(function() {
           if (isPaused || !openingQueue || !openingQueue.running) return;
           openingQueue.nextIndex = index + 1;
-          return continueOpeningQueue();
+          if (openingQueue.nextIndex >= openingQueue.segments.length) {
+            return continueOpeningQueue();
+          }
+          return wait(SEGMENT_GAP_MS).then(function() {
+            if (isPaused || !openingQueue || !openingQueue.running) return;
+            return continueOpeningQueue();
+          });
         });
       }
 
@@ -584,20 +894,99 @@
         return continueOpeningQueue();
       }
 
+      function getPdfDocument(url) {
+        if (!window.pdfjsLib || !url) return Promise.reject(new Error('pdfjs unavailable'));
+        if (!pdfDocCache[url]) {
+          pdfDocCache[url] = window.pdfjsLib.getDocument({ url: url, withCredentials: true }).promise;
+        }
+        return pdfDocCache[url];
+      }
+
+      function renderPdfSlide(slide) {
+        if (!slide) return Promise.resolve();
+
+        var canvas = slide.querySelector('canvas.document-pdf-canvas');
+        var url = slide.getAttribute('data-pdf-url');
+        var pageNumber = parseInt(slide.getAttribute('data-page-number'), 10);
+        if (!canvas || !url || !pageNumber || !window.pdfjsLib) return Promise.resolve();
+
+        var width = slide.clientWidth;
+        var height = slide.clientHeight;
+        if (width < 2 || height < 2) return Promise.resolve();
+
+        var taskKey = slide.id || String(pageNumber);
+        if (pdfRenderTasks[taskKey] && typeof pdfRenderTasks[taskKey].cancel === 'function') {
+          try { pdfRenderTasks[taskKey].cancel(); } catch (_e) {}
+        }
+
+        return getPdfDocument(url).then(function(pdf) {
+          return pdf.getPage(pageNumber).then(function(page) {
+            var dpr = window.devicePixelRatio || 1;
+            var baseViewport = page.getViewport({ scale: 1 });
+            // Contain: width OR height becomes 100%, never crop, never scroll.
+            var fitScale = Math.min(width / baseViewport.width, height / baseViewport.height);
+            var viewport = page.getViewport({ scale: fitScale * dpr });
+            var canvasW = Math.max(1, Math.floor(width * dpr));
+            var canvasH = Math.max(1, Math.floor(height * dpr));
+            var offsetX = Math.floor((canvasW - viewport.width) / 2);
+            var offsetY = Math.floor((canvasH - viewport.height) / 2);
+
+            canvas.width = canvasW;
+            canvas.height = canvasH;
+
+            var context = canvas.getContext('2d', { alpha: false });
+            if (!context) return;
+
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.fillStyle = '#1a1b22';
+            context.fillRect(0, 0, canvasW, canvasH);
+            context.setTransform(1, 0, 0, 1, offsetX, offsetY);
+
+            var renderTask = page.render({ canvasContext: context, viewport: viewport });
+            pdfRenderTasks[taskKey] = renderTask;
+            return renderTask.promise.then(function() {
+              slide.classList.add('is-pdf-fitted');
+            }).catch(function(err) {
+              if (err && err.name === 'RenderingCancelledException') return;
+              throw err;
+            });
+          });
+        }).catch(function(err) {
+          slide.classList.remove('is-pdf-fitted');
+          if (window.console && typeof console.warn === 'function') {
+            console.warn('[presentation] PDF fit render failed', err);
+          }
+        });
+      }
+
+      function renderActivePdfSlide() {
+        return renderPdfSlide(root.querySelector('.document-slide.active'));
+      }
+
       function showSlideByPageNumber(pageNumber) {
         var matched = false;
+        var activeSlide = null;
         slides.forEach(function(slide) {
           var active = parseInt(slide.dataset.pageNumber, 10) === pageNumber;
           slide.classList.toggle('active', active);
-          if (active) matched = true;
+          if (active) {
+            matched = true;
+            activeSlide = slide;
+          }
         });
 
         if (!matched && slides.length > 0) {
           var index = Math.max(0, Math.min(pageNumber - 1, slides.length - 1));
           slides.forEach(function(slide, i) {
-            slide.classList.toggle('active', i === index);
+            var active = i === index;
+            slide.classList.toggle('active', active);
+            if (active) activeSlide = slide;
           });
         }
+
+        try {
+          renderPdfSlide(activeSlide);
+        } catch (_e) {}
       }
 
       function setActiveButton(pageNumber) {
@@ -617,14 +1006,24 @@
         });
       }
 
-      function presentPage(pageNumber) {
+      function presentPage(pageNumber, options) {
+        options = options || {};
         if (currentPageNumber !== pageNumber) {
           trackEvent('page_view', { page_number: pageNumber });
         }
         currentPageNumber = pageNumber;
         showSlideByPageNumber(pageNumber);
-        setActiveButton(pageNumber);
+        if (options.syncChoice === false) {
+          choiceButtons.forEach(function(btn) {
+            btn.classList.remove('btn-choice--active');
+          });
+        } else {
+          setActiveButton(pageNumber);
+        }
         setActivePageNav(pageNumber);
+        if (presentationStarted) {
+          notePageEngagement(findPage(pageNumber));
+        }
       }
 
       function appendChatMessage(content, role, audioUrl) {
@@ -681,12 +1080,17 @@
         if (presentationStarted) {
           if (hasResumablePlayback()) return resumePlayback();
           if (openingQueue && openingQueue.running) return continueOpeningQueue();
+          if (autoAdvance && autoAdvance.running) return continueAutoAdvance();
           return Promise.resolve();
         }
         presentationStarted = true;
+        updateLastButtonVisibility();
         trackEvent('presentation_start', { page_number: currentPageNumber });
         hideOverlay();
-        return playOpeningSegments(segmentsForOpening());
+        var segments = segmentsForOpening();
+        if (segments[0]) preloadAudio(segmentValue(segments[0], 'audio_url'));
+        if (segments[1]) preloadAudio(segmentValue(segments[1], 'audio_url'));
+        return playOpeningSegments(segments);
       }
 
       function fetchResponse(options) {
@@ -725,6 +1129,8 @@
         var label = button.dataset.label;
         if (!pageNumber) return Promise.resolve();
 
+        stopAllSpeech();
+        heat.topicClicks += 1;
         trackEvent('topic_click', {
           page_number: pageNumber,
           topic: topic,
@@ -732,20 +1138,30 @@
         });
 
         presentPage(pageNumber);
-        resetPlayback();
-        var page = pages.find(function(p) { return p.page_number === pageNumber; });
 
-        if (page && page.audio_url) {
-          return playUrl(page.audio_url, page.script);
+        var page = findPage(pageNumber);
+        notePageEngagement(page);
+
+        if (page && (page.audio_url || page.script)) {
+          return playUrl(page.audio_url, page.script).then(function() {
+            maybeShowSideCtasForPage(page);
+            scheduleAutoAdvance(IDLE_BEFORE_AUTO_MS);
+          });
         }
 
         return fetchResponse({ topic: topic, pageNumber: pageNumber }).then(function(result) {
           if (result.page_number) presentPage(result.page_number);
           appendChatMessage(result.text, 'assistant', result.audio_url);
+          scheduleAutoAdvance(IDLE_BEFORE_AUTO_MS);
+        }).catch(function() {
+          appendChatMessage('回答を取得できませんでした。', 'assistant', null);
         });
       }
 
       function handleFreeText(message) {
+        cancelAutoAdvance();
+        heat.freeTextCount += 1;
+        updateLastButtonVisibility();
         trackEvent('free_text_send', { message: message, page_number: currentPageNumber });
         appendChatMessage(message, 'user');
         pushHistory('user', message);
@@ -753,6 +1169,7 @@
           if (result.page_number) presentPage(result.page_number);
           appendChatMessage(result.text, 'assistant', result.audio_url);
           pushHistory('assistant', result.text);
+          scheduleAutoAdvance(IDLE_BEFORE_AUTO_MS);
         }).catch(function() {
           appendChatMessage('回答を取得できませんでした。', 'assistant', null);
         });
@@ -789,7 +1206,9 @@
         item.addEventListener('click', function() {
           var pageNumber = parseInt(item.dataset.pageNumber, 10);
           if (!pageNumber) return;
-          presentPage(pageNumber);
+          cancelAutoAdvance();
+          // 左ナビはスライド切替のみ。中央の再生ボタン見た目／役割は維持する
+          presentPage(pageNumber, { syncChoice: false });
         });
       });
 
@@ -832,6 +1251,7 @@
         voiceBtn.addEventListener('click', function() {
           if (voiceBtn.classList.contains('presentation-play-btn--playing')) {
             pausePlayback();
+            cancelAutoAdvance();
             return;
           }
 
@@ -842,7 +1262,11 @@
 
           if (!presentationStarted) {
             startPresentation();
+            return;
           }
+
+          // 開始後は現在ページの読み上げを再生（左ナビで選んだページも対象）
+          playCurrentPageAudio();
         });
       }
 
@@ -872,11 +1296,37 @@
         exitSalesCallBtn.addEventListener('click', handleExitSalesCallClick);
       }
 
+      if (lastBtn) {
+        lastBtn.addEventListener('click', function() {
+          ensureStarted(function() {
+            trackEvent('last_button_click', { page_number: currentPageNumber });
+            playClosing({ source: 'last_button' });
+          });
+        });
+      }
+
+      if (sideContractBtn) {
+        sideContractBtn.addEventListener('click', handleSideContractClick);
+      }
+
+      if (sideSalesBtn) {
+        sideSalesBtn.addEventListener('click', handleSideSalesClick);
+      }
+
+      if (materialsDownloadLink) {
+        materialsDownloadLink.addEventListener('click', function() {
+          trackEvent('materials_download', {
+            page_number: currentPageNumber,
+            metadata: { filename: (materials && materials.filename) || null }
+          });
+        });
+      }
+
       if (modal) {
         modal.addEventListener('click', function(e) {
-          if (e.target === modal || e.target.classList.contains('presentation-exit-modal__backdrop')) {
+          if (e.target === modal || e.target.classList.contains('presentation-exit-modal__backdrop') || e.target.getAttribute('data-close-modal') === 'true') {
             e.preventDefault();
-            showEvaluationRequiredNotice();
+            hideExitModal();
           }
         });
       }
@@ -906,6 +1356,20 @@
       setChatPanelState('open');
       presentPage(parseInt(openingValue('greeting_page'), 10) || 1);
       showOverlay();
+
+      window.requestAnimationFrame(function() { renderActivePdfSlide(); });
+      window.setTimeout(renderActivePdfSlide, 150);
+      window.addEventListener('resize', function() {
+        if (pdfResizeTimer) window.clearTimeout(pdfResizeTimer);
+        pdfResizeTimer = window.setTimeout(renderActivePdfSlide, 100);
+      });
+      if (window.ResizeObserver && documentViewport) {
+        var viewportObserver = new ResizeObserver(function() {
+          if (pdfResizeTimer) window.clearTimeout(pdfResizeTimer);
+          pdfResizeTimer = window.setTimeout(renderActivePdfSlide, 80);
+        });
+        viewportObserver.observe(documentViewport);
+      }
 
       window.addEventListener('pagehide', function() {
         logSessionClose('pagehide');

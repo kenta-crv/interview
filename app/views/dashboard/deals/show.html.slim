@@ -46,6 +46,10 @@
         - if client_signed_in?
           .db-v2-form-actions.db-v2-form-actions--inline
             = button_to "処理が止まっている場合はリセット", reset_processing_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", data: { turbo: false, confirm: "処理状態をリセットして再度アップロードできるようにします。よろしいですか？" }
+    / application.js が壊れていても完了を拾えるよう、処理中はインラインでポーリングする
+    - processing_status_url = processing_status_dashboard_deal_path(@deal)
+    script type="text/javascript"
+      == "(function(){var url=#{processing_status_url.to_json};function tick(){fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}}).then(function(r){return r.ok?r.json():null;}).then(function(d){if(!d){setTimeout(tick,5000);return;}if(!d.processing){var m=document.getElementById('processing-message');if(m){m.textContent=d.failed?'AI処理に失敗しました。ページを更新します…':'AI処理が完了しました。ページを更新します…';}window.location.reload();return;}setTimeout(tick,3000);}).catch(function(){setTimeout(tick,5000);});}tick();})();"
   - elsif @deal.failed?
     .db-v2-alert.db-v2-alert--danger
       i.fa-solid.fa-circle-exclamation aria-hidden="true"
@@ -89,7 +93,7 @@
                   p.db-v2-upload-form__lead
                     i.fa-solid.fa-cloud-arrow-up aria-hidden="true"
                     |  PDFをアップロード（バックグラウンドでAI処理）
-                  p.db-v2-upload-form__hint 処理には数分かかります。アップロード後すぐに画面が戻ります。
+                  p.db-v2-upload-form__hint 新しいPDFを上げると既存の提案資料は差し替わります。処理には数分かかります。
                   .db-v2-upload-form__controls
                     label.db-v2-form-label for="deal-documents-input" PDFファイル
                     = file_field_tag "files[]", multiple: true, accept: ".pdf,application/pdf", class: "db-v2-form-control db-v2-upload-form__input", id: "deal-documents-input", disabled: @deal.processing?
@@ -132,7 +136,7 @@
                       p.db-v2-pdf-preview__meta 抽出ページ: #{related_pages.map(&:page_number).join(", ")}（全#{related_pages.size}面）
 
                 .db-v2-form-actions.db-v2-form-actions--split
-                  - if @deal.deal_pages.any?
+                  - if @deal.deal_pages.any? && !@deal.processing?
                     .db-v2-alert.db-v2-alert--success.db-v2-alert--compact
                       i.fa-solid.fa-circle-check aria-hidden="true"
                       p
@@ -141,11 +145,7 @@
                           | ／ 公開中
                         - else
                           | ／ 編集・公開待ち
-                  - elsif @deal.processing?
-                    .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
-                      i.fa-solid.fa-spinner.fa-spin aria-hidden="true"
-                      p AI処理中です。完了までお待ちください。
-                  - else
+                  - elsif !@deal.processing? && @deal.deal_pages.empty?
                     .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
                       p 未処理です。「PDFを再処理」を実行してください。
                   = button_to (@deal.deal_pages.any? ? "PDFを再処理" : "PDFを処理開始"),
@@ -153,8 +153,8 @@
                     method: :post,
                     class: "db-v2-btn db-v2-btn--ghost",
                     disabled: @deal.processing?,
-                    data: { turbo: false, confirm: "PDFを再処理します。バックグラウンドで実行されます。よろしいですか？" },
-                    form: { data: { turbo: false } }
+                    data: { turbo: false },
+                    form: { data: { turbo: false }, onsubmit: "return confirm('PDFを再処理します。バックグラウンドで実行されます。よろしいですか？');" }
 
           .db-v2-deal-form-surface
             = render "deal_knowledge"
@@ -185,7 +185,7 @@
                 = form_with url: update_content_dashboard_deal_path(@deal), method: :patch, local: true, html: { id: "deal-content-form", data: { turbolinks: false }, class: "db-v2-deal-form-surface" } do
                   .db-v2-form-section
                     h3.db-v2-form-section__title 冒頭パート
-                    - [["greeting", "挨拶"], ["company_overview", "会社概要"], ["usage_guide", "操作案内"]].each do |key, label|
+                    - [["greeting", "挨拶"], ["company_overview", "会社概要"], ["usage_guide", "操作案内"], ["closing", "クロージング"]].each do |key, label|
                       .db-v2-form-group
                         .db-v2-form-group__head
                           label.db-v2-form-label = label

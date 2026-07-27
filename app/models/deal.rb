@@ -74,6 +74,7 @@ class Deal < ApplicationRecord
   }.freeze
 
   DEFAULT_TTS_VOICE_GENDER = "female"
+  ROLE_CLOSING_MARKER = '【次のステップ】'.freeze
 
   SYSTEM_FAQ_SOURCES = %w[ai_gap template supplement_pdf session_log stress_test checklist].freeze
 
@@ -88,9 +89,62 @@ class Deal < ApplicationRecord
     {
       'label' => presentation_cta_label.presence || DEFAULT_CTA_LABEL,
       'url' => presentation_cta_url.to_s,
+      'sales_url' => follow_up_sales_url.to_s,
       'exit_contract_label' => exit_contract_label.presence || DEFAULT_EXIT_CONTRACT_LABEL,
       'exit_sales_call_label' => exit_sales_call_label.presence || DEFAULT_EXIT_SALES_CALL_LABEL
     }
+  end
+
+  def materials_download_payload
+    doc = deal_documents.proposals.order(:created_at).reverse_order.detect { |d| d.file.attached? }
+    return nil unless doc
+
+    {
+      'label' => '使用資料をダウンロード',
+      'url' => Rails.application.routes.url_helpers.rails_blob_path(doc.file, disposition: 'attachment', only_path: true),
+      'filename' => doc.file.filename.to_s
+    }
+  end
+
+  def page_role_for(page)
+    menu = menu_items_list.find { |item| item['page_number'].to_i == page.page_number }
+    primary = [
+      menu&.dig('key'),
+      menu&.dig('label'),
+      page.title
+    ].compact.join(' ')
+
+    return 'pricing' if primary.match?(/料金|費用|価格|プラン|月額|pricing|price|plan|roi/i)
+    return 'flow' if primary.match?(/導入|フロー|手順|オンボーディング|契約フロー|flow|onboard|contract.?flow/i)
+
+    # タイトル等が曖昧なときだけ本文の先頭を弱く参照（会社概要の「導入しやすい」等で誤判定しない）
+    excerpt = page.script.to_s[0, 80]
+    return 'pricing' if excerpt.match?(/料金|費用|価格|プラン|月額/)
+    return 'flow' if excerpt.match?(/導入フロー|契約フロー|オンボーディング|導入手順|導入の流れ/)
+
+    nil
+  end
+
+  def role_closing_text_for(role)
+    if language == 'ja'
+      case role.to_s
+      when 'pricing'
+        "#{ROLE_CLOSING_MARKER}料金面でも導入しやすい設計です。まずはトライアルで効果をご確認いただくことも可能です。ご希望でしたらこのまま契約（トライアル）へお進みください。より詳細な条件のご案内が必要でしたら、担当者よりご説明します。"
+      when 'flow'
+        "#{ROLE_CLOSING_MARKER}導入までの流れは以上です。スムーズに始められるようサポートいたします。このままお申し込みを進めるか、担当者に詳細をご相談ください。"
+      else
+        nil
+      end
+    else
+      case role.to_s
+      when 'pricing'
+        "#{ROLE_CLOSING_MARKER} Our pricing is designed to make adoption easy. You can also start with a trial. Choose contract or trial to proceed, or talk with our team for tailored details."
+      when 'flow'
+        "#{ROLE_CLOSING_MARKER} That covers the onboarding flow. We support a smooth start. Continue to apply, or speak with our team for more detail."
+      else
+        nil
+      end
+    end
   end
 
   def approved_faqs_for_conversation
@@ -191,16 +245,28 @@ class Deal < ApplicationRecord
   def presentation_opening_payload
     pages = deal_pages.order(:page_number)
     company_page = pages.find { |p| p.page_number > 1 }&.page_number || pages.first&.page_number || 1
+    last_page = pages.last&.page_number || 1
 
     {
       'greeting_audio' => opening_speech_url('greeting'),
       'company_overview_audio' => opening_speech_url('company_overview'),
       'usage_guide_audio' => opening_speech_url('usage_guide'),
+      'closing_audio' => opening_speech_url('closing'),
       'greeting_page' => pages.first&.page_number || 1,
       'company_page' => company_page,
+      'closing_page' => last_page,
       'greeting_text' => greeting_script.presence || default_greeting_text,
       'company_overview_text' => company_overview_script.presence || default_company_overview_text,
-      'usage_guide_text' => usage_guide_script.presence || default_usage_guide_text
+      'usage_guide_text' => usage_guide_script.presence || default_usage_guide_text,
+      'closing_text' => closing_script.presence || default_closing_text
+    }
+  end
+
+  def presentation_closing_payload
+    {
+      'text' => closing_script.presence || default_closing_text,
+      'audio_url' => opening_speech_url('closing'),
+      'page_number' => deal_pages.order(:page_number).last&.page_number || 1
     }
   end
 
@@ -230,7 +296,19 @@ class Deal < ApplicationRecord
   end
 
   def default_usage_guide_text
-    language == 'ja' ? '知りたいトピックをメニューからお選びください。自由にご質問いただくこともできます。' : 'Please select a topic or ask a question freely.'
+    if language == 'ja'
+      '進め方は3つです。1つ目は、気になる点を自由にご質問ください。2つ目は、下のメニューから知りたいトピックを選んでください。3つ目は、ご指定がない場合、このまま進行させていただきます。'
+    else
+      'There are three ways to proceed. First, ask any questions freely. Second, choose a topic from the menu below. Third, if you do not specify, I will continue through the materials in order.'
+    end
+  end
+
+  def default_closing_text
+    if language == 'ja'
+      'ここまでのご案内を踏まえ、改めて本サービスの魅力をお伝えします。導入しやすく、確かな価値を感じていただける内容です。このまま契約またはトライアルへ進むことも、担当者より詳細をご案内することも可能です。ご希望の進め方をお選びください。'
+    else
+      'Based on what we covered, here is the key value once more: easy to adopt, with clear results. You can proceed to contract or trial now, or speak with our team for a detailed walkthrough. Please choose how you would like to continue.'
+    end
   end
 
   def opening_speech_url(kind)
@@ -264,13 +342,15 @@ class Deal < ApplicationRecord
       greeting: { text: greeting_script, audio_url: opening_speech_url('greeting') },
       company_overview: { text: company_overview_script, audio_url: opening_speech_url('company_overview') },
       usage_guide: { text: usage_guide_script, audio_url: opening_speech_url('usage_guide') },
+      closing: { text: closing_script.presence || default_closing_text, audio_url: opening_speech_url('closing') },
       menu_items: menu_items_list,
       pages: deal_pages.order(:page_number).map do |page|
         {
           page_number: page.page_number,
           title: page.title,
           script: page.script,
-          audio_url: page_audio_path(page)
+          audio_url: page_audio_path(page),
+          role: page_role_for(page)
         }
       end,
       playback_ready: playback_ready
@@ -392,7 +472,10 @@ class Deal < ApplicationRecord
 
   def collect_documents
     deal_documents.proposals.filter_map do |doc|
-      next unless doc.file.attached?
+      unless doc.file_readable?
+        Rails.logger.warn("Skipping unreadable deal_document=#{doc.id} deal=#{id} filename=#{doc.filename}")
+        next
+      end
 
       raw = doc.file.download
       content_type = doc.content_type

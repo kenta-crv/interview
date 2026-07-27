@@ -49,8 +49,8 @@ module DealEngine
 
       prompt = if @language == 'ja'
         <<~PROMPT
-          以下の商談資料要約に基づき、AI商談の冒頭3パートの読み上げ台本を作成してください。
-          各パートは80〜120字程度、丁寧なビジネス日本語で。
+          以下の商談資料要約に基づき、AI商談の冒頭3パートと締め1パートの読み上げ台本を作成してください。
+          冒頭各パートは80〜120字程度、締めは120〜180字程度。丁寧なビジネス日本語で。
 
           【資料要約】
           #{context.truncate(4000)}
@@ -59,18 +59,20 @@ module DealEngine
           {
             "greeting": "挨拶（会社名は#{@deal.title}）",
             "company_overview": "会社・サービス概要",
-            "usage_guide": "メニューからトピックを選ぶ案内"
+            "usage_guide": "進め方の3択案内。必ず次を含める: (1)気になる点を自由に質問 (2)下のメニューからトピックを選ぶ (3)ご指定がない場合はこのまま進行",
+            "closing": "営業クロージング。魅力・価値を短く再提示し、契約またはトライアル、もしくは担当者への詳細案内を促す"
           }
         PROMPT
       else
         <<~PROMPT
-          Based on this deal summary, create 3 opening narration scripts (80-120 words each).
+          Based on this deal summary, create 3 opening narration scripts (80-120 words each)
+          and 1 closing sales script (120-180 words).
 
           Summary:
           #{context.truncate(4000)}
 
           Output JSON only:
-          {"greeting":"...","company_overview":"...","usage_guide":"..."}
+          {"greeting":"...","company_overview":"...","usage_guide":"...","closing":"..."}
         PROMPT
       end
 
@@ -78,8 +80,25 @@ module DealEngine
       @deal.update!(
         greeting_script: result['greeting'] || result[:greeting],
         company_overview_script: result['company_overview'] || result[:company_overview],
-        usage_guide_script: result['usage_guide'] || result[:usage_guide]
+        usage_guide_script: result['usage_guide'] || result[:usage_guide],
+        closing_script: result['closing'] || result[:closing] || default_opening_scripts['closing']
       )
+    end
+
+    def append_role_closings!
+      @deal.deal_pages.order(:page_number).each do |page|
+        role = @deal.page_role_for(page)
+        next unless role
+
+        suffix = @deal.role_closing_text_for(role)
+        next if suffix.blank?
+        next if page.script.to_s.include?(Deal::ROLE_CLOSING_MARKER)
+
+        base = page.script.to_s.strip
+        next if base.blank?
+
+        page.update!(script: "#{base}\n\n#{suffix}")
+      end
     end
 
     def generate_menu_items!
@@ -96,6 +115,8 @@ module DealEngine
 
           ルール:
           - label は各スライドの要点を短く表す（例: 会社概要、受入実績、料金、サポート体制、導入フロー、USP）
+          - key は可能な限り英語スネークケース（pricing / flow / overview など）
+          - 料金・プラン系は key を pricing、導入・契約フロー系は key を flow にする
           - 「前半」「中盤」「後半」のような抽象ラベルは禁止
           - 表紙・挨拶のみのスライドはメニューに含めない
           - 各メニューは対応する page_number を必ず含める
@@ -222,13 +243,15 @@ module DealEngine
         {
           'greeting' => "こんにちは。#{@deal.title}のAI商談アシスタントです。本日はお時間をいただきありがとうございます。",
           'company_overview' => @deal.deal_summary&.summary.presence || @deal.description.presence || '本日は資料に基づき、サービス内容をご案内いたします。',
-          'usage_guide' => '知りたいトピックをメニューからお選びください。自由にご質問いただくこともできます。'
+          'usage_guide' => '進め方は3つです。1つ目は、気になる点を自由にご質問ください。2つ目は、下のメニューから知りたいトピックを選んでください。3つ目は、ご指定がない場合、このまま進行させていただきます。',
+          'closing' => @deal.default_closing_text
         }
       else
         {
           'greeting' => "Hello. I'm the AI sales assistant for #{@deal.title}. Thank you for your time today.",
           'company_overview' => @deal.deal_summary&.summary.presence || @deal.description.presence || "I'll walk you through our proposal based on the uploaded materials.",
-          'usage_guide' => 'Please select a topic from the menu, or type your question freely.'
+          'usage_guide' => 'There are three ways to proceed. First, ask any questions freely. Second, choose a topic from the menu below. Third, if you do not specify, I will continue through the materials in order.',
+          'closing' => @deal.default_closing_text
         }
       end
     end
@@ -256,8 +279,16 @@ module DealEngine
           label = page.title.presence || label
         end
 
+        key = (item['key'] || item[:key] || "page_#{page.page_number}").to_s
+        haystack = "#{key} #{label} #{page.title}"
+        if haystack.match?(/料金|費用|価格|プラン|月額|pricing|price|plan/i)
+          key = 'pricing'
+        elsif haystack.match?(/導入|フロー|手順|オンボーディング|契約フロー|flow|onboard/i)
+          key = 'flow'
+        end
+
         {
-          'key' => (item['key'] || item[:key] || "page_#{page.page_number}").to_s,
+          'key' => key,
           'label' => label.presence || page.title.presence || "スライド #{page.page_number}",
           'page_number' => page.page_number
         }

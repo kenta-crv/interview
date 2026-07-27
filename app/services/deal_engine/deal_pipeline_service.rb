@@ -11,6 +11,7 @@ module DealEngine
       process_pdf_documents!
       script_generator.generate_opening_scripts!
       script_generator.generate_menu_items!
+      script_generator.append_role_closings!
       AudioGeneratorService.new(@deal).generate_all!
 
       @deal.update!(playback_ready: false)
@@ -39,7 +40,7 @@ module DealEngine
       @deal.deal_pages.destroy_all
 
       @deal.deal_documents.proposals.each do |document|
-        next unless document.file.attached?
+        next unless document.file_readable?
         next unless document.content_type&.include?('pdf')
 
         PdfProcessorService.new(document, script_generator: script_generator).process!

@@ -15,6 +15,9 @@ class DealPresentationEvent < ApplicationRecord
     cta_click
     exit_contract_click
     exit_sales_call_click
+    closing_play
+    last_button_click
+    materials_download
   ].freeze
 
   EVENT_LABELS = {
@@ -28,7 +31,10 @@ class DealPresentationEvent < ApplicationRecord
     'evaluation_submit' => '評価送信',
     'cta_click' => 'CTAボタン',
     'exit_contract_click' => '終了：契約へ進む',
-    'exit_sales_call_click' => '終了：担当者商談希望'
+    'exit_sales_call_click' => '終了：担当者商談希望',
+    'closing_play' => 'クロージング再生',
+    'last_button_click' => '最後にボタン',
+    'materials_download' => '資料ダウンロード'
   }.freeze
 
   FOLLOW_UP_TRIGGER_EVENT = "session_close"

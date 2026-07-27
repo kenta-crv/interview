@@ -1,0 +1,541 @@
+// This is a manifest file that'll be compiled into application.js, which will include all the files
+// listed below.
+//
+// Any JavaScript/Coffee file within this directory, lib/assets/javascripts, or any plugin's
+// vendor/assets/javascripts directory can be referenced here using a relative path.
+//
+// It's not advisable to add code directly here, but if you do, it'll appear at the bottom of the
+// compiled file. JavaScript code in this file should be added after the last require_* statement.
+//
+// Read Sprockets README (https://github.com/rails/sprockets#sprockets-directives) for details
+// about supported directives.
+//
+//= require rails-ujs
+//= require activestorage
+//= require meetia_page_init
+//= require db_v2_pricing_slider
+//= require deal_dashboard
+//= stub deal_presentation
+//= require_tree .
+
+document.addEventListener('DOMContentLoaded', () => {
+  const mobileNavToggle = document.getElementById('mobile-nav-toggle');
+  const mobileNavMenu = document.getElementById('mobile-nav-menu');
+  const mobileNavClose = document.getElementById('mobile-nav-close');
+  
+  function closeMobileMenu() {
+    mobileNavToggle.classList.remove('active');
+    mobileNavMenu.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  
+  if (mobileNavToggle && mobileNavMenu) {
+    mobileNavToggle.addEventListener('click', () => {
+      mobileNavToggle.classList.toggle('active');
+      mobileNavMenu.classList.toggle('active');
+      
+      if (mobileNavMenu.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    });
+    
+    if (mobileNavClose) {
+      mobileNavClose.addEventListener('click', closeMobileMenu);
+    }
+    
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+    mobileNavLinks.forEach(link => {
+      link.addEventListener('click', closeMobileMenu);
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!mobileNavToggle.contains(e.target) && !mobileNavMenu.contains(e.target)) {
+        closeMobileMenu();
+      }
+    });
+  }
+
+  const hero = document.querySelector('.hero-main-section');
+  if (hero && window.innerWidth > 991) {
+    hero.addEventListener('mousemove', (e) => {
+      const rect = hero.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      const tx = (x - 0.5) * 12;
+      const ty = (y - 0.5) * 8; 
+      hero.style.backgroundPosition = `${50 + tx}% ${50 + ty}%`;
+    });
+
+    hero.addEventListener('mouseleave', () => {
+      hero.style.backgroundPosition = 'center';
+    });
+  }
+
+  const form = document.getElementById('hero-main-form');
+  if (form) {
+    form.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const btn = form.querySelector('.hero-main-submit');
+      btn.disabled = true;
+      btn.textContent = '送信中...';
+      btn.style.opacity = '0.9';
+      setTimeout(() => {
+        btn.textContent = '送信しました';
+        btn.style.background = '#0A8E4A';
+      }, 1200);
+    });
+  }
+
+});
+
+document.querySelectorAll('.brand-track img').forEach(icon => {
+  icon.addEventListener('mouseenter', () => {
+    icon.style.transition = 'transform 0.3s ease';
+    icon.style.transform = 'scale(1.1)';
+  });
+  icon.addEventListener('mouseleave', () => {
+    icon.style.transform = 'scale(1)';
+  });
+});
+
+(function(){
+  const cards = document.querySelectorAll('.ser-mos-card');
+
+  if ('IntersectionObserver' in window && cards.length) {
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          el.classList.add('inview');
+          const children = el.querySelectorAll('.ser-mos-card-img, .ser-mos-card-title, .ser-mos-card-desc, .ser-mos-card-btn');
+          children.forEach((ch, i) => {
+            ch.style.transition = `transform .45s cubic-bezier(.2,.9,.3,1) ${i*80}ms, opacity .45s ${i*80}ms`;
+            ch.style.opacity = '1';
+            ch.style.transform = 'translateY(0)';
+          });
+          obs.unobserve(el);
+        }
+      });
+    }, { threshold: 0.18 });
+
+    cards.forEach(card => {
+      card.querySelectorAll('.ser-mos-card-img, .ser-mos-card-title, .ser-mos-card-desc, .ser-mos-card-btn').forEach(ch=>{
+        ch.style.opacity = '0';
+        ch.style.transform = 'translateY(10px)';
+      });
+      io.observe(card);
+    });
+  } else {
+    cards.forEach(c => c.classList.add('inview'));
+  }
+})();
+
+(function(){
+  const blocks = document.querySelectorAll('.main-moss-block');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('inview');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+
+    blocks.forEach(block => observer.observe(block));
+  } else {
+    blocks.forEach(block => block.classList.add('inview'));
+  }
+})();
+
+document.querySelectorAll(".faq-japan-item").forEach((item) => {
+  const question = item.querySelector(".faq-japan-question");
+
+  question.addEventListener("click", () => {
+    document.querySelectorAll(".faq-japan-item").forEach((faq) => {
+      if (faq !== item) faq.classList.remove("active");
+    });
+
+    item.classList.toggle("active");
+  });
+});
+
+if (typeof gsap !== "undefined") {
+  gsap.utils.toArray(".faq-japan-item").forEach((el, i) => {
+    gsap.from(el, {
+      opacity: 0,
+      y: 50,
+      duration: 0.8,
+      delay: i * 0.1,
+      scrollTrigger: {
+        trigger: el,
+        start: "top 90%",
+      },
+    });
+  });
+}
+
+if (typeof gsap !== "undefined") {
+  gsap.utils.toArray(".cards-moos-card").forEach((card, i) => {
+    gsap.from(card, {
+      opacity: 0,
+      y: 50,
+      duration: 0.8,
+      delay: i * 0.2,
+      scrollTrigger: {
+        trigger: card,
+        start: "top 90%",
+      },
+    });
+  });
+
+  gsap.from(".cards-moos-btn", {
+    opacity: 0,
+    y: 40,
+    duration: 1,
+    scrollTrigger: {
+      trigger: ".cards-moos-btn",
+      start: "top 95%",
+    },
+  });
+}
+
+if (typeof gsap !== "undefined") {
+  gsap.utils.toArray(".pricing-cards-card").forEach((card, i) => {
+    gsap.from(card, {
+      opacity: 0,
+      y: 50,
+      duration: 1,
+      delay: i * 0.2,
+      scrollTrigger: {
+        trigger: card,
+        start: "top 90%",
+      },
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof Swiper === 'undefined') return;
+
+  const caseStudiesEl = document.querySelector('.case-studies-swiper');
+  const pricingEl = document.querySelector('.pricing-swiper');
+  if (!caseStudiesEl && !pricingEl) return;
+
+  if (caseStudiesEl) {
+  const caseStudiesSwiper = new Swiper('.case-studies-swiper', {
+    slidesPerView: 1,
+    spaceBetween: 20,
+    loop: true,
+    autoplay: false,
+    navigation: {
+      nextEl: '.case-studies-next',
+      prevEl: '.case-studies-prev',
+    },
+    pagination: {
+      el: '.case-studies-pagination',
+      clickable: true,
+    },
+    breakpoints: {
+      768: {
+        slidesPerView: 1,
+        spaceBetween: 20,
+      }
+    }
+  });
+  }
+
+  if (pricingEl) {
+  const pricingSwiper = new Swiper('.pricing-swiper', {
+    slidesPerView: 1,
+    spaceBetween: 20,
+    loop: true,
+    autoplay: false,
+    navigation: {
+      nextEl: '.pricing-next',
+      prevEl: '.pricing-prev',
+    },
+    pagination: {
+      el: '.pricing-pagination',
+      clickable: true,
+    },
+    breakpoints: {
+      768: {
+        slidesPerView: 1,
+        spaceBetween: 20,
+      }
+    }
+  });
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const section = document.querySelector('.japan-notyo-section');
+  if (!section) return;
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        section.classList.add('japan-notyo-visible');
+        observer.unobserve(section);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  observer.observe(section);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.2
+  };
+  
+  const observerCallback = (entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('jap-notto-visible');
+        
+      }
+    });
+  };
+  
+  const observer = new IntersectionObserver(observerCallback, observerOptions);
+  
+  const heading = document.querySelector('.jap-notto-heading');
+  if (heading) {
+    observer.observe(heading);
+  }
+  
+  const imageContainers = document.querySelectorAll('.jap-notto-image-container');
+  imageContainers.forEach(container => {
+    observer.observe(container);
+  });
+  
+  const centerImage = document.querySelector('.jap-notto-center-image');
+  if (centerImage) {
+    observer.observe(centerImage);
+  }
+  
+  setTimeout(() => {
+    if (centerImage && centerImage.classList.contains('jap-notto-visible')) {
+      centerImage.style.animation = 'jap-notto-float 3s ease-in-out infinite';
+    }
+  }, 2000);
+  
+});
+
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes jap-notto-float {
+    0%, 100% {
+      transform: translate(-50%, -50%) translateY(0px);
+    }
+    50% {
+      transform: translate(-50%, -50%) translateY(-10px);
+    }
+  }
+`;
+document.head.appendChild(style);
+
+
+
+
+const mountDataTargetNav = () => {
+  document.body.addEventListener('click', (e) => {
+    const a = e.target.closest('a[data-target]');
+    if (!a) return;
+
+    e.preventDefault();
+    const id = a.getAttribute('data-target');
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    const headerH = document.querySelector('.site-header')?.offsetHeight || 0;
+    const top = target.getBoundingClientRect().top + window.scrollY - headerH - 10;
+
+    window.scrollTo({ top: Math.max(0, Math.round(top)), behavior: 'smooth' });
+
+    // 擬似スクロールイベントでfadeIn系の再判定を促す
+    setTimeout(() => window.dispatchEvent(new Event('scroll')), 60);
+  });
+};
+
+// ログインドロップダウン
+document.addEventListener('turbo:load', function() {
+  var toggleBtn = document.querySelector('[data-toggle-login]');
+  if (!toggleBtn) return;
+
+  var menu = toggleBtn.parentElement.querySelector('.dropdown-menu-login');
+  if (!menu) return;
+
+  toggleBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var isOpen = menu.style.display === 'block';
+    menu.style.display = isOpen ? 'none' : 'block';
+  });
+
+  document.addEventListener('click', function() {
+    menu.style.display = 'none';
+  });
+
+  menu.addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+});
+
+var MEETIA_DASHBOARD_THEME_KEY = 'meetia-dashboard-theme';
+
+function getDashboardTheme() {
+  try {
+    var stored = localStorage.getItem(MEETIA_DASHBOARD_THEME_KEY);
+    return stored === 'light' ? 'light' : 'dark';
+  } catch (e) {
+    return 'dark';
+  }
+}
+
+function applyDashboardTheme(theme) {
+  var nextTheme = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-dashboard-theme', nextTheme);
+
+  try {
+    localStorage.setItem(MEETIA_DASHBOARD_THEME_KEY, nextTheme);
+  } catch (e) {
+    /* ignore */
+  }
+
+  document.querySelectorAll('[data-dashboard-theme-value]').forEach(function(btn) {
+    var isActive = btn.getAttribute('data-dashboard-theme-value') === nextTheme;
+    btn.classList.toggle('is-active', isActive);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  });
+}
+
+function initDashboardTheme() {
+  if (!document.getElementById('dashboard-v2-container')) return;
+  applyDashboardTheme(getDashboardTheme());
+}
+
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-dashboard-theme-value]');
+  if (!btn || !document.getElementById('dashboard-v2-container')) return;
+  applyDashboardTheme(btn.getAttribute('data-dashboard-theme-value'));
+});
+
+function initDashboardSidebar() {
+  var container = document.getElementById('dashboard-v2-container');
+  if (!container || container.dataset.dashboardSidebarReady === 'true') return;
+
+  container.dataset.dashboardSidebarReady = 'true';
+
+  var open = function() {
+    container.classList.add('db-v2-sidebar--open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  var close = function() {
+    container.classList.remove('db-v2-sidebar--open');
+    document.body.style.overflow = '';
+  };
+
+  container.querySelectorAll('[data-dashboard-sidebar-toggle]').forEach(function(btn) {
+    btn.addEventListener('click', open);
+  });
+
+  container.querySelectorAll('[data-dashboard-sidebar-close]').forEach(function(btn) {
+    btn.addEventListener('click', close);
+  });
+
+  var overlay = container.querySelector('[data-dashboard-sidebar-overlay]');
+  if (overlay) overlay.addEventListener('click', close);
+
+  container.querySelectorAll('.db-v2-sidebar__link').forEach(function(link) {
+    link.addEventListener('click', function() {
+      if (window.matchMedia('(max-width: 1023px)').matches) close();
+    });
+  });
+}
+
+var DEAL_SHOW_TAB_ALIASES = {
+  'content-edit': 'studio',
+  'deal-knowledge': 'studio',
+  'presentation-cta': 'distribution',
+  'follow-up-settings': 'follow-up',
+  'presentation-analytics': 'analytics'
+};
+
+function scrollDashboardAnchor() {
+  if (!document.getElementById('dashboard-v2-container') || !window.location.hash) return;
+  var el = document.querySelector(window.location.hash);
+  if (el) {
+    window.setTimeout(function() {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  }
+}
+
+function resolveDealShowTabId(raw) {
+  if (!raw) return 'studio';
+  var id = raw.replace(/^#/, '');
+  var mapped = DEAL_SHOW_TAB_ALIASES[id] || id;
+  var valid = ['studio', 'distribution', 'follow-up', 'analytics'];
+  return valid.indexOf(mapped) >= 0 ? mapped : 'studio';
+}
+
+function activateDealShowTab(tabId) {
+  var root = document.querySelector('.db-v2-deal-show');
+  if (!root) return;
+
+  var nextTab = resolveDealShowTabId(tabId);
+  var buttons = root.querySelectorAll('[data-deal-tab]');
+  var panels = root.querySelectorAll('.db-v2-tab-panel');
+
+  buttons.forEach(function(btn) {
+    var isActive = btn.getAttribute('data-deal-tab') === nextTab;
+    btn.classList.toggle('is-active', isActive);
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+
+  panels.forEach(function(panel) {
+    var isActive = panel.id === 'deal-tab-' + nextTab;
+    panel.classList.toggle('is-active', isActive);
+    panel.hidden = !isActive;
+  });
+
+  if (window.history && window.history.replaceState) {
+    window.history.replaceState(null, '', '#' + nextTab);
+  }
+}
+
+function initDealShowTabs() {
+  var root = document.querySelector('.db-v2-deal-show');
+  if (!root || root.dataset.dealTabsReady === 'true') return;
+
+  root.dataset.dealTabsReady = 'true';
+
+  root.querySelectorAll('[data-deal-tab]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      activateDealShowTab(btn.getAttribute('data-deal-tab'));
+    });
+  });
+
+  activateDealShowTab(window.location.hash || 'studio');
+}
+
+document.addEventListener('DOMContentLoaded', initDashboardSidebar);
+document.addEventListener('DOMContentLoaded', initDashboardTheme);
+document.addEventListener('DOMContentLoaded', initDealShowTabs);
+document.addEventListener('DOMContentLoaded', scrollDashboardAnchor);
+document.addEventListener('turbo:load', initDashboardSidebar);
+document.addEventListener('turbo:load', initDashboardTheme);
+document.addEventListener('turbo:load', initDealShowTabs);
+document.addEventListener('turbo:load', scrollDashboardAnchor);
+document.addEventListener('turbolinks:load', initDashboardSidebar);
+document.addEventListener('turbolinks:load', initDashboardTheme);
+document.addEventListener('turbolinks:load', initDealShowTabs);
+document.addEventListener('turbolinks:load', scrollDashboardAnchor);
