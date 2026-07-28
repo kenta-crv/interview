@@ -56,6 +56,7 @@
       var pageNavItems = root.querySelectorAll('.presentation-page-nav__item');
       var pdfDocCache = {};
       var pdfRenderTasks = {};
+      var pdfRenderGeneration = {};
       var pdfResizeTimer = null;
       var avatar = document.getElementById('presentation-avatar-img');
       var overlay = document.getElementById('presentation-start-overlay');
@@ -169,14 +170,57 @@
         });
       }
 
+      function whenAudioReady(audio, timeoutMs) {
+        return new Promise(function(resolve) {
+          if (!audio) {
+            resolve(false);
+            return;
+          }
+          // HAVE_FUTURE_DATA (3) or HAVE_ENOUGH_DATA (4)
+          if (audio.readyState >= 3) {
+            resolve(true);
+            return;
+          }
+
+          var settled = false;
+          var timer = setTimeout(function() {
+            if (settled) return;
+            settled = true;
+            resolve(audio.readyState >= 2);
+          }, typeof timeoutMs === 'number' ? timeoutMs : 8000);
+
+          function done(ok) {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            resolve(!!ok);
+          }
+
+          audio.addEventListener('canplaythrough', function() { done(true); }, { once: true });
+          audio.addEventListener('canplay', function() { done(true); }, { once: true });
+          audio.addEventListener('error', function() { done(false); }, { once: true });
+        });
+      }
+
       function preloadAudio(url) {
-        if (!url || audioCache[url]) return;
+        if (!url) return Promise.resolve(null);
+        if (audioCache[url]) {
+          return whenAudioReady(audioCache[url]).then(function() {
+            return audioCache[url];
+          });
+        }
         try {
           var audio = new Audio();
           audio.preload = 'auto';
           audio.src = url;
           audioCache[url] = audio;
-        } catch (_e) {}
+          try { audio.load(); } catch (_loadErr) {}
+          return whenAudioReady(audio).then(function() {
+            return audio;
+          });
+        } catch (_e) {
+          return Promise.resolve(null);
+        }
       }
 
       function takeCachedAudio(url) {
@@ -187,6 +231,16 @@
           return cached;
         }
         return url ? new Audio(url) : null;
+      }
+
+      function afterLayout(fn) {
+        return new Promise(function(resolve) {
+          window.requestAnimationFrame(function() {
+            window.requestAnimationFrame(function() {
+              resolve(typeof fn === 'function' ? fn() : undefined);
+            });
+          });
+        });
       }
 
       function cancelAutoAdvance() {
@@ -247,12 +301,14 @@
         var nextPage = autoAdvance.pages[index + 1];
         if (nextPage && nextPage.audio_url) preloadAudio(nextPage.audio_url);
 
-        presentPage(page.page_number, { syncChoice: false });
         notePageEngagement(page);
         trackEvent('auto_advance', { page_number: page.page_number });
 
         var keepUi = index < autoAdvance.pages.length - 1;
-        return playUrl(page.audio_url, page.script, { keepPlayingUi: keepUi }).then(function() {
+        return presentPage(page.page_number, { syncChoice: false }).then(function() {
+          if (!autoAdvance || !autoAdvance.running || isPaused) return;
+          return playUrl(page.audio_url, page.script, { keepPlayingUi: keepUi });
+        }).then(function() {
           if (!autoAdvance || !autoAdvance.running || isPaused) return;
           maybeShowSideCtasForPage(page);
           autoAdvance.nextIndex = index + 1;
@@ -357,14 +413,15 @@
         updateLastButtonVisibility();
 
         var pageNumber = parseInt(closing.page_number || closing['page_number'] || openingValue('closing_page') || currentPageNumber, 10) || currentPageNumber;
-        presentPage(pageNumber, { syncChoice: false });
         trackEvent('closing_play', {
           page_number: pageNumber,
           metadata: { source: options.source || 'unknown' }
         });
         appendChatMessage(closingText(), 'assistant', null);
 
-        return playUrl(closingAudioUrl(), closingText()).then(function() {
+        return presentPage(pageNumber, { syncChoice: false }).then(function() {
+          return playUrl(closingAudioUrl(), closingText());
+        }).then(function() {
           showSideCtas();
         });
       }
@@ -375,7 +432,9 @@
         if (!page) return Promise.resolve();
         notePageEngagement(page);
         if (page.audio_url || page.script) {
-          return playUrl(page.audio_url, page.script).then(function() {
+          return renderActivePdfSlide().then(function() {
+            return playUrl(page.audio_url, page.script);
+          }).then(function() {
             maybeShowSideCtasForPage(page);
             scheduleAutoAdvance(IDLE_BEFORE_AUTO_MS);
           });
@@ -793,8 +852,11 @@
         return new Promise(function(resolve) {
           var token = ++playbackToken;
           isPaused = false;
+          var settled = false;
 
           function finish() {
+            if (settled) return;
+            settled = true;
             if (token !== playbackToken) {
               resolve();
               return;
@@ -809,7 +871,7 @@
           }
 
           if (!url) {
-            speakText(textFallback, token).then(resolve);
+            speakText(textFallback, token).then(finish);
             return;
           }
 
@@ -821,8 +883,12 @@
           setPlayButtonPlaying(true);
 
           function finishAudio() {
+            if (token !== playbackToken) {
+              finish();
+              return;
+            }
             if (isPaused) {
-              resolve();
+              finish();
               return;
             }
             setAvatarSpeaking(false);
@@ -831,17 +897,32 @@
           }
 
           function fallback() {
-            if (textFallback) speakText(textFallback, token).then(resolve);
+            if (settled || token !== playbackToken) {
+              finish();
+              return;
+            }
+            if (currentAudio === audio) currentAudio = null;
+            if (textFallback) speakText(textFallback, token).then(finish);
             else finishAudio();
           }
 
           audio.addEventListener('ended', finishAudio, { once: true });
           audio.addEventListener('error', fallback, { once: true });
 
-          var playAttempt = audio.play();
-          if (playAttempt && playAttempt.catch) {
-            playAttempt.catch(fallback);
-          }
+          whenAudioReady(audio, 8000).then(function(ready) {
+            if (token !== playbackToken || isPaused) {
+              finish();
+              return;
+            }
+            if (!ready && audio.readyState < 2) {
+              fallback();
+              return;
+            }
+            var playAttempt = audio.play();
+            if (playAttempt && playAttempt.catch) {
+              playAttempt.catch(fallback);
+            }
+          });
         });
       }
 
@@ -866,11 +947,15 @@
         var nextSegment = openingQueue.segments[index + 1];
         if (nextSegment) preloadAudio(segmentValue(nextSegment, 'audio_url'));
 
-        // オープニング中はトピック選択の見た目を変えない（中央再生ボタンを維持）
-        presentPage(pageNumber, { syncChoice: false });
-
         var keepUi = index < openingQueue.segments.length - 1;
-        return playUrl(url, text, { keepPlayingUi: keepUi }).then(function() {
+        // ページ描画と音声バッファ完了を待ってから再生（白紙・開始ばらつきを防ぐ）
+        return Promise.all([
+          presentPage(pageNumber, { syncChoice: false }),
+          url ? preloadAudio(url) : Promise.resolve(null)
+        ]).then(function() {
+          if (isPaused || !openingQueue || !openingQueue.running) return;
+          return playUrl(url, text, { keepPlayingUi: keepUi });
+        }).then(function() {
           if (isPaused || !openingQueue || !openingQueue.running) return;
           openingQueue.nextIndex = index + 1;
           if (openingQueue.nextIndex >= openingQueue.segments.length) {
@@ -916,8 +1001,9 @@
         return { width: width, height: height };
       }
 
-      function renderPdfSlide(slide) {
+      function renderPdfSlide(slide, attempt) {
         if (!slide) return Promise.resolve();
+        attempt = attempt || 0;
 
         var canvas = slide.querySelector('canvas.document-pdf-canvas');
         var url = slide.getAttribute('data-pdf-url');
@@ -927,15 +1013,26 @@
         var size = slideFitSize(slide);
         var width = size.width;
         var height = size.height;
-        if (width < 2 || height < 2) return Promise.resolve();
+        if (width < 2 || height < 2) {
+          if (attempt >= 10) return Promise.resolve();
+          return wait(40 * (attempt + 1)).then(function() {
+            return renderPdfSlide(slide, attempt + 1);
+          });
+        }
 
         var taskKey = slide.id || String(pageNumber);
+        var generation = (pdfRenderGeneration[taskKey] || 0) + 1;
+        pdfRenderGeneration[taskKey] = generation;
+
         if (pdfRenderTasks[taskKey] && typeof pdfRenderTasks[taskKey].cancel === 'function') {
           try { pdfRenderTasks[taskKey].cancel(); } catch (_e) {}
         }
 
         return getPdfDocument(url).then(function(pdf) {
+          if (pdfRenderGeneration[taskKey] !== generation) return;
           return pdf.getPage(pageNumber).then(function(page) {
+            if (pdfRenderGeneration[taskKey] !== generation) return;
+
             var dpr = Math.min(window.devicePixelRatio || 1, 2);
             var baseViewport = page.getViewport({ scale: 1 });
             // Contain: width OR height becomes 100%, never crop, never scroll.
@@ -962,6 +1059,7 @@
             var renderTask = page.render({ canvasContext: context, viewport: viewport });
             pdfRenderTasks[taskKey] = renderTask;
             return renderTask.promise.then(function() {
+              if (pdfRenderGeneration[taskKey] !== generation) return;
               slide.classList.add('is-pdf-fitted');
             }).catch(function(err) {
               if (err && err.name === 'RenderingCancelledException') return;
@@ -969,15 +1067,35 @@
             });
           });
         }).catch(function(err) {
+          if (err && err.name === 'RenderingCancelledException') return;
+          if (pdfRenderGeneration[taskKey] !== generation) return;
           slide.classList.remove('is-pdf-fitted');
+          if (attempt < 3) {
+            return wait(120 * (attempt + 1)).then(function() {
+              return renderPdfSlide(slide, attempt + 1);
+            });
+          }
           if (window.console && typeof console.warn === 'function') {
             console.warn('[presentation] PDF fit render failed', err);
           }
         });
       }
 
+      function ensureSlideRendered(slide) {
+        return renderPdfSlide(slide).then(function() {
+          if (!slide || !slide.classList.contains('active')) return;
+          if (slide.classList.contains('is-pdf-fitted')) return;
+          // リサイズ等でキャンセルされた場合、最新描画が終わるまで一度だけ待つ
+          return wait(60).then(function() {
+            if (!slide.classList.contains('active')) return;
+            if (slide.classList.contains('is-pdf-fitted')) return;
+            return renderPdfSlide(slide);
+          });
+        });
+      }
+
       function renderActivePdfSlide() {
-        return renderPdfSlide(root.querySelector('.document-slide.active'));
+        return ensureSlideRendered(root.querySelector('.document-slide.active'));
       }
 
       function showSlideByPageNumber(pageNumber) {
@@ -1001,9 +1119,7 @@
           });
         }
 
-        try {
-          renderPdfSlide(activeSlide);
-        } catch (_e) {}
+        return ensureSlideRendered(activeSlide);
       }
 
       function setActiveButton(pageNumber) {
@@ -1029,7 +1145,6 @@
           trackEvent('page_view', { page_number: pageNumber });
         }
         currentPageNumber = pageNumber;
-        showSlideByPageNumber(pageNumber);
         if (options.syncChoice === false) {
           choiceButtons.forEach(function(btn) {
             btn.classList.remove('btn-choice--active');
@@ -1041,6 +1156,7 @@
         if (presentationStarted) {
           notePageEngagement(findPage(pageNumber));
         }
+        return showSlideByPageNumber(pageNumber);
       }
 
       function appendChatMessage(content, role, audioUrl) {
@@ -1096,8 +1212,7 @@
       function startPresentation() {
         if (presentationStarted) {
           if (hasResumablePlayback()) return resumePlayback();
-          if (openingQueue && openingQueue.running) return continueOpeningQueue();
-          if (autoAdvance && autoAdvance.running) return continueAutoAdvance();
+          // 開始済みのキューを二重起動しない（セグメント飛び・音声二重の原因）
           return Promise.resolve();
         }
         presentationStarted = true;
@@ -1105,9 +1220,19 @@
         trackEvent('presentation_start', { page_number: currentPageNumber });
         hideOverlay();
         var segments = segmentsForOpening();
-        if (segments[0]) preloadAudio(segmentValue(segments[0], 'audio_url'));
-        if (segments[1]) preloadAudio(segmentValue(segments[1], 'audio_url'));
-        return playOpeningSegments(segments);
+        // 全セグメントを裏で温めつつ、先頭音声だけ待ってから開始する
+        segments.forEach(function(segment) {
+          preloadAudio(segmentValue(segment, 'audio_url'));
+        });
+        var firstUrl = segments[0] ? segmentValue(segments[0], 'audio_url') : null;
+
+        return afterLayout(function() {
+          return renderActivePdfSlide();
+        }).then(function() {
+          return firstUrl ? preloadAudio(firstUrl) : Promise.resolve(null);
+        }).then(function() {
+          return playOpeningSegments(segments);
+        });
       }
 
       function fetchResponse(options) {
@@ -1154,20 +1279,24 @@
           label: label
         });
 
-        presentPage(pageNumber);
-
         var page = findPage(pageNumber);
         notePageEngagement(page);
 
         if (page && (page.audio_url || page.script)) {
-          return playUrl(page.audio_url, page.script).then(function() {
+          return presentPage(pageNumber).then(function() {
+            return playUrl(page.audio_url, page.script);
+          }).then(function() {
             maybeShowSideCtasForPage(page);
             scheduleAutoAdvance(IDLE_BEFORE_AUTO_MS);
           });
         }
 
-        return fetchResponse({ topic: topic, pageNumber: pageNumber }).then(function(result) {
-          if (result.page_number) presentPage(result.page_number);
+        return presentPage(pageNumber).then(function() {
+          return fetchResponse({ topic: topic, pageNumber: pageNumber });
+        }).then(function(result) {
+          if (result.page_number) return presentPage(result.page_number).then(function() { return result; });
+          return result;
+        }).then(function(result) {
           appendChatMessage(result.text, 'assistant', result.audio_url);
           scheduleAutoAdvance(IDLE_BEFORE_AUTO_MS);
         }).catch(function() {
@@ -1358,6 +1487,18 @@
       setChatPanelState('open');
       presentPage(parseInt(openingValue('greeting_page'), 10) || 1);
       showOverlay();
+
+      // PDF ドキュメントを先読み（開始後のページ切替空白を減らす）
+      slides.forEach(function(slide) {
+        var pdfUrl = slide.getAttribute('data-pdf-url');
+        if (pdfUrl) {
+          getPdfDocument(pdfUrl).catch(function() {});
+        }
+      });
+      // オープニング音声もオーバーレイ表示中に先読み
+      segmentsForOpening().forEach(function(segment) {
+        preloadAudio(segmentValue(segment, 'audio_url'));
+      });
 
       window.requestAnimationFrame(function() { renderActivePdfSlide(); });
       window.setTimeout(renderActivePdfSlide, 150);
