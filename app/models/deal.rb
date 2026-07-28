@@ -1,5 +1,7 @@
 # app/models/deal.rb
 class Deal < ApplicationRecord
+  MAX_SUPPLEMENT_DOCUMENTS = 3
+
   belongs_to :client
   has_many :deal_documents, dependent: :destroy
   has_many :deal_audios, dependent: :destroy
@@ -183,6 +185,18 @@ class Deal < ApplicationRecord
     deal_faqs.pending.count
   end
 
+  def proposal_upload_locked?
+    deal_documents.proposals.exists?
+  end
+
+  def supplement_upload_limit_reached?
+    deal_documents.supplements.count >= MAX_SUPPLEMENT_DOCUMENTS
+  end
+
+  def supplement_uploads_remaining
+    [MAX_SUPPLEMENT_DOCUMENTS - deal_documents.supplements.count, 0].max
+  end
+
   def low_knowledge_coverage?
     knowledge_coverage_percent < 70
   end
@@ -239,7 +253,7 @@ class Deal < ApplicationRecord
         'label' => label.presence || page.title.presence || "スライド #{page.page_number}",
         'page_number' => page.page_number
       }
-    end
+    end.sort_by { |item| item['page_number'].to_i }
   end
 
   def presentation_opening_payload

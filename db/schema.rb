@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_07_27_220000) do
+ActiveRecord::Schema.define(version: 2026_07_28_135242) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -428,6 +428,15 @@ ActiveRecord::Schema.define(version: 2026_07_27_220000) do
     t.index ["campaign_id"], name: "index_payments_on_campaign_id"
     t.index ["client_id"], name: "index_payments_on_client_id"
     t.index ["stripe_payment_intent_id"], name: "index_payments_on_stripe_payment_intent_id", unique: true
+  end
+
+  create_table "problems", force: :cascade do |t|
+    t.string "company"
+    t.string "email"
+    t.string "body"
+    t.string "photo"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "question_audios", force: :cascade do |t|

@@ -120,6 +120,7 @@ module DealEngine
           - 「前半」「中盤」「後半」のような抽象ラベルは禁止
           - 表紙・挨拶のみのスライドはメニューに含めない
           - 各メニューは対応する page_number を必ず含める
+          - menu_items は page_number の昇順で並べる（小さいページ番号が先）
 
           【スライド一覧】
           #{page_data.to_json}
@@ -130,6 +131,7 @@ module DealEngine
       else
         <<~PROMPT
           Create 3-6 menu items from these slides. Each item must include page_number.
+          Order menu_items by ascending page_number.
 
           Slides:
           #{page_data.to_json}
@@ -292,7 +294,7 @@ module DealEngine
           'label' => label.presence || page.title.presence || "スライド #{page.page_number}",
           'page_number' => page.page_number
         }
-      end
+      end.sort_by { |item| item['page_number'].to_i }
     end
   end
 end

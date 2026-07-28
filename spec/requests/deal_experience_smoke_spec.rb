@@ -154,6 +154,15 @@ RSpec.describe 'Deal experience smoke', type: :request do
 
   describe 'dashboard deal reprocess' do
     before { sign_in client }
+    let(:uploadable_deal) do
+      Deal.create!(
+        client: client,
+        title: 'アップロード専用',
+        language: 'ja',
+        status: :uploading,
+        playback_ready: false
+      )
+    end
 
     it 'starts reprocess via server-side POST without JavaScript' do
       expect {
@@ -170,9 +179,22 @@ RSpec.describe 'Deal experience smoke', type: :request do
       get dashboard_deal_path(deal)
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(reprocess_dashboard_deal_path(deal))
-      expect(response.body).to include(upload_documents_dashboard_deal_path(deal))
       expect(response.body).to include('deal_dashboard')
       expect(response.body).not_to include('process-pdf-btn')
+    end
+
+    it 'hides proposal upload form when materials already exist' do
+      get dashboard_deal_path(deal)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to include(upload_documents_dashboard_deal_path(deal))
+      expect(response.body).to include('この商談IDでは固定')
+    end
+
+    it 'shows proposal upload form when no materials exist' do
+      get dashboard_deal_path(uploadable_deal)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include(upload_documents_dashboard_deal_path(uploadable_deal))
+      expect(response.body).to include('再アップロードできません')
     end
 
     it 'uploads documents via dashboard POST without JavaScript' do
@@ -184,12 +206,72 @@ RSpec.describe 'Deal experience smoke', type: :request do
       )
 
       expect {
-        post upload_documents_dashboard_deal_path(deal), params: { files: [pdf] }
-      }.to have_enqueued_job(ProcessDealJob).with(deal.id)
+        post upload_documents_dashboard_deal_path(uploadable_deal), params: { files: [pdf] }
+      }.to have_enqueued_job(ProcessDealJob).with(uploadable_deal.id)
 
-      expect(response).to redirect_to(dashboard_deal_path(deal))
-      follow_redirect!
-      expect(response.body).to include('AI処理中')
+      expect(response).to redirect_to(dashboard_deal_path(uploadable_deal))
+    end
+
+    it 'blocks a second proposal upload for the same deal' do
+      pdf = Rack::Test::UploadedFile.new(
+        StringIO.new('%PDF-1.4 test'),
+        'application/pdf',
+        true,
+        original_filename: 'sample.pdf'
+      )
+      second_pdf = Rack::Test::UploadedFile.new(
+        StringIO.new('%PDF-1.4 test'),
+        'application/pdf',
+        true,
+        original_filename: 'sample.pdf'
+      )
+
+      post upload_documents_dashboard_deal_path(uploadable_deal), params: { files: [pdf] }
+      uploadable_deal.update!(status: :completed, playback_ready: true)
+
+      expect {
+        post upload_documents_dashboard_deal_path(uploadable_deal), params: { files: [second_pdf] }
+      }.not_to have_enqueued_job(ProcessDealJob)
+
+      expect(response).to redirect_to(dashboard_deal_path(uploadable_deal))
+      expect(flash[:alert]).to include('再アップロードできません')
+
+      get dashboard_deal_path(uploadable_deal)
+      expect(response.body).not_to include(upload_documents_dashboard_deal_path(uploadable_deal))
+    end
+
+    it 'limits supplement uploads to three files total' do
+      3.times do |index|
+        doc = uploadable_deal.deal_documents.create!(
+          filename: "supplement_#{index}.pdf",
+          content_type: 'application/pdf',
+          file_size: 1024,
+          document_kind: 'supplement'
+        )
+        doc.file.attach(
+          io: StringIO.new('%PDF-1.4 supplement'),
+          filename: "supplement_#{index}.pdf",
+          content_type: 'application/pdf'
+        )
+      end
+
+      pdf = Rack::Test::UploadedFile.new(
+        StringIO.new('%PDF-1.4 extra'),
+        'application/pdf',
+        true,
+        original_filename: 'extra.pdf'
+      )
+
+      expect {
+        post upload_supplement_documents_dashboard_deal_path(uploadable_deal), params: { files: [pdf] }
+      }.not_to change { uploadable_deal.deal_documents.supplements.count }
+
+      expect(response).to redirect_to(dashboard_deal_path(uploadable_deal, anchor: 'deal-knowledge'))
+      expect(flash[:alert]).to include('補足PDFは最大3件までです')
+
+      get dashboard_deal_path(uploadable_deal)
+      expect(response.body).not_to include(upload_supplement_documents_dashboard_deal_path(uploadable_deal))
+      expect(response.body).to include('これ以上の追加はできません')
     end
   end
 

@@ -22,10 +22,20 @@
     .deal-knowledge-supplement
       h3.admin-card-title.db-v2-subsection-title 📎 補足資料（FAQ自動抽出）
       p.text-muted.deal-knowledge-supplement__hint 料金表・仕様書・FAQ PDFなど。スライドには使わずFAQのみ抽出します。
-      = form_tag upload_supplement_documents_dashboard_deal_path(@deal), multipart: true, class: "deal-supplement-upload", data: { turbo: false } do
-        .form-group
-          = file_field_tag "files[]", multiple: true, accept: ".pdf", class: "form-control"
-        = submit_tag "補足PDFをアップロード", class: "btn-info-custom btn-sm", data: { turbo: false }
+      - supplement_limit_reached = @deal.supplement_upload_limit_reached?
+      - supplement_remaining = @deal.supplement_uploads_remaining
+      - if supplement_limit_reached
+        .db-v2-alert.db-v2-alert--warning.db-v2-alert--compact
+          i.fa-solid.fa-circle-exclamation aria-hidden="true"
+          p 補足PDFは最大#{Deal::MAX_SUPPLEMENT_DOCUMENTS}件までです。これ以上の追加はできません。
+      - else
+        .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
+          i.fa-solid.fa-circle-info aria-hidden="true"
+          p 補足PDFは残り#{supplement_remaining}件（最大#{Deal::MAX_SUPPLEMENT_DOCUMENTS}件）まで追加できます。
+        = form_tag upload_supplement_documents_dashboard_deal_path(@deal), multipart: true, class: "deal-supplement-upload", data: { turbo: false } do
+          .form-group
+            = file_field_tag "files[]", multiple: true, accept: ".pdf", class: "form-control"
+          = submit_tag "補足PDFをアップロード", class: "btn-info-custom btn-sm", data: { turbo: false }
       - if @supplement_documents.any?
         ul.deal-supplement-list
           - @supplement_documents.each do |doc|

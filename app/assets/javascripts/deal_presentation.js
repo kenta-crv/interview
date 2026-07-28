@@ -71,11 +71,8 @@
       var evaluationNotice = document.getElementById('evaluation-notice');
       var ctaBtn = document.getElementById('presentation-cta-btn');
       var exitContractBtn = document.getElementById('exit-contract-btn');
+      var headerSalesCallBtn = document.getElementById('presentation-sales-call-btn');
       var exitSalesCallBtn = document.getElementById('exit-sales-call-btn');
-      var lastBtn = document.getElementById('presentation-last-btn');
-      var sideContractBtn = document.getElementById('presentation-side-contract');
-      var sideSalesBtn = document.getElementById('presentation-side-sales');
-      var actionBar = document.getElementById('presentation-action-bar');
       var materialsDownloadLink = document.getElementById('presentation-materials-download');
       var ctaConfig = config.cta || {};
       var currentAudio = null;
@@ -291,18 +288,9 @@
         return role === 'pricing' || role === 'flow';
       }
 
-      function setActionBar(mode) {
-        if (!actionBar) return;
-        actionBar.classList.remove('is-open', 'is-mode-last', 'is-mode-cta');
-        if (!mode) {
-          actionBar.setAttribute('aria-hidden', 'true');
-        } else {
-          actionBar.classList.add('is-open');
-          actionBar.classList.add(mode === 'cta' ? 'is-mode-cta' : 'is-mode-last');
-          actionBar.setAttribute('aria-hidden', 'false');
-        }
-        // スロット表示でトピック帯の幅が変わるのでスクロール矢印を再計算
-        window.dispatchEvent(new Event('resize'));
+      function setActionMode(_mode) {
+        // 「最後に」ボタンは一旦非表示。レイアウトを崩さないため no-op。
+        refreshChoiceScrollers();
       }
 
       function notePageEngagement(page) {
@@ -311,7 +299,6 @@
         if (isClosingRole(page)) {
           heat.roleHits += 1;
         }
-        updateLastButtonVisibility();
       }
 
       function heatScore() {
@@ -319,23 +306,17 @@
       }
 
       function isHotEnough() {
-        // 料金・フローに触れたときだけ「最後に」を出す
         return heat.roleHits > 0;
       }
 
       function updateLastButtonVisibility() {
-        if (closingPlayed || sideCtasVisible) {
-          setActionBar('cta');
-          return;
-        }
-        var current = findPage(currentPageNumber);
-        var show = presentationStarted && (isHotEnough() || isClosingRole(current));
-        setActionBar(show ? 'last' : null);
+        // 「最後に」ボタンは一旦出さない
+        setActionMode(null);
       }
 
       function showSideCtas() {
         sideCtasVisible = true;
-        setActionBar('cta');
+        updateLastButtonVisibility();
       }
 
       function maybeShowSideCtasForPage(page) {
@@ -414,35 +395,77 @@
         }, 1000);
       }
 
+      var choiceScrollerRefreshers = [];
+
+      function refreshChoiceScrollers() {
+        choiceScrollerRefreshers.forEach(function(fn) { fn(); });
+      }
+
       function initChoiceScroller() {
-        var scrollerWrap = document.getElementById('presentation-choice-scroller-wrap');
-        var scroller = document.getElementById('presentation-choice-scroller');
+        var leftWrap = document.getElementById('presentation-choice-scroller-wrap-left');
+        var rightWrap = document.getElementById('presentation-choice-scroller-wrap-right');
+        var leftScroller = document.getElementById('presentation-choice-scroller-left');
+        var rightScroller = document.getElementById('presentation-choice-scroller-right');
         var prevBtn = document.getElementById('presentation-choice-more-prev');
         var nextBtn = document.getElementById('presentation-choice-more-next');
-        if (!scrollerWrap || !scroller || !prevBtn || !nextBtn) return;
+        if (!leftWrap || !rightWrap || !leftScroller || !rightScroller || !prevBtn || !nextBtn) return;
 
-        function updateChoiceScroller() {
+        function sideState(scroller) {
           var overflow = scroller.scrollWidth > scroller.clientWidth + 2;
           var atStart = scroller.scrollLeft <= 4;
           var atEnd = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 4;
-          scrollerWrap.classList.toggle('has-overflow-left', overflow && !atStart);
-          scrollerWrap.classList.toggle('has-overflow-right', overflow && !atEnd);
-          prevBtn.hidden = !overflow || atStart;
-          nextBtn.hidden = !overflow || atEnd;
+          return { overflow: overflow, atStart: atStart, atEnd: atEnd };
         }
 
-        prevBtn.addEventListener('click', function() {
-          var delta = Math.max(180, scroller.clientWidth * 0.65);
-          scroller.scrollBy({ left: -delta, behavior: 'smooth' });
-        });
-        nextBtn.addEventListener('click', function() {
-          var delta = Math.max(180, scroller.clientWidth * 0.65);
-          scroller.scrollBy({ left: delta, behavior: 'smooth' });
+        function alignLeftScroller() {
+          leftScroller.scrollLeft = Math.max(0, leftScroller.scrollWidth - leftScroller.clientWidth);
+        }
+
+        function updateChoiceScroller() {
+          var left = sideState(leftScroller);
+          var right = sideState(rightScroller);
+
+          leftWrap.classList.toggle('has-overflow', left.overflow && !left.atStart);
+          rightWrap.classList.toggle('has-overflow', right.overflow && !right.atEnd);
+
+          // 左右どちらかが戻せる/進めれば矢印を出す（共通操作）
+          prevBtn.hidden = !((left.overflow && !left.atStart) || (right.overflow && !right.atStart));
+          nextBtn.hidden = !((right.overflow && !right.atEnd) || (left.overflow && !left.atEnd));
+        }
+
+        function scrollShared(direction) {
+          var delta = Math.max(160, Math.min(leftScroller.clientWidth, rightScroller.clientWidth) * 0.7);
+          var left = sideState(leftScroller);
+          var right = sideState(rightScroller);
+
+          if (direction > 0) {
+            if (right.overflow && !right.atEnd) {
+              rightScroller.scrollBy({ left: delta, behavior: 'smooth' });
+            } else if (left.overflow && !left.atEnd) {
+              leftScroller.scrollBy({ left: delta, behavior: 'smooth' });
+            }
+          } else if (left.overflow && !left.atStart) {
+            leftScroller.scrollBy({ left: -delta, behavior: 'smooth' });
+          } else if (right.overflow && !right.atStart) {
+            rightScroller.scrollBy({ left: -delta, behavior: 'smooth' });
+          }
+        }
+
+        prevBtn.addEventListener('click', function() { scrollShared(-1); });
+        nextBtn.addEventListener('click', function() { scrollShared(1); });
+        leftScroller.addEventListener('scroll', updateChoiceScroller, { passive: true });
+        rightScroller.addEventListener('scroll', updateChoiceScroller, { passive: true });
+        window.addEventListener('resize', function() {
+          alignLeftScroller();
+          updateChoiceScroller();
         });
 
-        scroller.addEventListener('scroll', updateChoiceScroller, { passive: true });
-        window.addEventListener('resize', updateChoiceScroller);
+        alignLeftScroller();
         updateChoiceScroller();
+        choiceScrollerRefreshers.push(function() {
+          alignLeftScroller();
+          updateChoiceScroller();
+        });
       }
 
       initChoiceScroller();
@@ -659,11 +682,15 @@
       }
 
       function handleExitSalesCallClick(e) {
-        var label = ctaConfig.exit_sales_call_label || (exitSalesCallBtn && exitSalesCallBtn.textContent.trim()) || '担当者と商談を希望';
+        var button = e && e.currentTarget;
+        var label = (button && (button.dataset.label || button.textContent.trim())) ||
+          ctaConfig.exit_sales_call_label ||
+          '担当者に繋ぐ';
         var url = salesUrl();
+        var source = button && button.id === 'presentation-sales-call-btn' ? 'header' : 'modal';
         trackEvent('exit_sales_call_click', {
           label: label,
-          metadata: { url: url || null }
+          metadata: { url: url || null, source: source }
         });
 
         if (url) {
@@ -671,35 +698,6 @@
           return;
         }
 
-        if (e) e.preventDefault();
-        alert('担当者より折り返しご連絡いたします。しばらくお待ちください。');
-      }
-
-      function handleSideContractClick(e) {
-        var label = ctaConfig.exit_contract_label || (sideContractBtn && sideContractBtn.textContent.trim()) || '契約へ進む';
-        trackEvent('cta_click', {
-          label: label,
-          metadata: { source: 'side_contract', url: ctaUrl() }
-        });
-        if (!ctaUrl()) {
-          if (e) e.preventDefault();
-          alert('契約ページのURLが設定されていません。');
-          return;
-        }
-        openCtaUrl('side_contract');
-      }
-
-      function handleSideSalesClick(e) {
-        var label = ctaConfig.exit_sales_call_label || (sideSalesBtn && sideSalesBtn.textContent.trim()) || '担当者と商談を希望';
-        var url = salesUrl();
-        trackEvent('exit_sales_call_click', {
-          label: label,
-          metadata: { source: 'side_sales', url: url || null }
-        });
-        if (url) {
-          openExternalUrl(url);
-          return;
-        }
         if (e) e.preventDefault();
         alert('担当者より折り返しご連絡いたします。しばらくお待ちください。');
       }
@@ -902,6 +900,22 @@
         return pdfDocCache[url];
       }
 
+      function slideFitSize(slide) {
+        // Prefer the shared viewport box so mobile layout changes (nav top / sidebar stack)
+        // still produce a stable contain-fit size.
+        var width = 0;
+        var height = 0;
+        if (documentViewport) {
+          width = documentViewport.clientWidth;
+          height = documentViewport.clientHeight;
+        }
+        if (width < 2 || height < 2) {
+          width = slide.clientWidth;
+          height = slide.clientHeight;
+        }
+        return { width: width, height: height };
+      }
+
       function renderPdfSlide(slide) {
         if (!slide) return Promise.resolve();
 
@@ -910,8 +924,9 @@
         var pageNumber = parseInt(slide.getAttribute('data-page-number'), 10);
         if (!canvas || !url || !pageNumber || !window.pdfjsLib) return Promise.resolve();
 
-        var width = slide.clientWidth;
-        var height = slide.clientHeight;
+        var size = slideFitSize(slide);
+        var width = size.width;
+        var height = size.height;
         if (width < 2 || height < 2) return Promise.resolve();
 
         var taskKey = slide.id || String(pageNumber);
@@ -921,10 +936,12 @@
 
         return getPdfDocument(url).then(function(pdf) {
           return pdf.getPage(pageNumber).then(function(page) {
-            var dpr = window.devicePixelRatio || 1;
+            var dpr = Math.min(window.devicePixelRatio || 1, 2);
             var baseViewport = page.getViewport({ scale: 1 });
             // Contain: width OR height becomes 100%, never crop, never scroll.
             var fitScale = Math.min(width / baseViewport.width, height / baseViewport.height);
+            if (!isFinite(fitScale) || fitScale <= 0) return;
+
             var viewport = page.getViewport({ scale: fitScale * dpr });
             var canvasW = Math.max(1, Math.floor(width * dpr));
             var canvasH = Math.max(1, Math.floor(height * dpr));
@@ -1001,7 +1018,7 @@
           var active = parseInt(item.dataset.pageNumber, 10) === pageNumber;
           item.classList.toggle('is-active', active);
           if (active && typeof item.scrollIntoView === 'function') {
-            item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            item.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
           }
         });
       }
@@ -1292,26 +1309,11 @@
         exitContractBtn.addEventListener('click', handleExitContractClick);
       }
 
-      if (exitSalesCallBtn) {
-        exitSalesCallBtn.addEventListener('click', handleExitSalesCallClick);
-      }
-
-      if (lastBtn) {
-        lastBtn.addEventListener('click', function() {
-          ensureStarted(function() {
-            trackEvent('last_button_click', { page_number: currentPageNumber });
-            playClosing({ source: 'last_button' });
-          });
-        });
-      }
-
-      if (sideContractBtn) {
-        sideContractBtn.addEventListener('click', handleSideContractClick);
-      }
-
-      if (sideSalesBtn) {
-        sideSalesBtn.addEventListener('click', handleSideSalesClick);
-      }
+      [headerSalesCallBtn, exitSalesCallBtn].forEach(function(button) {
+        if (button) {
+          button.addEventListener('click', handleExitSalesCallClick);
+        }
+      });
 
       if (materialsDownloadLink) {
         materialsDownloadLink.addEventListener('click', function() {
@@ -1359,9 +1361,14 @@
 
       window.requestAnimationFrame(function() { renderActivePdfSlide(); });
       window.setTimeout(renderActivePdfSlide, 150);
+      window.setTimeout(renderActivePdfSlide, 450);
       window.addEventListener('resize', function() {
         if (pdfResizeTimer) window.clearTimeout(pdfResizeTimer);
         pdfResizeTimer = window.setTimeout(renderActivePdfSlide, 100);
+      });
+      window.addEventListener('orientationchange', function() {
+        if (pdfResizeTimer) window.clearTimeout(pdfResizeTimer);
+        pdfResizeTimer = window.setTimeout(renderActivePdfSlide, 220);
       });
       if (window.ResizeObserver && documentViewport) {
         var viewportObserver = new ResizeObserver(function() {

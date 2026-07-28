@@ -104,6 +104,7 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :problems
 
   # --- ダッシュボード機能の集約 ---
   namespace :dashboard do

@@ -207,15 +207,17 @@ class Dashboard::DealsController < Dashboard::BaseController
       return
     end
 
+    if @deal.proposal_upload_locked?
+      redirect_to dashboard_deal_path(@deal), alert: 'この商談IDでは提案資料を再アップロードできません。変更が必要な場合は新しい商談を作成してください'
+      return
+    end
+
     if @deal.processing?
       redirect_to dashboard_deal_path(@deal), alert: 'AI処理中です。完了までお待ちください'
       return
     end
 
     ActiveRecord::Base.transaction do
-      # 提案資料は差し替え。追記だと欠損PDFや旧版が残り、処理全体が落ちる
-      @deal.deal_documents.proposals.find_each(&:destroy_safely!)
-
       params[:files].each do |file|
         document = @deal.deal_documents.create!(
           filename: file.original_filename,
@@ -230,7 +232,7 @@ class Dashboard::DealsController < Dashboard::BaseController
     @deal.start_processing!
     ProcessDealJob.perform_later(@deal.id)
 
-    redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました（既存の提案資料は差し替え）。AI処理をバックグラウンドで開始しています'
+    redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました。AI処理をバックグラウンドで開始しています'
   rescue ActiveRecord::RecordInvalid => e
     redirect_to dashboard_deal_path(@deal), alert: e.message
   rescue ActiveRecord::StatementInvalid => e
@@ -246,6 +248,17 @@ class Dashboard::DealsController < Dashboard::BaseController
   def upload_supplement_documents
     if params[:files].blank?
       redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: "ファイルが選択されていません"
+      return
+    end
+
+    if @deal.supplement_upload_limit_reached?
+      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: "補足PDFは最大#{Deal::MAX_SUPPLEMENT_DOCUMENTS}件までです"
+      return
+    end
+
+    requested_count = Array(params[:files]).size
+    if @deal.deal_documents.supplements.count + requested_count > Deal::MAX_SUPPLEMENT_DOCUMENTS
+      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: "補足PDFは残り#{@deal.supplement_uploads_remaining}件までアップロードできます"
       return
     end
 

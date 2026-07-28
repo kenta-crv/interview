@@ -73,48 +73,53 @@
     #deal-tab-studio.db-v2-tab-panel.is-active role="tabpanel"
       .db-v2-deal-grid
         .db-v2-deal-grid__main
-          .db-v2-bottom-card
-            .db-v2-bottom-card__header.db-v2-bottom-card__header--split
-              h2.db-v2-bottom-card__title
-                i.fa-solid.fa-file-arrow-up aria-hidden="true"
-                |  資料アップロード
-              span.db-v2-lang-badge = @deal.language.upcase
-            .db-v2-bottom-card__body
-              - if admin_signed_in? && !client_signed_in?
-                .db-v2-alert.db-v2-alert--warning.db-v2-alert--compact
-                  i.fa-solid.fa-circle-info aria-hidden="true"
-                  p 資料アップロードは企業アカウントでのログインが必要です。
-              - if @deal.processing?
-                .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
-                  i.fa-solid.fa-spinner.fa-spin aria-hidden="true"
-                  p AI処理中のため、新しい資料はアップロードできません。完了後に再度お試しください。
-              = form_tag upload_documents_dashboard_deal_path(@deal), multipart: true, id: "documents-upload-form", class: "db-v2-upload-form", data: { turbo: false } do
-                .db-v2-upload-form__panel
-                  p.db-v2-upload-form__lead
-                    i.fa-solid.fa-cloud-arrow-up aria-hidden="true"
-                    |  PDFをアップロード（バックグラウンドでAI処理）
-                  p.db-v2-upload-form__hint 新しいPDFを上げると既存の提案資料は差し替わります。処理には数分かかります。
-                  .db-v2-upload-form__controls
-                    label.db-v2-form-label for="deal-documents-input" PDFファイル
-                    = file_field_tag "files[]", multiple: true, accept: ".pdf,application/pdf", class: "db-v2-form-control db-v2-upload-form__input", id: "deal-documents-input", disabled: @deal.processing?
-                    button.db-v2-btn.db-v2-btn--ghost type="button" id="deal-documents-pick" disabled=@deal.processing?
-                      i.fa-solid.fa-folder-open aria-hidden="true"
-                      span ファイルを選択
-                #deal-documents-selected.db-v2-upload-zone__selected hidden=true
-                  p.db-v2-upload-zone__selected-label 選択中のファイル
-                  ul#deal-documents-file-list.db-v2-upload-zone__file-list
-                #deal-documents-error.db-v2-upload-zone__error hidden=true
-                  p PDFファイルを選択してください
-                .db-v2-form-actions
-                  = submit_tag "アップロードしてAI処理開始", class: "db-v2-btn db-v2-btn--primary", id: "deal-documents-submit", disabled: @deal.processing?
+          - proposal_upload_locked = @deal.proposal_upload_locked?
+          - unless proposal_upload_locked
+            .db-v2-bottom-card
+              .db-v2-bottom-card__header.db-v2-bottom-card__header--split
+                h2.db-v2-bottom-card__title
+                  i.fa-solid.fa-file-arrow-up aria-hidden="true"
+                  |  資料アップロード
+                span.db-v2-lang-badge = @deal.language.upcase
+              .db-v2-bottom-card__body
+                - if admin_signed_in? && !client_signed_in?
+                  .db-v2-alert.db-v2-alert--warning.db-v2-alert--compact
+                    i.fa-solid.fa-circle-info aria-hidden="true"
+                    p 資料アップロードは企業アカウントでのログインが必要です。
+                - if @deal.processing?
+                  .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
+                    i.fa-solid.fa-spinner.fa-spin aria-hidden="true"
+                    p AI処理中のため、新しい資料はアップロードできません。完了後に再度お試しください。
+                = form_tag upload_documents_dashboard_deal_path(@deal), multipart: true, id: "documents-upload-form", class: "db-v2-upload-form", data: { turbo: false } do
+                  .db-v2-upload-form__panel
+                    p.db-v2-upload-form__lead
+                      i.fa-solid.fa-cloud-arrow-up aria-hidden="true"
+                      |  PDFをアップロード（バックグラウンドでAI処理）
+                    p.db-v2-upload-form__hint 一度アップロードすると、この商談IDでは再アップロードできません。処理には数分かかります。
+                    .db-v2-upload-form__controls
+                      label.db-v2-form-label for="deal-documents-input" PDFファイル
+                      = file_field_tag "files[]", multiple: true, accept: ".pdf,application/pdf", class: "db-v2-form-control db-v2-upload-form__input", id: "deal-documents-input", disabled: @deal.processing?
+                      button.db-v2-btn.db-v2-btn--ghost type="button" id="deal-documents-pick" disabled=@deal.processing?
+                        i.fa-solid.fa-folder-open aria-hidden="true"
+                        span ファイルを選択
+                  #deal-documents-selected.db-v2-upload-zone__selected hidden=true
+                    p.db-v2-upload-zone__selected-label 選択中のファイル
+                    ul#deal-documents-file-list.db-v2-upload-zone__file-list
+                  #deal-documents-error.db-v2-upload-zone__error hidden=true
+                    p PDFファイルを選択してください
+                  .db-v2-form-actions
+                    = submit_tag "アップロードしてAI処理開始", class: "db-v2-btn db-v2-btn--primary", id: "deal-documents-submit", disabled: @deal.processing?
 
-          - if @deal.deal_documents.any?
+          - if @deal.deal_documents.proposals.any?
             .db-v2-bottom-card
               .db-v2-bottom-card__header
                 h2.db-v2-bottom-card__title アップロード済み資料
               .db-v2-bottom-card__body
+                .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
+                  i.fa-solid.fa-lock aria-hidden="true"
+                  p 提案資料はこの商談IDでは固定です。再アップロードするとFAQや音声台本の整合性が崩れるため、変更が必要な場合は新しい商談を作成してください。
                 .db-v2-doc-list
-                  - @deal.deal_documents.each do |doc|
+                  - @deal.deal_documents.proposals.each do |doc|
                     .db-v2-doc-row
                       .db-v2-doc-row__info
                         i.fa-solid.fa-file-pdf aria-hidden="true"
@@ -126,7 +131,7 @@
                           = link_to "PDFを開く", rails_blob_path(doc.file, disposition: "inline"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", target: "_blank", rel: "noopener"
                           = link_to "DL", rails_blob_path(doc.file, disposition: "attachment"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs"
 
-                - @deal.deal_documents.select { |doc| doc.file.attached? }.each do |doc|
+                - @deal.deal_documents.proposals.select { |doc| doc.file.attached? }.each do |doc|
                   .db-v2-pdf-preview
                     h3.db-v2-pdf-preview__title = "PDFプレビュー: #{File.basename(doc.file.filename.to_s)}"
                     .db-v2-pdf-preview__frame

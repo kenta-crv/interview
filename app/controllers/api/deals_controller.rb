@@ -32,6 +32,11 @@ module Api
         return
       end
 
+      if @deal.proposal_upload_locked?
+        redirect_to dashboard_deal_path(@deal), alert: 'この商談IDでは提案資料を再アップロードできません'
+        return
+      end
+
       if @deal.processing?
         redirect_to dashboard_deal_path(@deal), alert: 'AI処理中です。完了までお待ちください。'
         return
@@ -39,10 +44,7 @@ module Api
 
       documents = []
 
-      # ログのトランザクション開始位置（37行目）に合わせて、全体を明示的に保護
       ActiveRecord::Base.transaction do
-        @deal.deal_documents.proposals.find_each(&:destroy_safely!)
-
         params[:files].each do |file|
           document = @deal.deal_documents.create!(
             filename: file.original_filename,
@@ -58,7 +60,7 @@ module Api
       @deal.start_processing!
       ProcessDealJob.perform_later(@deal.id)
 
-      redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました（既存の提案資料は差し替え）。AI処理をバックグラウンドで開始しています。'
+      redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました。AI処理をバックグラウンドで開始しています。'
     rescue ActiveRecord::RecordInvalid => e
       redirect_to dashboard_deal_path(@deal), alert: e.message
     rescue => e
