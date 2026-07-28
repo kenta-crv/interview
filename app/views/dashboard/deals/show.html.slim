@@ -120,25 +120,34 @@
                   p 提案資料はこの商談IDでは固定です。再アップロードするとFAQや音声台本の整合性が崩れるため、変更が必要な場合は新しい商談を作成してください。
                 .db-v2-doc-list
                   - @deal.deal_documents.proposals.each do |doc|
-                    .db-v2-doc-row
-                      .db-v2-doc-row__info
-                        i.fa-solid.fa-file-pdf aria-hidden="true"
-                        div
-                          .db-v2-doc-row__name = File.basename(doc.file.filename.to_s)
-                          .db-v2-doc-row__meta = number_to_human_size(doc.file_size)
-                      - if doc.file.attached?
-                        .db-v2-doc-row__actions
-                          = link_to "PDFを開く", rails_blob_path(doc.file, disposition: "inline"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", target: "_blank", rel: "noopener"
-                          = link_to "DL", rails_blob_path(doc.file, disposition: "attachment"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs"
-
-                - @deal.deal_documents.proposals.select { |doc| doc.file.attached? }.each do |doc|
-                  .db-v2-pdf-preview
-                    h3.db-v2-pdf-preview__title = "PDFプレビュー: #{File.basename(doc.file.filename.to_s)}"
-                    .db-v2-pdf-preview__frame
-                      iframe src=rails_blob_path(doc.file, disposition: "inline") title=File.basename(doc.file.filename.to_s)
+                    - preview_src = doc.file.attached? ? rails_blob_path(doc.file, disposition: "inline") : nil
                     - related_pages = @deal.deal_pages.select { |p| p.deal_document_id == doc.id }.sort_by(&:page_number)
-                    - if related_pages.any?
-                      p.db-v2-pdf-preview__meta 抽出ページ: #{related_pages.map(&:page_number).join(", ")}（全#{related_pages.size}面）
+                    .db-v2-doc-card
+                      .db-v2-doc-card__header
+                        .db-v2-doc-row__info
+                          i.fa-solid.fa-file-pdf aria-hidden="true"
+                          div
+                            .db-v2-doc-row__name = File.basename(doc.file.filename.to_s)
+                            .db-v2-doc-row__meta = number_to_human_size(doc.file_size)
+                        - if doc.file.attached?
+                          .db-v2-doc-row__actions
+                            = link_to "PDFを開く", rails_blob_path(doc.file, disposition: "inline"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", target: "_blank", rel: "noopener"
+                            = link_to "DL", rails_blob_path(doc.file, disposition: "attachment"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs"
+                      details.db-v2-doc-accordion data-pdf-preview=""
+                        summary.db-v2-doc-accordion__summary
+                          span.db-v2-doc-accordion__cta.db-v2-doc-accordion__cta--closed
+                            | この資料のプレビューを表示する
+                          span.db-v2-doc-accordion__cta.db-v2-doc-accordion__cta--open
+                            | プレビューを閉じる
+                        - if preview_src
+                          .db-v2-doc-accordion__body
+                            .db-v2-pdf-preview__frame
+                              iframe data-src=preview_src title=File.basename(doc.file.filename.to_s) loading="lazy"
+                            - if related_pages.any?
+                              p.db-v2-pdf-preview__meta 抽出ページ: #{related_pages.map(&:page_number).join(", ")}（全#{related_pages.size}面）
+                        - else
+                          .db-v2-doc-accordion__body
+                            p.db-v2-pdf-preview__meta 資料データがありません
 
                 .db-v2-form-actions.db-v2-form-actions--split
                   - if @deal.deal_pages.any? && !@deal.processing?

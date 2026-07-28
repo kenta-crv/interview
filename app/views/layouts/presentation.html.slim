@@ -43,8 +43,8 @@ html lang="ja" data-turbo="false"
     = yield
     script
       | (function(){var o=document.getElementById('presentation-start-overlay');if(!o)return;o.hidden=false;o.style.display='flex';document.body.classList.add('presentation-locked');})();
-    script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"
+    = javascript_include_tag "pdf.min"
     script
-      | if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
+      | if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="/pdf.worker.min.js";}
     = javascript_include_tag "meetia_page_init", defer: true
     = javascript_include_tag "deal_presentation", defer: true

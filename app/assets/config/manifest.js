@@ -3,6 +3,12 @@
 //= link application.css
 //= link application.js
 //= link db_v2_pricing_slider.js
+//= link pdf.min.js
+//= link deal_presentation.js
+//= link deal_dashboard.js
+//= link meetia_page_init.js
+//= link meetia.js
+//= link meetia_app.js
 //= link admin_common.css
 //= link auth.css
 //= link dashboard.css

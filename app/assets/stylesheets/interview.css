@@ -939,6 +939,12 @@ audio {
   pointer-events: none !important;
 }
 
+/* canvas 未完了時のフォールバック: iframe を白地で見せる */
+.document-pdf-clean {
+  background: #ffffff !important;
+  z-index: 0 !important;
+}
+
 .document-pdf-canvas {
   opacity: 0 !important;
   z-index: 1 !important;

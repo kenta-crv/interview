@@ -1,7 +1,7 @@
 # Be sure to restart your server when you modify this file.
 
 # Version of your assets, change this if you want to expire all your assets.
-Rails.application.config.assets.version = '2.11'
+Rails.application.config.assets.version = '2.13'
 Rails.application.config.assets.precompile += %w(
   turbo.js
   meetia.js
@@ -10,6 +10,8 @@ Rails.application.config.assets.precompile += %w(
   deal_presentation.js
   deal_dashboard.js
   db_v2_pricing_slider.js
+  pdf.min.js
+  dashboard.css
 )
 # Add additional assets to the asset load path.
 # Rails.application.config.assets.paths << Emoji.images_path

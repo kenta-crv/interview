@@ -170,6 +170,34 @@
         });
       }
 
+      function ensurePdfJsReady(timeoutMs) {
+        if (window.pdfjsLib) {
+          if (pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+          }
+          return Promise.resolve(true);
+        }
+        var limit = typeof timeoutMs === 'number' ? timeoutMs : 4000;
+        var started = Date.now();
+        return new Promise(function(resolve) {
+          function tick() {
+            if (window.pdfjsLib) {
+              if (pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+              }
+              resolve(true);
+              return;
+            }
+            if (Date.now() - started >= limit) {
+              resolve(false);
+              return;
+            }
+            setTimeout(tick, 50);
+          }
+          tick();
+        });
+      }
+
       function whenAudioReady(audio, timeoutMs) {
         return new Promise(function(resolve) {
           if (!audio) {
@@ -187,7 +215,7 @@
             if (settled) return;
             settled = true;
             resolve(audio.readyState >= 2);
-          }, typeof timeoutMs === 'number' ? timeoutMs : 8000);
+          }, typeof timeoutMs === 'number' ? timeoutMs : 2500);
 
           function done(ok) {
             if (settled) return;
@@ -205,7 +233,7 @@
       function preloadAudio(url) {
         if (!url) return Promise.resolve(null);
         if (audioCache[url]) {
-          return whenAudioReady(audioCache[url]).then(function() {
+          return whenAudioReady(audioCache[url], 2500).then(function() {
             return audioCache[url];
           });
         }
@@ -215,7 +243,7 @@
           audio.src = url;
           audioCache[url] = audio;
           try { audio.load(); } catch (_loadErr) {}
-          return whenAudioReady(audio).then(function() {
+          return whenAudioReady(audio, 2500).then(function() {
             return audio;
           });
         } catch (_e) {
@@ -909,7 +937,7 @@
           audio.addEventListener('ended', finishAudio, { once: true });
           audio.addEventListener('error', fallback, { once: true });
 
-          whenAudioReady(audio, 8000).then(function(ready) {
+          whenAudioReady(audio, 2500).then(function(ready) {
             if (token !== playbackToken || isPaused) {
               finish();
               return;
@@ -978,11 +1006,14 @@
       }
 
       function getPdfDocument(url) {
-        if (!window.pdfjsLib || !url) return Promise.reject(new Error('pdfjs unavailable'));
-        if (!pdfDocCache[url]) {
-          pdfDocCache[url] = window.pdfjsLib.getDocument({ url: url, withCredentials: true }).promise;
-        }
-        return pdfDocCache[url];
+        if (!url) return Promise.reject(new Error('pdf url missing'));
+        return ensurePdfJsReady().then(function(ready) {
+          if (!ready || !window.pdfjsLib) return Promise.reject(new Error('pdfjs unavailable'));
+          if (!pdfDocCache[url]) {
+            pdfDocCache[url] = window.pdfjsLib.getDocument({ url: url, withCredentials: true }).promise;
+          }
+          return pdfDocCache[url];
+        });
       }
 
       function slideFitSize(slide) {
@@ -1006,78 +1037,91 @@
         attempt = attempt || 0;
 
         var canvas = slide.querySelector('canvas.document-pdf-canvas');
+        var iframe = slide.querySelector('iframe.document-pdf-clean');
         var url = slide.getAttribute('data-pdf-url');
         var pageNumber = parseInt(slide.getAttribute('data-page-number'), 10);
-        if (!canvas || !url || !pageNumber || !window.pdfjsLib) return Promise.resolve();
+        if (!canvas || !url || !pageNumber) return Promise.resolve();
 
-        var size = slideFitSize(slide);
-        var width = size.width;
-        var height = size.height;
-        if (width < 2 || height < 2) {
-          if (attempt >= 10) return Promise.resolve();
-          return wait(40 * (attempt + 1)).then(function() {
-            return renderPdfSlide(slide, attempt + 1);
-          });
-        }
+        return ensurePdfJsReady(attempt === 0 ? 4000 : 500).then(function(ready) {
+          if (!ready || !window.pdfjsLib) {
+            // canvas 不可時は iframe を見せたまま（暗い白紙で終わらせない）
+            slide.classList.remove('is-pdf-fitted');
+            if (iframe) iframe.style.visibility = 'visible';
+            return;
+          }
 
-        var taskKey = slide.id || String(pageNumber);
-        var generation = (pdfRenderGeneration[taskKey] || 0) + 1;
-        pdfRenderGeneration[taskKey] = generation;
-
-        if (pdfRenderTasks[taskKey] && typeof pdfRenderTasks[taskKey].cancel === 'function') {
-          try { pdfRenderTasks[taskKey].cancel(); } catch (_e) {}
-        }
-
-        return getPdfDocument(url).then(function(pdf) {
-          if (pdfRenderGeneration[taskKey] !== generation) return;
-          return pdf.getPage(pageNumber).then(function(page) {
-            if (pdfRenderGeneration[taskKey] !== generation) return;
-
-            var dpr = Math.min(window.devicePixelRatio || 1, 2);
-            var baseViewport = page.getViewport({ scale: 1 });
-            // Contain: width OR height becomes 100%, never crop, never scroll.
-            var fitScale = Math.min(width / baseViewport.width, height / baseViewport.height);
-            if (!isFinite(fitScale) || fitScale <= 0) return;
-
-            var viewport = page.getViewport({ scale: fitScale * dpr });
-            var canvasW = Math.max(1, Math.floor(width * dpr));
-            var canvasH = Math.max(1, Math.floor(height * dpr));
-            var offsetX = Math.floor((canvasW - viewport.width) / 2);
-            var offsetY = Math.floor((canvasH - viewport.height) / 2);
-
-            canvas.width = canvasW;
-            canvas.height = canvasH;
-
-            var context = canvas.getContext('2d', { alpha: false });
-            if (!context) return;
-
-            context.setTransform(1, 0, 0, 1, 0, 0);
-            context.fillStyle = '#1a1b22';
-            context.fillRect(0, 0, canvasW, canvasH);
-            context.setTransform(1, 0, 0, 1, offsetX, offsetY);
-
-            var renderTask = page.render({ canvasContext: context, viewport: viewport });
-            pdfRenderTasks[taskKey] = renderTask;
-            return renderTask.promise.then(function() {
-              if (pdfRenderGeneration[taskKey] !== generation) return;
-              slide.classList.add('is-pdf-fitted');
-            }).catch(function(err) {
-              if (err && err.name === 'RenderingCancelledException') return;
-              throw err;
-            });
-          });
-        }).catch(function(err) {
-          if (err && err.name === 'RenderingCancelledException') return;
-          if (pdfRenderGeneration[taskKey] !== generation) return;
-          slide.classList.remove('is-pdf-fitted');
-          if (attempt < 3) {
-            return wait(120 * (attempt + 1)).then(function() {
+          var size = slideFitSize(slide);
+          var width = size.width;
+          var height = size.height;
+          if (width < 2 || height < 2) {
+            if (attempt >= 10) {
+              slide.classList.remove('is-pdf-fitted');
+              return;
+            }
+            return wait(40 * (attempt + 1)).then(function() {
               return renderPdfSlide(slide, attempt + 1);
             });
           }
-          if (window.console && typeof console.warn === 'function') {
-            console.warn('[presentation] PDF fit render failed', err);
+
+          var taskKey = slide.id || String(pageNumber);
+          var generation = (pdfRenderGeneration[taskKey] || 0) + 1;
+          pdfRenderGeneration[taskKey] = generation;
+
+          if (pdfRenderTasks[taskKey] && typeof pdfRenderTasks[taskKey].cancel === 'function') {
+            try { pdfRenderTasks[taskKey].cancel(); } catch (_e) {}
           }
+
+          return getPdfDocument(url).then(function(pdf) {
+            if (pdfRenderGeneration[taskKey] !== generation) return;
+            return pdf.getPage(pageNumber).then(function(page) {
+              if (pdfRenderGeneration[taskKey] !== generation) return;
+
+              var dpr = Math.min(window.devicePixelRatio || 1, 2);
+              var baseViewport = page.getViewport({ scale: 1 });
+              // Contain: width OR height becomes 100%, never crop, never scroll.
+              var fitScale = Math.min(width / baseViewport.width, height / baseViewport.height);
+              if (!isFinite(fitScale) || fitScale <= 0) return;
+
+              var viewport = page.getViewport({ scale: fitScale * dpr });
+              var canvasW = Math.max(1, Math.floor(width * dpr));
+              var canvasH = Math.max(1, Math.floor(height * dpr));
+              var offsetX = Math.floor((canvasW - viewport.width) / 2);
+              var offsetY = Math.floor((canvasH - viewport.height) / 2);
+
+              canvas.width = canvasW;
+              canvas.height = canvasH;
+
+              var context = canvas.getContext('2d', { alpha: false });
+              if (!context) return;
+
+              context.setTransform(1, 0, 0, 1, 0, 0);
+              context.fillStyle = '#1a1b22';
+              context.fillRect(0, 0, canvasW, canvasH);
+              context.setTransform(1, 0, 0, 1, offsetX, offsetY);
+
+              var renderTask = page.render({ canvasContext: context, viewport: viewport });
+              pdfRenderTasks[taskKey] = renderTask;
+              return renderTask.promise.then(function() {
+                if (pdfRenderGeneration[taskKey] !== generation) return;
+                slide.classList.add('is-pdf-fitted');
+              }).catch(function(err) {
+                if (err && err.name === 'RenderingCancelledException') return;
+                throw err;
+              });
+            });
+          }).catch(function(err) {
+            if (err && err.name === 'RenderingCancelledException') return;
+            if (pdfRenderGeneration[taskKey] !== generation) return;
+            slide.classList.remove('is-pdf-fitted');
+            if (attempt < 3) {
+              return wait(120 * (attempt + 1)).then(function() {
+                return renderPdfSlide(slide, attempt + 1);
+              });
+            }
+            if (window.console && typeof console.warn === 'function') {
+              console.warn('[presentation] PDF fit render failed', err);
+            }
+          });
         });
       }
 
@@ -1225,9 +1269,15 @@
           preloadAudio(segmentValue(segment, 'audio_url'));
         });
         var firstUrl = segments[0] ? segmentValue(segments[0], 'audio_url') : null;
+        var firstPage = segments[0]
+          ? (parseInt(segmentValue(segments[0], 'page_number'), 10) || currentPageNumber)
+          : currentPageNumber;
 
-        return afterLayout(function() {
-          return renderActivePdfSlide();
+        // 描画 → 先頭音声準備 → オープニング再生
+        return ensurePdfJsReady(4000).then(function() {
+          return afterLayout(function() {
+            return presentPage(firstPage, { syncChoice: false });
+          });
         }).then(function() {
           return firstUrl ? preloadAudio(firstUrl) : Promise.resolve(null);
         }).then(function() {
@@ -1488,12 +1538,16 @@
       presentPage(parseInt(openingValue('greeting_page'), 10) || 1);
       showOverlay();
 
-      // PDF ドキュメントを先読み（開始後のページ切替空白を減らす）
-      slides.forEach(function(slide) {
-        var pdfUrl = slide.getAttribute('data-pdf-url');
-        if (pdfUrl) {
-          getPdfDocument(pdfUrl).catch(function() {});
-        }
+      ensurePdfJsReady(4000).then(function(ready) {
+        if (!ready) return;
+        // PDF ドキュメントを先読み（開始後のページ切替空白を減らす）
+        slides.forEach(function(slide) {
+          var pdfUrl = slide.getAttribute('data-pdf-url');
+          if (pdfUrl) {
+            getPdfDocument(pdfUrl).catch(function() {});
+          }
+        });
+        renderActivePdfSlide();
       });
       // オープニング音声もオーバーレイ表示中に先読み
       segmentsForOpening().forEach(function(segment) {
