@@ -529,9 +529,9 @@ audio {
   color: #e9d5ff;
 }
 
-.deal-public-body .deal-public-form__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.deal-public-body .deal-public-form__fields {
+  display: flex;
+  flex-direction: column;
   gap: 14px;
 }
 
@@ -539,10 +539,6 @@ audio {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.deal-public-body .deal-public-form__group--full {
-  grid-column: 1 / -1;
 }
 
 .deal-public-body .deal-public-form__label {
@@ -596,10 +592,6 @@ audio {
 }
 
 @media (max-width: 720px) {
-  .deal-public-body .deal-public-form__grid {
-    grid-template-columns: 1fr;
-  }
-
   .deal-public-body .deal-public-page__card {
     padding: 18px;
   }

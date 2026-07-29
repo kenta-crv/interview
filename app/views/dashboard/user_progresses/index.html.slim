@@ -63,6 +63,7 @@
                 td= progress.planned_introduction_date&.strftime("%Y/%m/%d") || "—"
                 td= l(progress.created_at, format: :short)
                 td
-                  = link_to dashboard_deal_user_progress_path(@deal, progress), class: "db-v2-deals-table__link" do
-                    i.fa-solid.fa-arrow-up-right-from-square aria-hidden="true"
-                    span 詳細
+                  .db-v2-deals-table__actions
+                    = link_to dashboard_deal_user_progress_path(@deal, progress), class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs" do
+                      i.fa-solid.fa-arrow-up-right-from-square aria-hidden="true"
+                      span 詳細

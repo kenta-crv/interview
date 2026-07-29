@@ -2,7 +2,7 @@
   var init = window.MeetiaPageInit;
 
   function readConfig() {
-    var defaults = { pages: [], opening: {}, opening_segments: [], closing: {}, materials: null, public_mode: false, cta: {} };
+    var defaults = { pages: [], opening: {}, opening_segments: [], closing: {}, materials: null, public_mode: false, preview_mode: false, finish_redirect_url: '/', cta: {} };
     var el = document.getElementById('deal-presentation-config');
     if (!el) return defaults;
 
@@ -18,6 +18,8 @@
         evaluate_url: data.evaluate_url || '',
         track_url: data.track_url || '',
         public_mode: !!data.public_mode,
+        preview_mode: !!data.preview_mode,
+        finish_redirect_url: data.finish_redirect_url || '/',
         cta: data.cta || {}
       };
     } catch (_e) {
@@ -629,17 +631,27 @@
         }
 
         if (evaluateUrl) {
-          tasks.push(fetch(evaluateUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-Token': csrfToken()
-            },
-            body: JSON.stringify({
-              rating: ratingValue,
-              feedback: feedbackValue || ''
+          tasks.push(
+            fetch(evaluateUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken()
+              },
+              body: JSON.stringify({
+                rating: ratingValue,
+                feedback: feedbackValue || ''
+              })
+            }).then(function(response) {
+              if (!response.ok) {
+                return response.json().catch(function() { return {}; }).then(function(payload) {
+                  var message = (payload && payload.errors && payload.errors[0]) || '評価の送信に失敗しました';
+                  throw new Error(message);
+                });
+              }
+              return response;
             })
-          }));
+          );
         }
 
         return Promise.all(tasks).then(function() {
@@ -666,11 +678,26 @@
 
       function closePresentationWindow() {
         pausePlayback();
+        hideExitModal();
+        hideOverlay();
         document.body.classList.remove('presentation-exit-open', 'presentation-locked');
-        try { window.close(); } catch (_e) {}
+
+        if (config.preview_mode) {
+          try { window.close(); } catch (_e) {}
+          if (!window.closed) {
+            window.location.assign(config.finish_redirect_url || '/');
+          }
+          return;
+        }
+
+        if (config.public_mode) {
+          window.location.assign(config.finish_redirect_url || '/');
+          return;
+        }
+
+        try { window.close(); } catch (_e2) {}
         if (!window.closed) {
-          document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0b1e;color:#fff;font-family:sans-serif;text-align:center;padding:24px;"><div><h1 style="font-size:1.5rem;margin-bottom:12px;">商談が終了しました</h1><p style="color:#94a3b8;margin:0;">このタブを閉じてください。</p></div></div>';
-          document.title = '商談終了';
+          window.location.assign(config.finish_redirect_url || '/');
         }
       }
 

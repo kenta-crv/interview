@@ -33,9 +33,9 @@
           i.fa-solid.fa-circle-info aria-hidden="true"
           p 補足PDFは残り#{supplement_remaining}件（最大#{Deal::MAX_SUPPLEMENT_DOCUMENTS}件）まで追加できます。
         = form_tag upload_supplement_documents_dashboard_deal_path(@deal), multipart: true, class: "deal-supplement-upload", data: { turbo: false } do
-          .form-group
-            = file_field_tag "files[]", multiple: true, accept: ".pdf", class: "form-control"
-          = submit_tag "補足PDFをアップロード", class: "btn-info-custom btn-sm", data: { turbo: false }
+          .db-v2-form-group
+            = file_field_tag "files[]", multiple: true, accept: ".pdf", class: "db-v2-form-control"
+          = submit_tag "補足PDFをアップロード", class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs", data: { turbo: false }
       - if @supplement_documents.any?
         ul.deal-supplement-list
           - @supplement_documents.each do |doc|
@@ -59,20 +59,20 @@
 
             .deal-faq-item__body
               = form_with model: faq, url: dashboard_deal_deal_faq_path(@deal, faq), method: :patch, local: true, html: { class: "deal-faq-form" } do |f|
-                .form-group
-                  = f.label :question, "質問", class: "form-label"
-                  = f.text_area :question, class: "form-control", rows: 2, readonly: faq.ai_gap? && faq.pending?
-                .form-group
-                  = f.label :answer, "回答", class: "form-label"
-                  = f.text_area :answer, class: "form-control", rows: 3, placeholder: (faq.pending? ? "Buyer向けの回答を入力してください" : "")
-                .form-group
-                  = f.label :category, "カテゴリ", class: "form-label"
-                  = f.select :category, DealFaq::CATEGORIES.map { |k, v| [v, k] }, {}, class: "form-control"
+                .db-v2-form-group
+                  = f.label :question, "質問", class: "db-v2-form-label"
+                  = f.text_area :question, class: "db-v2-form-control", rows: 2, readonly: faq.ai_gap? && faq.pending?
+                .db-v2-form-group
+                  = f.label :answer, "回答", class: "db-v2-form-label"
+                  = f.text_area :answer, class: "db-v2-form-control", rows: 3, placeholder: (faq.pending? ? "Buyer向けの回答を入力してください" : "")
+                .db-v2-form-group
+                  = f.label :category, "カテゴリ", class: "db-v2-form-label"
+                  = f.select :category, DealFaq::CATEGORIES.map { |k, v| [v, k] }, {}, class: "db-v2-form-control"
                 .deal-faq-item__actions
-                  = f.submit "保存", class: "btn-primary-custom btn-sm"
+                  = f.submit "保存", class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs"
                   - if faq.pending?
-                    = button_to "スキップ", skip_dashboard_deal_deal_faq_path(@deal, faq), method: :post, class: "btn-secondary-custom btn-sm", data: { turbo: false }
-                  = button_to "削除", dashboard_deal_deal_faq_path(@deal, faq), method: :delete, class: "btn-secondary-custom btn-sm", data: { turbo: false, confirm: "このFAQを削除しますか？" }
+                    = button_to "スキップ", skip_dashboard_deal_deal_faq_path(@deal, faq), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo: false }
+                  = button_to "削除", dashboard_deal_deal_faq_path(@deal, faq), method: :delete, class: "db-v2-btn db-v2-btn--danger db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo: false, confirm: "このFAQを削除しますか？" }
     - else
       p.text-muted.deal-knowledge-empty
         - if @deal.deal_summary.present?
@@ -88,20 +88,20 @@
           | AI分析・FAQ追加ツール
       .deal-faq-advanced__body
         .deal-faq-tools
-          = button_to "資料からFAQ提案", analyze_gaps_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", disabled: @deal.deal_summary.blank?, data: { turbo: false }
-          = button_to "商談ログから提案", suggest_from_events_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", data: { turbo: false }
-          = button_to "Buyerストレステスト", stress_test_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "btn-secondary-custom btn-sm", disabled: @deal.deal_summary.blank?, data: { turbo: false }
+          = button_to "資料からFAQ提案", analyze_gaps_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, disabled: @deal.deal_summary.blank?, data: { turbo: false }
+          = button_to "商談ログから提案", suggest_from_events_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo: false }
+          = button_to "Buyerストレステスト", stress_test_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, disabled: @deal.deal_summary.blank?, data: { turbo: false }
           - if deal_owner.gap_analysis_suggest_only?
             span.deal-faq-analyze-hint トライアルは各分析が軽量モードです
 
         = form_with model: DealFaq.new, url: dashboard_deal_deal_faqs_path(@deal), local: true, html: { class: "deal-faq-create-form" } do |f|
-          .form-group
-            = f.label :question, "質問を手動追加", class: "form-label"
-            = f.text_area :question, class: "form-control", rows: 2, placeholder: "例: 最低契約期間はありますか？"
-          .form-group
-            = f.label :answer, "回答", class: "form-label"
-            = f.text_area :answer, class: "form-control", rows: 3, placeholder: "Buyer向けの回答"
-          .form-group
-            = f.label :category, "カテゴリ", class: "form-label"
-            = f.select :category, DealFaq::CATEGORIES.map { |k, v| [v, k] }, {}, class: "form-control"
-          = f.submit "FAQを追加", class: "btn-info-custom btn-sm"
+          .db-v2-form-group
+            = f.label :question, "質問を手動追加", class: "db-v2-form-label"
+            = f.text_area :question, class: "db-v2-form-control", rows: 2, placeholder: "例: 最低契約期間はありますか？"
+          .db-v2-form-group
+            = f.label :answer, "回答", class: "db-v2-form-label"
+            = f.text_area :answer, class: "db-v2-form-control", rows: 3, placeholder: "Buyer向けの回答"
+          .db-v2-form-group
+            = f.label :category, "カテゴリ", class: "db-v2-form-label"
+            = f.select :category, DealFaq::CATEGORIES.map { |k, v| [v, k] }, {}, class: "db-v2-form-control"
+          = f.submit "FAQを追加", class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs"

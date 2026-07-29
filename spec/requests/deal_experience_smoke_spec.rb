@@ -150,6 +150,51 @@ RSpec.describe 'Deal experience smoke', type: :request do
       expect(response.body).to include('presentation-wrapper')
       expect(response.body).to include('btn-choice')
     end
+
+    it 'persists a lead after registration and evaluation' do
+      email = "lead_#{SecureRandom.hex(4)}@example.com"
+
+      expect {
+        post create_user_info_public_deal_session_path(token: deal.access_token), params: {
+          user: {
+            name: 'リード太郎',
+            job_title: '部長',
+            company: 'リード株式会社',
+            email: email,
+            tel: '090-1111-2222',
+            address: 'Osaka',
+            url: 'https://lead.example.com'
+          },
+          consideration_phase: 'initial'
+        }
+      }.to change { deal.user_progresses.count }.by(1)
+
+      expect(response).to redirect_to(conversation_public_deal_session_path(token: deal.access_token))
+
+      expect {
+        post evaluate_public_deal_session_path(token: deal.access_token),
+             params: { rating: 4, feedback: 'わかりやすかったです' },
+             as: :json
+      }.to change { deal.deal_evaluations.count }.by(1)
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)['message']).to eq('評価を保存しました')
+      expect(deal.user_progresses.joins(:user).exists?(users: { email: email })).to eq(true)
+    end
+
+    it 'does not persist leads or evaluations in preview mode' do
+      sign_in client
+
+      expect {
+        post evaluate_public_deal_session_path(token: deal.access_token, preview: 1),
+             params: { rating: 5, feedback: 'preview' },
+             as: :json
+      }.not_to change { DealEvaluation.count }
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)['message']).to eq('preview')
+      expect(deal.user_progresses.count).to eq(0)
+    end
   end
 
   describe 'dashboard deal reprocess' do

@@ -9,4 +9,6 @@
   evaluate_url: evaluate_public_deal_session_path(token: @deal.access_token, preview: params[:preview].presence),
   track_url: track_event_public_deal_session_path(token: @deal.access_token, preview: params[:preview].presence),
   finish_url: nil,
-  public_mode: true
+  public_mode: true,
+  preview_mode: params[:preview].present?,
+  finish_redirect_url: root_path

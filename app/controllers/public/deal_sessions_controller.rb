@@ -65,6 +65,11 @@ module Public
     end
 
     def evaluate
+      if client_preview?
+        render json: { message: 'preview' }
+        return
+      end
+
       rating = params[:rating].to_i
       unless (1..5).cover?(rating)
         render json: { errors: ['評価は1〜5で指定してください'] }, status: :unprocessable_entity

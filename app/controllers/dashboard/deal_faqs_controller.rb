@@ -82,7 +82,13 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
   private
 
   def set_deal
-    @deal = current_client.deals.find(params[:deal_id])
+    @deal = if admin_signed_in?
+              Deal.find(params[:deal_id])
+            else
+              current_client.deals.find(params[:deal_id])
+            end
+  rescue ActiveRecord::RecordNotFound
+    redirect_to dashboard_deals_path, alert: "商談が見つかりません。"
   end
 
   def set_faq

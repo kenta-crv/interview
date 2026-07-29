@@ -2,6 +2,7 @@ class Dashboard::DealsController < Dashboard::BaseController
   include FileUploadValidation
 
   before_action :authenticate_client_only!, except: [:index, :show, :presentation]
+  before_action :require_client_account!, only: [:new, :create]
   before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_follow_up_settings, :processing_status]
   before_action :load_deal_associations, only: [:show]
   before_action :ensure_deal_quota!, only: [:new, :create]
@@ -375,6 +376,7 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def ensure_deal_quota!
+    return unless client_signed_in?
     return if current_client.can_create_deal?
 
     redirect_to dashboard_deals_path, alert: current_client.deal_limit_message

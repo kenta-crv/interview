@@ -16,10 +16,10 @@
     .db-v2-header__right
       = render "/dashboard/theme_switch"
       .db-v2-deal-show__actions
-        = link_to presentation_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--primary", target: "_blank", rel: "noopener", data: { turbo: false } do
+        = link_to presentation_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--primary", target: "_blank", rel: "noopener", data: { turbo: false }, title: "プレビュー専用（リードは記録されません）" do
           i.fa-solid.fa-play aria-hidden="true"
           span 即時プレゼン
-        = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener", data: { turbo: false } do
+        = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener", data: { turbo: false }, title: "プレビュー専用（リードは記録されません）" do
           i.fa-solid.fa-wand-magic-sparkles aria-hidden="true"
           span シミュレーション
         = link_to edit_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
@@ -28,6 +28,9 @@
         = link_to dashboard_deals_path, class: "db-v2-btn db-v2-btn--ghost" do
           i.fa-solid.fa-arrow-left aria-hidden="true"
           span 一覧
+
+  p.db-v2-muted.db-v2-deal-show__preview-note
+    | 即時プレゼン／シミュレーションはプレビューです（リードは記録されません）。リード確認は共有URLの「開く」またはコピーした公開URLで登録してください。
 
   .db-v2-share-strip data-share-ready=(@deal.publicly_accessible? ? "true" : "false")
     .db-v2-share-strip__label
