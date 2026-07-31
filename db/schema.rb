@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_07_28_135242) do
+ActiveRecord::Schema.define(version: 2026_07_31_020000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -283,7 +283,7 @@ ActiveRecord::Schema.define(version: 2026_07_28_135242) do
   end
 
   create_table "deals", force: :cascade do |t|
-    t.integer "client_id", null: false
+    t.integer "client_id"
     t.string "title", null: false
     t.text "description"
     t.integer "status", default: 0
@@ -297,7 +297,7 @@ ActiveRecord::Schema.define(version: 2026_07_28_135242) do
     t.text "greeting_script"
     t.text "company_overview_script"
     t.text "usage_guide_script"
-    t.json "menu_items", default: []
+    t.json "menu_items", default: "\"[]\""
     t.boolean "playback_ready", default: false, null: false
     t.string "presentation_cta_label", default: "契約を進める", null: false
     t.string "presentation_cta_url"
@@ -308,10 +308,12 @@ ActiveRecord::Schema.define(version: 2026_07_28_135242) do
     t.string "tts_voice_gender", default: "female", null: false
     t.integer "page_views_count", default: 0, null: false
     t.text "closing_script"
+    t.boolean "managed_by_admin", default: false, null: false
     t.index ["access_token"], name: "index_deals_on_access_token", unique: true
     t.index ["client_id", "status"], name: "index_deals_on_client_id_and_status"
     t.index ["client_id"], name: "index_deals_on_client_id"
     t.index ["industry"], name: "index_deals_on_industry"
+    t.index ["managed_by_admin"], name: "index_deals_on_managed_by_admin"
     t.index ["status"], name: "index_deals_on_status"
   end
 
@@ -504,7 +506,7 @@ ActiveRecord::Schema.define(version: 2026_07_28_135242) do
     t.integer "user_id", null: false
     t.integer "deal_id", null: false
     t.string "consideration_phase"
-    t.date "planned_introduction_date"
+    t.string "planned_introduction_date"
     t.text "key_points_for_application"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -513,7 +515,7 @@ ActiveRecord::Schema.define(version: 2026_07_28_135242) do
     t.datetime "follow_up_unsubscribed_at"
     t.string "prospect_grade"
     t.integer "prospect_score"
-    t.json "session_summary", default: {}
+    t.json "session_summary", default: "\"{}\""
     t.datetime "session_analyzed_at"
     t.index ["deal_id"], name: "index_user_progresses_on_deal_id"
     t.index ["follow_up_unsubscribe_token"], name: "index_user_progresses_on_follow_up_unsubscribe_token", unique: true

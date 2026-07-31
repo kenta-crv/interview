@@ -155,7 +155,7 @@
               .db-v2-lead-info__value = phase_label.presence || "—"
             .db-v2-lead-info__row
               .db-v2-lead-info__label 導入予定日
-              .db-v2-lead-info__value = @user_progress.planned_introduction_date&.strftime("%Y/%m/%d") || "—"
+              .db-v2-lead-info__value = @user_progress.planned_introduction_date.presence || "—"
             .db-v2-lead-info__row.db-v2-lead-info__row--stack
               .db-v2-lead-info__label 重要ポイント
               .db-v2-lead-info__value.db-v2-lead-info__value--prose = simple_format(@user_progress.key_points_for_application.presence || "—")

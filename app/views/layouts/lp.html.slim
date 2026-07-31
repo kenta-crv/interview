@@ -19,8 +19,21 @@ html.meetia-lp-html lang=I18n.locale
           .meetia-modern-lp .meetia-nav__item{padding:8px 7px;font-size:.72rem}
           .lang-switch__btn{padding:6px 9px!important;font-size:11px!important}
         }
+        .meetia-lp-flash-stack{position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:10px;max-width:min(420px,calc(100vw - 40px))}
+        .meetia-lp-flash{padding:14px 18px;border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.18);font-size:14px;font-weight:600;line-height:1.5;color:#fff;animation:meetiaFlashIn .28s ease-out}
+        .meetia-lp-flash p{margin:0}
+        .meetia-lp-flash--notice{background:#0f766e}
+        .meetia-lp-flash--alert{background:#b91c1c}
+        @keyframes meetiaFlashIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 
   body.meetia-lp-body
+    - if flash.any?
+      .meetia-lp-flash-stack aria-live="polite"
+        - flash.each do |type, message|
+          - next if message.blank?
+          - css = type.to_s == "alert" ? "meetia-lp-flash meetia-lp-flash--alert" : "meetia-lp-flash meetia-lp-flash--notice"
+          div class=css
+            p = message
     = render "layouts/lp_atmosphere"
     = yield
     = javascript_include_tag "meetia_page_init", "data-turbo-track": "reload"

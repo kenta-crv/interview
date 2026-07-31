@@ -1,12 +1,13 @@
 module DealFollowUp
   class EnqueueCampaignService
-    def self.call(user_progress:, ended_at: Time.current)
-      new(user_progress: user_progress, ended_at: ended_at).call
+    def self.call(user_progress:, ended_at: Time.current, force: false)
+      new(user_progress: user_progress, ended_at: ended_at, force: force).call
     end
 
-    def initialize(user_progress:, ended_at:)
+    def initialize(user_progress:, ended_at:, force: false)
       @user_progress = user_progress
       @ended_at = ended_at
+      @force = force
     end
 
     def call
@@ -14,23 +15,31 @@ module DealFollowUp
 
       ActiveRecord::Base.transaction do
         lock_progress!
-        return if already_enqueued?
+        unless already_enqueued?
+          @user_progress.update!(session_ended_at: @ended_at)
+          @user_progress.ensure_follow_up_unsubscribe_token!
 
-        @user_progress.update!(session_ended_at: @ended_at)
-        @user_progress.ensure_follow_up_unsubscribe_token!
-
-        enabled_templates.each do |template|
-          create_and_schedule_delivery!(template)
+          enabled_templates.each do |template|
+            create_and_schedule_delivery!(template)
+          end
         end
       end
+
+      # 既存キャンペーンでも未送信の即時分は必ず同期送信する
+      # （return if already_enqueued? で送信まで飛ばないようにする）
+      send_immediate_deliveries!
     end
 
     private
 
     def eligible?
-      client.prospect_follow_up_enabled? &&
+      follow_up_allowed? &&
         @user_progress.user&.email.present? &&
         !@user_progress.follow_up_unsubscribed?
+    end
+
+    def follow_up_allowed?
+      @force || @user_progress.deal.managed_by_admin? || client&.prospect_follow_up_enabled?
     end
 
     def client
@@ -51,7 +60,7 @@ module DealFollowUp
 
     def create_and_schedule_delivery!(template)
       scheduled_at = @ended_at + template.delay_days.days
-      delivery = @user_progress.follow_up_deliveries.create!(
+      @user_progress.follow_up_deliveries.create!(
         deal_follow_up_template: template,
         sequence: template.sequence,
         subject: template.subject,
@@ -59,12 +68,24 @@ module DealFollowUp
         scheduled_at: scheduled_at,
         status: "scheduled"
       )
+    end
 
-      if scheduled_at <= Time.current
-        DealFollowUp::SendDeliveryJob.perform_later(delivery.id)
-      else
-        DealFollowUp::SendDeliveryJob.set(wait_until: scheduled_at).perform_later(delivery.id)
-      end
+    def send_immediate_deliveries!
+      # 即時分のみ。翌日以降は system cron（rake deal_follow_up:send_due）
+      # failed も再送対象（SMTP障害後のリトライ用）
+      @user_progress.follow_up_deliveries
+        .where(status: %w[scheduled failed])
+        .where("scheduled_at <= ?", Time.current)
+        .includes(:deal_follow_up_template)
+        .find_each do |delivery|
+          next if delivery.deal_follow_up_template.delay_days.to_i.positive?
+
+          SendDeliveryService.call(delivery)
+        rescue StandardError => e
+          Rails.logger.error(
+            "[DealFollowUp] immediate send failed delivery_id=#{delivery.id}: #{e.class}: #{e.message}"
+          )
+        end
     end
   end
 end

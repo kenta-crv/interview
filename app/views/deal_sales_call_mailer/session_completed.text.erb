@@ -1,0 +1,16 @@
+AI商談が終了しました。
+
+商談: <%= @deal.title %>
+
+会社名: <%= @user.company.presence || "—" %>
+お名前: <%= @user.name.presence || "—" %>
+役職: <%= @user.job_title.presence || "—" %>
+メール: <%= @user.email.presence || "—" %>
+電話番号: <%= @user.tel.presence || "—" %>
+いまのご状況: <%= @phase_label %>
+満足度: <%= @rating.present? ? "#{@rating} / 5" : "—" %>
+ご意見: <%= @feedback.presence || "—" %>
+<% if @dashboard_url.present? %>
+
+リード詳細: <%= @dashboard_url %>
+<% end %>

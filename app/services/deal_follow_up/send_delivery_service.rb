@@ -34,12 +34,7 @@ module DealFollowUp
     def skip_send?
       @delivery.sent_or_beyond? ||
         @delivery.status == "cancelled" ||
-        @delivery.user_progress.follow_up_unsubscribed? ||
-        !client.prospect_follow_up_enabled?
-    end
-
-    def client
-      @delivery.user_progress.deal.client
+        @delivery.user_progress.follow_up_unsubscribed?
     end
   end
 end

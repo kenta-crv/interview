@@ -1,5 +1,10 @@
 # sidekiq-cron による定期ジョブ定義
 # config/initializers/sidekiq.rb で読み込まれる
+#
+# 見込み客追客メールに Sidekiq は使わない。
+# 即時（delay_days: 0）は評価完了時に deliver_now で同期送信する。
+# 翌日以降は DB の follow_up_deliveries.scheduled_at を system cron で拾う:
+#   * * * * * cd /path/to/meetia && bundle exec rake deal_follow_up:send_due RAILS_ENV=production
 
 expire_timed_out_interviews:
   cron: "*/5 * * * *"

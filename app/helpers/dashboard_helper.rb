@@ -52,8 +52,6 @@ module DashboardHelper
       controller_name == "accounts"
     when :management
       controller_name == "management"
-    when :admin_interview_results
-      controller_path == "admin/interview_results"
     else
       false
     end

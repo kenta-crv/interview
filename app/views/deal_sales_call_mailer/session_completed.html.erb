@@ -1,0 +1,44 @@
+<p>AI商談が終了しました。</p>
+
+<p><strong>商談：</strong><%= @deal.title %></p>
+
+<table style="border-collapse:collapse;width:100%;max-width:560px;">
+  <tr>
+    <th align="left" style="padding:6px 8px;border-bottom:1px solid #e2e8f0;width:140px;">会社名</th>
+    <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;"><%= @user.company.presence || "—" %></td>
+  </tr>
+  <tr>
+    <th align="left" style="padding:6px 8px;border-bottom:1px solid #e2e8f0;">お名前</th>
+    <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;"><%= @user.name.presence || "—" %></td>
+  </tr>
+  <tr>
+    <th align="left" style="padding:6px 8px;border-bottom:1px solid #e2e8f0;">役職</th>
+    <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;"><%= @user.job_title.presence || "—" %></td>
+  </tr>
+  <tr>
+    <th align="left" style="padding:6px 8px;border-bottom:1px solid #e2e8f0;">メール</th>
+    <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;"><%= @user.email.presence || "—" %></td>
+  </tr>
+  <tr>
+    <th align="left" style="padding:6px 8px;border-bottom:1px solid #e2e8f0;">電話番号</th>
+    <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;"><%= @user.tel.presence || "—" %></td>
+  </tr>
+  <tr>
+    <th align="left" style="padding:6px 8px;border-bottom:1px solid #e2e8f0;">いまのご状況</th>
+    <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;"><%= @phase_label %></td>
+  </tr>
+  <tr>
+    <th align="left" style="padding:6px 8px;border-bottom:1px solid #e2e8f0;">満足度</th>
+    <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;"><%= @rating.present? ? "#{@rating} / 5" : "—" %></td>
+  </tr>
+  <tr>
+    <th align="left" style="padding:6px 8px;border-bottom:1px solid #e2e8f0;">ご意見</th>
+    <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;"><%= @feedback.presence || "—" %></td>
+  </tr>
+</table>
+
+<% if @dashboard_url.present? %>
+  <p style="margin-top:20px;">
+    <a href="<%= @dashboard_url %>">ダッシュボードでリード詳細を見る</a>
+  </p>
+<% end %>

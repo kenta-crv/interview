@@ -12,6 +12,7 @@ ActiveSupport.on_load(:active_record) do
       super
       execute("PRAGMA journal_mode = WAL", "SCHEMA")
       execute("PRAGMA synchronous = NORMAL", "SCHEMA")
+      execute("PRAGMA busy_timeout = 30000", "SCHEMA")
     end
   end)
 end

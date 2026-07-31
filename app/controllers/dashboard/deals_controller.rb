@@ -1,9 +1,9 @@
 class Dashboard::DealsController < Dashboard::BaseController
   include FileUploadValidation
 
-  before_action :authenticate_client_only!, except: [:index, :show, :presentation]
-  before_action :require_client_account!, only: [:new, :create]
-  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_follow_up_settings, :processing_status]
+  before_action :authenticate_deal_manager!, except: [:index, :show, :presentation]
+  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :claim_admin_management, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_follow_up_settings, :processing_status]
+  before_action :authorize_deal_management!, only: [:edit, :update, :destroy, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_follow_up_settings]
   before_action :load_deal_associations, only: [:show]
   before_action :ensure_deal_quota!, only: [:new, :create]
 
@@ -11,7 +11,7 @@ class Dashboard::DealsController < Dashboard::BaseController
     @deals = if admin_signed_in?
                Deal.includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
              else
-               current_client.deals.includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
+               current_client.deals.where(managed_by_admin: false).includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
              end
   end
 
@@ -35,9 +35,12 @@ class Dashboard::DealsController < Dashboard::BaseController
     @evaluation_count = @analytics[:evaluation_count]
     @average_evaluation = @analytics[:average_evaluation]
     @prospect_grade_counts = @analytics[:prospect_grade_counts]
-    if owner.prospect_follow_up_enabled?
+    if follow_up_feature_available?(owner)
       @deal.ensure_follow_up_templates!
       @follow_up_templates = @deal.deal_follow_up_templates.ordered
+      @follow_up_setup_gaps = @deal.follow_up_setup_gaps
+    else
+      @follow_up_setup_gaps = []
     end
   end
 
@@ -183,10 +186,12 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def update_follow_up_settings
-    unless current_client.prospect_follow_up_enabled?
+    unless follow_up_feature_available?(deal_owner)
       redirect_to dashboard_deal_path(@deal), alert: '現在のプランではフォローアップ機能を利用できません'
       return
     end
+
+    @deal.ensure_follow_up_templates!
 
     ActiveRecord::Base.transaction do
       @deal.update!(follow_up_settings_params) if params[:deal].present?
@@ -296,12 +301,35 @@ class Dashboard::DealsController < Dashboard::BaseController
     redirect_to dashboard_deal_path(@deal), notice: '商談URLを公開しました'
   end
 
+  def claim_admin_management
+    unless admin_signed_in?
+      redirect_to dashboard_deal_path(@deal), alert: 'Adminのみ実行できます'
+      return
+    end
+
+    if @deal.managed_by_admin?
+      redirect_to dashboard_deal_path(@deal), notice: 'すでにAdmin管理の商談です'
+      return
+    end
+
+    @deal.update!(managed_by_admin: true)
+    redirect_to dashboard_deal_path(@deal), notice: 'Admin管理に切り替えました。公開・編集できます'
+  end
+
   def new
-    @deal = current_client.deals.build
+    if admin_creating_deal?
+      @deal = Deal.new(managed_by_admin: true, language: "ja")
+    else
+      @deal = current_client.deals.build(managed_by_admin: false)
+    end
   end
 
   def create
-    @deal = current_client.deals.build(deal_params)
+    if admin_creating_deal?
+      @deal = Deal.new(deal_params.merge(managed_by_admin: true, client_id: nil))
+    else
+      @deal = current_client.deals.build(deal_params.merge(managed_by_admin: false))
+    end
 
     if @deal.save
       redirect_to dashboard_deal_path(@deal), notice: '商談を作成しました'
@@ -332,7 +360,7 @@ class Dashboard::DealsController < Dashboard::BaseController
     @deal = if admin_signed_in?
               Deal.find(params[:id])
             else
-              current_client.deals.find(params[:id])
+              current_client.deals.where(managed_by_admin: false).find(params[:id])
             end
   rescue ActiveRecord::RecordNotFound
     redirect_to dashboard_deals_path, alert: "商談が見つかりません。"
@@ -376,9 +404,14 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def ensure_deal_quota!
+    return if admin_creating_deal?
     return unless client_signed_in?
     return if current_client.can_create_deal?
 
     redirect_to dashboard_deals_path, alert: current_client.deal_limit_message
+  end
+
+  def admin_creating_deal?
+    admin_signed_in? && !client_signed_in?
   end
 end

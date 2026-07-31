@@ -21,9 +21,17 @@ class Public::FollowUpTrackingController < ApplicationController
 
     if delivery.sales_click_token == params[:token]
       delivery.mark_sales_call_clicked!
+      DealFollowUp::CancelRemainingService.call(
+        user_progress: delivery.user_progress,
+        source: "sales_click"
+      )
       redirect_to destination_url(delivery.deal.follow_up_sales_url.presence || root_path)
     else
       delivery.mark_contract_clicked!
+      DealFollowUp::CancelRemainingService.call(
+        user_progress: delivery.user_progress,
+        source: "contract_click"
+      )
       redirect_to destination_url(delivery.deal.presentation_cta_url.presence || root_path)
     end
   end

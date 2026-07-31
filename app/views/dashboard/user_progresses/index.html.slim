@@ -60,7 +60,7 @@
                     | —
                 td= evaluation ? "#{evaluation.rating}/5" : "—"
                 td= progress.consideration_phase&.humanize.presence || "—"
-                td= progress.planned_introduction_date&.strftime("%Y/%m/%d") || "—"
+                td= progress.planned_introduction_date.presence || "—"
                 td= l(progress.created_at, format: :short)
                 td
                   .db-v2-deals-table__actions

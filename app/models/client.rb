@@ -118,6 +118,10 @@ class Client < ApplicationRecord
     subscriptions.exists?(status: :active) || on_trial?
   end
 
+  def company_or_email
+    company.presence || email
+  end
+
   validates :company, :name, :tel, :address, presence: true, on: :create
   validates :company, :name, :tel, :address, presence: true, on: :profile_update
   validates :url, format: { with: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true }

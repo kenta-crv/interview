@@ -18,9 +18,10 @@ RSpec.describe DealPresentationEvent, type: :model do
   before do
     client.subscriptions.create!(plan_type: :business, status: :active)
     ActiveJob::Base.queue_adapter = :test
+    allow(DealFollowUpMailer).to receive_message_chain(:follow_up, :deliver_now)
   end
 
-  it "enqueues follow up campaign and session analysis on evaluated session close" do
+  it "creates follow up deliveries and sends immediate mail on evaluated session close" do
     expect {
       described_class.create!(
         deal: deal,
@@ -31,8 +32,12 @@ RSpec.describe DealPresentationEvent, type: :model do
         occurred_at: Time.current,
         metadata: { "evaluated" => true, "rating" => 5 }
       )
-    }.to have_enqueued_job(DealFollowUp::SendDeliveryJob).at_least(:once)
+    }.to change(FollowUpDelivery, :count).by(5)
       .and have_enqueued_job(AnalyzeUserProgressSessionJob).with(user_progress.id)
+
+    immediate = user_progress.follow_up_deliveries.find_by!(sequence: 1)
+    expect(immediate.status).to eq("sent")
+    expect(user_progress.follow_up_deliveries.where(status: "scheduled").count).to eq(4)
   end
 
   it "enqueues session analysis on unevaluated session close" do
@@ -47,9 +52,11 @@ RSpec.describe DealPresentationEvent, type: :model do
         metadata: { "evaluated" => false }
       )
     }.to have_enqueued_job(AnalyzeUserProgressSessionJob).with(user_progress.id)
+
+    expect(FollowUpDelivery.count).to eq(0)
   end
 
-  it "does not enqueue follow up on session close without evaluation" do
+  it "does not create follow up deliveries on session close without evaluation" do
     expect {
       described_class.create!(
         deal: deal,
@@ -60,10 +67,10 @@ RSpec.describe DealPresentationEvent, type: :model do
         occurred_at: Time.current,
         metadata: { "evaluated" => false }
       )
-    }.not_to have_enqueued_job(DealFollowUp::SendDeliveryJob)
+    }.not_to change(FollowUpDelivery, :count)
   end
 
-  it "does not enqueue on other exit events" do
+  it "does not create follow up deliveries on other exit events" do
     expect {
       described_class.create!(
         deal: deal,
@@ -73,6 +80,24 @@ RSpec.describe DealPresentationEvent, type: :model do
         event_type: "exit_contract_click",
         occurred_at: Time.current
       )
-    }.not_to have_enqueued_job(DealFollowUp::SendDeliveryJob)
+    }.not_to change(FollowUpDelivery, :count)
+  end
+
+  it "creates follow up deliveries with admin_force even when plan is trial" do
+    client.subscriptions.update_all(plan_type: :trial)
+
+    expect {
+      described_class.create!(
+        deal: deal,
+        user: user,
+        user_progress: user_progress,
+        session_key: "admin-force",
+        event_type: "session_close",
+        occurred_at: Time.current,
+        metadata: { "evaluated" => true, "admin_force" => true }
+      )
+    }.to change(FollowUpDelivery, :count).by(5)
+
+    expect(user_progress.follow_up_deliveries.find_by!(sequence: 1).status).to eq("sent")
   end
 end

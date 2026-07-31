@@ -1,7 +1,13 @@
 module DealEngine
   class ConversationService
-    MODEL = 'gpt-5.4-nano'
-    HISTORY_LIMIT = 8
+    # 商談中の体感速度優先（4o-mini の方が応答が安定して速い）
+    MODEL = 'gpt-4o-mini'
+    HISTORY_LIMIT = 4
+    # 自由質問は応答待ちが長いため、Chat 完了後の TTS+アップロードは行わない
+    # （音声はフロントの speechSynthesis フォールバックで即再生）
+    MAX_COMPLETION_TOKENS = 180
+    PAGE_CONTEXT_LIMIT = 12
+    PAGE_SCRIPT_TRUNCATE = 80
 
     def initialize(deal, user_progress: nil)
       @deal = deal
@@ -47,13 +53,24 @@ module DealEngine
     end
 
     def generate_ai_response(message, history: [])
+      if (faq = match_approved_faq(message))
+        return {
+          type: 'ai',
+          text: faq.answer.to_s,
+          audio_url: nil,
+          follow_up: follow_up_prompt,
+          source: 'faq'
+        }
+      end
+
       api_key = ENV['OPENAI_API_KEY']
       return fallback_payload(message) if api_key.blank?
 
       uri = URI.parse('https://api.openai.com/v1/chat/completions')
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
-      http.read_timeout = 60
+      http.open_timeout = 4
+      http.read_timeout = 15
 
       request = Net::HTTP::Post.new(uri.path)
       request['Content-Type'] = 'application/json'
@@ -61,8 +78,8 @@ module DealEngine
       request.body = {
         model: MODEL,
         messages: build_messages(message, history),
-        max_completion_tokens: 800,
-        temperature: 0.7
+        max_completion_tokens: MAX_COMPLETION_TOKENS,
+        temperature: 0.3
       }.to_json
 
       response = http.request(request)
@@ -72,12 +89,31 @@ module DealEngine
       {
         type: 'ai',
         text: text,
-        audio_url: synthesize_reply_audio(text),
+        audio_url: nil,
         follow_up: follow_up_prompt
       }
     rescue => e
       Rails.logger.error("ConversationService error: #{e.message}")
       fallback_payload(message)
+    end
+
+    def match_approved_faq(message)
+      query = normalize_match_text(message)
+      return nil if query.length < 2
+
+      faqs = @deal.approved_faqs_for_conversation.to_a
+      return nil if faqs.empty?
+
+      faqs.find do |faq|
+        q = normalize_match_text(faq.question)
+        next if q.length < 2
+
+        query.include?(q) || q.include?(query)
+      end
+    end
+
+    def normalize_match_text(text)
+      text.to_s.downcase.gsub(/[\s　、。！？?!「」『』（）()【】\[\]・･\-_／]+/u, '')
     end
 
     def build_messages(message, history)
@@ -95,35 +131,14 @@ module DealEngine
         next unless %w[user assistant].include?(role)
         next if content.blank?
 
-        { role: role, content: content.truncate(800) }
+        { role: role, content: content.truncate(400) }
       end.last(HISTORY_LIMIT)
-    end
-
-    def synthesize_reply_audio(text)
-      return nil if text.blank?
-
-      audio_data = ::DealEngine::TTSService.new(
-        text: text.to_s.truncate(900),
-        voice: @deal.openai_tts_voice,
-        language: @language,
-        gender: @deal.tts_voice_gender
-      ).generate_speech
-
-      blob = ActiveStorage::Blob.create_and_upload!(
-        io: StringIO.new(audio_data),
-        filename: "deal_reply_#{SecureRandom.hex(8)}.mp3",
-        content_type: 'audio/mpeg'
-      )
-      Rails.application.routes.url_helpers.rails_blob_path(blob, only_path: true)
-    rescue => e
-      Rails.logger.warn("ConversationService TTS skipped: #{e.message}")
-      nil
     end
 
     def system_prompt
       summary = @deal.deal_summary
-      pages_context = @deal.deal_pages.order(:page_number).map do |p|
-        "P#{p.page_number} #{p.title}: #{p.script.to_s.truncate(300)}"
+      pages_context = @deal.deal_pages.order(:page_number).limit(PAGE_CONTEXT_LIMIT).map do |p|
+        "P#{p.page_number} #{p.title}: #{p.script.to_s.truncate(PAGE_SCRIPT_TRUNCATE)}"
       end.join("\n")
 
       user_context = if @user_progress
@@ -142,35 +157,30 @@ module DealEngine
       if @language == 'ja'
         <<~PROMPT
           あなたは「#{@deal.title}」のAI商談アシスタントです。
-          資料に基づき、丁寧で具体的に回答してください。資料にない内容は推測せず、その旨を伝えてください。
-          回答は200字以内を目安に、次の質問を促す一文で締めてください。
-          直前の会話の流れを踏まえ、同じ説明の繰り返しを避けてください。
+          資料に基づき簡潔に回答。資料にない内容は推測しない。
+          回答は100字以内。最後に次の質問を促す一文。
 
           #{phase_guidance}
 
-          【商談要約】
-          #{summary&.summary}
-          #{summary&.key_points}
-
-          【スライド台本】
+          【要約】#{summary&.summary.to_s.truncate(300)}
+          【ポイント】#{summary&.key_points.to_s.truncate(250)}
+          【台本】
           #{pages_context}
-
-          【FAQ（承認済み）】
-          #{faq_context}
-
+          【FAQ】
+          #{faq_context.to_s.truncate(1200)}
           #{user_context}
         PROMPT
       else
         <<~PROMPT
           You are the AI sales assistant for "#{@deal.title}".
           Answer based on the materials. Do not invent facts.
-          Keep continuity with prior turns and avoid repeating the same explanation.
+          Keep answers under 60 words.
 
           #{phase_guidance}
 
-          Summary: #{summary&.summary}
+          Summary: #{summary&.summary.to_s.truncate(300)}
           Slides: #{pages_context}
-          FAQ: #{faq_context}
+          FAQ: #{faq_context.to_s.truncate(1200)}
           #{user_context}
         PROMPT
       end

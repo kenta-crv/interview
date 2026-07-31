@@ -21,6 +21,9 @@
     h2.db-v2-bottom-card__title 基本情報
   .db-v2-bottom-card__body
     = form_with model: @deal, url: dashboard_deals_path, local: true, method: :post do |f|
+      - if admin_signed_in? && !client_signed_in?
+        .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
+          p Admin作成の商談は Admin のみ公開・編集できます（Client側では操作不可）。
       .db-v2-form-group
         = f.label :title, "タイトル", class: "db-v2-form-label"
         = f.text_field :title, class: "db-v2-form-control", required: true, placeholder: "例: 新サービス紹介商談"

@@ -81,11 +81,15 @@ class DealPresentationEvent < ApplicationRecord
   end
 
   def evaluated_session_close?
-    metadata.is_a?(Hash) && metadata["evaluated"] == true
+    return false unless metadata.is_a?(Hash)
+
+    ActiveModel::Type::Boolean.new.cast(metadata["evaluated"])
   end
 
   def preview_event?
-    metadata.is_a?(Hash) && metadata["preview"]
+    return false unless metadata.is_a?(Hash)
+
+    ActiveModel::Type::Boolean.new.cast(metadata["preview"])
   end
 
   def enqueue_session_analysis
@@ -93,9 +97,17 @@ class DealPresentationEvent < ApplicationRecord
   end
 
   def enqueue_follow_up_campaign
+    # Sidekiq は使わない。即時メールはサービス内で deliver_now する。
     DealFollowUp::EnqueueCampaignService.call(
       user_progress: user_progress,
-      ended_at: occurred_at
+      ended_at: occurred_at || Time.current,
+      force: admin_force_follow_up?
     )
+  end
+
+  def admin_force_follow_up?
+    return false unless metadata.is_a?(Hash)
+
+    ActiveModel::Type::Boolean.new.cast(metadata["admin_force"])
   end
 end

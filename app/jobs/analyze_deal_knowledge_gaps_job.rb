@@ -3,7 +3,7 @@ class AnalyzeDealKnowledgeGapsJob < ApplicationJob
 
   def perform(deal_id)
     deal = Deal.includes(:client, :deal_summary).find(deal_id)
-    client = deal.client
+    client = deal.client || AdminDealOwner.new
 
     DealEngine::FaqTemplateService.new(deal).seed_if_empty! if client.on_trial?
 

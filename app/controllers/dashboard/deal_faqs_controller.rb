@@ -1,6 +1,7 @@
 class Dashboard::DealFaqsController < Dashboard::BaseController
   before_action :set_deal
-  before_action :set_faq, only: [:update, :destroy]
+  before_action :authorize_deal_management!
+  before_action :set_faq, only: [:update, :destroy, :skip]
 
   def create
     @faq = @deal.deal_faqs.build(deal_faq_params.merge(source: "manual", status: "approved"))
@@ -85,7 +86,7 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
     @deal = if admin_signed_in?
               Deal.find(params[:deal_id])
             else
-              current_client.deals.find(params[:deal_id])
+              current_client.deals.where(managed_by_admin: false).find(params[:deal_id])
             end
   rescue ActiveRecord::RecordNotFound
     redirect_to dashboard_deals_path, alert: "商談が見つかりません。"

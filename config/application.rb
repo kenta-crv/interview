@@ -38,7 +38,7 @@ module Smart
     address: 'smtp.lolipop.jp',
     domain: 'okey.work',
     port: 587,
-    user_name: 'info@okey.work',
+    user_name: 'info@j-work.jp',
     password: ENV['EMAIL_PASSWORD'],
     authentication: 'plain',
     enable_starttls_auto: true

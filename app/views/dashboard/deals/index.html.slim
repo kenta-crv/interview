@@ -13,10 +13,10 @@
         | プラン: #{plan[:name]} ／ 商談 #{current_client.deals_count} 件（無制限）
   .db-v2-header__right
     = render "/dashboard/theme_switch"
-    - if client_signed_in?
+    - if client_signed_in? || admin_signed_in?
       = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary" do
         i.fa-solid.fa-plus aria-hidden="true"
-        span 商談を新規作成
+        span = admin_signed_in? && !client_signed_in? ? "Admin商談を新規作成" : "商談を新規作成"
 
 .db-v2-bottom-card
   .db-v2-bottom-card__header.db-v2-bottom-card__header--split
@@ -29,10 +29,10 @@
         .db-v2-empty-state__icon
           i.fa-solid.fa-briefcase aria-hidden="true"
         p.db-v2-empty-state__text まだ商談がありません
-        - if client_signed_in?
+        - if client_signed_in? || admin_signed_in?
           = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary" do
             i.fa-solid.fa-plus aria-hidden="true"
-            span 最初の商談を作成
+            span = admin_signed_in? && !client_signed_in? ? "Admin商談を作成" : "最初の商談を作成"
     - else
       .db-v2-leads-table-wrap
         table.db-v2-leads-table.db-v2-deals-table
@@ -40,6 +40,8 @@
             tr
               th ID
               th タイトル
+              - if admin_signed_in?
+                th 管理
               th ステータス
               th 言語
               th 資料
@@ -52,6 +54,12 @@
                 td.db-v2-deals-table__id = deal.id
                 td.db-v2-deals-table__title
                   = link_to deal.title, dashboard_deal_path(deal), class: "db-v2-deals-table__link"
+                - if admin_signed_in?
+                  td
+                    - if deal.managed_by_admin?
+                      span.db-v2-status-badge.db-v2-status-badge--live Admin
+                    - else
+                      span.db-v2-status-badge Client
                 td
                   - case deal.status
                   - when "uploading", "processing", "transcribing", "summarizing"

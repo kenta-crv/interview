@@ -2,8 +2,8 @@ class DealFollowUpTemplate < ApplicationRecord
   belongs_to :deal
   has_many :follow_up_deliveries, dependent: :restrict_with_exception
 
-  SEQUENCES = (1..4).freeze
-  MAX_SEQUENCE = 4
+  SEQUENCES = (1..5).freeze
+  MAX_SEQUENCE = 5
 
   validates :sequence, presence: true, inclusion: { in: SEQUENCES }
   validates :sequence, uniqueness: { scope: :deal_id }

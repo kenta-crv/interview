@@ -2,7 +2,7 @@
 class Deal < ApplicationRecord
   MAX_SUPPLEMENT_DOCUMENTS = 3
 
-  belongs_to :client
+  belongs_to :client, optional: true
   has_many :deal_documents, dependent: :destroy
   has_many :deal_audios, dependent: :destroy
   has_many :deal_speeches, dependent: :destroy
@@ -32,7 +32,8 @@ class Deal < ApplicationRecord
     ja: 'ja'
   }
 
-  validates :client_id, :title, presence: true
+  validates :title, presence: true
+  validates :client_id, presence: true, unless: :managed_by_admin?
   validates :language, presence: true
 
   scope :by_client, ->(client) { where(client: client) }
@@ -236,15 +237,17 @@ class Deal < ApplicationRecord
     pages = deal_pages.order(:page_number)
     return [] if pages.empty?
 
-    items = menu_items_list
-    source = items.any? ? items : pages_for_menu(pages)
-
-    source.filter_map do |item|
+    stored_by_page = menu_items_list.each_with_object({}) do |item, memo|
       page_number = item['page_number'].to_i
-      page = pages.find { |p| p.page_number == page_number }
-      next unless page
+      next if page_number <= 0
+      memo[page_number] = item
+    end
+
+    # 保存済みメニューが少なくても、表紙以外の全ページを下部ボタンにする
+    pages.filter_map do |page|
       next if cover_page?(page)
 
+      item = stored_by_page[page.page_number] || {}
       label = item['label'] || item[:label]
       label = page.title if generic_menu_label?(label)
 
@@ -441,7 +444,7 @@ class Deal < ApplicationRecord
   private
 
   def pages_for_menu(pages)
-    pages.reject { |page| cover_page?(page) }.first(6).map do |page|
+    pages.reject { |page| cover_page?(page) }.map do |page|
       {
         'key' => "page_#{page.page_number}",
         'label' => page.title.presence || "スライド #{page.page_number}",

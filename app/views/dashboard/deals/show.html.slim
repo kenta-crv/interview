@@ -3,6 +3,10 @@
     .db-v2-header__left
       .db-v2-deal-show__meta
         span.db-v2-deal-show__badge AI商談
+        - if @deal.managed_by_admin?
+          span.db-v2-status-badge.db-v2-status-badge--live Admin管理
+        - else
+          span.db-v2-status-badge Client管理
         - if @deal.playback_ready?
           span.db-v2-status-badge.db-v2-status-badge--live 公開中
         - elsif @deal.processing?
@@ -22,9 +26,10 @@
         = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener", data: { turbo: false }, title: "プレビュー専用（リードは記録されません）" do
           i.fa-solid.fa-wand-magic-sparkles aria-hidden="true"
           span シミュレーション
-        = link_to edit_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
-          i.fa-solid.fa-gear aria-hidden="true"
-          span 基本情報
+        - if can_manage_deal?(@deal)
+          = link_to edit_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
+            i.fa-solid.fa-gear aria-hidden="true"
+            span 基本情報
         = link_to dashboard_deals_path, class: "db-v2-btn db-v2-btn--ghost" do
           i.fa-solid.fa-arrow-left aria-hidden="true"
           span 一覧
@@ -68,6 +73,8 @@
     button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="follow-up" aria-selected="false"
       i.fa-solid.fa-envelope aria-hidden="true"
       span フォローメール
+      - if follow_up_feature_available?(deal_owner) && @follow_up_setup_gaps.any?
+        span.db-v2-tabs__mark title=@deal.follow_up_share_lock_message aria-label="設定未完了" !
     button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="analytics" aria-selected="false"
       i.fa-solid.fa-chart-line aria-hidden="true"
       span ログ/分析
@@ -85,33 +92,34 @@
                   |  資料アップロード
                 span.db-v2-lang-badge = @deal.language.upcase
               .db-v2-bottom-card__body
-                - if admin_signed_in? && !client_signed_in?
+                - unless can_manage_deal?(@deal)
                   .db-v2-alert.db-v2-alert--warning.db-v2-alert--compact
                     i.fa-solid.fa-circle-info aria-hidden="true"
-                    p 資料アップロードは企業アカウントでのログインが必要です。
+                    p = @deal.managed_by_admin? ? "この商談はAdmin管理です。資料アップロード・公開はAdminで行ってください。" : "この商談はClient管理です。資料アップロード・公開は企業アカウントで行ってください。"
                 - if @deal.processing?
                   .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
                     i.fa-solid.fa-spinner.fa-spin aria-hidden="true"
                     p AI処理中のため、新しい資料はアップロードできません。完了後に再度お試しください。
-                = form_tag upload_documents_dashboard_deal_path(@deal), multipart: true, id: "documents-upload-form", class: "db-v2-upload-form", data: { turbo: false } do
-                  .db-v2-upload-form__panel
-                    p.db-v2-upload-form__lead
-                      i.fa-solid.fa-cloud-arrow-up aria-hidden="true"
-                      |  PDFをアップロード（バックグラウンドでAI処理）
-                    p.db-v2-upload-form__hint 一度アップロードすると、この商談IDでは再アップロードできません。処理には数分かかります。
-                    .db-v2-upload-form__controls
-                      label.db-v2-form-label for="deal-documents-input" PDFファイル
-                      = file_field_tag "files[]", multiple: true, accept: ".pdf,application/pdf", class: "db-v2-form-control db-v2-upload-form__input", id: "deal-documents-input", disabled: @deal.processing?
-                      button.db-v2-btn.db-v2-btn--ghost type="button" id="deal-documents-pick" disabled=@deal.processing?
-                        i.fa-solid.fa-folder-open aria-hidden="true"
-                        span ファイルを選択
-                  #deal-documents-selected.db-v2-upload-zone__selected hidden=true
-                    p.db-v2-upload-zone__selected-label 選択中のファイル
-                    ul#deal-documents-file-list.db-v2-upload-zone__file-list
-                  #deal-documents-error.db-v2-upload-zone__error hidden=true
-                    p PDFファイルを選択してください
-                  .db-v2-form-actions
-                    = submit_tag "アップロードしてAI処理開始", class: "db-v2-btn db-v2-btn--primary", id: "deal-documents-submit", disabled: @deal.processing?
+                - if can_manage_deal?(@deal)
+                  = form_tag upload_documents_dashboard_deal_path(@deal), multipart: true, id: "documents-upload-form", class: "db-v2-upload-form", data: { turbo: false } do
+                    .db-v2-upload-form__panel
+                      p.db-v2-upload-form__lead
+                        i.fa-solid.fa-cloud-arrow-up aria-hidden="true"
+                        |  PDFをアップロード（バックグラウンドでAI処理）
+                      p.db-v2-upload-form__hint 一度アップロードすると、この商談IDでは再アップロードできません。処理には数分かかります。
+                      .db-v2-upload-form__controls
+                        label.db-v2-form-label for="deal-documents-input" PDFファイル
+                        = file_field_tag "files[]", multiple: true, accept: ".pdf,application/pdf", class: "db-v2-form-control db-v2-upload-form__input", id: "deal-documents-input", disabled: @deal.processing?
+                        button.db-v2-btn.db-v2-btn--ghost type="button" id="deal-documents-pick" disabled=@deal.processing?
+                          i.fa-solid.fa-folder-open aria-hidden="true"
+                          span ファイルを選択
+                    #deal-documents-selected.db-v2-upload-zone__selected hidden=true
+                      p.db-v2-upload-zone__selected-label 選択中のファイル
+                      ul#deal-documents-file-list.db-v2-upload-zone__file-list
+                    #deal-documents-error.db-v2-upload-zone__error hidden=true
+                      p PDFファイルを選択してください
+                    .db-v2-form-actions
+                      = submit_tag "アップロードしてAI処理開始", class: "db-v2-btn db-v2-btn--primary", id: "deal-documents-submit", disabled: @deal.processing?
 
           - if @deal.deal_documents.proposals.any?
             .db-v2-bottom-card
@@ -165,13 +173,14 @@
                   - elsif !@deal.processing? && @deal.deal_pages.empty?
                     .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
                       p 未処理です。「PDFを再処理」を実行してください。
-                  = button_to (@deal.deal_pages.any? ? "PDFを再処理" : "PDFを処理開始"),
-                    reprocess_dashboard_deal_path(@deal),
-                    method: :post,
-                    class: "db-v2-btn db-v2-btn--ghost",
-                    disabled: @deal.processing?,
-                    data: { turbo: false },
-                    form: { data: { turbo: false }, onsubmit: "return confirm('PDFを再処理します。バックグラウンドで実行されます。よろしいですか？');" }
+                  - if can_manage_deal?(@deal)
+                    = button_to (@deal.deal_pages.any? ? "PDFを再処理" : "PDFを処理開始"),
+                      reprocess_dashboard_deal_path(@deal),
+                      method: :post,
+                      class: "db-v2-btn db-v2-btn--ghost",
+                      disabled: @deal.processing?,
+                      data: { turbo: false },
+                      form: { data: { turbo: false }, onsubmit: "return confirm('PDFを再処理します。バックグラウンドで実行されます。よろしいですか？');" }
 
           .db-v2-deal-form-surface
             = render "deal_knowledge"
@@ -181,11 +190,17 @@
               .db-v2-bottom-card__header.db-v2-bottom-card__header--split
                 h2.db-v2-bottom-card__title 台本・音声編集
                 .db-v2-deal-show__actions
-                  - if deal_owner.faq_required_for_publish? && @deal.low_knowledge_coverage?
-                    - publish_confirm = "ナレッジ完成度が#{@knowledge_coverage}%です。このまま公開しますか？"
+                  - if can_manage_deal?(@deal)
+                    - if deal_owner.faq_required_for_publish? && @deal.low_knowledge_coverage?
+                      - publish_confirm = "ナレッジ完成度が#{@knowledge_coverage}%です。このまま公開しますか？"
+                    - else
+                      - publish_confirm = "商談URLを公開しますか？"
+                    = button_to "公開する", publish_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: publish_confirm, turbo: false }
+                  - elsif admin_signed_in? && !@deal.managed_by_admin?
+                    = button_to "Admin管理にして公開可能にする", claim_admin_management_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost", data: { confirm: "この商談をAdmin管理に切り替えます。以降はClientからは公開・編集できません。よろしいですか？", turbo: false }
+                    span.db-v2-muted この商談はClient管理です
                   - else
-                    - publish_confirm = "商談URLを公開しますか？"
-                  = button_to "公開する", publish_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: publish_confirm, turbo: false }
+                    span.db-v2-muted = @deal.managed_by_admin? ? "Admin管理の商談です" : "公開・編集は商談オーナーのみ可能です"
 
               .db-v2-bottom-card__body
                 .db-v2-voice-bar
@@ -286,45 +301,61 @@
 
     #deal-tab-follow-up.db-v2-tab-panel role="tabpanel"
       .db-v2-deal-grid.db-v2-deal-grid--single
-        - if deal_owner.prospect_follow_up_enabled?
+        - if follow_up_feature_available?(deal_owner)
           .db-v2-bottom-card#follow-up-settings
             .db-v2-bottom-card__header
               h2.db-v2-bottom-card__title 商談後フォローメール
             .db-v2-bottom-card__body.db-v2-deal-form-surface
-              p.db-v2-muted 商談終了後、見込み客のメールアドレスへ最大4通（初回＋追客3回）を送信します。
+              p.db-v2-muted 商談終了後に最大5通（即時・3日・7日・15日・30日）送ります。メール内の担当者／契約リンクをクリックすると以降は止まります。
               = form_with url: update_follow_up_settings_dashboard_deal_path(@deal), method: :patch, local: true do
-                .db-v2-form-group
-                  = label_tag "deal[follow_up_sales_url]", "担当者に繋ぐリンク先URL", class: "db-v2-form-label"
+                - destination_missing = @follow_up_setup_gaps.include?(:destination)
+                .db-v2-form-group class=("db-v2-form-group--needs-input" if destination_missing)
+                  = label_tag "deal[follow_up_sales_url]", class: "db-v2-form-label" do
+                    | 担当者に繋ぐリンク先URL
+                    - if destination_missing
+                      span.db-v2-form-label__req 未入力
                   = url_field_tag "deal[follow_up_sales_url]", @deal.follow_up_sales_url, class: "db-v2-form-control", placeholder: "https://calendly.com/... など"
-                  small.db-v2-muted 未設定の場合は契約CTAのURLを使用します
-                - @follow_up_templates.each do |template|
-                  .db-v2-follow-up-card
-                    .db-v2-form-group
-                      = hidden_field_tag "templates[#{template.id}][enabled]", "0"
-                      label.db-v2-check-label
-                        = check_box_tag "templates[#{template.id}][enabled]", "1", template.enabled
-                        strong = template.label
-                    .db-v2-form-row
-                      = label_tag "templates_#{template.id}_delay_days", "送信タイミング", class: "db-v2-form-label"
-                      .db-v2-form-row__field
-                        = number_field_tag "templates[#{template.id}][delay_days]", template.delay_days, class: "db-v2-form-control", min: 0, max: 365
-                        span.db-v2-muted 日後（商談終了から）
-                    .db-v2-form-group
-                      = label_tag "templates[#{template.id}_subject]", "件名", class: "db-v2-form-label"
-                      = text_field_tag "templates[#{template.id}][subject]", template.subject, class: "db-v2-form-control"
-                    .db-v2-form-group
-                      = label_tag "templates[#{template.id}_body]", "本文", class: "db-v2-form-label"
-                      = text_area_tag "templates[#{template.id}][body]", template.body, class: "db-v2-form-control", rows: 5
-                      small.db-v2-muted 利用可能: {{user_name}} / {{deal_title}} / {{company_name}} / {{prospect_grade}} / {{session_summary}} / {{interest_topics}} / {{next_action}}
-                    .db-v2-form-group.db-v2-form-group--checks
-                      label.db-v2-check-label
-                        = hidden_field_tag "templates[#{template.id}][include_sales_call_link]", "0"
-                        = check_box_tag "templates[#{template.id}][include_sales_call_link]", "1", template.include_sales_call_link?
-                        | 担当者に繋ぐボタン
-                      label.db-v2-check-label
-                        = hidden_field_tag "templates[#{template.id}][include_contract_link]", "0"
-                        = check_box_tag "templates[#{template.id}][include_contract_link]", "1", template.include_contract_link?
-                        | 契約を進めるボタン
+                  - if destination_missing
+                    small.db-v2-form-hint ここか、配布タブの契約CTA URLのどちらかを入れてください
+                  - else
+                    small.db-v2-muted 未設定の場合は契約CTAのURLを使います
+                - if @follow_up_setup_gaps.include?(:templates)
+                  p.db-v2-form-hint 下のメールを1通以上オンにして保存してください
+                .db-v2-follow-up-list
+                  - @follow_up_templates.each_with_index do |template, idx|
+                    details.db-v2-follow-up-card open=(idx.zero? || nil)
+                      summary.db-v2-follow-up-card__summary
+                        .db-v2-follow-up-card__summary-main
+                          = hidden_field_tag "templates[#{template.id}][enabled]", "0"
+                          label.db-v2-check-label.db-v2-follow-up-card__enable onclick="event.stopPropagation()"
+                            = check_box_tag "templates[#{template.id}][enabled]", "1", template.enabled, onclick: "event.stopPropagation()"
+                            strong = template.label
+                          span.db-v2-follow-up-card__meta = "#{template.delay_days}日後"
+                          - unless template.enabled?
+                            span.db-v2-follow-up-card__off OFF
+                        span.db-v2-follow-up-card__chevron aria-hidden="true"
+                      .db-v2-follow-up-card__body
+                        .db-v2-form-row
+                          = label_tag "templates_#{template.id}_delay_days", "送信タイミング", class: "db-v2-form-label"
+                          .db-v2-form-row__field
+                            = number_field_tag "templates[#{template.id}][delay_days]", template.delay_days, class: "db-v2-form-control", min: 0, max: 365
+                            span.db-v2-muted 日後（商談終了から）
+                        .db-v2-form-group
+                          = label_tag "templates[#{template.id}_subject]", "件名", class: "db-v2-form-label"
+                          = text_field_tag "templates[#{template.id}][subject]", template.subject, class: "db-v2-form-control"
+                        .db-v2-form-group
+                          = label_tag "templates[#{template.id}_body]", "本文", class: "db-v2-form-label"
+                          = text_area_tag "templates[#{template.id}][body]", template.body, class: "db-v2-form-control", rows: 5
+                          small.db-v2-muted 利用可能: {{user_name}} / {{deal_title}} / {{company_name}} / {{prospect_grade}} / {{session_summary}} / {{interest_topics}} / {{next_action}}
+                        .db-v2-form-group.db-v2-form-group--checks
+                          label.db-v2-check-label
+                            = hidden_field_tag "templates[#{template.id}][include_sales_call_link]", "0"
+                            = check_box_tag "templates[#{template.id}][include_sales_call_link]", "1", template.include_sales_call_link?
+                            | 担当者に繋ぐボタン
+                          label.db-v2-check-label
+                            = hidden_field_tag "templates[#{template.id}][include_contract_link]", "0"
+                            = check_box_tag "templates[#{template.id}][include_contract_link]", "1", template.include_contract_link?
+                            | 契約を進めるボタン
                 .db-v2-form-actions
                   = submit_tag "フォローアップ設定を保存", class: "db-v2-btn db-v2-btn--primary"
         - else

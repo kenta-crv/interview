@@ -101,6 +101,7 @@ Rails.application.routes.draw do
       post :respond, on: :member
       post :evaluate, on: :member
       post :track_event, on: :member
+      post :request_sales_call, on: :member
     end
   end
 
@@ -138,6 +139,7 @@ Rails.application.routes.draw do
         post :ai_rewrite
         post :regenerate_audio
         post :publish
+        post :claim_admin_management
         post :reprocess
         post :reset_processing
         post :upload_documents

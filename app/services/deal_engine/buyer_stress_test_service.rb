@@ -11,7 +11,7 @@ module DealEngine
 
     def initialize(deal, client: nil, limit: nil)
       @deal = deal
-      @client = client || deal.client
+      @client = client || deal.client || AdminDealOwner.new
       @limit = limit || @client.stress_test_question_limit
     end
 

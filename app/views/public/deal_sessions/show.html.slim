@@ -17,20 +17,26 @@
         p.deal-public-page__deal-title = @deal.title
         p.deal-public-page__lead 必要事項を入力して、音声付きAI商談を開始してください。
 
-      - consideration_phase_options = [
-          ["まだ調べ始めたばかり", "initial"],
-          ["情報を集めている", "information_gathering"],
-          ["いくつか比較している", "evaluation"],
-          ["導入を決めようとしている", "decision"]
+      - consideration_phase_options = [ \
+          ["まだ調べ始めたばかり", "initial"], \
+          ["情報を集めている", "information_gathering"], \
+          ["いくつか比較している", "evaluation"], \
+          ["導入を決めようとしている", "decision"] \
         ]
-      - key_points_options = [
-          "料金・費用対効果",
-          "導入のしやすさ",
-          "機能の充実度",
-          "サポート体制",
-          "セキュリティ・コンプライアンス",
-          "実績・信頼性",
-          "社内の承認のしやすさ"
+      - key_points_options = [ \
+          "料金・費用対効果", \
+          "導入のしやすさ", \
+          "機能の充実度", \
+          "サポート体制", \
+          "セキュリティ・コンプライアンス", \
+          "実績・信頼性", \
+          "社内の承認のしやすさ" \
+        ]
+      - planned_introduction_options = [ \
+          "すぐにでも", \
+          "1ヶ月以内", \
+          "3ヶ月以内", \
+          "未定" \
         ]
       .deal-public-page__card
         = form_with url: create_user_info_public_deal_session_path(token: @deal.access_token), local: true, html: { class: "deal-public-form" } do |f|
@@ -67,7 +73,7 @@
                 = select_tag :consideration_phase, options_for_select(consideration_phase_options), class: "deal-public-form__control"
               .deal-public-form__group
                 = label_tag :planned_introduction_date, "導入予定日", class: "deal-public-form__label"
-                = date_field_tag :planned_introduction_date, nil, class: "deal-public-form__control"
+                = select_tag :planned_introduction_date, options_for_select(planned_introduction_options), include_blank: "選択してください", class: "deal-public-form__control"
               .deal-public-form__group
                 = label_tag :key_points_for_application, "決め手になるポイント", class: "deal-public-form__label"
                 = select_tag :key_points_for_application, options_for_select(key_points_options), include_blank: "選択してください", class: "deal-public-form__control"

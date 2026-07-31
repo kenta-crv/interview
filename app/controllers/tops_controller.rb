@@ -4,6 +4,10 @@ class TopsController < ApplicationController
   before_action :set_lp_nav, only: :index
 
   def index
+    if params[:deal_session].to_s == "ended"
+      flash[:notice] = "商談が終了しました。ご参加ありがとうございました。"
+      redirect_to root_path and return
+    end
   end
 
   def interview

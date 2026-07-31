@@ -111,9 +111,10 @@ module DealEngine
 
       prompt = if @language == 'ja'
         <<~PROMPT
-          以下のスライド一覧から、商談参加者が選べるメニュー（3〜6件）を作成してください。
+          以下のスライド一覧から、商談参加者が選べるメニューを作成してください。
 
           ルール:
+          - 表紙・挨拶のみのスライドを除き、内容のあるスライドをできるだけ多くメニュー化する（目安: 6〜12件、ページ数に応じて増減）
           - label は各スライドの要点を短く表す（例: 会社概要、受入実績、料金、サポート体制、導入フロー、USP）
           - key は可能な限り英語スネークケース（pricing / flow / overview など）
           - 料金・プラン系は key を pricing、導入・契約フロー系は key を flow にする
@@ -130,7 +131,7 @@ module DealEngine
         PROMPT
       else
         <<~PROMPT
-          Create 3-6 menu items from these slides. Each item must include page_number.
+          Create menu items for as many substantive slides as practical (about 6-12, excluding cover/greeting-only). Each item must include page_number.
           Order menu_items by ascending page_number.
 
           Slides:
@@ -260,7 +261,7 @@ module DealEngine
 
     def fallback_menu_items(pages)
       {
-        'menu_items' => pages.reject { |p| p.page_number == 1 && p.title.to_s.match?(/表紙|挨拶|cover/i) }.first(6).map do |page|
+        'menu_items' => pages.reject { |p| p.page_number == 1 && p.title.to_s.match?(/表紙|挨拶|cover/i) }.map do |page|
           {
             'key' => "page_#{page.page_number}",
             'label' => page.title.presence || "スライド #{page.page_number}",

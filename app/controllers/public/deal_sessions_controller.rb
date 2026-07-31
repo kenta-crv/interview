@@ -1,10 +1,10 @@
 # app/controllers/public/deal_sessions_controller.rb
 module Public
   class DealSessionsController < ApplicationController
-    skip_before_action :verify_authenticity_token, only: [:respond, :evaluate, :track_event]
+    skip_before_action :verify_authenticity_token, only: [:respond, :evaluate, :track_event, :request_sales_call]
     before_action :set_deal_by_token
     before_action :require_publicly_ready
-    before_action :require_registered_user, only: [:conversation, :playback, :respond, :evaluate]
+    before_action :require_registered_user, only: [:conversation, :playback, :respond, :evaluate, :request_sales_call]
     before_action :load_tracking_context, only: [:track_event]
 
     def show
@@ -66,20 +66,51 @@ module Public
 
     def evaluate
       if client_preview?
-        render json: { message: 'preview' }
+        render json: { message: 'preview', ok: true }
         return
       end
 
-      rating = params[:rating].to_i
+      data = evaluate_request_params
+      rating = data[:rating].to_i
       unless (1..5).cover?(rating)
         render json: { errors: ['評価は1〜5で指定してください'] }, status: :unprocessable_entity
         return
       end
 
       evaluation = @deal.deal_evaluations.find_or_initialize_by(user: @user)
-      evaluation.update!(rating: rating, feedback: params[:feedback])
+      evaluation.update!(rating: rating, feedback: data[:feedback])
+      log_evaluation_submit_event!(
+        rating: rating,
+        feedback: data[:feedback],
+        session_key: data[:session_key]
+      )
 
-      render json: { message: '評価を保存しました' }
+      # 顧客への即時フォロー + 担当者（Admin/Client）への終了通知。どちらも deliver_now
+      enqueue_follow_up_after_evaluation!
+      notify_owner_after_evaluation!(rating: rating, feedback: data[:feedback])
+
+      render json: { message: '評価を保存しました', ok: true }
+    end
+
+    def request_sales_call
+      if client_preview?
+        render json: { message: 'preview', preview: true }
+        return
+      end
+
+      data = json_request_params
+      source = data['source'].presence || params[:source].presence || 'presentation'
+      session_key = data['session_key'].presence || params[:session_key].presence
+
+      DealSalesCall::NotifyClientService.call(
+        user_progress: @user_progress,
+        source: source,
+        session_key: session_key
+      )
+
+      render json: { message: '担当者へ連絡しました' }
+    rescue ArgumentError => e
+      render json: { errors: [e.message] }, status: :unprocessable_entity
     end
 
     def track_event
@@ -92,7 +123,11 @@ module Public
         event_type = event[:event_type].to_s
         next unless DealPresentationEvent::EVENT_TYPES.include?(event_type)
 
-        metadata = (event[:metadata] || {}).merge(client_preview? ? { preview: true } : {})
+        metadata = (event[:metadata] || {}).dup
+        metadata = metadata.to_unsafe_h if metadata.respond_to?(:to_unsafe_h)
+        metadata = metadata.stringify_keys
+        metadata["preview"] = true if client_preview?
+        metadata["admin_force"] = true if admin_signed_in? && !client_preview?
 
         @deal.deal_presentation_events.create!(
           user: @user,
@@ -160,11 +195,11 @@ module Public
     def set_deal_by_token
       @deal = Deal.by_token(params[:token]).first
       unless @deal
-        redirect_to root_path, alert: '無効なリンクです'
+        render_invalid_deal_link
         return
       end
     rescue StandardError
-      redirect_to root_path, alert: '無効なリンクです'
+      render_invalid_deal_link
     end
 
     def require_publicly_ready
@@ -174,6 +209,8 @@ module Public
       if action_name == 'show'
         @deal_not_ready = true
         render :show, status: :forbidden
+      elsif json_api_request?
+        render json: { errors: ['この商談はまだ公開されていません'] }, status: :forbidden
       else
         redirect_to public_deal_session_path(token: @deal.access_token), alert: 'この商談はまだ公開されていません'
       end
@@ -184,14 +221,71 @@ module Public
 
       @user = User.find_by(id: session[:user_id])
       unless @user
-        redirect_to public_deal_session_path(token: @deal.access_token), alert: 'まず情報を登録してください'
+        render_registration_required
         return
       end
 
       @user_progress = @deal.user_progresses.find_by(user: @user)
       unless @user_progress
+        render_registration_required
+      end
+    end
+
+    def json_api_request?
+      request.format.json? ||
+        request.content_type.to_s.include?('application/json') ||
+        request.headers['Accept'].to_s.include?('application/json')
+    end
+
+    def render_invalid_deal_link
+      if json_api_request?
+        render json: { errors: ['無効なリンクです'] }, status: :not_found
+      else
+        redirect_to root_path, alert: '無効なリンクです'
+      end
+    end
+
+    def render_registration_required
+      if json_api_request?
+        render json: { errors: ['まず情報を登録してください'] }, status: :unauthorized
+      else
         redirect_to public_deal_session_path(token: @deal.access_token), alert: 'まず情報を登録してください'
       end
+    end
+
+    def evaluate_request_params
+      rating = params[:rating]
+      feedback = params[:feedback]
+      session_key = params[:session_key]
+      if rating.present?
+        return { rating: rating, feedback: feedback, session_key: session_key }
+      end
+
+      body = json_request_params
+      {
+        rating: body['rating'] || body[:rating],
+        feedback: body['feedback'] || body[:feedback],
+        session_key: body['session_key'] || body[:session_key]
+      }
+    end
+
+    def log_evaluation_submit_event!(rating:, feedback:, session_key:)
+      return unless @user_progress
+      return if session_key.blank?
+
+      @deal.deal_presentation_events.create!(
+        user: @user,
+        user_progress: @user_progress,
+        session_key: session_key,
+        event_type: 'evaluation_submit',
+        metadata: {
+          rating: rating,
+          feedback: feedback.to_s
+        },
+        occurred_at: Time.current
+      )
+    rescue StandardError => e
+      Rails.logger.warn("Failed to log evaluation_submit: #{e.message}")
     end
 
     def load_tracking_context
@@ -222,6 +316,30 @@ module Public
 
     def user_params
       params.require(:user).permit(:name, :job_title, :company, :tel, :address, :email, :url)
+    end
+
+    def enqueue_follow_up_after_evaluation!
+      return unless @user_progress
+
+      DealFollowUp::EnqueueCampaignService.call(
+        user_progress: @user_progress,
+        ended_at: Time.current,
+        force: admin_signed_in?
+      )
+    rescue StandardError => e
+      Rails.logger.error("[DealFollowUp] evaluate enqueue failed user_progress_id=#{@user_progress.id}: #{e.class}: #{e.message}")
+    end
+
+    def notify_owner_after_evaluation!(rating:, feedback:)
+      return unless @user_progress
+
+      DealSession::NotifyOwnerService.call(
+        user_progress: @user_progress,
+        rating: rating,
+        feedback: feedback
+      )
+    rescue StandardError => e
+      Rails.logger.error("[DealSession] owner notify failed user_progress_id=#{@user_progress.id}: #{e.class}: #{e.message}")
     end
 
     def log_ai_reply!(result, message:, page_number:)
