@@ -1,55 +1,40 @@
+- set_meta_tags title: t("meetia.auth.meta_signup_title"), description: t("meetia.auth.meta_signup_description")
+
 .meetia-auth__page
-  = link_to root_path, class: "meetia-auth__brand" do
+  = link_to locale_root_href, class: "meetia-auth__brand" do
     = image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-auth__logo"
 
-  .meetia-auth__card.meetia-auth__card--wide
-    h1.meetia-auth__title 新規登録
-    p.meetia-auth__lead 企業情報を入力してアカウントを作成してください
+  .meetia-auth__lang
+    = render "shared/lang_switch"
 
-    = form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f|
+  .meetia-auth__card
+    h1.meetia-auth__title = t("meetia.auth.signup_title")
+    p.meetia-auth__lead = t("meetia.auth.signup_lead")
+
+    = render "clients/shared/oauth_buttons"
+
+    = form_for(resource, as: resource_name, url: client_registration_url_for_locale) do |f|
       = render "clients/shared/error_messages", resource: resource
+      = f.hidden_field :preferred_locale, value: I18n.locale.to_s
 
       .meetia-auth__section
-        p.meetia-auth__section-title 企業情報
+        p.meetia-auth__section-title = t("meetia.auth.section_login")
 
         .meetia-auth__field
-          = f.label :company, "会社名", class: "meetia-auth__label"
-          = f.text_field :company, autocomplete: "organization", class: "meetia-auth__input", required: true
-
-        .meetia-auth__field
-          = f.label :name, "担当者名", class: "meetia-auth__label"
-          = f.text_field :name, autocomplete: "name", class: "meetia-auth__input", required: true
-
-        .meetia-auth__field
-          = f.label :tel, "電話番号", class: "meetia-auth__label"
-          = f.telephone_field :tel, autocomplete: "tel", class: "meetia-auth__input", required: true
-
-        .meetia-auth__field
-          = f.label :address, "住所", class: "meetia-auth__label"
-          = f.text_field :address, autocomplete: "street-address", class: "meetia-auth__input", required: true
-
-        .meetia-auth__field
-          = f.label :url, "URL", class: "meetia-auth__label"
-          = f.url_field :url, autocomplete: "url", class: "meetia-auth__input", placeholder: "https://example.com"
-
-      .meetia-auth__section
-        p.meetia-auth__section-title ログイン情報
-
-        .meetia-auth__field
-          = f.label :email, "メールアドレス", class: "meetia-auth__label"
+          = f.label :email, t("meetia.auth.email"), class: "meetia-auth__label"
           = f.email_field :email, autofocus: true, autocomplete: "email", class: "meetia-auth__input", required: true
 
         .meetia-auth__field
-          = f.label :password, "パスワード", class: "meetia-auth__label"
+          = f.label :password, t("meetia.auth.password"), class: "meetia-auth__label"
           - if @minimum_password_length
-            em.meetia-auth__hint = "（#{@minimum_password_length}文字以上）"
+            em.meetia-auth__hint = t("meetia.auth.password_hint", count: @minimum_password_length)
           = f.password_field :password, autocomplete: "new-password", class: "meetia-auth__input", required: true
 
         .meetia-auth__field
-          = f.label :password_confirmation, "パスワード（確認）", class: "meetia-auth__label"
+          = f.label :password_confirmation, t("meetia.auth.password_confirmation"), class: "meetia-auth__label"
           = f.password_field :password_confirmation, autocomplete: "new-password", class: "meetia-auth__input", required: true
 
-      = f.submit "アカウントを作成", class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit"
+      = f.submit t("meetia.auth.submit_signup"), class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit"
 
   .meetia-auth__links
     = render "clients/shared/links"

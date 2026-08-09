@@ -443,6 +443,14 @@ function initDashboardSidebar() {
     document.body.style.overflow = '';
   };
 
+  var closeAccountMenus = function() {
+    container.querySelectorAll('[data-sidebar-account].is-open').forEach(function(el) {
+      el.classList.remove('is-open');
+      var toggle = el.querySelector('[data-sidebar-account-toggle]');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    });
+  };
+
   container.querySelectorAll('[data-dashboard-sidebar-toggle]').forEach(function(btn) {
     btn.addEventListener('click', open);
   });
@@ -454,10 +462,34 @@ function initDashboardSidebar() {
   var overlay = container.querySelector('[data-dashboard-sidebar-overlay]');
   if (overlay) overlay.addEventListener('click', close);
 
-  container.querySelectorAll('.db-v2-sidebar__link').forEach(function(link) {
-    link.addEventListener('click', function() {
-      if (window.matchMedia('(max-width: 1023px)').matches) close();
-    });
+  container.addEventListener('click', function(e) {
+    var accountToggle = e.target.closest('[data-sidebar-account-toggle]');
+    if (accountToggle) {
+      e.preventDefault();
+      e.stopPropagation();
+      var account = accountToggle.closest('[data-sidebar-account]');
+      if (!account) return;
+      var willOpen = !account.classList.contains('is-open');
+      closeAccountMenus();
+      if (willOpen) {
+        account.classList.add('is-open');
+        accountToggle.setAttribute('aria-expanded', 'true');
+      }
+      return;
+    }
+
+    if (!e.target.closest('[data-sidebar-account]')) {
+      closeAccountMenus();
+    }
+
+    var link = e.target.closest('.db-v2-sidebar__link');
+    if (link && window.matchMedia('(max-width: 1023px)').matches) {
+      close();
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeAccountMenus();
   });
 }
 
@@ -527,15 +559,88 @@ function initDealShowTabs() {
   activateDealShowTab(window.location.hash || 'studio');
 }
 
+function initProblemReportModal() {
+  var modal = document.getElementById('problem-report-modal');
+  if (!modal || modal.dataset.problemModalReady === 'true') return;
+  modal.dataset.problemModalReady = 'true';
+
+  var frame = modal.querySelector('[data-problem-modal-frame]');
+  var lastFocus = null;
+
+  function openModal() {
+    lastFocus = document.activeElement;
+    if (frame) {
+      var src = frame.getAttribute('data-src');
+      if (src && frame.getAttribute('src') !== src) {
+        frame.setAttribute('src', src);
+      }
+    }
+    var container = document.getElementById('dashboard-v2-container');
+    if (container) container.classList.remove('db-v2-sidebar--open');
+    document.querySelectorAll('[data-sidebar-account].is-open').forEach(function(el) {
+      el.classList.remove('is-open');
+    });
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    var closeBtn = modal.querySelector('[data-problem-modal-close]');
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function closeModal() {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (frame) frame.setAttribute('src', 'about:blank');
+    if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+  }
+
+  function redirectAfterSubmit(url) {
+    closeModal();
+    var target = url || '/dashboard';
+    window.location.assign(target);
+  }
+
+  document.addEventListener('click', function(e) {
+    var openBtn = e.target.closest('[data-problem-modal-open]');
+    if (openBtn) {
+      e.preventDefault();
+      openModal();
+      return;
+    }
+    if (e.target.closest('[data-problem-modal-close]') && modal.contains(e.target.closest('[data-problem-modal-close]'))) {
+      e.preventDefault();
+      closeModal();
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+      closeModal();
+    }
+  });
+
+  window.addEventListener('message', function(e) {
+    if (e.origin !== window.location.origin) return;
+    var data = e.data || {};
+    if (data.type === 'meetia:problem-report-submitted') {
+      redirectAfterSubmit(data.url);
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', initDashboardSidebar);
 document.addEventListener('DOMContentLoaded', initDashboardTheme);
 document.addEventListener('DOMContentLoaded', initDealShowTabs);
 document.addEventListener('DOMContentLoaded', scrollDashboardAnchor);
+document.addEventListener('DOMContentLoaded', initProblemReportModal);
 document.addEventListener('turbo:load', initDashboardSidebar);
 document.addEventListener('turbo:load', initDashboardTheme);
 document.addEventListener('turbo:load', initDealShowTabs);
 document.addEventListener('turbo:load', scrollDashboardAnchor);
+document.addEventListener('turbo:load', initProblemReportModal);
 document.addEventListener('turbolinks:load', initDashboardSidebar);
 document.addEventListener('turbolinks:load', initDashboardTheme);
 document.addEventListener('turbolinks:load', initDealShowTabs);
 document.addEventListener('turbolinks:load', scrollDashboardAnchor);
+document.addEventListener('turbolinks:load', initProblemReportModal);

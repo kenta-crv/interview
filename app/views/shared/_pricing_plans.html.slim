@@ -1,16 +1,21 @@
-/ Subscription::PLAN_CATALOG から LP 料金セクションを描画（/plans と同一ソース）
+/ Subscription::PLAN_CATALOG から LP 料金セクションを描画（/plans と同じソース）
 - visible_plans = Subscription.lp_display_plans
+- billing_currency = BillingCurrency.resolve(locale: I18n.locale, accept_language: request.headers["Accept-Language"])
+- currency_symbol = BillingCurrency.symbol(billing_currency)
 
 .meetia-pricing__slider data-pricing-slider=""
-  p.meetia-pricing__scroll-hint 最初の3プランを表示し、4つ目の途中まで見えます。右矢印で続きを確認できます
+  p.meetia-pricing__scroll-hint = t("meetia.auth.pricing_hint", default: "最初の3プランを表示し、4つ目の途中まで見えます。右矢印で続きを確認できます")
   .meetia-pricing__slider-body
-    button.meetia-pricing__arrow.meetia-pricing__arrow--prev type="button" aria-label="前のプラン" data-pricing-prev=""
+    button.meetia-pricing__arrow.meetia-pricing__arrow--prev type="button" aria-label=t("meetia.auth.pricing_prev", default: "前のプラン") data-pricing-prev=""
       svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
         polyline points="15 18 9 12 15 6"
     .meetia-pricing__viewport
       .meetia-pricing__track
         - visible_plans.each do |plan_key, config|
           - is_trial = plan_key == :trial
+          - has_intro = plan_key == :standard
+          - display_price = Subscription.price_for(plan_key, currency: billing_currency)
+          - intro_price = has_intro ? Subscription.intro_price_for(plan_key, currency: billing_currency) : nil
           - card_classes = []
           - card_classes << 'meetia-pricing__card--popular' if config[:popular]
           - card_classes << 'meetia-pricing__card--featured' if config[:featured]
@@ -23,27 +28,39 @@
             - if is_trial
               .meetia-pricing__badge.meetia-pricing__badge--trial FREE TRIAL
             .meetia-pricing__card-head
-              h3.meetia-pricing__plan = config[:name]
-              .meetia-pricing__price
-                span.meetia-pricing__currency ¥
-                span.meetia-pricing__amount = number_with_delimiter(config[:price])
-                - if is_trial
-                  span.meetia-pricing__period = " / #{Subscription::TRIAL_DAYS}日間"
-                - else
-                  span.meetia-pricing__period = " / 月"
-              p.meetia-pricing__desc = config[:description]
+              h3.meetia-pricing__plan = lp_plan_name(config)
+              - if has_intro
+                .meetia-pricing__price.meetia-pricing__price--sale
+                  p.meetia-pricing__list
+                    span.meetia-pricing__currency = currency_symbol
+                    span.meetia-pricing__amount.meetia-pricing__amount--list = number_with_delimiter(display_price)
+                  p.meetia-pricing__sale
+                    span.meetia-pricing__currency.meetia-pricing__currency--sale = currency_symbol
+                    span.meetia-pricing__amount.meetia-pricing__amount--sale = number_with_delimiter(intro_price)
+                    span.meetia-pricing__period = t("meetia.auth.pricing_per_month", default: " / 月")
+                  p.meetia-pricing__sale-note
+                    = t("meetia.auth.intro_discount_title", percent: Subscription::STANDARD_INTRO_PERCENT_OFF, months: Subscription::STANDARD_INTRO_MONTHS, default: "初回%{months}ヶ月 %{percent}% OFF")
+              - else
+                .meetia-pricing__price
+                  span.meetia-pricing__currency = currency_symbol
+                  span.meetia-pricing__amount = number_with_delimiter(display_price)
+                  - if is_trial
+                    span.meetia-pricing__period = t("meetia.auth.pricing_per_days", days: Subscription::TRIAL_DAYS, default: " / %{days}日間")
+                  - else
+                    span.meetia-pricing__period = t("meetia.auth.pricing_per_month", default: " / 月")
+              p.meetia-pricing__desc = lp_plan_description(config)
             ul.meetia-pricing__features
-              - Subscription::LP_COMPARISON_FEATURES.each do |feature|
+              - lp_comparison_features.each do |feature|
                 li.meetia-pricing__feature
-                  span.meetia-pricing__feature-label = feature[:label]
+                  span.meetia-pricing__feature-label = (english_ui? ? (feature[:label_en] || feature[:label]) : feature[:label])
                   span.meetia-pricing__feature-value = Subscription.format_feature_value(plan_key, feature[:key])
             .meetia-pricing__card-foot
-              - cta_label = config[:lp_cta].presence || "このプランで始める"
+              - cta_label = lp_plan_cta(config)
               - btn_class = is_trial ? "meetia-btn meetia-btn--secondary meetia-pricing__card-btn" : "meetia-btn meetia-btn--primary meetia-pricing__card-btn"
-              = link_to cta_label, new_client_registration_path, class: btn_class
-    button.meetia-pricing__arrow.meetia-pricing__arrow--next type="button" aria-label="次のプラン" data-pricing-next=""
+              = link_to cta_label, lp_sign_up_path, class: btn_class
+    button.meetia-pricing__arrow.meetia-pricing__arrow--next type="button" aria-label=t("meetia.auth.pricing_next", default: "次のプラン") data-pricing-next=""
       svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
         polyline points="9 18 15 12 9 6"
 
 .meetia-pricing__cta
-  = link_to "無料トライアルを開始", new_client_registration_path, class: "meetia-btn meetia-btn--primary meetia-btn--lg"
+  = link_to t("meetia.lp.cta_trial", default: "無料トライアルを開始"), lp_sign_up_path, class: "meetia-btn meetia-btn--primary meetia-btn--lg"

@@ -8,9 +8,19 @@ AI商談が終了しました。
 メール: <%= @user.email.presence || "—" %>
 電話番号: <%= @user.tel.presence || "—" %>
 いまのご状況: <%= @phase_label %>
+導入予定: <%= @user_progress.planned_introduction_date.presence || "—" %>
+決め手: <%= @user_progress.key_points_for_application.presence || "—" %>
+見込み度: <%= @grade_label %>
 満足度: <%= @rating.present? ? "#{@rating} / 5" : "—" %>
 ご意見: <%= @feedback.presence || "—" %>
-<% if @dashboard_url.present? %>
+<% if @summary_lines.present? %>
+
+【商談サマリー】
+<%= @summary_lines.join("\n") %>
+<% end %>
+<% if @interest_topics.present? %>
+
+関心トピック: <%= @interest_topics %>
+<% end %>
 
 リード詳細: <%= @dashboard_url %>
-<% end %>

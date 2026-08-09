@@ -1,57 +1,54 @@
 .db-v2-header
   .db-v2-header__left
-    h1.db-v2-header__title お支払い内容の確認
-    p.db-v2-header__subtitle 選択したプラン内容をご確認のうえ、お手続きへ進んでください
+    h1.db-v2-header__title = t("meetia.auth.checkout_title", default: "お支払い内容の確認")
+    p.db-v2-header__subtitle = t("meetia.auth.checkout_subtitle", default: "選択したプラン内容をご確認のうえ、お手続きへ進んでください")
   .db-v2-header__right
     = render "/dashboard/theme_switch"
-    = link_to plans_path, class: "db-v2-btn db-v2-btn--ghost" do
+    = link_to plans_path_for_locale, class: "db-v2-btn db-v2-btn--ghost" do
       i.fa-solid.fa-arrow-left aria-hidden="true"
-      span プラン選択へ戻る
+      span = t("meetia.auth.checkout_back", default: "プラン選択へ戻る")
 
-- if @plan_type.to_s == "trial"
+- if @intro_discount
   .db-v2-alert.db-v2-alert--info
     i.fa-solid.fa-circle-info aria-hidden="true"
     div
       p
-        strong 無料トライアル
-        | の期間は費用は発生しません。
+        strong = t("meetia.auth.intro_discount_title", percent: Subscription::STANDARD_INTRO_PERCENT_OFF, months: Subscription::STANDARD_INTRO_MONTHS, default: "初回%{months}ヶ月 %{percent}% OFF")
       p.db-v2-checkout-alert-note
-        | #{Subscription::TRIAL_DAYS}日間・商談#{@plan_config[:deal_limit]}件・サービス#{@plan_config[:service_limit]}件まで。終了後はスタンダードプランへ自動移行します。
-      p.db-v2-checkout-alert-note
-        | クレジットカードの登録が必要です（トライアル期間中は課金されません）。
+        = t("meetia.auth.intro_discount_note", default: "スタンダードプランの最初の3ヶ月間、月額料金が15%割引になります。")
 
 .db-v2-bottom-card.db-v2-checkout-card data-turbo="false"
   .db-v2-bottom-card__header
     h2.db-v2-bottom-card__title
       i.fa-solid.fa-shield-halved aria-hidden="true"
-      |  プラン内容
+      |  
+      = t("meetia.auth.checkout_plan_section", default: "プラン内容")
   .db-v2-bottom-card__body
     .db-v2-checkout-summary
       .db-v2-checkout-summary__row
-        span.db-v2-checkout-summary__label 選択プラン
-        span.db-v2-checkout-summary__value = @plan_config[:name]
+        span.db-v2-checkout-summary__label = t("meetia.auth.checkout_selected_plan", default: "選択プラン")
+        span.db-v2-checkout-summary__value = (english_ui? ? (@plan_config[:name_en] || @plan_config[:name]) : @plan_config[:name])
+      .db-v2-checkout-summary__row
+        span.db-v2-checkout-summary__label = t("meetia.auth.checkout_currency", default: "通貨")
+        span.db-v2-checkout-summary__value = @billing_currency.to_s.upcase
       .db-v2-checkout-summary__row.db-v2-checkout-summary__row--price
-        span.db-v2-checkout-summary__label お支払い金額
+        span.db-v2-checkout-summary__label = t("meetia.auth.checkout_amount", default: "お支払い金額")
         .db-v2-checkout-summary__price
-          span.db-v2-checkout-summary__amount
-            = @plan_type.to_s == "trial" ? "¥0" : "¥#{number_with_delimiter(@amount)}"
-          span.db-v2-checkout-summary__tax （税込）
+          span.db-v2-checkout-summary__amount = @formatted_amount
+          span.db-v2-checkout-summary__tax = t("meetia.auth.checkout_tax_note", default: "（税抜・決済時に税が加算される場合があります）")
 
     ul.db-v2-checkout-features
       li
         i.fa-solid.fa-circle-check aria-hidden="true"
-        span 商談 #{Subscription.format_limit(@plan_config[:deal_limit])} 件
+        span = t("meetia.auth.checkout_feature_deals", count: Subscription.format_limit(@plan_config[:deal_limit]), default: "商談 %{count} 件")
       li
         i.fa-solid.fa-circle-check aria-hidden="true"
-        span サービス #{@plan_config[:service_limit]} 件
+        span = t("meetia.auth.checkout_feature_services", count: @plan_config[:service_limit], default: "サービス %{count} 件")
       li
         i.fa-solid.fa-circle-check aria-hidden="true"
-        span クリック履歴分析
+        span = t("meetia.auth.checkout_feature_analytics", default: "クリック履歴分析")
 
     = form_with url: checkout_create_path, method: :post, local: true, class: "db-v2-checkout-form" do |f|
       = hidden_field_tag :plan_type, @plan_type
       .db-v2-checkout-form__actions
-        - if @plan_type.to_s == "trial"
-          = f.submit "クレジットカードを登録してトライアル開始", class: "db-v2-btn db-v2-btn--primary db-v2-btn--block"
-        - else
-          = f.submit "Stripeで決済へ進む", class: "db-v2-btn db-v2-btn--primary db-v2-btn--block"
+        = f.submit t("meetia.auth.checkout_submit", default: "Stripeで決済へ進む"), class: "db-v2-btn db-v2-btn--primary db-v2-btn--block"

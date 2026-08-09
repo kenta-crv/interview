@@ -13,12 +13,22 @@ module PlanLimitable
     current_plan_config[:service_limit]
   end
 
+  def monthly_session_limit
+    current_plan_config[:monthly_session_limit]
+  end
+
   def deals_count
     deals.count
   end
 
   def active_services_count
     situations.active.count
+  end
+
+  def monthly_sessions_count
+    UserProgress.joins(:deal).where(deals: { client_id: id })
+                .where(created_at: Time.current.all_month)
+                .count
   end
 
   def can_create_deal?
@@ -28,6 +38,11 @@ module PlanLimitable
 
   def can_create_service?
     active_services_count < service_limit
+  end
+
+  def can_start_session?
+    limit = monthly_session_limit
+    limit.nil? || monthly_sessions_count < limit
   end
 
   def prospect_follow_up_enabled?
@@ -75,5 +90,32 @@ module PlanLimitable
 
   def service_limit_message
     "サービス数（資料提示URL）の上限（#{service_limit}件）に達しています。プランをアップグレードしてください。"
+  end
+
+  def monthly_session_limit_message
+    limit = monthly_session_limit
+    return nil if limit.nil?
+
+    "月間商談セッションの上限（#{limit}件）に達しています。プランをアップグレードしてください。"
+  end
+
+  def usage_ratio_for(limit_key)
+    limit = current_plan_config[limit_key]
+    return nil if limit.blank? || limit.to_i.zero?
+
+    used = case limit_key
+           when :deal_limit then deals_count
+           when :service_limit then active_services_count
+           when :monthly_session_limit then monthly_sessions_count
+           else 0
+           end
+    used.to_f / limit
+  end
+
+  def approaching_limit?(threshold: 0.8)
+    %i[deal_limit service_limit monthly_session_limit].any? do |key|
+      ratio = usage_ratio_for(key)
+      ratio && ratio >= threshold
+    end
   end
 end

@@ -24,8 +24,14 @@
 </table>
 
 <% if @problem.photo.present? %>
-  <p>添付された写真:</p>
-  <p>
-    <%= image_tag attachments[@problem.photo.identifier].url, width: 400 %>
-  </p>
+  <% filename = @problem.photo.identifier.to_s %>
+  <% attachment = filename.present? ? attachments[filename] : nil %>
+  <% if attachment.present? %>
+    <p>添付された写真:</p>
+    <p>
+      <%= image_tag attachment.url, width: 400 %>
+    </p>
+  <% else %>
+    <p>添付画像あり（ファイル名: <%= filename.presence || "不明" %>）</p>
+  <% end %>
 <% end %>

@@ -12,11 +12,8 @@
       .deal-public-page__card
         p.deal-public-page__lead style="margin:0;" ご不明点は、商談のご案内元へお問い合わせください。
     - else
-      header.deal-public-page__header
-        h1.deal-public-page__title 商談参加登録
-        p.deal-public-page__deal-title = @deal.title
-        p.deal-public-page__lead 必要事項を入力して、音声付きAI商談を開始してください。
-
+      - visible_user_fields = Deal::VISITOR_USER_FIELDS.select { |key| @deal.visitor_info_field_visible?(key) }
+      - visible_progress_fields = Deal::VISITOR_PROGRESS_FIELDS.select { |key| @deal.visitor_info_field_visible?(key) }
       - consideration_phase_options = [ \
           ["まだ調べ始めたばかり", "initial"], \
           ["情報を集めている", "information_gathering"], \
@@ -38,45 +35,64 @@
           "3ヶ月以内", \
           "未定" \
         ]
-      .deal-public-page__card
-        = form_with url: create_user_info_public_deal_session_path(token: @deal.access_token), local: true, html: { class: "deal-public-form" } do |f|
-          .deal-public-form__section
-            h2.deal-public-form__section-title 参加者情報
-            .deal-public-form__fields
-              .deal-public-form__group
-                = label_tag "user[company]", "会社名", class: "deal-public-form__label"
-                = text_field_tag "user[company]", "", class: "deal-public-form__control", required: true, autocomplete: "organization"
-              .deal-public-form__group
-                = label_tag "user[name]", "お名前", class: "deal-public-form__label"
-                = text_field_tag "user[name]", "", class: "deal-public-form__control", required: true, autocomplete: "name"
-              .deal-public-form__group
-                = label_tag "user[job_title]", "役職", class: "deal-public-form__label"
-                = text_field_tag "user[job_title]", "", class: "deal-public-form__control", required: true, placeholder: "例: 営業部長 / 情報システム担当"
-              .deal-public-form__group
-                = label_tag "user[email]", "メールアドレス", class: "deal-public-form__label"
-                = email_field_tag "user[email]", "", class: "deal-public-form__control", required: true, autocomplete: "email"
-              .deal-public-form__group
-                = label_tag "user[tel]", "電話番号", class: "deal-public-form__label"
-                = telephone_field_tag "user[tel]", "", class: "deal-public-form__control", autocomplete: "tel"
-              .deal-public-form__group
-                = label_tag "user[address]", "住所", class: "deal-public-form__label"
-                = text_field_tag "user[address]", "", class: "deal-public-form__control", autocomplete: "street-address", placeholder: "例: 東京都渋谷区..."
-              .deal-public-form__group
-                = label_tag "user[url]", "WebサイトURL", class: "deal-public-form__label"
-                = url_field_tag "user[url]", "", class: "deal-public-form__control", placeholder: "https://"
+      header.deal-public-page__header
+        h1.deal-public-page__title 商談参加登録
+        p.deal-public-page__deal-title = @deal.title
+        p.deal-public-page__lead 必要事項を入力して、音声付きAI商談を開始してください。
 
-          .deal-public-form__section
-            h2.deal-public-form__section-title ご検討の状況
-            .deal-public-form__fields
-              .deal-public-form__group
-                = label_tag :consideration_phase, "いまのご状況", class: "deal-public-form__label"
-                = select_tag :consideration_phase, options_for_select(consideration_phase_options), class: "deal-public-form__control"
-              .deal-public-form__group
-                = label_tag :planned_introduction_date, "導入予定日", class: "deal-public-form__label"
-                = select_tag :planned_introduction_date, options_for_select(planned_introduction_options), include_blank: "選択してください", class: "deal-public-form__control"
-              .deal-public-form__group
-                = label_tag :key_points_for_application, "決め手になるポイント", class: "deal-public-form__label"
-                = select_tag :key_points_for_application, options_for_select(key_points_options), include_blank: "選択してください", class: "deal-public-form__control"
+      .deal-public-page__card
+        - if flash[:alert].present?
+          p.deal-public-form__error = flash[:alert]
+        = form_with url: create_user_info_public_deal_session_path(token: @deal.access_token), local: true, html: { class: "deal-public-form" } do |f|
+          - if visible_user_fields.any?
+            .deal-public-form__section
+              h2.deal-public-form__section-title 参加者情報
+              .deal-public-form__fields
+                - if @deal.visitor_info_field_visible?("company")
+                  .deal-public-form__group
+                    = label_tag "user[company]", "会社名", class: "deal-public-form__label"
+                    = text_field_tag "user[company]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("company"), autocomplete: "organization"
+                - if @deal.visitor_info_field_visible?("name")
+                  .deal-public-form__group
+                    = label_tag "user[name]", "お名前", class: "deal-public-form__label"
+                    = text_field_tag "user[name]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("name"), autocomplete: "name"
+                - if @deal.visitor_info_field_visible?("job_title")
+                  .deal-public-form__group
+                    = label_tag "user[job_title]", "役職", class: "deal-public-form__label"
+                    = text_field_tag "user[job_title]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("job_title"), placeholder: "例: 営業部長 / 情報システム担当"
+                - if @deal.visitor_info_field_visible?("email")
+                  .deal-public-form__group
+                    = label_tag "user[email]", "メールアドレス", class: "deal-public-form__label"
+                    = email_field_tag "user[email]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("email"), autocomplete: "email"
+                - if @deal.visitor_info_field_visible?("tel")
+                  .deal-public-form__group
+                    = label_tag "user[tel]", "電話番号", class: "deal-public-form__label"
+                    = telephone_field_tag "user[tel]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("tel"), autocomplete: "tel"
+                - if @deal.visitor_info_field_visible?("address")
+                  .deal-public-form__group
+                    = label_tag "user[address]", "住所", class: "deal-public-form__label"
+                    = text_field_tag "user[address]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("address"), autocomplete: "street-address", placeholder: "例: 東京都渋谷区..."
+                - if @deal.visitor_info_field_visible?("url")
+                  .deal-public-form__group
+                    = label_tag "user[url]", "WebサイトURL", class: "deal-public-form__label"
+                    = url_field_tag "user[url]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("url"), placeholder: "https://"
+
+          - if visible_progress_fields.any?
+            .deal-public-form__section
+              h2.deal-public-form__section-title ご検討の状況
+              .deal-public-form__fields
+                - if @deal.visitor_info_field_visible?("consideration_phase")
+                  .deal-public-form__group
+                    = label_tag :consideration_phase, "いまのご状況", class: "deal-public-form__label"
+                    = select_tag :consideration_phase, options_for_select(consideration_phase_options), include_blank: (@deal.visitor_info_field_required?("consideration_phase") ? false : "選択してください"), class: "deal-public-form__control", required: @deal.visitor_info_field_required?("consideration_phase")
+                - if @deal.visitor_info_field_visible?("planned_introduction_date")
+                  .deal-public-form__group
+                    = label_tag :planned_introduction_date, "導入予定日", class: "deal-public-form__label"
+                    = select_tag :planned_introduction_date, options_for_select(planned_introduction_options), include_blank: "選択してください", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("planned_introduction_date")
+                - if @deal.visitor_info_field_visible?("key_points_for_application")
+                  .deal-public-form__group
+                    = label_tag :key_points_for_application, "決め手になるポイント", class: "deal-public-form__label"
+                    = select_tag :key_points_for_application, options_for_select(key_points_options), include_blank: "選択してください", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("key_points_for_application")
 
           .deal-public-form__actions
             = f.submit "登録してAI商談を開始", class: "deal-public-form__submit", name: "commit"

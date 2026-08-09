@@ -16,8 +16,10 @@ module DealSession
       recipient_email = notification_email
       raise ArgumentError, "担当者メールが設定されていません" if recipient_email.blank?
 
+      ensure_session_analyzed!
+
       DealSalesCallMailer.session_completed(
-        user_progress: @user_progress,
+        user_progress: @user_progress.reload,
         rating: @rating,
         feedback: @feedback
       ).deliver_now
@@ -26,6 +28,14 @@ module DealSession
     end
 
     private
+
+    def ensure_session_analyzed!
+      return if @user_progress.session_analyzed_at.present?
+
+      DealEngine::SessionAnalysisService.call(user_progress: @user_progress)
+    rescue StandardError => e
+      Rails.logger.warn("[NotifyOwnerService] session analysis skipped: #{e.class}: #{e.message}")
+    end
 
     def notification_email
       @deal.client&.email.presence || Admin.order(:id).pick(:email).presence

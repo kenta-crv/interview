@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_07_31_020000) do
+ActiveRecord::Schema.define(version: 2026_08_08_000001) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -69,7 +69,11 @@ ActiveRecord::Schema.define(version: 2026_07_31_020000) do
     t.string "tel"
     t.string "address"
     t.string "url"
+    t.string "preferred_locale", default: "ja", null: false
+    t.string "provider"
+    t.string "uid"
     t.index ["email"], name: "index_clients_on_email", unique: true
+    t.index ["provider", "uid"], name: "index_clients_on_provider_and_uid", unique: true
     t.index ["reset_password_token"], name: "index_clients_on_reset_password_token", unique: true
     t.index ["stripe_customer_id"], name: "index_clients_on_stripe_customer_id", unique: true
   end
@@ -309,6 +313,8 @@ ActiveRecord::Schema.define(version: 2026_07_31_020000) do
     t.integer "page_views_count", default: 0, null: false
     t.text "closing_script"
     t.boolean "managed_by_admin", default: false, null: false
+    t.boolean "skip_visitor_registration", default: false, null: false
+    t.json "visitor_info_fields", default: {}, null: false
     t.index ["access_token"], name: "index_deals_on_access_token", unique: true
     t.index ["client_id", "status"], name: "index_deals_on_client_id_and_status"
     t.index ["client_id"], name: "index_deals_on_client_id"

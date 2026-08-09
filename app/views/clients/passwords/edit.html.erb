@@ -1,30 +1,34 @@
 <div class="meetia-auth__page">
-  <%= link_to root_path, class: "meetia-auth__brand" do %>
+  <%= link_to locale_root_href, class: "meetia-auth__brand" do %>
     <%= image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-auth__logo" %>
   <% end %>
 
-  <div class="meetia-auth__card">
-    <h1 class="meetia-auth__title">パスワードを変更</h1>
-    <p class="meetia-auth__lead">新しいパスワードを設定してください</p>
+  <div class="meetia-auth__lang">
+    <%= render "shared/lang_switch" %>
+  </div>
 
-    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
+  <div class="meetia-auth__card">
+    <h1 class="meetia-auth__title"><%= t("meetia.auth.password_edit_title") %></h1>
+    <p class="meetia-auth__lead"><%= t("meetia.auth.password_edit_lead") %></p>
+
+    <%= form_for(resource, as: resource_name, url: client_password_update_url_for_locale, html: { method: :put }) do |f| %>
       <%= render "clients/shared/error_messages", resource: resource %>
       <%= f.hidden_field :reset_password_token %>
 
       <div class="meetia-auth__field">
-        <%= f.label :password, "新しいパスワード", class: "meetia-auth__label" %>
+        <%= f.label :password, t("meetia.auth.new_password"), class: "meetia-auth__label" %>
         <% if @minimum_password_length %>
-          <em class="meetia-auth__hint">（<%= @minimum_password_length %>文字以上）</em>
+          <em class="meetia-auth__hint"><%= t("meetia.auth.password_hint", count: @minimum_password_length) %></em>
         <% end %>
         <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class: "meetia-auth__input" %>
       </div>
 
       <div class="meetia-auth__field">
-        <%= f.label :password_confirmation, "新しいパスワード（確認）", class: "meetia-auth__label" %>
+        <%= f.label :password_confirmation, t("meetia.auth.new_password_confirmation"), class: "meetia-auth__label" %>
         <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "meetia-auth__input" %>
       </div>
 
-      <%= f.submit "パスワードを更新", class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit" %>
+      <%= f.submit t("meetia.auth.submit_password_update"), class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit" %>
     <% end %>
   </div>
 

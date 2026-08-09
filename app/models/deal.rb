@@ -81,6 +81,37 @@ class Deal < ApplicationRecord
 
   SYSTEM_FAQ_SOURCES = %w[ai_gap template supplement_pdf session_log stress_test checklist].freeze
 
+  VISITOR_INFO_FIELD_MODES = %w[hidden optional required].freeze
+  VISITOR_USER_FIELDS = %w[company name job_title email tel address url].freeze
+  VISITOR_PROGRESS_FIELDS = %w[consideration_phase planned_introduction_date key_points_for_application].freeze
+  VISITOR_INFO_FIELD_KEYS = (VISITOR_USER_FIELDS + VISITOR_PROGRESS_FIELDS).freeze
+
+  DEFAULT_VISITOR_INFO_FIELDS = {
+    "company" => "required",
+    "name" => "required",
+    "job_title" => "required",
+    "email" => "required",
+    "tel" => "optional",
+    "address" => "optional",
+    "url" => "optional",
+    "consideration_phase" => "optional",
+    "planned_introduction_date" => "optional",
+    "key_points_for_application" => "optional"
+  }.freeze
+
+  VISITOR_INFO_FIELD_LABELS = {
+    "company" => "会社名",
+    "name" => "お名前",
+    "job_title" => "役職",
+    "email" => "メールアドレス",
+    "tel" => "電話番号",
+    "address" => "住所",
+    "url" => "WebサイトURL",
+    "consideration_phase" => "ご検討の状況",
+    "planned_introduction_date" => "導入予定日",
+    "key_points_for_application" => "決め手になるポイント"
+  }.freeze
+
   validates :tts_voice_gender, inclusion: { in: TTS_VOICE_GENDERS.keys }
 
   def openai_tts_voice
@@ -96,6 +127,55 @@ class Deal < ApplicationRecord
       'exit_contract_label' => exit_contract_label.presence || DEFAULT_EXIT_CONTRACT_LABEL,
       'exit_sales_call_label' => exit_sales_call_label.presence || DEFAULT_EXIT_SALES_CALL_LABEL
     }
+  end
+
+  def resolved_visitor_info_fields
+    stored = visitor_info_fields.is_a?(Hash) ? visitor_info_fields.stringify_keys : {}
+    DEFAULT_VISITOR_INFO_FIELDS.merge(stored.slice(*VISITOR_INFO_FIELD_KEYS)).transform_values do |mode|
+      VISITOR_INFO_FIELD_MODES.include?(mode.to_s) ? mode.to_s : "hidden"
+    end
+  end
+
+  def visitor_info_field_mode(key)
+    resolved_visitor_info_fields[key.to_s] || "hidden"
+  end
+
+  def visitor_info_field_visible?(key)
+    visitor_info_field_mode(key) != "hidden"
+  end
+
+  def visitor_info_field_required?(key)
+    visitor_info_field_mode(key) == "required"
+  end
+
+  def visitor_registration_required?
+    !skip_visitor_registration? && visible_visitor_info_fields.any?
+  end
+
+  def visible_visitor_info_fields
+    VISITOR_INFO_FIELD_KEYS.select { |key| visitor_info_field_visible?(key) }
+  end
+
+  def required_visitor_info_fields
+    VISITOR_INFO_FIELD_KEYS.select { |key| visitor_info_field_required?(key) }
+  end
+
+  def assign_visitor_info_fields!(raw_fields)
+    raw = if raw_fields.respond_to?(:to_unsafe_h)
+            raw_fields.to_unsafe_h
+          elsif raw_fields.respond_to?(:to_h)
+            raw_fields.to_h
+          else
+            {}
+          end
+    raw = raw.stringify_keys
+
+    normalized = {}
+    VISITOR_INFO_FIELD_KEYS.each do |key|
+      mode = raw[key].presence
+      normalized[key] = VISITOR_INFO_FIELD_MODES.include?(mode.to_s) ? mode.to_s : DEFAULT_VISITOR_INFO_FIELDS[key]
+    end
+    self.visitor_info_fields = normalized
   end
 
   def materials_download_payload

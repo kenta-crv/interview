@@ -11,13 +11,17 @@ Rails.application.routes.draw do
   devise_for :clients, controllers: {
     sessions: "clients/sessions",
     registrations: "clients/registrations",
-    passwords: "clients/passwords"
+    passwords: "clients/passwords",
+    omniauth_callbacks: "clients/omniauth_callbacks"
   }
+
+  get "locale/:locale", to: "locales#update", as: :switch_locale, constraints: { locale: /ja|en/ }
 
   # --- Public marketing pages: / = ja, /en/... = English (API/dashboard/webhooks stay outside) ---
   scope "/:locale", constraints: { locale: /en/ } do
     get "/", to: "tops#index", as: :localized_root
     get "plans", to: "plans#index", as: :localized_plans
+    post "plans/select", to: "plans#select", as: :localized_select_plan
     get "interview", to: "tops#interview", as: :localized_interview
     get "whats", to: redirect { |path_params, _req| "/#{path_params[:locale]}#whats" }
     get "service", to: redirect { |path_params, _req| "/#{path_params[:locale]}#service" }
@@ -26,6 +30,19 @@ Rails.application.routes.draw do
     get "reviews", to: redirect { |path_params, _req| "/#{path_params[:locale]}#reviews" }
     get "faq", to: redirect { |path_params, _req| "/#{path_params[:locale]}#faq" }
     get "company", to: redirect { |path_params, _req| "/#{path_params[:locale]}#company" }
+
+    devise_scope :client do
+      get "clients/sign_in", to: "clients/sessions#new", as: :new_client_session_en
+      post "clients/sign_in", to: "clients/sessions#create", as: :client_session_en
+      delete "clients/sign_out", to: "clients/sessions#destroy", as: :destroy_client_session_en
+      get "clients/sign_up", to: "clients/registrations#new", as: :new_client_registration_en
+      post "clients", to: "clients/registrations#create", as: :client_registration_en
+      get "clients/password/new", to: "clients/passwords#new", as: :new_client_password_en
+      get "clients/password/edit", to: "clients/passwords#edit", as: :edit_client_password_en
+      post "clients/password", to: "clients/passwords#create", as: :client_password_en
+      put "clients/password", to: "clients/passwords#update"
+      patch "clients/password", to: "clients/passwords#update"
+    end
   end
 
   root to: 'tops#index'
@@ -145,6 +162,7 @@ Rails.application.routes.draw do
         post :upload_documents
         post :upload_supplement_documents
         patch :update_presentation_settings
+        patch :update_visitor_registration_settings
         patch :update_follow_up_settings
         get :processing_status
       end

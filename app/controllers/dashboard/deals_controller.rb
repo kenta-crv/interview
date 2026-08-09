@@ -2,8 +2,8 @@ class Dashboard::DealsController < Dashboard::BaseController
   include FileUploadValidation
 
   before_action :authenticate_deal_manager!, except: [:index, :show, :presentation]
-  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :claim_admin_management, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_follow_up_settings, :processing_status]
-  before_action :authorize_deal_management!, only: [:edit, :update, :destroy, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_follow_up_settings]
+  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :claim_admin_management, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_visitor_registration_settings, :update_follow_up_settings, :processing_status]
+  before_action :authorize_deal_management!, only: [:edit, :update, :destroy, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_visitor_registration_settings, :update_follow_up_settings]
   before_action :load_deal_associations, only: [:show]
   before_action :ensure_deal_quota!, only: [:new, :create]
 
@@ -183,6 +183,15 @@ class Dashboard::DealsController < Dashboard::BaseController
     redirect_to dashboard_deal_path(@deal, anchor: 'presentation-cta'), notice: 'プレゼンCTA設定を更新しました'
   rescue ActiveRecord::RecordInvalid => e
     redirect_to dashboard_deal_path(@deal, anchor: 'presentation-cta'), alert: e.message
+  end
+
+  def update_visitor_registration_settings
+    @deal.skip_visitor_registration = ActiveModel::Type::Boolean.new.cast(params.dig(:deal, :skip_visitor_registration))
+    @deal.assign_visitor_info_fields!(params.dig(:deal, :visitor_info_fields) || {})
+    @deal.save!
+    redirect_to dashboard_deal_path(@deal, anchor: 'visitor-registration'), notice: '参加者情報の入力設定を更新しました'
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to dashboard_deal_path(@deal, anchor: 'visitor-registration'), alert: e.message
   end
 
   def update_follow_up_settings

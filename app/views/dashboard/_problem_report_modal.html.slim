@@ -1,0 +1,11 @@
+.db-v2-modal#problem-report-modal aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="problem-report-modal-title"
+  .db-v2-modal__backdrop data-problem-modal-close=""
+  .db-v2-modal__dialog.db-v2-modal__dialog--problem
+    .db-v2-modal__header
+      h2#problem-report-modal-title.db-v2-modal__title
+        i.fa-solid.fa-bug aria-hidden="true"
+        |  問題報告
+      button.db-v2-modal__close type="button" aria-label="閉じる" data-problem-modal-close=""
+        i.fa-solid.fa-xmark aria-hidden="true"
+    .db-v2-modal__body.db-v2-modal__body--problem
+      iframe.db-v2-problem-modal__frame src="about:blank" title="問題報告フォーム" data-problem-modal-frame="" data-src=new_problem_path(embed: 1)

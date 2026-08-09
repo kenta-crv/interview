@@ -1,4 +1,4 @@
-商談ルームから「担当者に繋ぐ」が押されました。
+<%= @intro %>
 
 商談: <%= @deal.title %>
 
@@ -12,9 +12,7 @@ Webサイト: <%= @user.url.presence || "—" %>
 いまのご状況: <%= @phase_label %>
 導入予定日: <%= @user_progress.planned_introduction_date.presence || "—" %>
 決め手: <%= @user_progress.key_points_for_application.presence || "—" %>
-<% if @dashboard_url.present? %>
 
 リード詳細: <%= @dashboard_url %>
-<% end %>
 
 送信元: <%= @source %>

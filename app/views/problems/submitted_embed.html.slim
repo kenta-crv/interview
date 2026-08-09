@@ -1,0 +1,29 @@
+doctype html
+html lang="ja"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    - dash_url = dashboard_index_path
+    meta http-equiv="refresh" content="0;url=#{dash_url}"
+    title 報告完了
+  body
+    p 報告完了しました。ダッシュボードへ移動しています…
+    script type="text/javascript"
+      | (function () {
+          var url = #{dash_url.to_json};
+          try {
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage({ type: "meetia:problem-report-submitted", url: url }, window.location.origin);
+              window.parent.location.assign(url);
+              return;
+            }
+          } catch (e) {}
+          try {
+            if (window.opener && !window.opener.closed) {
+              window.opener.location.assign(url);
+              window.close();
+              return;
+            }
+          } catch (e) {}
+          window.location.assign(url);
+        })();

@@ -1,14 +1,60 @@
 class Client < ApplicationRecord
   include PlanLimitable
 
+  LOCALES = %w[ja en].freeze
+
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable, :validatable,
+         :omniauthable, omniauth_providers: %i[google_oauth2 microsoft_graph]
   has_many :situations, dependent: :destroy
   has_many :deals, dependent: :destroy
 
   has_many :subscriptions, dependent: :destroy
   has_one :active_subscription, -> { where(status: :active) }, class_name: "Subscription"
   has_many :payments, dependent: :destroy
+
+  validates :preferred_locale, inclusion: { in: LOCALES }
+
+  def self.from_omniauth(auth, preferred_locale: "ja")
+    email = auth.info.email.to_s.downcase.presence
+    raise ArgumentError, "OAuth email missing" if email.blank?
+
+    client = find_by(provider: auth.provider, uid: auth.uid)
+    return client if client
+
+    client = find_by(email: email)
+    if client
+      client.update!(provider: auth.provider, uid: auth.uid)
+      client.name = auth.info.name if client.name.blank? && auth.info.name.present?
+      client.preferred_locale = preferred_locale if client.preferred_locale.blank?
+      client.save! if client.changed?
+      return client
+    end
+
+    create!(
+      email: email,
+      password: Devise.friendly_token[0, 20],
+      name: auth.info.name,
+      provider: auth.provider,
+      uid: auth.uid,
+      preferred_locale: preferred_locale
+    )
+  end
+
+  def password_required?
+    return false if provider.present?
+
+    super
+  end
+
+  def ui_locale
+    value = self[:preferred_locale].presence || "ja"
+    (LOCALES.include?(value) ? value : "ja").to_sym
+  end
+
+  def send_devise_notification(notification, *args)
+    I18n.with_locale(ui_locale) { super }
+  end
 
   def subscription_plan
     current_subscription&.plan_type
@@ -43,55 +89,7 @@ class Client < ApplicationRecord
     return unless trial_ends_at.present?
     return if trial_ends_at > Time.current
 
-    unless stripe_customer_id.present?
-      Rails.logger.error "Client #{id} trial expired but no Stripe customer ID found"
-      return nil
-    end
-
-    begin
-      upgrade_plan = Subscription.plan_config(:trial)&.dig(:post_trial_plan) || :standard
-      amount = Subscription::PLAN_PRICES[upgrade_plan]
-
-      charge = Stripe::Charge.create(
-        amount: amount,
-        currency: "jpy",
-        customer: stripe_customer_id,
-        description: "#{Subscription::PLAN_NAMES[upgrade_plan]} subscription (trial upgrade)"
-      )
-
-      if charge.status == "succeeded"
-        subscriptions.where(status: :active).update_all(status: :cancelled)
-
-        subscription = subscriptions.create!(
-          plan_type: upgrade_plan,
-          status: :active,
-          stripe_subscription_id: charge.id,
-          trial_ends_at: nil
-        )
-
-        payments.create!(
-          amount: amount,
-          stripe_payment_intent_id: charge.id,
-          status: "succeeded",
-          description: "#{Subscription::PLAN_NAMES[upgrade_plan]} subscription (trial upgrade)"
-        )
-
-        Rails.logger.info "Client #{id} trial expired, charged #{amount} JPY via Stripe and upgraded to #{upgrade_plan} plan"
-        subscription
-      else
-        Rails.logger.error "Client #{id} trial expired but Stripe charge failed: #{charge.failure_message}"
-
-        subscriptions.where(status: :active).update_all(status: :cancelled)
-        update_columns(subscription_plan: nil, subscription_status: "cancelled")
-
-        nil
-      end
-    rescue => e
-      Rails.logger.error "Error upgrading trial via Stripe for client #{id}: #{e.message}"
-      subscriptions.where(status: :active).update_all(status: :cancelled)
-      update_columns(subscription_plan: nil, subscription_status: "cancelled")
-      nil
-    end
+    current_subscription&.expire_trial_without_charge!
   end
 
   def new_account?
@@ -101,13 +99,25 @@ class Client < ApplicationRecord
   end
 
   def dashboard_accessible?
-    subscription = subscriptions.find_by(status: :active)
+    subscription = subscriptions.find_by(status: :active) || current_subscription
     return false unless subscription
-    return false if stripe_customer_id.blank?
-    return false if subscription.stripe_subscription_id.blank?
-    return false if subscription.trial_expired?
+    return false if subscription.trial_expired? && !subscription.expired?
+    return true if on_trial?
+    return true if subscription.active? && subscription.stripe_subscription_id.present?
 
-    true
+    subscription.expired?
+  end
+
+  def initialize_trial_subscription!
+    return current_subscription if subscriptions.where(plan_type: :trial).exists?
+
+    subscription = subscriptions.create!(
+      plan_type: :trial,
+      status: :active,
+      trial_ends_at: Subscription::TRIAL_DAYS.days.from_now
+    )
+    update_columns(subscription_plan: "trial", subscription_status: "active")
+    subscription
   end
 
   def reconcile_invalid_subscriptions!
@@ -122,15 +132,19 @@ class Client < ApplicationRecord
     company.presence || email
   end
 
-  validates :company, :name, :tel, :address, presence: true, on: :create
   validates :company, :name, :tel, :address, presence: true, on: :profile_update
   validates :url, format: { with: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true }
 
   before_create :generate_api_key_if_blank
+  after_create :bootstrap_trial_subscription
 
   private
 
   def generate_api_key_if_blank
     self.api_key = SecureRandom.hex(32) if api_key.blank?
+  end
+
+  def bootstrap_trial_subscription
+    initialize_trial_subscription!
   end
 end

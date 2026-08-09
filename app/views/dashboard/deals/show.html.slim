@@ -269,6 +269,32 @@
                 input.db-v2-form-control type="text" value=public_deal_session_url(@deal.access_token) readonly=true
                 button.db-v2-btn.db-v2-btn--primary type="button" data-copy-share-url="" コピー
 
+        .db-v2-bottom-card#visitor-registration
+          .db-v2-bottom-card__header
+            h2.db-v2-bottom-card__title 参加者情報の入力
+          .db-v2-bottom-card__body.db-v2-deal-form-surface
+            p.db-v2-muted 商談URLを開いたときに、訪問者へ入力してもらう項目を設定します。情報なしで即商談に入ることも選べます。
+            = form_with url: update_visitor_registration_settings_dashboard_deal_path(@deal), method: :patch, local: true do
+              .db-v2-visitor-skip
+                = hidden_field_tag "deal[skip_visitor_registration]", "0", id: "deal_skip_visitor_registration_hidden"
+                label.db-v2-visitor-skip__label
+                  = check_box_tag "deal[skip_visitor_registration]", "1", @deal.skip_visitor_registration?, id: "deal_skip_visitor_registration", class: "db-v2-visitor-skip__input"
+                  span.db-v2-visitor-skip__copy
+                    span.db-v2-visitor-skip__title 情報入力なしで即商談開始
+                    span.db-v2-visitor-skip__hint オンにすると、リンクを開いた直後に商談画面へ進みます
+              p.db-v2-muted.db-v2-visitor-fields__note 各項目の表示方法（上記をオンにした場合は使われません）
+              .db-v2-visitor-fields
+                - Deal::VISITOR_INFO_FIELD_KEYS.each do |key|
+                  .db-v2-visitor-fields__row
+                    span.db-v2-visitor-fields__name = Deal::VISITOR_INFO_FIELD_LABELS[key]
+                    .db-v2-segment
+                      - [["非表示", "hidden"], ["任意", "optional"], ["必須", "required"]].each do |label_text, mode|
+                        label.db-v2-segment__option
+                          = radio_button_tag "deal[visitor_info_fields][#{key}]", mode, @deal.visitor_info_field_mode(key) == mode, class: "db-v2-segment__input"
+                          span.db-v2-segment__text = label_text
+              .db-v2-form-actions
+                = submit_tag "保存", class: "db-v2-btn db-v2-btn--primary"
+
         .db-v2-bottom-card
           .db-v2-bottom-card__header
             h2.db-v2-bottom-card__title AI要約

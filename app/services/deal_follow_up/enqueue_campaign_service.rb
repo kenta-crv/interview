@@ -13,6 +13,8 @@ module DealFollowUp
     def call
       return unless eligible?
 
+      @user_progress.deal.ensure_follow_up_templates!
+
       ActiveRecord::Base.transaction do
         lock_progress!
         unless already_enqueued?
@@ -35,6 +37,7 @@ module DealFollowUp
     def eligible?
       follow_up_allowed? &&
         @user_progress.user&.email.present? &&
+        !@user_progress.user.guest? &&
         !@user_progress.follow_up_unsubscribed?
     end
 

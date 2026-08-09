@@ -63,6 +63,17 @@ RSpec.describe Public::FollowUpTrackingController, type: :request do
       expect(delivery.reload.sales_call_clicked_at).to be_present
       expect(pending.reload.status).to eq("cancelled")
     end
+
+    it "notifies owner and shows confirmation when sales url is blank" do
+      ActionMailer::Base.deliveries.clear
+      get follow_up_click_path(delivery.sales_click_token)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("担当者へのご相談を受け付けました")
+      expect(delivery.reload.sales_call_clicked_at).to be_present
+      expect(pending.reload.status).to eq("cancelled")
+      expect(ActionMailer::Base.deliveries.last.subject).to include("担当者商談の希望")
+    end
   end
 
   describe "GET /follow_up/unsubscribe/:token" do
@@ -70,7 +81,7 @@ RSpec.describe Public::FollowUpTrackingController, type: :request do
       get follow_up_unsubscribe_path("unsub-token")
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("ご意向を受け付けました")
+      expect(response.body).to include("配信を停止しました")
       expect(user_progress.reload.follow_up_unsubscribed_at).to be_present
     end
   end

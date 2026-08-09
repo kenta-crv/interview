@@ -2,24 +2,28 @@ require 'rails_helper'
 
 RSpec.describe Subscription, type: :model do
   describe 'PLAN_CATALOG' do
-    it 'returns LP display plans in catalog order' do
-      expect(Subscription.lp_display_plans.map(&:first)).to eq(%i[trial starter standard business enterprise])
+    it 'returns LP display plans without starter' do
+      expect(Subscription.lp_display_plans.map(&:first)).to eq(%i[trial standard business enterprise])
     end
 
     it 'has expected trial limits' do
       config = Subscription.plan_config(:trial)
       expect(config[:price]).to eq(0)
-      expect(config[:deal_limit]).to eq(3)
+      expect(config[:deal_limit]).to eq(1)
+      expect(config[:monthly_session_limit]).to eq(5)
       expect(config[:service_limit]).to eq(1)
       expect(config[:post_trial_plan]).to eq(:standard)
     end
 
-    it 'has expected starter limits and price' do
+    it 'hides starter from purchase and LP' do
       config = Subscription.plan_config(:starter)
-      expect(config[:price]).to eq(29_800)
-      expect(config[:deal_limit]).to eq(15)
-      expect(config[:service_limit]).to eq(1)
-      expect(config[:click_analytics]).to be true
+      expect(config[:purchasable]).to be false
+      expect(config[:public_on_lp]).to be false
+    end
+
+    it 'has multi-currency standard prices' do
+      expect(Subscription.price_for(:standard, currency: :jpy)).to eq(59_800)
+      expect(Subscription.price_for(:standard, currency: :usd)).to eq(399)
     end
 
     it 'marks standard as popular (blue highlight on LP)' do
@@ -65,7 +69,7 @@ RSpec.describe Subscription, type: :model do
     let(:client) { create(:client, email: "no-sub@example.com") }
 
     it 'falls back to trial plan config' do
-      expect(client.current_plan_config[:deal_limit]).to eq(3)
+      expect(client.current_plan_config[:deal_limit]).to eq(1)
     end
   end
 end

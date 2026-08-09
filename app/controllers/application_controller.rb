@@ -5,7 +5,8 @@ class ApplicationController < ActionController::Base
 
   before_action :set_locale
   before_action :init_breadcrumbs
-  helper_method :breadcrumbs, :current_locale, :locale_root_href, :href_for_locale, :available_ui_locales
+  helper_method :breadcrumbs, :current_locale, :locale_root_href, :href_for_locale,
+                :available_ui_locales, :locale_switch_path_for
   before_action :check_trial_expiration
 
   def check_trial_expiration
@@ -30,38 +31,68 @@ class ApplicationController < ActionController::Base
   end
 
   def locale_root_href
-    if params[:locale].present?
-      localized_root_path(locale: params[:locale])
+    if I18n.locale.to_s == "en"
+      localized_root_path(locale: :en)
     else
       root_path
     end
   end
 
-  # /plans <-> /en/plans 。対象外ページではトップへ。
-  # *_path 名は Rails のルートヘルパーと衝突するため使わない。
+  # 公開ページは / <-> /en。認証・plans も同様。それ以外は locale 切替エンドポイントへ。
   def href_for_locale(target_locale)
-    target = target_locale.to_s.to_sym
+    target = target_locale.to_s
     return locale_root_href if target.blank?
 
     path = request.path.to_s.sub(%r{\A/en(?=/|$)}, "")
     path = "/" if path.blank?
 
-    public_page = controller_path == "tops" || controller_path == "plans"
-    if public_page
-      target == :ja ? path : (path == "/" ? "/en" : "/en#{path}")
+    if public_switchable_path?(path)
+      target == "ja" ? path : (path == "/" ? "/en" : "/en#{path}")
     else
-      target == :ja ? root_path : "/en"
+      locale_switch_path_for(target, return_to: request.fullpath)
     end
   end
+
+  def locale_switch_path_for(target_locale, return_to: nil)
+    switch_locale_path(locale: target_locale, return_to: return_to.presence || request.fullpath)
+  end
+
   protected
 
   def set_locale
-    requested = params[:locale].presence&.to_sym
-    I18n.locale = if requested && I18n.available_locales.map(&:to_sym).include?(requested)
-                    requested
-                  else
-                    I18n.default_locale
-                  end
+    locale = resolve_ui_locale
+    I18n.locale = locale
+    session[:ui_locale] = locale.to_s
+  end
+
+  def resolve_ui_locale
+    requested = params[:locale].presence.to_s
+    return requested.to_sym if Client::LOCALES.include?(requested)
+
+    # /en なしの公開URLは明示的に日本語（session に en が残っていても上書き）
+    path = request.path.to_s.sub(%r{\A/en(?=/|$)}, "")
+    path = "/" if path.blank?
+    return :ja if public_switchable_path?(path)
+
+    if client_signed_in? && current_client.preferred_locale.present?
+      return current_client.ui_locale
+    end
+
+    session_locale = session[:ui_locale].to_s
+    return session_locale.to_sym if Client::LOCALES.include?(session_locale)
+
+    :ja
+  end
+
+  def public_switchable_path?(path)
+    path == "/" ||
+      path == "/plans" ||
+      path.start_with?("/plans") ||
+      path == "/interview" ||
+      path.start_with?("/interview") ||
+      path.start_with?("/clients/sign_in") ||
+      path.start_with?("/clients/sign_up") ||
+      path.start_with?("/clients/password")
   end
 
   def after_sign_in_path_for(resource)
@@ -71,12 +102,12 @@ class ApplicationController < ActionController::Base
     when Client
       dashboard_root_path
     else
-      root_path
+      locale_root_href
     end
   end
 
   def after_sign_out_path_for(_resource_or_scope)
-    root_path
+    locale_root_href
   end
 
   def layout_for_request
@@ -96,14 +127,16 @@ class ApplicationController < ActionController::Base
     @breadcrumbs = []
   end
 
-  # ここを修正：生のJSONではなく、普通のブラウザアクセス時はログイン画面へ強制リダイレクトさせます
   def authenticate_client!
     unless client_signed_in?
       respond_to do |format|
-        # APIや非同期通信からのリクエストに対してはJSONを返す
-        format.json { render json: { error: 'Unauthorized' }, status: :unauthorized }
-        # 通常のブラウザによるリンク移動やアクセスに対しては、企業用ログイン画面へリダイレクト
-        format.all  { redirect_to new_client_session_path, alert: 'ログインが必要です。' }
+        format.json { render json: { error: "Unauthorized" }, status: :unauthorized }
+        format.all do
+          redirect_to(
+            (I18n.locale.to_s == "en" ? new_client_session_en_path(locale: :en) : new_client_session_path),
+            alert: t("meetia.auth.login_required")
+          )
+        end
       end
     end
   end

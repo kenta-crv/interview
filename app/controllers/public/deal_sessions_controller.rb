@@ -8,26 +8,49 @@ module Public
     before_action :load_tracking_context, only: [:track_event]
 
     def show
-      @user_progress = @deal.user_progresses.find_or_initialize_by(user: current_user)
-      record_public_page_view!
+      if @deal.visitor_registration_required?
+        record_public_page_view!
+      else
+        ensure_visitor_session!
+        record_public_page_view!
+        redirect_to conversation_public_deal_session_path(token: @deal.access_token)
+      end
     end
 
     def create_user_info
-      @user = User.find_or_initialize_by(email: user_params[:email])
-      @user.assign_attributes(user_params.except(:email))
+      unless @deal.visitor_registration_required?
+        ensure_visitor_session!
+        redirect_to conversation_public_deal_session_path(token: @deal.access_token)
+        return
+      end
+
+      owner = @deal.client
+      if owner && !owner.can_start_session?
+        flash.now[:alert] = owner.monthly_session_limit_message
+        render :show, status: :forbidden
+        return
+      end
+
+      errors = visitor_registration_errors
+      if errors.any?
+        flash.now[:alert] = errors.join("、")
+        render :show, status: :unprocessable_entity
+        return
+      end
+
+      @user = find_or_build_visitor_user
+      @user.assign_attributes(filtered_user_attrs.except(:email))
       @user.password = SecureRandom.hex(16) if @user.new_record?
+      apply_visitor_user_fallbacks!(@user)
 
       if @user.save
         @user_progress = @deal.user_progresses.find_or_initialize_by(user: @user)
-        @user_progress.update!(
-          consideration_phase: params[:consideration_phase],
-          planned_introduction_date: params[:planned_introduction_date],
-          key_points_for_application: params[:key_points_for_application]
-        )
+        @user_progress.update!(filtered_progress_attrs)
 
         session[:user_id] = @user.id
         redirect_to conversation_public_deal_session_path(token: @deal.access_token), notice: '情報を登録しました'
       else
+        flash.now[:alert] = @user.errors.full_messages.join("、")
         render :show, status: :unprocessable_entity
       end
     end
@@ -315,7 +338,73 @@ module Public
     end
 
     def user_params
-      params.require(:user).permit(:name, :job_title, :company, :tel, :address, :email, :url)
+      params.fetch(:user, {}).permit(*Deal::VISITOR_USER_FIELDS.map(&:to_sym))
+    end
+
+    def find_or_build_visitor_user
+      email = filtered_user_attrs[:email].to_s.strip
+      if email.present?
+        User.find_or_initialize_by(email: email)
+      else
+        User.new(email: User.guest_email)
+      end
+    end
+
+    def filtered_user_attrs
+      @filtered_user_attrs ||= begin
+        attrs = user_params.to_h.symbolize_keys
+        Deal::VISITOR_USER_FIELDS.each_with_object({}) do |key, result|
+          next unless @deal.visitor_info_field_visible?(key)
+
+          value = attrs[key.to_sym].to_s.strip
+          result[key.to_sym] = value if value.present?
+        end
+      end
+    end
+
+    def filtered_progress_attrs
+      Deal::VISITOR_PROGRESS_FIELDS.each_with_object({}) do |key, result|
+        next unless @deal.visitor_info_field_visible?(key)
+
+        value = params[key].to_s.strip
+        result[key.to_sym] = value if value.present?
+      end
+    end
+
+    def visitor_registration_errors
+      errors = []
+      @deal.required_visitor_info_fields.each do |key|
+        value = if Deal::VISITOR_USER_FIELDS.include?(key)
+                  user_params[key].to_s.strip
+                else
+                  params[key].to_s.strip
+                end
+        next if value.present?
+
+        errors << "#{Deal::VISITOR_INFO_FIELD_LABELS[key]}は必須です"
+      end
+      errors
+    end
+
+    def apply_visitor_user_fallbacks!(user)
+      user.name = user.name.presence || "ゲスト"
+      user.job_title = user.job_title.presence || "-"
+      user.email = user.email.presence || User.guest_email
+    end
+
+    def ensure_visitor_session!
+      return if client_preview?
+
+      existing = User.find_by(id: session[:user_id])
+      if existing
+        @user = existing
+        @user_progress = @deal.user_progresses.find_or_create_by!(user: @user)
+        return
+      end
+
+      @user = User.build_guest!
+      @user_progress = @deal.user_progresses.create!(user: @user)
+      session[:user_id] = @user.id
     end
 
     def enqueue_follow_up_after_evaluation!

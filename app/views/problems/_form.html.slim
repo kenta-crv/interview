@@ -1,41 +1,40 @@
-section
- .sp-company
-  .sp-company-inner
-    .sp-section-header
-      span.en-sub PROBLEM
-      h2 問題報告
-      p.desc サービスに関する問題が発生した場合、本ページより報告をお願いします。
-  .container
-    .col-lg-12
-      .hero-main-right.p-4.rounded-3
-        h3.hero-main-trial.text-center
-          |
-        = form_with model: @problem, url: problems_path, local: true, html: { id: "hero-main-top", class: "hero-main-form mt-3 p-4 rounded-3", multipart: true } do |f|
-            = f.hidden_field :origin, value: request.path
-            .row.g-3
-              .col-12
-                label.form-label.hero-main-label
-                  | 会社名 
-                  span.required-badge
-                    | 必須
-                = f.text_field :company, class: "form-control hero-main-input", placeholder: "株式会社〇〇〇〇", required: true
-              .col-12
-                label.form-label.hero-main-label
-                  | メールアドレス 
-                  span.required-badge
-                    | 必須
-                = f.email_field :email, class: "form-control hero-main-input", placeholder: "test@example.com", required: true
-              .col-12.photo
-                label.form-label.hero-main-label
-                  | 添付画像
-                  span.required-badge
-                    | 任意
-                = f.file_field :photo, class: "form-control hero-main-input"
-              .col-12
-                label.form-label.hero-main-label
-                  | 内容
-                  span.required-badge
-                    | 任意
-                = f.text_area :body, class: "form-control hero-main-input", placeholder:"（例）お問い合わせ内容"
-              .col-12
-                = f.submit "問い合わせ送信", class: "btn hero-main-submit w-100"
+- embed = local_assigns.fetch(:embed, false)
+- problem = local_assigns.fetch(:problem, @problem)
+
+= form_with model: problem, url: problems_path, local: true, html: { class: "db-v2-problem-form", multipart: true, data: { turbo: false } } do |f|
+  - if embed
+    = hidden_field_tag :embed, "1"
+
+  - if problem.errors.any?
+    .db-v2-alert.db-v2-alert--danger
+      ul
+        - problem.errors.full_messages.each do |message|
+          li = message
+
+  .db-v2-form-group
+    = f.label :company, class: "db-v2-form-label" do
+      | 会社名
+      span.db-v2-form-label__req 必須
+    = f.text_field :company, class: "db-v2-form-control", placeholder: "株式会社〇〇〇〇", required: true, autocomplete: "organization"
+
+  .db-v2-form-group
+    = f.label :email, class: "db-v2-form-label" do
+      | メールアドレス
+      span.db-v2-form-label__req 必須
+    = f.email_field :email, class: "db-v2-form-control", placeholder: "you@example.com", required: true, autocomplete: "email"
+
+  .db-v2-form-group
+    = f.label :photo, class: "db-v2-form-label" do
+      | 添付画像
+      span.db-v2-form-label__opt 任意
+    = f.file_field :photo, class: "db-v2-form-control db-v2-form-control--file", accept: "image/*"
+    span.db-v2-form-hint スクリーンショットなど、状況が伝わる画像があれば添付してください。
+
+  .db-v2-form-group
+    = f.label :body, class: "db-v2-form-label" do
+      | 内容
+      span.db-v2-form-label__opt 任意
+    = f.text_area :body, class: "db-v2-form-control", rows: 5, placeholder: "発生した症状、再現手順、表示されたメッセージなど"
+
+  .db-v2-form-actions
+    = f.submit "報告を送信する", class: "db-v2-btn db-v2-btn--primary"

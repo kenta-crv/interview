@@ -4,65 +4,62 @@ module DealFollowUpTemplateDefaults
   DEFAULT_TEMPLATES = [
     {
       delay_days: 0,
-      subject: "本日はAI商談ありがとうございました",
+      subject: "「{{deal_title}}」の次のステップをご案内します",
       body: <<~BODY.strip,
         {{user_name}} 様
 
-        先ほどは「{{deal_title}}」のAI商談にご参加いただき、ありがとうございました。
+        先ほどは「{{deal_title}}」のAI商談にお時間をいただき、ありがとうございました。
 
-        【商談サマリー】
-        {{session_summary}}
-
-        特に「{{interest_topics}}」について関心をお持ちのようでした。
-        次のステップとして「{{next_action}}」をご案内できます。ご不明点があればお気軽にお問い合わせください。
+        商談で確認いただいた内容を踏まえ、次に進むためのご案内を準備しています。
+        契約のご相談も、担当者へのご質問も、下のボタンからすぐ進められます。
       BODY
       include_sales_call_link: true,
       include_contract_link: true
     },
     {
       delay_days: 3,
-      subject: "導入に向けたご不明点はございませんか？",
+      subject: "「{{deal_title}}」導入に向けて、続きをご案内できます",
       body: <<~BODY.strip,
         {{user_name}} 様
 
-        先日はAI商談にご参加いただきありがとうございました（見込み度：{{prospect_grade}}）。
-        「{{interest_topics}}」について、導入時期や活用方法を担当者が個別にご案内できます。
+        先日はAI商談にご参加いただきありがとうございました。
+        導入時期や活用方法について、担当者が個別にご案内できます。
       BODY
       include_sales_call_link: true,
       include_contract_link: true
     },
     {
       delay_days: 7,
-      subject: "ご検討状況はいかがでしょうか",
+      subject: "ご検討状況はいかがでしょうか — {{deal_title}}",
       body: <<~BODY.strip,
         {{user_name}} 様
 
         前回のAI商談から少しお時間が経ちました。
-        推奨アクションは「{{next_action}}」です。ご検討の進捗に合わせて次のステップをご提案できます。
+        ご検討の進捗に合わせて、次のステップをご提案できます。
       BODY
       include_sales_call_link: true,
       include_contract_link: false
     },
     {
       delay_days: 15,
-      subject: "その後のご検討状況はいかがでしょうか",
+      subject: "「{{deal_title}}」のご判断材料をご用意できます",
       body: <<~BODY.strip,
         {{user_name}} 様
 
         「{{deal_title}}」のご検討から2週間ほどが経ちました。
-        見込み度は{{prospect_grade}}です。導入判断の材料として、担当者より個別にご説明できます。
+        導入判断の材料として、担当者より個別にご説明できます。
       BODY
       include_sales_call_link: true,
       include_contract_link: true
     },
     {
       delay_days: 30,
-      subject: "ご導入のタイミングについてご確認です",
+      subject: "ご導入のタイミング、いま一度ご確認ください",
       body: <<~BODY.strip,
         {{user_name}} 様
 
         AI商談から約1か月が経ちました。
-        推奨アクションは「{{next_action}}」です。ご都合の良いタイミングで次のステップをご案内できます。
+        ご都合の良いタイミングで、次のステップをご案内できます。
       BODY
       include_sales_call_link: true,
       include_contract_link: true
@@ -70,6 +67,19 @@ module DealFollowUpTemplateDefaults
   ].freeze
 
   CANONICAL_DELAY_DAYS = DEFAULT_TEMPLATES.map { |attrs| attrs[:delay_days] }.freeze
+
+  LEGACY_CUSTOMER_BODY_MARKERS = [
+    "【商談サマリー】",
+    "{{session_summary}}",
+    "{{interest_topics}}",
+    "{{next_action}}",
+    "見込み度：{{prospect_grade}}",
+    "見込み度は{{prospect_grade}}",
+    "興味がない・導入を見送る",
+    "特に「",
+    "下記ボタンよりお気軽にお知らせください",
+    "担当者からの個別ご案内が可能です"
+  ].freeze
 
   def ensure_follow_up_templates!
     remove_legacy_fourteen_day_templates!
@@ -123,13 +133,37 @@ module DealFollowUpTemplateDefaults
 
   def ensure_canonical_follow_up_templates!
     DEFAULT_TEMPLATES.each do |attrs|
-      next if deal_follow_up_templates.exists?(delay_days: attrs[:delay_days])
+      template = deal_follow_up_templates.find_by(delay_days: attrs[:delay_days])
+      if template
+        refresh_legacy_customer_template!(template, attrs)
+        next
+      end
 
       sequence = next_follow_up_sequence
       next if sequence.nil?
 
       deal_follow_up_templates.create!(attrs.merge(sequence: sequence, enabled: true))
     end
+  end
+
+  def refresh_legacy_customer_template!(template, attrs)
+    return unless legacy_customer_body?(template.body)
+
+    template.update!(
+      subject: attrs[:subject],
+      body: attrs[:body],
+      include_sales_call_link: attrs[:include_sales_call_link],
+      include_contract_link: attrs[:include_contract_link]
+    )
+
+    template.follow_up_deliveries.where(status: "scheduled").find_each do |delivery|
+      delivery.update!(subject: template.subject, body: template.body)
+    end
+  end
+
+  def legacy_customer_body?(body)
+    text = body.to_s
+    LEGACY_CUSTOMER_BODY_MARKERS.any? { |marker| text.include?(marker) }
   end
 
   def reorder_follow_up_templates_by_delay!

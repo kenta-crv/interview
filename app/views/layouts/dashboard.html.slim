@@ -32,6 +32,8 @@ html.dashboard-html lang="ja"
           = render "/dashboard/dashboard_toolbar"
         = yield
 
+      = render "/dashboard/problem_report_modal"
+
     = javascript_include_tag "meetia", "data-turbo-track": "reload"
     script
       | (function(){function applyDashboardTheme(theme){var next=theme==="light"?"light":"dark";document.documentElement.setAttribute("data-dashboard-theme",next);document.documentElement.style.backgroundColor=next==="light"?"#e8ebf0":"#0a0a12";try{localStorage.setItem("meetia-dashboard-theme",next);}catch(e){}document.querySelectorAll("[data-dashboard-theme-value]").forEach(function(btn){var on=btn.getAttribute("data-dashboard-theme-value")===next;btn.classList.toggle("is-active",on);btn.setAttribute("aria-pressed",on?"true":"false");});}function syncDashboardTheme(){var t="dark";try{t=localStorage.getItem("meetia-dashboard-theme")||"dark";}catch(e){}if(t!=="light"){t="dark";}applyDashboardTheme(t);}document.addEventListener("click",function(e){var btn=e.target.closest("[data-dashboard-theme-value]");if(!btn||!document.getElementById("dashboard-v2-container"))return;e.preventDefault();applyDashboardTheme(btn.getAttribute("data-dashboard-theme-value"));});document.addEventListener("DOMContentLoaded",syncDashboardTheme);document.addEventListener("turbo:load",syncDashboardTheme);document.addEventListener("turbolinks:load",syncDashboardTheme);syncDashboardTheme();})();

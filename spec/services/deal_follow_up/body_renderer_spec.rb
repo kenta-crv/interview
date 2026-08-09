@@ -20,50 +20,70 @@ RSpec.describe DealFollowUp::BodyRenderer do
     )
   end
   let(:user) { User.create!(email: "prospect@example.com", password: "password123", name: "太郎", job_title: "担当者") }
-  let(:user_progress) { deal.user_progresses.create!(user: user, follow_up_unsubscribe_token: "token") }
+  let(:user_progress) do
+    deal.user_progresses.create!(
+      user: user,
+      follow_up_unsubscribe_token: "token",
+      key_points_for_application: "料金"
+    )
+  end
   let(:template) { deal.deal_follow_up_templates.first }
   let(:delivery) do
     user_progress.follow_up_deliveries.create!(
       deal_follow_up_template: template,
       sequence: 1,
       subject: "Hello {{user_name}}",
-      body: "Deal: {{deal_title}}",
+      body: "{{user_name}} 様\n\n先ほどは「{{deal_title}}」のAI商談にお時間をいただきました。",
       scheduled_at: Time.current,
       status: "scheduled"
     )
   end
 
-  it "includes opt-out copy and cta buttons when urls exist" do
-    html = described_class.new(delivery).html_body
-
-    expect(html).to include("担当者に繋ぐ")
-    expect(html).to include("契約を進める")
-    expect(html).to include("興味がない・導入を見送る場合はこちら")
-  end
-
-  it "appends session summary when available" do
+  before do
     user_progress.update!(
-      prospect_grade: "A",
-      prospect_score: 88,
       session_summary: {
-        "challenge" => "営業属人化",
-        "interest" => "自動化",
-        "consideration" => "料金",
-        "next_action" => "トライアル"
+        "challenge" => "料金と5名利用時の最適プランが不明",
+        "interest" => "機能一覧を確認し、料金質問まで進んだ",
+        "consideration" => "導入のしやすさ重視",
+        "next_action" => "5名利用時の推奨プランと費用内訳を提示する",
+        "topics" => ["機能一覧", "料金"],
+        "questions" => ["5名だといくらですか"]
       },
       session_analyzed_at: Time.current
     )
-
-    text = described_class.new(delivery).text_body
-    expect(text).to include("見込み度 A")
-    expect(text).to include("課題：営業属人化")
-    expect(text).to include("次アクション：トライアル")
   end
 
-  it "hides contract button when contract url is blank" do
-    deal.update!(presentation_cta_url: nil)
+  it "discloses only customer-safe history and keeps CTAs ordered" do
     html = described_class.new(delivery).html_body
 
-    expect(html).not_to include("契約を進める")
+    expect(html).to include("ご確認いただいた内容")
+    expect(html).to include("機能一覧")
+    expect(html).to include("料金")
+    expect(html).to include("料金・プランについて、担当者より詳しくご案内できます")
+
+    expect(html).not_to include("課題")
+    expect(html).not_to include("機能一覧を確認し、料金質問まで進んだ")
+    expect(html).not_to include("5名だといくらですか")
+    expect(html).not_to include("推奨プランと費用内訳を提示する")
+    expect(html).not_to include("見込み度")
+
+    expect(html.index("契約について相談する")).to be < html.index("担当者に相談する")
+    expect(html).to include(">配信停止</a>")
+  end
+
+  it "always shows CTA buttons even when destination urls are blank" do
+    deal.update!(presentation_cta_url: nil, follow_up_sales_url: nil)
+    html = described_class.new(delivery).html_body
+
+    expect(html).to include("契約について相談する")
+    expect(html).to include("担当者に相談する")
+  end
+
+  it "hides contract button when template disables it" do
+    template.update!(include_contract_link: false)
+    html = described_class.new(delivery).html_body
+
+    expect(html).to include("担当者に相談する")
+    expect(html).not_to include("契約について相談する")
   end
 end

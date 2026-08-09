@@ -37,3 +37,22 @@
 
       .db-v2-form-actions
         = f.submit "保存する", class: "db-v2-btn db-v2-btn--primary"
+
+.db-v2-bottom-card
+  .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title
+      i.fa-solid.fa-bug aria-hidden="true"
+      |  問題報告
+  .db-v2-bottom-card__body
+    .db-v2-problem-report
+      .db-v2-problem-report__copy
+        p.db-v2-problem-report__lead サービス利用中に不具合や問題が発生した場合は、こちらからご報告ください。
+        p.db-v2-problem-report__hint 送信後、ダッシュボードに完了通知が表示されます。
+      .db-v2-problem-report__actions
+        button.db-v2-btn.db-v2-btn--primary type="button" data-problem-modal-open=""
+          i.fa-solid.fa-bug aria-hidden="true"
+          span 問題を報告する
+        = link_to new_problem_path, class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener noreferrer" do
+          i.fa-solid.fa-arrow-up-right-from-square aria-hidden="true"
+          span 新しいウィンドウで開く
+

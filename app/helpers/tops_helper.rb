@@ -86,25 +86,53 @@ module TopsHelper
   ].freeze
 
   FAQ_ITEMS = [
-    { category: "service", q: "資料をアップロードするだけで、本当に適切な商談ができますか？", a: "はい、可能です。PDFやドキュメントから自社の強みや製品仕様を正確に抽出し、ユーザーの個別の質問に合わせて回答・音声化を行います。" },
-    { category: "pricing", q: "無料トライアルの期間は？", a: "#{Subscription::TRIAL_DAYS}日間の無料トライアルをご用意しています。クレジットカード登録後、すぐに商談ルームを作成できます。" },
-    { category: "service", q: "既存の営業資料は使えますか？", a: "PDF形式の営業資料・FAQ・料金表などをそのままアップロードして利用できます。" },
-    { category: "security", q: "セキュリティ対策は？", a: "通信の暗号化、アクセス制御、データの適切な管理を行い、企業向けのセキュリティ要件に対応しています。" },
-    { category: "setup", q: "導入までどのくらいかかりますか？", a: "資料をアップロードすれば、数時間以内にAI処理が完了し、商談ルームURLを共有できます。" },
-    { category: "service", q: "見込み度や離脱理由はどう可視化されますか？", a: "操作ログから関心スライド・離脱ポイントをAIが分析し、A〜Dランクの見込み度としてダッシュボードに表示します。" },
-    { category: "support", q: "商談後のフォローアップは？", a: "検討時期に合わせたフォローメールを自動配信。開封・クリックも追跡できます。" },
-    { category: "pricing", q: "プラン変更は可能ですか？", a: "管理画面からいつでもプランのアップグレード・ダウングレードが可能です。" }
+    # service
+    { category: "service", q: "Meetiaは何をするサービスですか？", a: "営業資料をアップロードすると、訪問者がURLから入れるAI商談ルームを作れます。資料閲覧・音声対話・質問応答を24時間対応し、見込み度（A〜D）や会話ログをDashboardに残します。人の営業の置き換えではなく、一次対応の自動化です。" },
+    { category: "service", q: "既存のPDFや提案資料はそのまま使えますか？", a: "はい。提案資料・料金表・導入事例・FAQなどのPDF／ドキュメントから強みや仕様を抽出し、質問に応じて説明します。" },
+    { category: "service", q: "商談中の質問にはどこまで答えられますか？", a: "アップロード資料と設定したFAQをもとに、価格・機能・導入手順・運用イメージなどへリアルタイムで回答します。" },
+    { category: "service", q: "見込み度や離脱はどう見えますか？", a: "会話ログと行動ログから関心の推移・離脱ポイント・見込み度A〜DをDashboardで確認できます。Business以上では見込み追客も利用できます。" },
+
+    # pricing
+    { category: "pricing", q: "無料トライアルの条件は？", a: "#{Subscription::TRIAL_DAYS}日間・0円・カード不要です。上限は商談1件・月間セッション5・資料提示URL 1つ。終了後の自動課金はなく、スタンダード（月額59,800円／初回3ヶ月15%OFF）へ誘導します。" },
+    { category: "pricing", q: "料金プランと上限を教えてください。", a: "スタンダード月額59,800円（商談50・URL 3）／Business 98,000円（100・7、見込み追客あり）／エンタープライズ198,000円（商談無制限・URL 10）。Starterは新規販売していません。クリック履歴分析は全プラン対象です。" },
+    { category: "pricing", q: "トライアル中に解約したら課金されますか？", a: "トライアル終了時の自動課金はありません。有料プランをCheckoutしたときだけ課金されます。" },
+    { category: "pricing", q: "プラン変更や請求書払いはできますか？", a: "プラン変更はDashboardの契約管理から可能です。請求書払いは契約形態により案内します。法人でご希望の場合は導入相談時にお知らせください。" },
+
+    # setup
+    { category: "setup", q: "申し込みから初回公開までの手順は？", a: "①「無料トライアル」からアカウント登録（カード不要）→②Trialが自動開始→③Dashboardで資料アップロード・FAQ整備→④商談ルームURLを発行してLP・メール・フォーム完了画面などに設置、の順です。資料が揃っていれば数時間程度で初回公開できます。" },
+    { category: "setup", q: "始めるときに用意するものは？", a: "会社概要、サービス資料、料金情報、よくある質問などの営業素材です。公開前にDashboard上で回答や資料表示をテストできます。" },
+    { category: "setup", q: "既存サイトへの埋め込みは必要ですか？", a: "必須ではありません。公開URLへの導線が基本です。既存サイトから遷移する形で導入できます。" },
+    { category: "setup", q: "複数商材を1アカウントで運用できますか？", a: "はい。Deal単位で商材・資料を分けて管理できます。同時に使える商談数・URL数はプラン上限に従います。" },
+
+    # usage
+    { category: "usage", q: "商談後のフォローは自動化できますか？", a: "はい。見込み度や検討時期に応じてフォローメールを自動送信し、開封・クリックも追跡できます。" },
+    { category: "usage", q: "運用開始後の設定変更はできますか？", a: "はい。資料差し替え、FAQ更新、フォロー条件の見直しはDashboardから随時反映できます。" },
+    { category: "usage", q: "商談データは誰が見られますか？", a: "契約企業の権限ユーザーがDashboardから会話ログ・見込み度・フォロー状況を案件ごとに確認できます。公開URLは運用ルールに応じて管理してください。" }
   ].freeze
 
   FAQ_ITEMS_EN = [
-    { category: "service", q: "Can uploading documents really create a solid sales conversation?", a: "Yes. Meetia extracts strengths and specs from PDFs/docs, then answers and speaks to each buyer’s questions." },
-    { category: "pricing", q: "How long is the free trial?", a: "You get a #{Subscription::TRIAL_DAYS}-day free trial. After card registration you can create a deal room immediately." },
-    { category: "service", q: "Can we use our existing sales materials?", a: "Yes — upload PDFs such as decks, FAQs, and pricing sheets as they are." },
-    { category: "security", q: "What about security?", a: "Encryption, access control, and careful data handling support enterprise requirements." },
-    { category: "setup", q: "How long until we can go live?", a: "After upload, AI processing usually finishes within hours and you can share the deal-room URL." },
-    { category: "service", q: "How is intent and drop-off visualized?", a: "AI analyzes action logs, interest slides, and drop-off points, then shows A–D prospect grades on the dashboard." },
-    { category: "support", q: "What about post-meeting follow-up?", a: "Timed follow-up emails are sent automatically, with open and click tracking." },
-    { category: "pricing", q: "Can we change plans later?", a: "Yes. Upgrade or downgrade anytime from the admin dashboard." }
+    # service
+    { category: "service", q: "What does Meetia do?", a: "Upload sales materials to create an AI deal room visitors join by URL. It covers document viewing, voice conversation, and Q&A 24/7, and stores prospect grades (A–D) and logs in the dashboard. It automates first-touch—not a full replacement for your sales team." },
+    { category: "service", q: "Can we reuse existing PDFs and decks?", a: "Yes. Meetia extracts strengths and specs from decks, pricing sheets, case studies, and FAQ docs, then answers in context." },
+    { category: "service", q: "How deeply can it answer buyer questions?", a: "Using uploaded materials and configured FAQs, it responds in real time on pricing, features, onboarding, and operations." },
+    { category: "service", q: "How are intent and drop-off shown?", a: "Conversation and behavior logs show interest trends, drop-off points, and grades A–D in the dashboard. Prospect follow-up is available on Business and above." },
+
+    # pricing
+    { category: "pricing", q: "What are the free trial terms?", a: "#{Subscription::TRIAL_DAYS} days at ¥0 / $0, no card required. Limits: 1 deal, 5 monthly sessions, 1 material URL. No auto-charge at end—you're guided to Standard (¥59,800 / $399; 15% off first 3 months)." },
+    { category: "pricing", q: "What are the plans and limits?", a: "Standard ¥59,800 / $399 (50 deals, 3 URLs) / Business ¥98,000 / $699 (100, 7, prospect follow-up) / Enterprise ¥198,000 / $1,299 (unlimited deals, 10 URLs). Starter is not sold to new customers. Click analytics is on all plans." },
+    { category: "pricing", q: "If I cancel during the trial, am I charged?", a: "No auto-charge when the trial ends. You're only charged after you check out a paid plan." },
+    { category: "pricing", q: "Can we change plans or pay by invoice?", a: "Yes—change plans from Dashboard billing. Invoice payment depends on contract type; tell us during onboarding if you need it." },
+
+    # setup
+    { category: "setup", q: "What are the steps from signup to first launch?", a: "1) Create an account via Free trial (no card) → 2) Trial starts automatically → 3) Upload materials and FAQs in the Dashboard → 4) Share the deal-room URL on LPs, email, or form thank-you pages. With materials ready, first publish is often possible within hours." },
+    { category: "setup", q: "What should we prepare?", a: "Company profile, product docs, pricing, and common Q&As. You can preview answers and materials in the Dashboard before going live." },
+    { category: "setup", q: "Do we need to embed it on our site?", a: "No. URL-based routing is the default—link from your existing site." },
+    { category: "setup", q: "Can one account run multiple products?", a: "Yes. Manage materials per Deal. Deal and URL counts follow your plan limits." },
+
+    # usage
+    { category: "usage", q: "Can post-session follow-up be automated?", a: "Yes. Send follow-up emails by intent and timing, with open and click tracking." },
+    { category: "usage", q: "Can we change settings after launch?", a: "Yes. Swap materials, edit FAQs, and adjust follow-up rules anytime from the Dashboard." },
+    { category: "usage", q: "Who can see deal data?", a: "Authorized users on your account can view logs, grades, and follow-up status per deal. Manage public URLs according to your policy." }
   ].freeze
 
   REVIEW_CARDS = [
@@ -197,18 +225,16 @@ module TopsHelper
 
   FAQ_CATEGORIES = [
     ["service", "サービスについて", "fa-comments"],
-    ["pricing", "料金", "fa-yen-sign"],
-    ["setup", "導入", "fa-rocket"],
-    ["security", "セキュリティ", "fa-shield-halved"],
-    ["support", "サポート", "fa-headset"]
+    ["pricing", "料金・トライアル", "fa-yen-sign"],
+    ["setup", "申し込み・開始", "fa-rocket"],
+    ["usage", "使い方・運用", "fa-chart-line"]
   ].freeze
 
   FAQ_CATEGORIES_EN = [
     ["service", "Service", "fa-comments"],
-    ["pricing", "Pricing", "fa-yen-sign"],
-    ["setup", "Setup", "fa-rocket"],
-    ["security", "Security", "fa-shield-halved"],
-    ["support", "Support", "fa-headset"]
+    ["pricing", "Pricing & trial", "fa-yen-sign"],
+    ["setup", "Signup & launch", "fa-rocket"],
+    ["usage", "Usage", "fa-chart-line"]
   ].freeze
 
   TRIAL_FEATURES = [
@@ -286,19 +312,50 @@ module TopsHelper
     lp_english? ? TRIAL_FEATURES_EN : TRIAL_FEATURES
   end
 
+  def lp_comparison_features
+    if lp_english?
+      Subscription::LP_COMPARISON_FEATURES.map do |feature|
+        feature.merge(label: feature[:label_en].presence || feature[:label])
+      end
+    else
+      Subscription::LP_COMPARISON_FEATURES
+    end
+  end
+
+  def lp_plan_name(config)
+    lp_english? ? (config[:name_en].presence || config[:name]) : config[:name]
+  end
+
+  def lp_plan_description(config)
+    lp_english? ? (config[:description_en].presence || config[:description]) : config[:description]
+  end
+
+  def lp_plan_cta(config)
+    default = t("meetia.lp.body.pricing_cta_default")
+    if lp_english?
+      config[:lp_cta_en].presence || config[:lp_cta].presence || default
+    else
+      config[:lp_cta].presence || default
+    end
+  end
+
   def lp_nav_active?(key)
     @lp_page == key.to_s
   end
 
   def lp_sign_up_path
-    new_client_registration_path
+    client_sign_up_path_for_locale
+  end
+
+  def lp_plans_path
+    lp_english? ? localized_plans_path(locale: :en) : plans_path
   end
 
   def lp_trial_experience_path
     if client_signed_in? || admin_signed_in? || user_signed_in?
       lp_login_path
     else
-      new_client_registration_path
+      client_sign_up_path_for_locale
     end
   end
 
@@ -314,7 +371,7 @@ module TopsHelper
     elsif user_signed_in?
       interview_path
     else
-      new_client_session_path
+      client_sign_in_path_for_locale
     end
   end
 

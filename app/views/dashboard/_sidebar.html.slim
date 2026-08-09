@@ -40,9 +40,6 @@
       .db-v2-sidebar__section
         p.db-v2-sidebar__section-label アカウント
         - if client_signed_in? && !admin_signed_in?
-          = link_to dashboard_account_path, class: sidebar_link_class(:account) do
-            i.fa-solid.fa-building aria-hidden="true"
-            span 企業情報
           = link_to dashboard_subscription_path, class: sidebar_link_class(:subscription) do
             i.fa-solid.fa-credit-card aria-hidden="true"
             span プラン・契約
@@ -52,19 +49,28 @@
             span 契約企業
 
     .db-v2-sidebar__footer
-      .db-v2-sidebar__user
-        .db-v2-sidebar__user-avatar
-          - avatar_name = admin_signed_in? ? current_admin.email : sidebar_user_display_name
-          img src="https://ui-avatars.com/api/?name=#{CGI.escape(avatar_name)}&background=7c3aed&color=fff&size=64" alt=""
-        .db-v2-sidebar__user-meta
-          - if admin_signed_in?
-            span.db-v2-sidebar__user-name = current_admin.email
-            span.db-v2-sidebar__user-role Admin
-          - else
-            span.db-v2-sidebar__user-name = sidebar_user_display_name
-            span.db-v2-sidebar__user-role = sidebar_plan_label
+      - avatar_name = admin_signed_in? ? current_admin.email : sidebar_user_display_name
+      - sign_out_path = admin_signed_in? ? destroy_admin_session_path : destroy_client_session_path
+      .db-v2-sidebar__account data-sidebar-account=""
+        button.db-v2-sidebar__user type="button" data-sidebar-account-toggle="" aria-expanded="false" aria-haspopup="true" aria-controls="sidebar-account-menu"
+          .db-v2-sidebar__user-avatar
+            img src="https://ui-avatars.com/api/?name=#{CGI.escape(avatar_name)}&background=7c3aed&color=fff&size=64" alt=""
+          .db-v2-sidebar__user-meta
+            - if admin_signed_in?
+              span.db-v2-sidebar__user-name = current_admin.email
+              span.db-v2-sidebar__user-role Admin
+            - else
+              span.db-v2-sidebar__user-name = sidebar_user_display_name
+              span.db-v2-sidebar__user-role = sidebar_plan_label
+          i.fa-solid.fa-chevron-up.db-v2-sidebar__account-caret aria-hidden="true"
 
-      - if admin_signed_in?
-        = render "shared/sign_out_button", path: destroy_admin_session_path, variant: :sidebar
-      - else
-        = render "shared/sign_out_button", path: destroy_client_session_path, variant: :sidebar
+        #sidebar-account-menu.db-v2-sidebar__account-menu role="menu" aria-label="アカウントメニュー"
+          p.db-v2-sidebar__account-menu-label アカウント
+          - if client_signed_in? && !admin_signed_in?
+            = link_to dashboard_account_path, class: "db-v2-sidebar__link", role: "menuitem" do
+              i.fa-solid.fa-building aria-hidden="true"
+              span 企業情報
+            button.db-v2-sidebar__link type="button" role="menuitem" data-problem-modal-open=""
+              i.fa-solid.fa-bug aria-hidden="true"
+              span 問題報告
+          = render "shared/sign_out_button", path: sign_out_path, variant: :sidebar
