@@ -63,6 +63,23 @@ RSpec.describe Subscription, type: :model do
     it 'shows 近日公開 for enterprise prospect follow up' do
       expect(Subscription.format_feature_value(:enterprise, :prospect_follow_up)).to eq('近日公開')
     end
+
+    it 'formats monthly session limit' do
+      expect(Subscription.format_feature_value(:trial, :monthly_session_limit)).to eq('5')
+      expect(Subscription.format_feature_value(:standard, :monthly_session_limit)).to eq('無制限')
+    end
+
+    it 'shows dashboard feature flags' do
+      expect(Subscription.format_feature_value(:standard, :ai_voice_deal)).to eq('✔︎')
+      expect(Subscription.format_feature_value(:standard, :priority_support)).to eq('✕')
+      expect(Subscription.format_feature_value(:enterprise, :priority_support)).to eq('✔︎')
+    end
+
+    it 'exposes expanded comparison features' do
+      expect(Subscription::LP_COMPARISON_FEATURES.map { |f| f[:key] }).to include(
+        :monthly_session_limit, :ai_voice_deal, :prospect_scoring, :deal_summary, :faq_chat, :priority_support
+      )
+    end
   end
 
   describe 'client without subscription' do

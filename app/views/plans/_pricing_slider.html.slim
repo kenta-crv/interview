@@ -1,5 +1,7 @@
 - visible_plans = Subscription.lp_display_plans
 - current_plan = current_client.subscription_plan.to_s
+- billing_currency = BillingCurrency.resolve(locale: I18n.locale, accept_language: request.headers["Accept-Language"])
+- currency_symbol = BillingCurrency.symbol(billing_currency)
 
 .db-v2-bottom-card.db-v2-pricing-panel
   .db-v2-bottom-card__body
@@ -13,6 +15,7 @@
             - visible_plans.each do |plan_key, config|
               - is_trial = plan_key == :trial
               - next if is_trial && !@is_new_account
+              - display_price = Subscription.price_for(plan_key, currency: billing_currency)
               - card_classes = []
               - card_classes << "db-v2-pricing__card--popular" if config[:popular]
               - card_classes << "db-v2-pricing__card--featured" if config[:featured]
@@ -30,21 +33,21 @@
                 .db-v2-pricing__card-head
                   h3.db-v2-pricing__plan = lp_plan_name(config)
                   - if plan_key == :standard
-                    - intro_price = Subscription.intro_price_for(:standard, currency: :jpy)
+                    - intro_price = Subscription.intro_price_for(:standard, currency: billing_currency)
                     .db-v2-pricing__price.db-v2-pricing__price--sale
                       p.db-v2-pricing__list
-                        span.db-v2-pricing__currency ¥
-                        span.db-v2-pricing__amount.db-v2-pricing__amount--list = number_with_delimiter(config[:price])
+                        span.db-v2-pricing__currency = currency_symbol
+                        span.db-v2-pricing__amount.db-v2-pricing__amount--list = number_with_delimiter(display_price)
                       p.db-v2-pricing__sale
-                        span.db-v2-pricing__currency.db-v2-pricing__currency--sale ¥
+                        span.db-v2-pricing__currency.db-v2-pricing__currency--sale = currency_symbol
                         span.db-v2-pricing__amount.db-v2-pricing__amount--sale = number_with_delimiter(intro_price)
                         span.db-v2-pricing__period = t("meetia.auth.pricing_per_month")
                       p.db-v2-pricing__sale-note
                         = t("meetia.auth.intro_discount_title", percent: Subscription::STANDARD_INTRO_PERCENT_OFF, months: Subscription::STANDARD_INTRO_MONTHS)
                   - else
                     .db-v2-pricing__price
-                      span.db-v2-pricing__currency ¥
-                      span.db-v2-pricing__amount = number_with_delimiter(config[:price])
+                      span.db-v2-pricing__currency = currency_symbol
+                      span.db-v2-pricing__amount = number_with_delimiter(display_price)
                       - if is_trial
                         span.db-v2-pricing__period = t("meetia.auth.pricing_per_days", days: Subscription::TRIAL_DAYS)
                       - else

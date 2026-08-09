@@ -4,7 +4,7 @@
 - currency_symbol = BillingCurrency.symbol(billing_currency)
 
 .meetia-pricing__slider data-pricing-slider=""
-  p.meetia-pricing__scroll-hint = t("meetia.auth.pricing_hint", default: "最初の3プランを表示し、4つ目の途中まで見えます。右矢印で続きを確認できます")
+  p.meetia-pricing__scroll-hint = t("meetia.auth.pricing_hint", default: "矢印で他のプランも確認できます")
   .meetia-pricing__slider-body
     button.meetia-pricing__arrow.meetia-pricing__arrow--prev type="button" aria-label=t("meetia.auth.pricing_prev", default: "前のプラン") data-pricing-prev=""
       svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
@@ -56,7 +56,7 @@
                   span.meetia-pricing__feature-value = Subscription.format_feature_value(plan_key, feature[:key])
             .meetia-pricing__card-foot
               - cta_label = lp_plan_cta(config)
-              - btn_class = is_trial ? "meetia-btn meetia-btn--secondary meetia-pricing__card-btn" : "meetia-btn meetia-btn--primary meetia-pricing__card-btn"
+              - btn_class = is_trial ? "meetia-btn meetia-btn--outline meetia-pricing__card-btn" : "meetia-btn meetia-btn--primary meetia-pricing__card-btn"
               = link_to cta_label, lp_sign_up_path, class: btn_class
     button.meetia-pricing__arrow.meetia-pricing__arrow--next type="button" aria-label=t("meetia.auth.pricing_next", default: "次のプラン") data-pricing-next=""
       svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"

@@ -98,7 +98,7 @@ ja:
         features_dl: "資料をダウンロード"
         pricing_title: "料金プラン"
         pricing_lead: "トライアルから始めて、チームの規模に合わせてアップグレードできます。"
-        pricing_hint: "最初の3プランを表示し、4つ目の途中まで見えます。右矢印で続きを確認できます"
+        pricing_hint: "矢印で他のプランも確認できます"
         pricing_days: "日間"
         pricing_month: "月"
         pricing_cta_default: "このプランで始める"

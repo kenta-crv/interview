@@ -3,9 +3,10 @@
 - variant ||= :header
 
 - if variant == :sidebar
-  = button_to path, method: :delete, form: { class: "db-v2-sidebar__logout-form" }, class: "db-v2-sidebar__link db-v2-sidebar__link--logout" do
-    i.fa-solid.fa-right-from-bracket aria-hidden="true"
-    span = label
+  = form_with url: path, method: :delete, class: "db-v2-sidebar__logout-form", local: true do
+    button.db-v2-sidebar__link.db-v2-sidebar__link--logout type="submit" role="menuitem"
+      i.fa-solid.fa-right-from-bracket aria-hidden="true"
+      span = label
 - elsif variant == :nav
   = button_to path, method: :delete, form: { class: "db-v2-onboarding-nav__logout-form" }, class: "db-v2-onboarding-nav__link" do
     i.fa-solid.fa-right-from-bracket aria-hidden="true"

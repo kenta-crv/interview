@@ -23,9 +23,14 @@ class Subscription < ApplicationRecord
       deal_limit: 1,
       monthly_session_limit: 5,
       service_limit: 1,
+      ai_voice_deal: true,
       click_analytics: true,
+      prospect_scoring: true,
+      deal_summary: true,
+      faq_chat: true,
       prospect_follow_up: false,
       prospect_follow_up_soon: false,
+      priority_support: false,
       description: "#{TRIAL_DAYS}日間。カード不要。終了後はスタンダードへ誘導",
       description_en: "#{TRIAL_DAYS} days, no card. Then guided to Standard",
       purchasable: false,
@@ -44,9 +49,14 @@ class Subscription < ApplicationRecord
       deal_limit: 15,
       monthly_session_limit: nil,
       service_limit: 1,
+      ai_voice_deal: true,
       click_analytics: true,
+      prospect_scoring: true,
+      deal_summary: true,
+      faq_chat: true,
       prospect_follow_up: false,
       prospect_follow_up_soon: false,
+      priority_support: false,
       description: "（新規販売停止）",
       description_en: "(Not available for new purchases)",
       purchasable: false,
@@ -66,9 +76,14 @@ class Subscription < ApplicationRecord
       deal_limit: 50,
       monthly_session_limit: nil,
       service_limit: 3,
+      ai_voice_deal: true,
       click_analytics: true,
+      prospect_scoring: true,
+      deal_summary: true,
+      faq_chat: true,
       prospect_follow_up: false,
       prospect_follow_up_soon: false,
+      priority_support: false,
       description: "成長中のチーム向け。商談50件・資料提示URL 3つ・クリック分析付き。",
       description_en: "For growing teams. 50 deals, 3 presentation URLs, and click analytics.",
       purchasable: true,
@@ -91,11 +106,16 @@ class Subscription < ApplicationRecord
       deal_limit: 100,
       monthly_session_limit: nil,
       service_limit: 7,
+      ai_voice_deal: true,
       click_analytics: true,
+      prospect_scoring: true,
+      deal_summary: true,
+      faq_chat: true,
       prospect_follow_up: true,
       prospect_follow_up_soon: false,
-      description: "本格運用向け。商談100件・サービス7・クリック分析・見込み客追い付き。",
-      description_en: "For full-scale ops. 100 deals, 7 services, click analytics, and prospect follow-up.",
+      priority_support: false,
+      description: "本格運用向け。商談100件・資料提示URL 7・クリック分析・見込み追客付き。",
+      description_en: "For full-scale ops. 100 deals, 7 presentation URLs, click analytics, and prospect follow-up.",
       purchasable: true,
       public_on_lp: true,
       featured: true,
@@ -114,9 +134,14 @@ class Subscription < ApplicationRecord
       deal_limit: nil,
       monthly_session_limit: nil,
       service_limit: 10,
+      ai_voice_deal: true,
       click_analytics: true,
+      prospect_scoring: true,
+      deal_summary: true,
+      faq_chat: true,
       prospect_follow_up: true,
       prospect_follow_up_soon: true,
+      priority_support: true,
       description: "大規模運用向け。商談無制限・資料提示URL 10・見込み追客（準備中）。",
       description_en: "For large-scale ops. Unlimited deals, 10 presentation URLs, prospect follow-up (coming soon).",
       purchasable: true,
@@ -133,9 +158,15 @@ class Subscription < ApplicationRecord
 
   LP_COMPARISON_FEATURES = [
     { key: :deal_limit, label: "商談数", label_en: "Deals" },
-    { key: :service_limit, label: "サービス数（資料提示URL）", label_en: "Services (presentation URLs)" },
+    { key: :service_limit, label: "資料提示URL", label_en: "Presentation URLs" },
+    { key: :monthly_session_limit, label: "月間セッション", label_en: "Monthly sessions" },
+    { key: :ai_voice_deal, label: "AI音声商談", label_en: "AI voice deals" },
     { key: :click_analytics, label: "クリック履歴分析", label_en: "Click analytics" },
-    { key: :prospect_follow_up, label: "見込みの追い", label_en: "Prospect follow-up" }
+    { key: :prospect_scoring, label: "見込み度判定", label_en: "Prospect scoring" },
+    { key: :deal_summary, label: "商談ログ・サマリー", label_en: "Deal logs & summary" },
+    { key: :faq_chat, label: "リアルタイムFAQ", label_en: "Realtime FAQ" },
+    { key: :prospect_follow_up, label: "フォローメール追客", label_en: "Follow-up email" },
+    { key: :priority_support, label: "優先サポート", label_en: "Priority support" }
   ].freeze
 
   class << self
@@ -212,9 +243,9 @@ class Subscription < ApplicationRecord
       return "—" unless config
 
       case feature_key
-      when :deal_limit, :service_limit
+      when :deal_limit, :service_limit, :monthly_session_limit
         format_limit(config[feature_key])
-      when :click_analytics
+      when :click_analytics, :ai_voice_deal, :prospect_scoring, :deal_summary, :faq_chat, :priority_support
         config[feature_key] ? "✔︎" : "✕"
       when :prospect_follow_up
         if config[:prospect_follow_up_soon]
@@ -224,6 +255,8 @@ class Subscription < ApplicationRecord
         else
           "✕"
         end
+      else
+        "—"
       end
     end
   end

@@ -37,6 +37,7 @@
       el.removeAttribute('data-meetia-bound');
     });
     document.querySelectorAll('[data-pricing-bound]').forEach(function(el) {
+      teardownMeetiaPricingSlider(el);
       el.removeAttribute('data-pricing-bound');
     });
     document.querySelectorAll('[data-faq-search-bound]').forEach(function(el) {
@@ -52,9 +53,22 @@
 
   document.addEventListener('turbolinks:before-cache', function() {
     document.querySelectorAll('[data-pricing-bound]').forEach(function(el) {
+      teardownMeetiaPricingSlider(el);
       el.removeAttribute('data-pricing-bound');
     });
   });
+
+  function teardownMeetiaPricingSlider(root) {
+    if (!root) return;
+    if (root._pricingResizeObserver) {
+      root._pricingResizeObserver.disconnect();
+      root._pricingResizeObserver = null;
+    }
+    if (typeof root._pricingCleanup === 'function') {
+      root._pricingCleanup();
+      root._pricingCleanup = null;
+    }
+  }
 
   function setupMeetiaPricingSlider(root) {
     var viewport = root.querySelector('.meetia-pricing__viewport');
@@ -63,11 +77,13 @@
     var next = root.querySelector('[data-pricing-next]');
     if (!viewport || !track || !prev || !next) return;
 
-    var index = 0;
+    teardownMeetiaPricingSlider(root);
+
     var gap = 14;
-    var touchStartX = null;
     var initialFullCards = 3;
     var initialPeekRatio = 0.5;
+    var abort = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var signal = abort ? { signal: abort.signal } : false;
 
     function cards() {
       return track.querySelectorAll('.meetia-pricing__card');
@@ -104,72 +120,76 @@
       return cardWidth() + gap;
     }
 
-    function maxIndex() {
-      return Math.max(0, cards().length - layout().full);
+    function maxScroll() {
+      return Math.max(0, viewport.scrollWidth - viewport.clientWidth);
     }
 
-    function render() {
+    function syncButtons() {
+      var max = maxScroll();
+      var left = viewport.scrollLeft;
+      prev.classList.toggle('is-disabled', left <= 1);
+      next.classList.toggle('is-disabled', left >= max - 1);
+      prev.setAttribute('aria-disabled', left <= 1 ? 'true' : 'false');
+      next.setAttribute('aria-disabled', left >= max - 1 ? 'true' : 'false');
+    }
+
+    function layoutAndSync() {
+      var previousLeft = viewport.scrollLeft;
       syncCardWidths();
-      var max = maxIndex();
-      if (index > max) index = max;
-      track.style.transform = 'translateX(-' + (index * cardStep()) + 'px)';
-      prev.classList.toggle('is-disabled', index <= 0);
-      next.classList.toggle('is-disabled', index >= max);
+      // Keep position stable after width sync.
+      viewport.scrollLeft = Math.min(previousLeft, maxScroll());
+      syncButtons();
     }
 
     function goPrev() {
-      if (index <= 0) return;
-      index -= 1;
-      render();
+      viewport.scrollBy({ left: -cardStep(), behavior: 'smooth' });
     }
 
     function goNext() {
-      if (index >= maxIndex()) return;
-      index += 1;
-      render();
+      viewport.scrollBy({ left: cardStep(), behavior: 'smooth' });
     }
 
     prev.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
       goPrev();
-    });
+    }, signal);
 
     next.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
       goNext();
-    });
+    }, signal);
 
-    viewport.addEventListener('touchstart', function(e) {
-      if (!e.touches.length) return;
-      touchStartX = e.touches[0].clientX;
-    }, { passive: true });
+    viewport.addEventListener('scroll', syncButtons, signal ? Object.assign({ passive: true }, signal) : { passive: true });
+    window.addEventListener('resize', layoutAndSync, signal);
 
-    viewport.addEventListener('touchend', function(e) {
-      if (touchStartX === null || !e.changedTouches.length) return;
-      var delta = e.changedTouches[0].clientX - touchStartX;
-      touchStartX = null;
-      if (Math.abs(delta) < 40) return;
-      if (delta < 0) goNext();
-      else goPrev();
-    }, { passive: true });
-
-    window.addEventListener('resize', render);
-
+    var ro = null;
     if (typeof ResizeObserver !== 'undefined') {
-      var ro = new ResizeObserver(render);
+      ro = new ResizeObserver(layoutAndSync);
       ro.observe(viewport);
       root._pricingResizeObserver = ro;
     }
 
+    root._pricingCleanup = function() {
+      if (abort) abort.abort();
+      if (ro) ro.disconnect();
+      root._pricingResizeObserver = null;
+      track.style.transform = '';
+      track.style.transition = '';
+    };
+
     requestAnimationFrame(function() {
-      requestAnimationFrame(render);
+      requestAnimationFrame(layoutAndSync);
     });
   }
 
   function initPricingSlider() {
     document.querySelectorAll('.meetia-pricing__slider[data-pricing-slider]').forEach(function(slider) {
+      if (slider.getAttribute('data-pricing-bound') === 'true') {
+        teardownMeetiaPricingSlider(slider);
+        slider.removeAttribute('data-pricing-bound');
+      }
       MeetiaPageInit.bindOnce(slider, 'data-pricing-bound', setupMeetiaPricingSlider);
     });
   }

@@ -98,7 +98,7 @@ en:
         features_dl: "Download materials"
         pricing_title: "Pricing"
         pricing_lead: "Start with a trial, then upgrade as your team grows."
-        pricing_hint: "Shows the first 3 plans with a peek at the 4th. Use the arrow for more."
+        pricing_hint: "Use the arrows to browse all plans"
         pricing_days: " days"
         pricing_month: "mo"
         pricing_cta_default: "Choose this plan"
