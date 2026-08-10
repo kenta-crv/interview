@@ -10,20 +10,20 @@ class Dashboard::BaseController < ApplicationController
   def authenticate_dashboard_user!
     return if client_signed_in? || admin_signed_in?
 
-    redirect_to new_client_session_path, alert: "ログインが必要です。"
+    redirect_to new_client_session_path, alert: t("meetia.dashboard.flash.login_required")
   end
 
   # Client自身の商談、または Admin管理商談のみ操作可能
   def authenticate_deal_manager!
     return if client_signed_in? || admin_signed_in?
 
-    redirect_to dashboard_root_path, alert: "ログインが必要です。"
+    redirect_to dashboard_root_path, alert: t("meetia.dashboard.flash.login_required")
   end
 
   def require_client_account!
     return if client_signed_in?
 
-    redirect_to dashboard_deals_path, alert: "クライアント商談の新規作成は企業アカウントでログインしてください。Admin商談はAdminで作成できます。"
+    redirect_to dashboard_deals_path, alert: t("meetia.dashboard.flash.client_create_required")
   end
 
   def authorize_deal_management!
@@ -45,9 +45,9 @@ class Dashboard::BaseController < ApplicationController
 
   def deal_management_forbidden_message
     if admin_signed_in?
-      "この商談はクライアント管理です。公開・編集は企業アカウントで行ってください。"
+      t("meetia.dashboard.flash.forbidden_client_managed")
     else
-      "この商談はAdmin管理です。公開・編集はAdminアカウントで行ってください。"
+      t("meetia.dashboard.flash.forbidden_admin_managed")
     end
   end
 

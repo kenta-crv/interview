@@ -81,7 +81,7 @@ module DashboardHelper
   end
 
   def deal_language_label(deal)
-    deal.language == "ja" ? "日本語" : "English"
+    deal.language == "ja" ? t("meetia.dashboard.language.ja") : t("meetia.dashboard.language.en")
   end
 
   def subscription_can_cancel?(client)
@@ -104,6 +104,6 @@ module DashboardHelper
   end
 
   def funnel_pie_center_label(analytics)
-    analytics[:sessions_started].to_i.positive? ? "完了率" : "アクセス"
+    analytics[:sessions_started].to_i.positive? ? t("meetia.dashboard.home.funnel_center_completion") : t("meetia.dashboard.home.funnel_center_access")
   end
 end

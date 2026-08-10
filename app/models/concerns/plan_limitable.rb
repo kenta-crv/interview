@@ -85,7 +85,7 @@ module PlanLimitable
     limit = deal_limit
     return nil if limit.nil?
 
-    "商談数の上限（#{limit}件）に達しています。プランをアップグレードしてください。"
+    I18n.t("meetia.dashboard.limits.deal_limit", limit: limit)
   end
 
   def service_limit_message

@@ -2,40 +2,42 @@
   .db-v2-bottom-card__header.db-v2-bottom-card__header--split
     h2.db-v2-bottom-card__title
       i.fa-solid.fa-lightbulb aria-hidden="true"
-      |  ナレッジ補完（FAQ）
+      = t("meetia.dashboard.knowledge.title")
     - if deal_owner.show_knowledge_coverage? && @deal.deal_faqs.where(source: Deal::SYSTEM_FAQ_SOURCES).exists?
-      span.db-v2-lang-badge 完成度 #{@knowledge_coverage}%
+      span.db-v2-lang-badge = t("meetia.dashboard.knowledge.coverage", pct: @knowledge_coverage)
 
   .db-v2-bottom-card__body
     - if deal_owner.knowledge_section_optional?
       .status-alert-box.info
         span.icon ✨
         p
-          | トライアル中はFAQ入力は<strong>任意</strong>です。PDFアップロード後、まず
-          = link_to "シミュレーション", conversation_public_deal_session_path(token: @deal.access_token, preview: 1), target: "_blank", rel: "noopener", data: { turbo: false }
-          |  をお試しください。
+          = t("meetia.dashboard.knowledge.trial_optional_prefix")
+          strong = t("meetia.dashboard.knowledge.trial_optional_strong")
+          = t("meetia.dashboard.knowledge.trial_optional_mid")
+          = link_to t("meetia.dashboard.knowledge.simulation"), conversation_public_deal_session_path(token: @deal.access_token, preview: 1), target: "_blank", rel: "noopener", data: { turbo: false }
+          = t("meetia.dashboard.knowledge.trial_optional_suffix")
     - elsif @pending_faq_count.positive?
       .status-alert-box.info
         span.icon 📝
-        p 未回答FAQが #{@pending_faq_count} 件あります。クリックして回答してください。
+        p = t("meetia.dashboard.knowledge.pending_count", count: @pending_faq_count)
 
     .deal-knowledge-supplement
-      h3.admin-card-title.db-v2-subsection-title 📎 補足資料（FAQ自動抽出）
-      p.text-muted.deal-knowledge-supplement__hint 料金表・仕様書・FAQ PDFなど。スライドには使わずFAQのみ抽出します。
+      h3.admin-card-title.db-v2-subsection-title = t("meetia.dashboard.knowledge.supplement_title")
+      p.text-muted.deal-knowledge-supplement__hint = t("meetia.dashboard.knowledge.supplement_hint")
       - supplement_limit_reached = @deal.supplement_upload_limit_reached?
       - supplement_remaining = @deal.supplement_uploads_remaining
       - if supplement_limit_reached
         .db-v2-alert.db-v2-alert--warning.db-v2-alert--compact
           i.fa-solid.fa-circle-exclamation aria-hidden="true"
-          p 補足PDFは最大#{Deal::MAX_SUPPLEMENT_DOCUMENTS}件までです。これ以上の追加はできません。
+          p = t("meetia.dashboard.knowledge.supplement_max", max: Deal::MAX_SUPPLEMENT_DOCUMENTS)
       - else
         .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
           i.fa-solid.fa-circle-info aria-hidden="true"
-          p 補足PDFは残り#{supplement_remaining}件（最大#{Deal::MAX_SUPPLEMENT_DOCUMENTS}件）まで追加できます。
+          p = t("meetia.dashboard.knowledge.supplement_remaining", remaining: supplement_remaining, max: Deal::MAX_SUPPLEMENT_DOCUMENTS)
         = form_tag upload_supplement_documents_dashboard_deal_path(@deal), multipart: true, class: "deal-supplement-upload", data: { turbo: false } do
           .db-v2-form-group
             = file_field_tag "files[]", multiple: true, accept: ".pdf", class: "db-v2-form-control"
-          = submit_tag "補足PDFをアップロード", class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs", data: { turbo: false }
+          = submit_tag t("meetia.dashboard.knowledge.upload_supplement"), class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs", data: { turbo: false }
       - if @supplement_documents.any?
         ul.deal-supplement-list
           - @supplement_documents.each do |doc|
@@ -53,55 +55,55 @@
                   span.deal-faq-item__category = faq.category_label
                   span.deal-faq-item__badge class=("deal-faq-item__badge--muted" if faq.source == "template") = faq.source_label
                   - if faq.pending?
-                    span.deal-faq-item__badge.deal-faq-item__badge--warn 未回答
+                    span.deal-faq-item__badge.deal-faq-item__badge--warn = t("meetia.dashboard.knowledge.unanswered")
                   - elsif faq.answered?
-                    span.deal-faq-item__badge.deal-faq-item__badge--ok 回答済
+                    span.deal-faq-item__badge.deal-faq-item__badge--ok = t("meetia.dashboard.knowledge.answered")
 
             .deal-faq-item__body
               = form_with model: faq, url: dashboard_deal_deal_faq_path(@deal, faq), method: :patch, local: true, html: { class: "deal-faq-form" } do |f|
                 .db-v2-form-group
-                  = f.label :question, "質問", class: "db-v2-form-label"
+                  = f.label :question, t("meetia.dashboard.knowledge.question"), class: "db-v2-form-label"
                   = f.text_area :question, class: "db-v2-form-control", rows: 2, readonly: faq.ai_gap? && faq.pending?
                 .db-v2-form-group
-                  = f.label :answer, "回答", class: "db-v2-form-label"
-                  = f.text_area :answer, class: "db-v2-form-control", rows: 3, placeholder: (faq.pending? ? "Buyer向けの回答を入力してください" : "")
+                  = f.label :answer, t("meetia.dashboard.knowledge.answer"), class: "db-v2-form-label"
+                  = f.text_area :answer, class: "db-v2-form-control", rows: 3, placeholder: (faq.pending? ? t("meetia.dashboard.knowledge.answer_ph") : "")
                 .db-v2-form-group
-                  = f.label :category, "カテゴリ", class: "db-v2-form-label"
-                  = f.select :category, DealFaq::CATEGORIES.map { |k, v| [v, k] }, {}, class: "db-v2-form-control"
+                  = f.label :category, t("meetia.dashboard.knowledge.category"), class: "db-v2-form-label"
+                  = f.select :category, DealFaq::CATEGORIES.keys.map { |k| [t("meetia.dashboard.faq.categories.#{k}"), k] }, {}, class: "db-v2-form-control"
                 .deal-faq-item__actions
-                  = f.submit "保存", class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs"
+                  = f.submit t("meetia.dashboard.common.save"), class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs"
                   - if faq.pending?
-                    = button_to "スキップ", skip_dashboard_deal_deal_faq_path(@deal, faq), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo: false }
-                  = button_to "削除", dashboard_deal_deal_faq_path(@deal, faq), method: :delete, class: "db-v2-btn db-v2-btn--danger db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo: false, confirm: "このFAQを削除しますか？" }
+                    = button_to t("meetia.dashboard.common.skip"), skip_dashboard_deal_deal_faq_path(@deal, faq), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo: false }
+                  = button_to t("meetia.dashboard.common.delete"), dashboard_deal_deal_faq_path(@deal, faq), method: :delete, class: "db-v2-btn db-v2-btn--danger db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo: false, confirm: t("meetia.dashboard.knowledge.delete_confirm") }
     - else
       p.text-muted.deal-knowledge-empty
         - if @deal.deal_summary.present?
-          | 資料処理が完了しました。下のツールでFAQを充実させられます。
+          = t("meetia.dashboard.knowledge.empty_ready")
         - else
-          | 資料アップロード後、FAQの提案・追加ができます。
+          = t("meetia.dashboard.knowledge.empty_waiting")
 
     details.deal-faq-advanced class=(deal_owner.gap_analysis_suggest_only? ? "deal-faq-advanced--trial" : "")
       summary.deal-faq-advanced__summary
         - if deal_owner.gap_analysis_suggest_only?
-          | 🛠 精度を上げる（任意）
+          = t("meetia.dashboard.knowledge.tools_trial")
         - else
-          | AI分析・FAQ追加ツール
+          = t("meetia.dashboard.knowledge.tools")
       .deal-faq-advanced__body
         .deal-faq-tools
-          = button_to "資料からFAQ提案", analyze_gaps_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, disabled: @deal.deal_summary.blank?, data: { turbo: false }
-          = button_to "商談ログから提案", suggest_from_events_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo: false }
-          = button_to "Buyerストレステスト", stress_test_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, disabled: @deal.deal_summary.blank?, data: { turbo: false }
+          = button_to t("meetia.dashboard.knowledge.suggest_from_docs"), analyze_gaps_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, disabled: @deal.deal_summary.blank?, data: { turbo: false }
+          = button_to t("meetia.dashboard.knowledge.suggest_from_logs"), suggest_from_events_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo: false }
+          = button_to t("meetia.dashboard.knowledge.stress_test"), stress_test_dashboard_deal_deal_faqs_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, disabled: @deal.deal_summary.blank?, data: { turbo: false }
           - if deal_owner.gap_analysis_suggest_only?
-            span.deal-faq-analyze-hint トライアルは各分析が軽量モードです
+            span.deal-faq-analyze-hint = t("meetia.dashboard.knowledge.trial_hint")
 
         = form_with model: DealFaq.new, url: dashboard_deal_deal_faqs_path(@deal), local: true, html: { class: "deal-faq-create-form" } do |f|
           .db-v2-form-group
-            = f.label :question, "質問を手動追加", class: "db-v2-form-label"
-            = f.text_area :question, class: "db-v2-form-control", rows: 2, placeholder: "例: 最低契約期間はありますか？"
+            = f.label :question, t("meetia.dashboard.knowledge.add_manual"), class: "db-v2-form-label"
+            = f.text_area :question, class: "db-v2-form-control", rows: 2, placeholder: t("meetia.dashboard.knowledge.add_question_ph")
           .db-v2-form-group
-            = f.label :answer, "回答", class: "db-v2-form-label"
-            = f.text_area :answer, class: "db-v2-form-control", rows: 3, placeholder: "Buyer向けの回答"
+            = f.label :answer, t("meetia.dashboard.knowledge.answer"), class: "db-v2-form-label"
+            = f.text_area :answer, class: "db-v2-form-control", rows: 3, placeholder: t("meetia.dashboard.knowledge.add_answer_ph")
           .db-v2-form-group
-            = f.label :category, "カテゴリ", class: "db-v2-form-label"
-            = f.select :category, DealFaq::CATEGORIES.map { |k, v| [v, k] }, {}, class: "db-v2-form-control"
-          = f.submit "FAQを追加", class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs"
+            = f.label :category, t("meetia.dashboard.knowledge.category"), class: "db-v2-form-label"
+            = f.select :category, DealFaq::CATEGORIES.keys.map { |k| [t("meetia.dashboard.faq.categories.#{k}"), k] }, {}, class: "db-v2-form-control"
+          = f.submit t("meetia.dashboard.knowledge.add_faq"), class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs"

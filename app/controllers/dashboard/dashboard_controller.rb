@@ -3,7 +3,7 @@ class Dashboard::DashboardController < Dashboard::BaseController
     if admin_signed_in?
       @deals = Deal.includes(:deal_documents, :deal_summary, :user_progresses)
                    .order(updated_at: :desc)
-      @display_name = "管理者"
+      @display_name = t("meetia.dashboard.home.admin_name")
       deal_ids = Deal.pluck(:id)
     else
       @deals = current_client.deals

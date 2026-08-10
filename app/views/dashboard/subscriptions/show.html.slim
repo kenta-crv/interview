@@ -6,12 +6,13 @@
   .db-v2-bottom-card__header
     h2.db-v2-bottom-card__title
       i.fa-solid.fa-id-card aria-hidden="true"
-      |  現在のプラン
+      |  
+      = t("meetia.dashboard.subscription.current_plan")
   .db-v2-bottom-card__body
     - if @subscription.present? || @target_client.on_trial?
       .db-v2-subscription-status
         .db-v2-subscription-status__row
-          span.db-v2-subscription-status__label プランタイプ
+          span.db-v2-subscription-status__label = t("meetia.dashboard.subscription.plan_type")
           span.db-v2-subscription-status__value
             - if is_trial
               = Subscription::PLAN_NAMES[:trial]
@@ -19,14 +20,14 @@
               = @subscription&.plan_name || "—"
 
         .db-v2-subscription-status__row
-          span.db-v2-subscription-status__label ステータス
+          span.db-v2-subscription-status__label = t("meetia.dashboard.subscription.status")
           span.db-v2-subscription-status__value class=("db-v2-subscription-status__value--trial" if is_trial)
             - if is_trial
-              | トライアル中
+              = t("meetia.dashboard.status.trialing")
             - elsif @subscription&.cancelled?
-              | 解約手続き済み
+              = t("meetia.dashboard.status.cancel_pending")
             - elsif is_active
-              | 有効
+              = t("meetia.dashboard.status.active")
             - else
               = @subscription&.status || "—"
 
@@ -36,44 +37,44 @@
 
         - if current_trial_ends_at.present?
           .db-v2-subscription-status__row
-            span.db-v2-subscription-status__label トライアル終了日
-            span.db-v2-subscription-status__value = current_trial_ends_at.strftime("%Y年%m月%d日")
+            span.db-v2-subscription-status__label = t("meetia.dashboard.subscription.trial_ends")
+            span.db-v2-subscription-status__value = l(current_trial_ends_at.to_date, format: :long)
 
       - unless admin_signed_in?
         .db-v2-subscription-upgrade
-          h3.db-v2-subscription-upgrade__title プランのアップグレード・変更
+          h3.db-v2-subscription-upgrade__title = t("meetia.dashboard.subscription.upgrade_title")
           = link_to plans_path, class: "db-v2-btn db-v2-btn--primary" do
             i.fa-solid.fa-tags aria-hidden="true"
-            span プランを変更する
+            span = t("meetia.dashboard.subscription.change_plan")
 
         - if can_cancel
           .db-v2-subscription-cancel
             p.db-v2-subscription-cancel__note
               - if is_trial
-                | トライアル期間中でも解約できます。解約後はトライアル終了時の自動課金が停止されます。
+                = t("meetia.dashboard.subscription.cancel_trial_note")
               - else
-                | 解約手続き後も、契約期間の終了日まではご利用いただけます。
-            = link_to "サブスクリプションを解約する", cancel_confirm_dashboard_subscription_path(subscription_path_options), class: "db-v2-btn db-v2-btn--danger"
+                = t("meetia.dashboard.subscription.cancel_active_note")
+            = link_to t("meetia.dashboard.subscription.cancel_cta"), cancel_confirm_dashboard_subscription_path(subscription_path_options), class: "db-v2-btn db-v2-btn--danger"
 
     - else
       .db-v2-empty-state
-        p.db-v2-empty-state__text アクティブなサブスクリプションがありません。
+        p.db-v2-empty-state__text = t("meetia.dashboard.subscription.empty")
         = link_to plans_path, class: "db-v2-btn db-v2-btn--primary" do
-          span プランを選択する
+          span = t("meetia.dashboard.subscription.choose_plan")
 
 .db-v2-bottom-card
   .db-v2-bottom-card__header
-    h2.db-v2-bottom-card__title 支払い履歴
+    h2.db-v2-bottom-card__title = t("meetia.dashboard.subscription.payments")
   .db-v2-bottom-card__body
     - if @payments.present?
       .db-v2-leads-table-wrap
         table.db-v2-leads-table
           thead
             tr
-              th 日付
-              th 金額
-              th 説明
-              th ステータス
+              th = t("meetia.dashboard.subscription.col_date")
+              th = t("meetia.dashboard.subscription.col_amount")
+              th = t("meetia.dashboard.subscription.col_desc")
+              th = t("meetia.dashboard.subscription.col_status")
           tbody
             - @payments.each do |payment|
               tr
@@ -82,4 +83,4 @@
                 td = payment.try(:description) || "—"
                 td = payment.status
     - else
-      p.db-v2-empty-state__text 支払い履歴はありません。
+      p.db-v2-empty-state__text = t("meetia.dashboard.subscription.no_payments")

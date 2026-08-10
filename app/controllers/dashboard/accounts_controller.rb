@@ -9,7 +9,7 @@ module Dashboard
     def update
       @client.assign_attributes(account_params)
       if @client.save(context: :profile_update)
-        redirect_to dashboard_account_path, notice: "企業情報を更新しました。"
+        redirect_to dashboard_account_path, notice: t("meetia.dashboard.flash.account_updated")
       else
         render :show, status: :unprocessable_entity
       end

@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
   layout :layout_for_request
 
   before_action :set_locale
+  before_action :stash_omniauth_locale
   before_action :init_breadcrumbs
   helper_method :breadcrumbs, :current_locale, :locale_root_href, :href_for_locale,
                 :available_ui_locales, :locale_switch_path_for
@@ -63,6 +64,15 @@ class ApplicationController < ActionController::Base
     locale = resolve_ui_locale
     I18n.locale = locale
     session[:ui_locale] = locale.to_s
+  end
+
+  # OAuth は /clients/auth/*（/en 外）へ飛ぶため、開始時点の UI locale を session に残す
+  def stash_omniauth_locale
+    return unless request.path.to_s.start_with?("/clients/auth/")
+    return if request.path.to_s.include?("/callback")
+
+    locale = session[:ui_locale].presence || I18n.locale.to_s
+    session[:omniauth_locale] = locale if Client::LOCALES.include?(locale)
   end
 
   def resolve_ui_locale

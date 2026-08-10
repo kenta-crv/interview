@@ -111,11 +111,11 @@ module DealFollowUpTemplateDefaults
     missing_destination = !follow_up_destination_url_present?
 
     if missing_templates && missing_destination
-      "担当者／契約のリンク先と、送信するメールが未設定です"
+      I18n.t("meetia.dashboard.follow_up.lock_both")
     elsif missing_destination
-      "担当者または契約のリンク先URLが未設定です"
+      I18n.t("meetia.dashboard.follow_up.lock_destination")
     else
-      "送信するフォローメールが1通もオンになっていません"
+      I18n.t("meetia.dashboard.follow_up.lock_templates")
     end
   end
 

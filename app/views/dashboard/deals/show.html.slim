@@ -1,83 +1,85 @@
-.db-v2-deal-show data-deal-dashboard="" data-processing-status-url=processing_status_dashboard_deal_path(@deal) data-is-processing=(@deal.processing? ? "true" : "false")
+.db-v2-deal-show data-deal-dashboard="" data-processing-status-url=processing_status_dashboard_deal_path(@deal) data-is-processing=(@deal.processing? ? "true" : "false") data-i18n-uploading=t("meetia.dashboard.js.uploading") data-i18n-ai-failed=t("meetia.dashboard.js.ai_failed_reload") data-i18n-ai-done=t("meetia.dashboard.js.ai_done_reload") data-i18n-copy-after-publish=t("meetia.dashboard.js.copy_after_publish") data-i18n-copy-ok=t("meetia.dashboard.js.copy_ok") data-i18n-ai-improving=t("meetia.dashboard.js.ai_improving")
   .db-v2-header.db-v2-header--deal
     .db-v2-header__left
       .db-v2-deal-show__meta
-        span.db-v2-deal-show__badge AI商談
+        span.db-v2-deal-show__badge = t("meetia.dashboard.deals.badge_ai")
         - if @deal.managed_by_admin?
-          span.db-v2-status-badge.db-v2-status-badge--live Admin管理
+          span.db-v2-status-badge.db-v2-status-badge--live = t("meetia.dashboard.status.admin_managed")
         - else
-          span.db-v2-status-badge Client管理
+          span.db-v2-status-badge = t("meetia.dashboard.status.client_managed")
         - if @deal.playback_ready?
-          span.db-v2-status-badge.db-v2-status-badge--live 公開中
+          span.db-v2-status-badge.db-v2-status-badge--live = t("meetia.dashboard.status.live")
         - elsif @deal.processing?
-          span.db-v2-status-badge.db-v2-status-badge--progress 処理中
+          span.db-v2-status-badge.db-v2-status-badge--progress = t("meetia.dashboard.status.processing")
         - elsif @deal.failed?
-          span.db-v2-status-badge.db-v2-status-badge--fail 失敗
+          span.db-v2-status-badge.db-v2-status-badge--fail = t("meetia.dashboard.status.failed")
         - else
-          span.db-v2-status-badge.db-v2-status-badge--ready 編集中
+          span.db-v2-status-badge.db-v2-status-badge--ready = t("meetia.dashboard.status.editing")
       h1.db-v2-header__title = @deal.title
-      p.db-v2-header__subtitle = @deal.description.presence || "資料アップロード・台本編集・公開設定"
+      p.db-v2-header__subtitle = @deal.description.presence || t("meetia.dashboard.deals.default_subtitle")
     .db-v2-header__right
       = render "/dashboard/theme_switch"
       .db-v2-deal-show__actions
-        = link_to presentation_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--primary", target: "_blank", rel: "noopener", data: { turbo: false }, title: "プレビュー専用（リードは記録されません）" do
+        = link_to presentation_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--primary", target: "_blank", rel: "noopener", data: { turbo: false }, title: t("meetia.dashboard.deals.preview_only_title") do
           i.fa-solid.fa-play aria-hidden="true"
-          span 即時プレゼン
-        = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener", data: { turbo: false }, title: "プレビュー専用（リードは記録されません）" do
+          span = t("meetia.dashboard.deals.instant_present")
+        = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener", data: { turbo: false }, title: t("meetia.dashboard.deals.preview_only_title") do
           i.fa-solid.fa-wand-magic-sparkles aria-hidden="true"
-          span シミュレーション
+          span = t("meetia.dashboard.deals.simulation")
         - if can_manage_deal?(@deal)
           = link_to edit_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
             i.fa-solid.fa-gear aria-hidden="true"
-            span 基本情報
+            span = t("meetia.dashboard.deals.basic_info")
         = link_to dashboard_deals_path, class: "db-v2-btn db-v2-btn--ghost" do
           i.fa-solid.fa-arrow-left aria-hidden="true"
-          span 一覧
+          span = t("meetia.dashboard.deals.list_short")
 
   p.db-v2-muted.db-v2-deal-show__preview-note
-    | 即時プレゼン／シミュレーションはプレビューです（リードは記録されません）。リード確認は共有URLの「開く」またはコピーした公開URLで登録してください。
+    = t("meetia.dashboard.deals.preview_note")
 
   .db-v2-share-strip data-share-ready=(@deal.publicly_accessible? ? "true" : "false")
     .db-v2-share-strip__label
       i.fa-solid.fa-link aria-hidden="true"
-      span 共有URL
+      span = t("meetia.dashboard.deals.share_url")
     .db-v2-copy-row
       input.db-v2-form-control type="text" id="deal-share-url-field" value=public_deal_session_url(@deal.access_token) readonly=true
-      button.db-v2-btn.db-v2-btn--primary type="button" id="deal-share-url-copy" コピー
-      = link_to "開く", public_deal_session_path(@deal.access_token), class: "db-v2-btn db-v2-btn--ghost", id: "deal-share-url-open", target: "_blank", rel: "noopener", data: { turbo: false }
+      button.db-v2-btn.db-v2-btn--primary type="button" id="deal-share-url-copy" = t("meetia.dashboard.common.copy")
+      = link_to t("meetia.dashboard.common.open"), public_deal_session_path(@deal.access_token), class: "db-v2-btn db-v2-btn--ghost", id: "deal-share-url-open", target: "_blank", rel: "noopener", data: { turbo: false }
 
   - if @deal.processing?
     .db-v2-alert.db-v2-alert--info#processing-banner
       i.fa-solid.fa-spinner.fa-spin aria-hidden="true"
       div
-        p#processing-message AI処理中です（要約・台本・音声生成）。このページは自動更新されます。
+        p#processing-message = t("meetia.dashboard.deals.processing_message")
         - if client_signed_in?
           .db-v2-form-actions.db-v2-form-actions--inline
-            = button_to "処理が止まっている場合はリセット", reset_processing_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", data: { turbo: false, confirm: "処理状態をリセットして再度アップロードできるようにします。よろしいですか？" }
+            = button_to t("meetia.dashboard.deals.reset_stuck"), reset_processing_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", data: { turbo: false, confirm: t("meetia.dashboard.deals.reset_confirm") }
     / application.js が壊れていても完了を拾えるよう、処理中はインラインでポーリングする
     - processing_status_url = processing_status_dashboard_deal_path(@deal)
+    - processing_fail_msg = t("meetia.dashboard.deals.processing_failed_reload")
+    - processing_ok_msg = t("meetia.dashboard.deals.processing_done_reload")
     script type="text/javascript"
-      == "(function(){var url=#{processing_status_url.to_json};function tick(){fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}}).then(function(r){return r.ok?r.json():null;}).then(function(d){if(!d){setTimeout(tick,5000);return;}if(!d.processing){var m=document.getElementById('processing-message');if(m){m.textContent=d.failed?'AI処理に失敗しました。ページを更新します…':'AI処理が完了しました。ページを更新します…';}window.location.reload();return;}setTimeout(tick,3000);}).catch(function(){setTimeout(tick,5000);});}tick();})();"
+      == "(function(){var url=#{processing_status_url.to_json};var failMsg=#{processing_fail_msg.to_json};var okMsg=#{processing_ok_msg.to_json};function tick(){fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}}).then(function(r){return r.ok?r.json():null;}).then(function(d){if(!d){setTimeout(tick,5000);return;}if(!d.processing){var m=document.getElementById('processing-message');if(m){m.textContent=d.failed?failMsg:okMsg;}window.location.reload();return;}setTimeout(tick,3000);}).catch(function(){setTimeout(tick,5000);});}tick();})();"
   - elsif @deal.failed?
     .db-v2-alert.db-v2-alert--danger
       i.fa-solid.fa-circle-exclamation aria-hidden="true"
-      p AI処理に失敗しました。「PDFを再処理」から再実行してください。
+      p = t("meetia.dashboard.deals.processing_failed")
 
-  nav.db-v2-tabs role="tablist" aria-label="商談管理タブ"
+  nav.db-v2-tabs role="tablist" aria-label=t("meetia.dashboard.deals.tabs_aria")
     button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="studio" aria-selected="true"
       i.fa-solid.fa-clapperboard aria-hidden="true"
-      span スタジオ
+      span = t("meetia.dashboard.deals.tab_studio")
     button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="distribution" aria-selected="false"
       i.fa-solid.fa-tower-broadcast aria-hidden="true"
-      span 配信設定
+      span = t("meetia.dashboard.deals.tab_distribution")
     button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="follow-up" aria-selected="false"
       i.fa-solid.fa-envelope aria-hidden="true"
-      span フォローメール
+      span = t("meetia.dashboard.deals.tab_follow_up")
       - if follow_up_feature_available?(deal_owner) && @follow_up_setup_gaps.any?
-        span.db-v2-tabs__mark title=@deal.follow_up_share_lock_message aria-label="設定未完了" !
+        span.db-v2-tabs__mark title=@deal.follow_up_share_lock_message aria-label=t("meetia.dashboard.deals.setup_incomplete") !
     button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="analytics" aria-selected="false"
       i.fa-solid.fa-chart-line aria-hidden="true"
-      span ログ/分析
+      span = t("meetia.dashboard.deals.tab_analytics")
 
   .db-v2-tab-panels
     #deal-tab-studio.db-v2-tab-panel.is-active role="tabpanel"
@@ -89,46 +91,46 @@
               .db-v2-bottom-card__header.db-v2-bottom-card__header--split
                 h2.db-v2-bottom-card__title
                   i.fa-solid.fa-file-arrow-up aria-hidden="true"
-                  |  資料アップロード
+                  = t("meetia.dashboard.deals.upload_title")
                 span.db-v2-lang-badge = @deal.language.upcase
               .db-v2-bottom-card__body
                 - unless can_manage_deal?(@deal)
                   .db-v2-alert.db-v2-alert--warning.db-v2-alert--compact
                     i.fa-solid.fa-circle-info aria-hidden="true"
-                    p = @deal.managed_by_admin? ? "この商談はAdmin管理です。資料アップロード・公開はAdminで行ってください。" : "この商談はClient管理です。資料アップロード・公開は企業アカウントで行ってください。"
+                    p = @deal.managed_by_admin? ? t("meetia.dashboard.deals.admin_only_upload") : t("meetia.dashboard.deals.client_only_upload")
                 - if @deal.processing?
                   .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
                     i.fa-solid.fa-spinner.fa-spin aria-hidden="true"
-                    p AI処理中のため、新しい資料はアップロードできません。完了後に再度お試しください。
+                    p = t("meetia.dashboard.deals.upload_blocked_processing")
                 - if can_manage_deal?(@deal)
                   = form_tag upload_documents_dashboard_deal_path(@deal), multipart: true, id: "documents-upload-form", class: "db-v2-upload-form", data: { turbo: false } do
                     .db-v2-upload-form__panel
                       p.db-v2-upload-form__lead
                         i.fa-solid.fa-cloud-arrow-up aria-hidden="true"
-                        |  PDFをアップロード（バックグラウンドでAI処理）
-                      p.db-v2-upload-form__hint 一度アップロードすると、この商談IDでは再アップロードできません。処理には数分かかります。
+                        = t("meetia.dashboard.deals.upload_pdf_title")
+                      p.db-v2-upload-form__hint = t("meetia.dashboard.deals.upload_hint")
                       .db-v2-upload-form__controls
-                        label.db-v2-form-label for="deal-documents-input" PDFファイル
+                        label.db-v2-form-label for="deal-documents-input" = t("meetia.dashboard.deals.pdf_file")
                         = file_field_tag "files[]", multiple: true, accept: ".pdf,application/pdf", class: "db-v2-form-control db-v2-upload-form__input", id: "deal-documents-input", disabled: @deal.processing?
                         button.db-v2-btn.db-v2-btn--ghost type="button" id="deal-documents-pick" disabled=@deal.processing?
                           i.fa-solid.fa-folder-open aria-hidden="true"
-                          span ファイルを選択
+                          span = t("meetia.dashboard.deals.choose_file")
                     #deal-documents-selected.db-v2-upload-zone__selected hidden=true
-                      p.db-v2-upload-zone__selected-label 選択中のファイル
+                      p.db-v2-upload-zone__selected-label = t("meetia.dashboard.deals.selected_files")
                       ul#deal-documents-file-list.db-v2-upload-zone__file-list
                     #deal-documents-error.db-v2-upload-zone__error hidden=true
-                      p PDFファイルを選択してください
+                      p = t("meetia.dashboard.deals.select_pdf_error")
                     .db-v2-form-actions
-                      = submit_tag "アップロードしてAI処理開始", class: "db-v2-btn db-v2-btn--primary", id: "deal-documents-submit", disabled: @deal.processing?
+                      = submit_tag t("meetia.dashboard.deals.upload_start"), class: "db-v2-btn db-v2-btn--primary", id: "deal-documents-submit", disabled: @deal.processing?
 
           - if @deal.deal_documents.proposals.any?
             .db-v2-bottom-card
               .db-v2-bottom-card__header
-                h2.db-v2-bottom-card__title アップロード済み資料
+                h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.uploaded_docs")
               .db-v2-bottom-card__body
                 .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
                   i.fa-solid.fa-lock aria-hidden="true"
-                  p 提案資料はこの商談IDでは固定です。再アップロードするとFAQや音声台本の整合性が崩れるため、変更が必要な場合は新しい商談を作成してください。
+                  p = t("meetia.dashboard.deals.proposal_locked_note")
                 .db-v2-doc-list
                   - @deal.deal_documents.proposals.each do |doc|
                     - preview_src = doc.file.attached? ? rails_blob_path(doc.file, disposition: "inline") : nil
@@ -142,45 +144,45 @@
                             .db-v2-doc-row__meta = number_to_human_size(doc.file_size)
                         - if doc.file.attached?
                           .db-v2-doc-row__actions
-                            = link_to "PDFを開く", rails_blob_path(doc.file, disposition: "inline"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", target: "_blank", rel: "noopener"
+                            = link_to t("meetia.dashboard.deals.open_pdf"), rails_blob_path(doc.file, disposition: "inline"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", target: "_blank", rel: "noopener"
                             = link_to "DL", rails_blob_path(doc.file, disposition: "attachment"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs"
                       details.db-v2-doc-accordion data-pdf-preview=""
                         summary.db-v2-doc-accordion__summary
                           span.db-v2-doc-accordion__cta.db-v2-doc-accordion__cta--closed
-                            | この資料のプレビューを表示する
+                            = t("meetia.dashboard.deals.show_preview")
                           span.db-v2-doc-accordion__cta.db-v2-doc-accordion__cta--open
-                            | プレビューを閉じる
+                            = t("meetia.dashboard.deals.hide_preview")
                         - if preview_src
                           .db-v2-doc-accordion__body
                             .db-v2-pdf-preview__frame
                               iframe data-src=preview_src title=File.basename(doc.file.filename.to_s) loading="lazy"
                             - if related_pages.any?
-                              p.db-v2-pdf-preview__meta 抽出ページ: #{related_pages.map(&:page_number).join(", ")}（全#{related_pages.size}面）
+                              p.db-v2-pdf-preview__meta = t("meetia.dashboard.deals.extracted_pages", pages: related_pages.map(&:page_number).join(", "), count: related_pages.size)
                         - else
                           .db-v2-doc-accordion__body
-                            p.db-v2-pdf-preview__meta 資料データがありません
+                            p.db-v2-pdf-preview__meta = t("meetia.dashboard.deals.no_doc_data")
 
                 .db-v2-form-actions.db-v2-form-actions--split
                   - if @deal.deal_pages.any? && !@deal.processing?
                     .db-v2-alert.db-v2-alert--success.db-v2-alert--compact
                       i.fa-solid.fa-circle-check aria-hidden="true"
                       p
-                        | 処理済み（#{@deal.deal_pages.count}ページ）
+                        = t("meetia.dashboard.deals.processed_pages", count: @deal.deal_pages.count)
                         - if @deal.playback_ready
-                          | ／ 公開中
+                          = t("meetia.dashboard.deals.live_suffix")
                         - else
-                          | ／ 編集・公開待ち
+                          = t("meetia.dashboard.deals.awaiting_publish")
                   - elsif !@deal.processing? && @deal.deal_pages.empty?
                     .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
-                      p 未処理です。「PDFを再処理」を実行してください。
+                      p = t("meetia.dashboard.deals.unprocessed")
                   - if can_manage_deal?(@deal)
-                    = button_to (@deal.deal_pages.any? ? "PDFを再処理" : "PDFを処理開始"),
+                    = button_to (@deal.deal_pages.any? ? t("meetia.dashboard.deals.reprocess") : t("meetia.dashboard.deals.start_process")),
                       reprocess_dashboard_deal_path(@deal),
                       method: :post,
                       class: "db-v2-btn db-v2-btn--ghost",
                       disabled: @deal.processing?,
                       data: { turbo: false },
-                      form: { data: { turbo: false }, onsubmit: "return confirm('PDFを再処理します。バックグラウンドで実行されます。よろしいですか？');" }
+                      form: { data: { turbo: false }, onsubmit: "return confirm(#{t('meetia.dashboard.deals.reprocess_confirm').to_json});" }
 
           .db-v2-deal-form-surface
             = render "deal_knowledge"
@@ -188,40 +190,40 @@
           - if @deal.deal_pages.any?
             .db-v2-bottom-card#content-edit
               .db-v2-bottom-card__header.db-v2-bottom-card__header--split
-                h2.db-v2-bottom-card__title 台本・音声編集
+                h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.script_audio_title")
                 .db-v2-deal-show__actions
                   - if can_manage_deal?(@deal)
                     - if deal_owner.faq_required_for_publish? && @deal.low_knowledge_coverage?
-                      - publish_confirm = "ナレッジ完成度が#{@knowledge_coverage}%です。このまま公開しますか？"
+                      - publish_confirm = t("meetia.dashboard.deals.publish_confirm_coverage", coverage: @knowledge_coverage)
                     - else
-                      - publish_confirm = "商談URLを公開しますか？"
-                    = button_to "公開する", publish_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: publish_confirm, turbo: false }
+                      - publish_confirm = t("meetia.dashboard.deals.publish_confirm")
+                    = button_to t("meetia.dashboard.deals.publish"), publish_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: publish_confirm, turbo: false }
                   - elsif admin_signed_in? && !@deal.managed_by_admin?
-                    = button_to "Admin管理にして公開可能にする", claim_admin_management_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost", data: { confirm: "この商談をAdmin管理に切り替えます。以降はClientからは公開・編集できません。よろしいですか？", turbo: false }
-                    span.db-v2-muted この商談はClient管理です
+                    = button_to t("meetia.dashboard.deals.claim_admin"), claim_admin_management_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost", data: { confirm: t("meetia.dashboard.deals.claim_admin_confirm"), turbo: false }
+                    span.db-v2-muted = t("meetia.dashboard.deals.client_managed_note")
                   - else
-                    span.db-v2-muted = @deal.managed_by_admin? ? "Admin管理の商談です" : "公開・編集は商談オーナーのみ可能です"
+                    span.db-v2-muted = @deal.managed_by_admin? ? t("meetia.dashboard.deals.admin_managed_note") : t("meetia.dashboard.deals.owner_only_note")
 
               .db-v2-bottom-card__body
                 .db-v2-voice-bar
                   .db-v2-voice-bar__copy
                     p.db-v2-voice-bar__label
                       i.fa-solid.fa-microphone-lines aria-hidden="true"
-                      |  AIナレーションの声
+                      = t("meetia.dashboard.deals.voice_bar_title")
                     p.db-v2-voice-bar__hint
-                      | 現在: #{Deal::TTS_VOICE_GENDERS[@deal.tts_voice_gender]}。サイトのAIアバターに寄せたトーンです。変更後は完了まで数十秒かかります。
+                      = t("meetia.dashboard.deals.voice_bar_current", voice: t("meetia.dashboard.voice.#{@deal.tts_voice_gender}", default: @deal.tts_voice_gender))
                   = form_with url: regenerate_audio_dashboard_deal_path(@deal), method: :post, local: true, html: { class: "db-v2-voice-bar__form", data: { turbo: false, turbolinks: false } } do
-                    = select_tag :tts_voice_gender, options_for_select(Deal::TTS_VOICE_GENDERS.map { |k, v| [v, k] }, @deal.tts_voice_gender), class: "db-v2-form-control db-v2-voice-bar__select", aria: { label: "AIナレーションの声" }
-                    = submit_tag "この声で読み上げを作り直す", class: "db-v2-btn db-v2-btn--primary db-v2-voice-bar__submit", data: { disable_with: "作り直し中（完了までお待ちください）...", confirm: "選択した声で、冒頭〜全スライドの読み上げを作り直します。完了まで数十秒かかります。よろしいですか？" }
+                    = select_tag :tts_voice_gender, options_for_select(Deal::TTS_VOICE_GENDERS.keys.map { |k| [t("meetia.dashboard.voice.#{k}"), k] }, @deal.tts_voice_gender), class: "db-v2-form-control db-v2-voice-bar__select", aria: { label: t("meetia.dashboard.deals.field_voice") }
+                    = submit_tag t("meetia.dashboard.deals.voice_rebuild"), class: "db-v2-btn db-v2-btn--primary db-v2-voice-bar__submit", data: { disable_with: t("meetia.dashboard.deals.voice_rebuild_busy"), confirm: t("meetia.dashboard.deals.voice_rebuild_confirm") }
 
                 = form_with url: update_content_dashboard_deal_path(@deal), method: :patch, local: true, html: { id: "deal-content-form", data: { turbolinks: false }, class: "db-v2-deal-form-surface" } do
                   .db-v2-form-section
-                    h3.db-v2-form-section__title 冒頭パート
-                    - [["greeting", "挨拶"], ["company_overview", "会社概要"], ["usage_guide", "操作案内"], ["closing", "クロージング"]].each do |key, label|
+                    h3.db-v2-form-section__title = t("meetia.dashboard.deals.opening_parts")
+                    - %w[greeting company_overview usage_guide closing].each do |key|
                       .db-v2-form-group
                         .db-v2-form-group__head
-                          label.db-v2-form-label = label
-                          = link_to "AI改善", ai_rewrite_dashboard_deal_path(@deal, target: key), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs btn-ai-rewrite", data: { turbolinks: false, confirm: "AIで台本を改善します。数秒〜数十秒かかる場合があります。" }
+                          label.db-v2-form-label = t("meetia.dashboard.scripts.#{key}")
+                          = link_to t("meetia.dashboard.deals.ai_improve"), ai_rewrite_dashboard_deal_path(@deal, target: key), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs btn-ai-rewrite", data: { turbolinks: false, confirm: t("meetia.dashboard.deals.ai_improve_confirm") }
                         = text_area_tag "deal[#{key}_script]", @deal.public_send("#{key}_script").presence || @deal.public_send("default_#{key}_text"), class: "db-v2-form-control", rows: 3
                         - audio_url = @deal.opening_speech_url(key)
                         - if audio_url
@@ -229,124 +231,124 @@
                             source src=audio_url type="audio/mpeg"
 
                   .db-v2-form-section
-                    h3.db-v2-form-section__title スライド台本（#{@deal_pages.count}面）
+                    h3.db-v2-form-section__title = t("meetia.dashboard.deals.slide_scripts", count: @deal_pages.count)
                     - @deal_pages.each do |page|
                       .db-v2-page-card
                         span.db-v2-page-card__badge P. #{page.page_number}
                         .db-v2-form-group
-                          label.db-v2-form-label タイトル
-                          = text_field_tag "pages[#{page.id}][title]", page.title, class: "db-v2-form-control", placeholder: "スライド #{page.page_number}"
+                          label.db-v2-form-label = t("meetia.dashboard.deals.slide_title")
+                          = text_field_tag "pages[#{page.id}][title]", page.title, class: "db-v2-form-control", placeholder: t("meetia.dashboard.deals.slide_title_ph", n: page.page_number)
                         .db-v2-form-group
                           .db-v2-form-group__head
-                            label.db-v2-form-label 読み上げ台本
+                            label.db-v2-form-label = t("meetia.dashboard.deals.slide_script")
                             .db-v2-deal-show__actions
-                              = link_to "AI改善", ai_rewrite_dashboard_deal_path(@deal, target: "page", page_id: page.id), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs btn-ai-rewrite", data: { turbolinks: false, confirm: "AIで台本を改善します。数秒〜数十秒かかる場合があります。" }
-                              = link_to "このページだけ作り直す", regenerate_audio_dashboard_deal_path(@deal, page_id: page.id), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", data: { turbolinks: false, confirm: "このページの読み上げだけ作り直しますか？" }
+                              = link_to t("meetia.dashboard.deals.ai_improve"), ai_rewrite_dashboard_deal_path(@deal, target: "page", page_id: page.id), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs btn-ai-rewrite", data: { turbolinks: false, confirm: t("meetia.dashboard.deals.ai_improve_confirm") }
+                              = link_to t("meetia.dashboard.deals.rebuild_page_audio"), regenerate_audio_dashboard_deal_path(@deal, page_id: page.id), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", data: { turbolinks: false, confirm: t("meetia.dashboard.deals.rebuild_page_confirm") }
                           = text_area_tag "pages[#{page.id}][script]", page.script, class: "db-v2-form-control", rows: 4
                           - if page.page_audio.attached?
                             audio.db-v2-audio-player controls=true
                               source src=@deal.page_audio_path(page) type="audio/mpeg"
 
                   .db-v2-form-actions
-                    = submit_tag "変更を保存", class: "db-v2-btn db-v2-btn--primary"
+                    = submit_tag t("meetia.dashboard.deals.save_changes"), class: "db-v2-btn db-v2-btn--primary"
 
     #deal-tab-distribution.db-v2-tab-panel role="tabpanel"
       .db-v2-deal-grid.db-v2-deal-grid--single
         .db-v2-bottom-card
           .db-v2-bottom-card__header
-            h2.db-v2-bottom-card__title 公開ステータス
+            h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.publish_status")
           .db-v2-bottom-card__body
             - if @deal.publicly_accessible?
               .db-v2-alert.db-v2-alert--success.db-v2-alert--compact
                 i.fa-solid.fa-circle-check aria-hidden="true"
-                p 商談URLは公開中です
+                p = t("meetia.dashboard.deals.url_live")
             - else
               .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
-                p 台本確認後、スタジオタブの「公開する」を押してください
+                p = t("meetia.dashboard.deals.url_waiting")
             .db-v2-form-group
-              label.db-v2-form-label 商談URL（LPに貼り付け）
+              label.db-v2-form-label = t("meetia.dashboard.deals.deal_url_label")
               .db-v2-copy-row data-share-ready=(@deal.publicly_accessible? ? "true" : "false")
                 input.db-v2-form-control type="text" value=public_deal_session_url(@deal.access_token) readonly=true
-                button.db-v2-btn.db-v2-btn--primary type="button" data-copy-share-url="" コピー
+                button.db-v2-btn.db-v2-btn--primary type="button" data-copy-share-url="" = t("meetia.dashboard.common.copy")
 
         .db-v2-bottom-card#visitor-registration
           .db-v2-bottom-card__header
-            h2.db-v2-bottom-card__title 参加者情報の入力
+            h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.visitor_reg_title")
           .db-v2-bottom-card__body.db-v2-deal-form-surface
-            p.db-v2-muted 商談URLを開いたときに、訪問者へ入力してもらう項目を設定します。情報なしで即商談に入ることも選べます。
+            p.db-v2-muted = t("meetia.dashboard.deals.visitor_reg_lead")
             = form_with url: update_visitor_registration_settings_dashboard_deal_path(@deal), method: :patch, local: true do
               .db-v2-visitor-skip
                 = hidden_field_tag "deal[skip_visitor_registration]", "0", id: "deal_skip_visitor_registration_hidden"
                 label.db-v2-visitor-skip__label
                   = check_box_tag "deal[skip_visitor_registration]", "1", @deal.skip_visitor_registration?, id: "deal_skip_visitor_registration", class: "db-v2-visitor-skip__input"
                   span.db-v2-visitor-skip__copy
-                    span.db-v2-visitor-skip__title 情報入力なしで即商談開始
-                    span.db-v2-visitor-skip__hint オンにすると、リンクを開いた直後に商談画面へ進みます
-              p.db-v2-muted.db-v2-visitor-fields__note 各項目の表示方法（上記をオンにした場合は使われません）
+                    span.db-v2-visitor-skip__title = t("meetia.dashboard.deals.skip_reg_title")
+                    span.db-v2-visitor-skip__hint = t("meetia.dashboard.deals.skip_reg_hint")
+              p.db-v2-muted.db-v2-visitor-fields__note = t("meetia.dashboard.deals.visitor_fields_note")
               .db-v2-visitor-fields
                 - Deal::VISITOR_INFO_FIELD_KEYS.each do |key|
                   .db-v2-visitor-fields__row
-                    span.db-v2-visitor-fields__name = Deal::VISITOR_INFO_FIELD_LABELS[key]
+                    span.db-v2-visitor-fields__name = t("meetia.dashboard.visitor_fields.#{key}")
                     .db-v2-segment
-                      - [["非表示", "hidden"], ["任意", "optional"], ["必須", "required"]].each do |label_text, mode|
+                      - %w[hidden optional required].each do |mode|
                         label.db-v2-segment__option
                           = radio_button_tag "deal[visitor_info_fields][#{key}]", mode, @deal.visitor_info_field_mode(key) == mode, class: "db-v2-segment__input"
-                          span.db-v2-segment__text = label_text
+                          span.db-v2-segment__text = t("meetia.dashboard.visitor_modes.#{mode}")
               .db-v2-form-actions
-                = submit_tag "保存", class: "db-v2-btn db-v2-btn--primary"
+                = submit_tag t("meetia.dashboard.common.save"), class: "db-v2-btn db-v2-btn--primary"
 
         .db-v2-bottom-card
           .db-v2-bottom-card__header
-            h2.db-v2-bottom-card__title AI要約
+            h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.ai_summary")
           .db-v2-bottom-card__body
             - if @deal.deal_summary
               .db-v2-text-block = @deal.deal_summary.summary
             - else
-              p.db-v2-muted 資料アップロード後に自動生成されます
+              p.db-v2-muted = t("meetia.dashboard.deals.ai_summary_empty")
 
         .db-v2-bottom-card#presentation-cta
           .db-v2-bottom-card__header
-            h2.db-v2-bottom-card__title プレゼンCTA
+            h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.cta_title")
           .db-v2-bottom-card__body.db-v2-deal-form-surface
-            p.db-v2-muted 契約ボタン・終了モーダルの文言とリンク先
+            p.db-v2-muted = t("meetia.dashboard.deals.cta_lead")
             = form_with model: @deal, url: update_presentation_settings_dashboard_deal_path(@deal), method: :patch, local: true do |f|
               .db-v2-form-group
-                = f.label :presentation_cta_label, "CTAボタン文言", class: "db-v2-form-label"
+                = f.label :presentation_cta_label, t("meetia.dashboard.deals.cta_button_label"), class: "db-v2-form-label"
                 = f.text_field :presentation_cta_label, class: "db-v2-form-control"
               .db-v2-form-group
-                = f.label :presentation_cta_url, "リンク先URL", class: "db-v2-form-label"
+                = f.label :presentation_cta_url, t("meetia.dashboard.deals.cta_url"), class: "db-v2-form-label"
                 = f.url_field :presentation_cta_url, class: "db-v2-form-control", placeholder: "https://"
               .db-v2-form-group
-                = f.label :exit_contract_label, "終了：契約ボタン", class: "db-v2-form-label"
+                = f.label :exit_contract_label, t("meetia.dashboard.deals.exit_contract"), class: "db-v2-form-label"
                 = f.text_field :exit_contract_label, class: "db-v2-form-control"
               .db-v2-form-group
-                = f.label :exit_sales_call_label, "終了：担当者商談", class: "db-v2-form-label"
+                = f.label :exit_sales_call_label, t("meetia.dashboard.deals.exit_sales"), class: "db-v2-form-label"
                 = f.text_field :exit_sales_call_label, class: "db-v2-form-control"
               .db-v2-form-actions
-                = f.submit "保存", class: "db-v2-btn db-v2-btn--primary"
+                = f.submit t("meetia.dashboard.common.save"), class: "db-v2-btn db-v2-btn--primary"
 
     #deal-tab-follow-up.db-v2-tab-panel role="tabpanel"
       .db-v2-deal-grid.db-v2-deal-grid--single
         - if follow_up_feature_available?(deal_owner)
           .db-v2-bottom-card#follow-up-settings
             .db-v2-bottom-card__header
-              h2.db-v2-bottom-card__title 商談後フォローメール
+              h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.follow_up_title")
             .db-v2-bottom-card__body.db-v2-deal-form-surface
-              p.db-v2-muted 商談終了後に最大5通（即時・3日・7日・15日・30日）送ります。メール内の担当者／契約リンクをクリックすると以降は止まります。
+              p.db-v2-muted = t("meetia.dashboard.deals.follow_up_lead")
               = form_with url: update_follow_up_settings_dashboard_deal_path(@deal), method: :patch, local: true do
                 - destination_missing = @follow_up_setup_gaps.include?(:destination)
                 .db-v2-form-group class=("db-v2-form-group--needs-input" if destination_missing)
                   = label_tag "deal[follow_up_sales_url]", class: "db-v2-form-label" do
-                    | 担当者に繋ぐリンク先URL
+                    = t("meetia.dashboard.deals.follow_up_sales_url")
                     - if destination_missing
-                      span.db-v2-form-label__req 未入力
-                  = url_field_tag "deal[follow_up_sales_url]", @deal.follow_up_sales_url, class: "db-v2-form-control", placeholder: "https://calendly.com/... など"
+                      span.db-v2-form-label__req = t("meetia.dashboard.deals.required_missing")
+                  = url_field_tag "deal[follow_up_sales_url]", @deal.follow_up_sales_url, class: "db-v2-form-control", placeholder: t("meetia.dashboard.deals.follow_up_sales_ph")
                   - if destination_missing
-                    small.db-v2-form-hint ここか、配布タブの契約CTA URLのどちらかを入れてください
+                    small.db-v2-form-hint = t("meetia.dashboard.deals.follow_up_sales_hint")
                   - else
-                    small.db-v2-muted 未設定の場合は契約CTAのURLを使います
+                    small.db-v2-muted = t("meetia.dashboard.deals.follow_up_sales_fallback")
                 - if @follow_up_setup_gaps.include?(:templates)
-                  p.db-v2-form-hint 下のメールを1通以上オンにして保存してください
+                  p.db-v2-form-hint = t("meetia.dashboard.deals.follow_up_enable_hint")
                 .db-v2-follow-up-list
                   - @follow_up_templates.each_with_index do |template, idx|
                     details.db-v2-follow-up-card open=(idx.zero? || nil)
@@ -356,40 +358,40 @@
                           label.db-v2-check-label.db-v2-follow-up-card__enable onclick="event.stopPropagation()"
                             = check_box_tag "templates[#{template.id}][enabled]", "1", template.enabled, onclick: "event.stopPropagation()"
                             strong = template.label
-                          span.db-v2-follow-up-card__meta = "#{template.delay_days}日後"
+                          span.db-v2-follow-up-card__meta = t("meetia.dashboard.deals.follow_up_days_later", days: template.delay_days)
                           - unless template.enabled?
                             span.db-v2-follow-up-card__off OFF
                         span.db-v2-follow-up-card__chevron aria-hidden="true"
                       .db-v2-follow-up-card__body
                         .db-v2-form-row
-                          = label_tag "templates_#{template.id}_delay_days", "送信タイミング", class: "db-v2-form-label"
+                          = label_tag "templates_#{template.id}_delay_days", t("meetia.dashboard.deals.follow_up_timing"), class: "db-v2-form-label"
                           .db-v2-form-row__field
                             = number_field_tag "templates[#{template.id}][delay_days]", template.delay_days, class: "db-v2-form-control", min: 0, max: 365
-                            span.db-v2-muted 日後（商談終了から）
+                            span.db-v2-muted = t("meetia.dashboard.deals.follow_up_days_after")
                         .db-v2-form-group
-                          = label_tag "templates[#{template.id}_subject]", "件名", class: "db-v2-form-label"
+                          = label_tag "templates[#{template.id}_subject]", t("meetia.dashboard.deals.follow_up_subject"), class: "db-v2-form-label"
                           = text_field_tag "templates[#{template.id}][subject]", template.subject, class: "db-v2-form-control"
                         .db-v2-form-group
-                          = label_tag "templates[#{template.id}_body]", "本文", class: "db-v2-form-label"
+                          = label_tag "templates[#{template.id}_body]", t("meetia.dashboard.deals.follow_up_body"), class: "db-v2-form-label"
                           = text_area_tag "templates[#{template.id}][body]", template.body, class: "db-v2-form-control", rows: 5
-                          small.db-v2-muted 利用可能: {{user_name}} / {{deal_title}} / {{company_name}} / {{prospect_grade}} / {{session_summary}} / {{interest_topics}} / {{next_action}}
+                          small.db-v2-muted = t("meetia.dashboard.deals.follow_up_vars")
                         .db-v2-form-group.db-v2-form-group--checks
                           label.db-v2-check-label
                             = hidden_field_tag "templates[#{template.id}][include_sales_call_link]", "0"
                             = check_box_tag "templates[#{template.id}][include_sales_call_link]", "1", template.include_sales_call_link?
-                            | 担当者に繋ぐボタン
+                            = t("meetia.dashboard.deals.follow_up_sales_btn")
                           label.db-v2-check-label
                             = hidden_field_tag "templates[#{template.id}][include_contract_link]", "0"
                             = check_box_tag "templates[#{template.id}][include_contract_link]", "1", template.include_contract_link?
-                            | 契約を進めるボタン
+                            = t("meetia.dashboard.deals.follow_up_contract_btn")
                 .db-v2-form-actions
-                  = submit_tag "フォローアップ設定を保存", class: "db-v2-btn db-v2-btn--primary"
+                  = submit_tag t("meetia.dashboard.deals.follow_up_save"), class: "db-v2-btn db-v2-btn--primary"
         - else
           .db-v2-bottom-card#follow-up-settings
             .db-v2-bottom-card__header
-              h2.db-v2-bottom-card__title 商談後フォローメール
+              h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.follow_up_title")
             .db-v2-bottom-card__body
-              p.db-v2-muted Businessプラン以上で、商談終了後のメール追客・開封トラッキングが利用できます。
+              p.db-v2-muted = t("meetia.dashboard.deals.follow_up_locked_lead")
 
     #deal-tab-analytics.db-v2-tab-panel role="tabpanel"
       - a = @analytics
@@ -397,33 +399,33 @@
         .db-v2-summary-grid.db-v2-summary-grid--5
           .db-v2-summary-card
             .db-v2-summary-card__content
-              .db-v2-summary-card__label URLアクセス
+              .db-v2-summary-card__label = t("meetia.dashboard.home.metric_page_views")
               .db-v2-summary-card__value-row
                 span.db-v2-summary-card__value = a[:page_views]
           .db-v2-summary-card
             .db-v2-summary-card__content
-              .db-v2-summary-card__label 登録リード
+              .db-v2-summary-card__label = t("meetia.dashboard.home.metric_leads")
               .db-v2-summary-card__value-row
                 span.db-v2-summary-card__value = a[:leads_count]
               .db-v2-summary-card__trend
-                span.db-v2-summary-card__trend-label = a[:lead_rate] ? "登録率 #{a[:lead_rate]}%" : "—"
+                span.db-v2-summary-card__trend-label = a[:lead_rate] ? t("meetia.dashboard.home.metric_lead_rate", rate: a[:lead_rate]) : "—"
           .db-v2-summary-card
             .db-v2-summary-card__content
-              .db-v2-summary-card__label セッション開始
+              .db-v2-summary-card__label = t("meetia.dashboard.home.metric_sessions_started")
               .db-v2-summary-card__value-row
                 span.db-v2-summary-card__value = a[:sessions_started]
               .db-v2-summary-card__trend
-                span.db-v2-summary-card__trend-label = a[:start_rate] ? "開始率 #{a[:start_rate]}%" : "—"
+                span.db-v2-summary-card__trend-label = a[:start_rate] ? t("meetia.dashboard.home.metric_start_rate", rate: a[:start_rate]) : "—"
           .db-v2-summary-card
             .db-v2-summary-card__content
-              .db-v2-summary-card__label セッション完了
+              .db-v2-summary-card__label = t("meetia.dashboard.home.metric_sessions_completed")
               .db-v2-summary-card__value-row
                 span.db-v2-summary-card__value = a[:sessions_completed]
               .db-v2-summary-card__trend
-                span.db-v2-summary-card__trend-label = a[:completion_rate] ? "完了率 #{a[:completion_rate]}%" : "—"
+                span.db-v2-summary-card__trend-label = a[:completion_rate] ? t("meetia.dashboard.home.metric_completion_rate", rate: a[:completion_rate]) : "—"
           .db-v2-summary-card
             .db-v2-summary-card__content
-              .db-v2-summary-card__label 平均評価
+              .db-v2-summary-card__label = t("meetia.dashboard.home.metric_avg_rating")
               .db-v2-summary-card__value-row
                 span.db-v2-summary-card__value = a[:average_evaluation] || "—"
                 - if a[:average_evaluation]
@@ -432,9 +434,9 @@
 
         .db-v2-bottom-card
           .db-v2-bottom-card__header.db-v2-bottom-card__header--split
-            h2.db-v2-bottom-card__title リード・セッション
+            h2.db-v2-bottom-card__title = t("meetia.dashboard.home.leads_sessions")
             = link_to dashboard_deal_user_progresses_path(@deal), class: "db-v2-card-link" do
-              span リード一覧を見る
+              span = t("meetia.dashboard.home.view_leads")
               i.fa-solid.fa-chevron-right aria-hidden="true"
           .db-v2-bottom-card__body
             - segments = a[:funnel_segments]
@@ -451,20 +453,20 @@
                       span.db-v2-funnel-pie__badge style="background: #{seg[:color]};"
                       .db-v2-funnel-pie__legend-body
                         span.db-v2-funnel-pie__legend-label = seg[:label]
-                        span.db-v2-funnel-pie__legend-meta = "#{seg[:count]}件（#{seg[:share]}%）"
+                        span.db-v2-funnel-pie__legend-meta = t("meetia.dashboard.home.funnel_count", count: seg[:count], share: seg[:share])
                   .db-v2-funnel-pie__rates
-                    span = a[:lead_rate] ? "登録率 #{a[:lead_rate]}%" : "登録率 —"
-                    span = a[:start_rate] ? "開始率 #{a[:start_rate]}%" : "開始率 —"
-                    span = a[:completion_rate] ? "完了率 #{a[:completion_rate]}%" : "完了率 —"
+                    span = a[:lead_rate] ? t("meetia.dashboard.home.rate_with_value", label: t("meetia.dashboard.home.lead_rate_label"), rate: a[:lead_rate]) : t("meetia.dashboard.home.rate_empty", label: t("meetia.dashboard.home.lead_rate_label"))
+                    span = a[:start_rate] ? t("meetia.dashboard.home.rate_with_value", label: t("meetia.dashboard.home.start_rate_label"), rate: a[:start_rate]) : t("meetia.dashboard.home.rate_empty", label: t("meetia.dashboard.home.start_rate_label"))
+                    span = a[:completion_rate] ? t("meetia.dashboard.home.rate_with_value", label: t("meetia.dashboard.home.completion_rate_label"), rate: a[:completion_rate]) : t("meetia.dashboard.home.rate_empty", label: t("meetia.dashboard.home.completion_rate_label"))
             - else
-              p.db-v2-muted まだファネルデータがありません。
+              p.db-v2-muted = t("meetia.dashboard.home.funnel_empty_period")
 
             .progress-info style="margin-top:16px;"
               .info-row
-                .info-label 高見込リード（A+B）
+                .info-label = t("meetia.dashboard.home.high_prospects")
                 .info-value = a[:high_prospect_count]
               .info-row
-                .info-label 見込み度分布
+                .info-label = t("meetia.dashboard.home.prospect_grade_dist")
                 .info-value
                   - if a[:prospect_grade_counts].values.any?(&:positive?)
                     - %w[A B C D].each do |grade|
@@ -472,34 +474,34 @@
                       - next if count.zero?
                       span style="margin-right:12px;" #{grade}: #{count}
                   - else
-                    | まだ分析結果がありません
+                    = t("meetia.dashboard.home.no_analysis_yet")
               .info-row
-                .info-label CTAクリック
+                .info-label = t("meetia.dashboard.home.cta_clicks")
                 .info-value = a[:cta_clicks]
               .info-row
-                .info-label フォロー開封 / クリック
-                .info-value = "#{a[:follow_up_opened]} / #{a[:follow_up_clicked]}（送信 #{a[:follow_up_sent]}）"
+                .info-label = t("meetia.dashboard.home.follow_up")
+                .info-value = t("meetia.dashboard.home.follow_up_value", opened: a[:follow_up_opened], clicked: a[:follow_up_clicked], sent: a[:follow_up_sent])
               .info-row
-                .info-label 平均滞在時間
+                .info-label = t("meetia.dashboard.home.avg_duration")
                 .info-value = a[:average_duration_label]
               .info-row
-                .info-label 平均満足度
-                .info-value = a[:average_evaluation] ? "#{a[:average_evaluation]} / 5（#{a[:evaluation_count]}件）" : "まだ評価がありません"
+                .info-label = t("meetia.dashboard.home.avg_satisfaction")
+                .info-value = a[:average_evaluation] ? t("meetia.dashboard.home.avg_satisfaction_value", rating: a[:average_evaluation], count: a[:evaluation_count]) : t("meetia.dashboard.home.no_ratings_yet")
 
         - if a[:drop_offs].any?
           .db-v2-bottom-card
             .db-v2-bottom-card__header
-              h2.db-v2-bottom-card__title 離脱ページ
+              h2.db-v2-bottom-card__title = t("meetia.dashboard.home.drop_offs_title")
             .db-v2-bottom-card__body
-              p.db-v2-muted セッション終了時にいたページです。どこで離脱が多いか把握できます。
+              p.db-v2-muted = t("meetia.dashboard.home.drop_offs_deal_lead")
               .db-v2-leads-table-wrap
                 table.db-v2-leads-table
                   thead
                     tr
-                      th ページ
-                      th タイトル
-                      th 離脱数
-                      th 割合
+                      th = t("meetia.dashboard.home.col_page")
+                      th = t("meetia.dashboard.home.col_title")
+                      th = t("meetia.dashboard.home.col_dropoffs")
+                      th = t("meetia.dashboard.home.col_share")
                   tbody
                     - a[:drop_offs].each do |row|
                       tr
@@ -511,16 +513,16 @@
         - if @deal_evaluations&.any?
           .db-v2-bottom-card
             .db-v2-bottom-card__header
-              h2.db-v2-bottom-card__title 満足度フィードバック（直近）
+              h2.db-v2-bottom-card__title = t("meetia.dashboard.home.feedback_title")
             .db-v2-bottom-card__body
               .db-v2-leads-table-wrap
                 table.db-v2-leads-table
                   thead
                     tr
-                      th 日時
-                      th ユーザー
-                      th 評価
-                      th フィードバック
+                      th = t("meetia.dashboard.home.col_datetime")
+                      th = t("meetia.dashboard.home.col_user")
+                      th = t("meetia.dashboard.home.col_rating")
+                      th = t("meetia.dashboard.home.col_feedback")
                   tbody
                     - @deal_evaluations.each do |evaluation|
                       tr
@@ -532,24 +534,24 @@
         - if @presentation_events&.any?
           .db-v2-bottom-card#presentation-analytics
             .db-v2-bottom-card__header
-              h2.db-v2-bottom-card__title プレゼン操作ログ（直近#{@presentation_events.size}件）
+              h2.db-v2-bottom-card__title = t("meetia.dashboard.home.events_title", count: @presentation_events.size)
             .db-v2-bottom-card__body
-              p.db-v2-muted ユーザーのトピッククリック・離脱タイミングなどを記録しています
+              p.db-v2-muted = t("meetia.dashboard.home.events_lead")
               .db-v2-leads-table-wrap
                 table.db-v2-leads-table
                   thead
                     tr
-                      th 日時
-                      th ユーザー
-                      th 種別
-                      th ページ
-                      th トピック / ラベル
-                      th 詳細
+                      th = t("meetia.dashboard.home.col_datetime")
+                      th = t("meetia.dashboard.home.col_user")
+                      th = t("meetia.dashboard.home.col_type")
+                      th = t("meetia.dashboard.home.col_page")
+                      th = t("meetia.dashboard.home.col_topic_label")
+                      th = t("meetia.dashboard.home.col_detail")
                   tbody
                     - @presentation_events.each do |event|
                       tr
                         td= l(event.occurred_at, format: :short)
-                        td= event.user&.name.presence || event.user&.email || "プレビュー"
+                        td= event.user&.name.presence || event.user&.email || t("meetia.dashboard.home.preview_user")
                         td= event.display_event_type
                         td= event.page_number.presence || "-"
                         td
@@ -571,6 +573,6 @@
         - else
           .db-v2-bottom-card#presentation-analytics
             .db-v2-bottom-card__header
-              h2.db-v2-bottom-card__title プレゼン操作ログ
+              h2.db-v2-bottom-card__title = t("meetia.dashboard.home.events_empty_title")
             .db-v2-bottom-card__body
-              p.db-v2-muted 商談セッション開始後、操作ログがここに表示されます。
+              p.db-v2-muted = t("meetia.dashboard.home.events_empty_lead")

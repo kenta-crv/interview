@@ -36,7 +36,7 @@ class DealFaq < ApplicationRecord
   scope :for_conversation, -> { approved.where.not(answer: [nil, ""]) }
 
   def category_label
-    CATEGORIES[category] || category
+    I18n.t("meetia.dashboard.faq.categories.#{category}", default: CATEGORIES[category] || category)
   end
 
   def answered?
@@ -60,7 +60,7 @@ class DealFaq < ApplicationRecord
   end
 
   def source_label
-    SOURCE_LABELS[source] || source
+    I18n.t("meetia.dashboard.faq.sources.#{source}", default: SOURCE_LABELS[source] || source)
   end
 
   def approve!(answer_text)

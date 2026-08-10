@@ -4,8 +4,9 @@
     .db-v2-modal__header
       h2#problem-report-modal-title.db-v2-modal__title
         i.fa-solid.fa-bug aria-hidden="true"
-        |  問題報告
-      button.db-v2-modal__close type="button" aria-label="閉じる" data-problem-modal-close=""
+        |  
+        = t("meetia.dashboard.problem.title")
+      button.db-v2-modal__close type="button" aria-label=t("meetia.dashboard.common.close") data-problem-modal-close=""
         i.fa-solid.fa-xmark aria-hidden="true"
     .db-v2-modal__body.db-v2-modal__body--problem
-      iframe.db-v2-problem-modal__frame src="about:blank" title="問題報告フォーム" data-problem-modal-frame="" data-src=new_problem_path(embed: 1)
+      iframe.db-v2-problem-modal__frame src="about:blank" title=t("meetia.dashboard.problem.form_title") data-problem-modal-frame="" data-src=new_problem_path(embed: 1)

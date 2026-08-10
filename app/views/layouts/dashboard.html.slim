@@ -1,5 +1,5 @@
 doctype html
-html.dashboard-html lang="ja"
+html.dashboard-html lang=current_locale
   head
     = render "layouts/head"
     = stylesheet_link_tag "dashboard", media: "all", "data-turbo-track": "reload"
@@ -15,7 +15,7 @@ html.dashboard-html lang="ja"
 
       .db-v2-main-content
         .db-v2-mobile-bar
-          button.db-v2-sidebar__toggle type="button" aria-label="メニューを開く" data-dashboard-sidebar-toggle=""
+          button.db-v2-sidebar__toggle type="button" aria-label=t("meetia.dashboard.nav.open_menu") data-dashboard-sidebar-toggle=""
             i.fa-solid.fa-bars aria-hidden="true"
           span.db-v2-mobile-bar__label Dashboard
         - if flash.any?

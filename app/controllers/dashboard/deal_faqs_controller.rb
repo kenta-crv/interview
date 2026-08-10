@@ -8,7 +8,7 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
     @faq.position = @deal.deal_faqs.maximum(:position).to_i + 1
 
     if @faq.save
-      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: "FAQを追加しました"
+      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: t("meetia.dashboard.flash.faq_added")
     else
       redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: @faq.errors.full_messages.join(", ")
     end
@@ -19,7 +19,7 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
     attrs[:status] = "approved" if attrs[:answer].present? && @faq.pending?
 
     if @faq.update(attrs)
-      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: "FAQを更新しました"
+      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: t("meetia.dashboard.flash.faq_updated")
     else
       redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: @faq.errors.full_messages.join(", ")
     end
@@ -27,26 +27,26 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
 
   def destroy
     @faq.destroy!
-    redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: "FAQを削除しました"
+    redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: t("meetia.dashboard.flash.faq_deleted")
   end
 
   def skip
     @faq = @deal.deal_faqs.find(params[:id])
     @faq.skip!
-    redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: "提案をスキップしました"
+    redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: t("meetia.dashboard.flash.faq_skipped")
   end
 
   def analyze_gaps
     if @deal.deal_summary.blank?
-      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: "資料処理が完了してからギャップ分析を実行できます"
+      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: t("meetia.dashboard.flash.gap_need_summary")
       return
     end
 
     result = DealEngine::FaqGapAnalysisService.new(@deal, client: current_client).analyze!
     notice = if result[:created].to_i.positive?
-      "資料をもとにBuyerが聞きそうな質問を#{result[:created]}件提案しました"
+      t("meetia.dashboard.flash.gap_suggested", count: result[:created])
     else
-      "新しい提案はありません（既存FAQでカバー済みの可能性があります）"
+      t("meetia.dashboard.flash.gap_none")
     end
 
     redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: notice
@@ -56,9 +56,9 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
     limit = current_client.on_trial? ? 3 : 10
     result = DealEngine::FaqFromEventsService.new(@deal, limit: limit).suggest!
     notice = if result[:created].to_i.positive?
-      "商談ログから#{result[:created]}件のFAQ候補を追加しました"
+      t("meetia.dashboard.flash.events_suggested", count: result[:created])
     else
-      "新しいFAQ候補はありません"
+      t("meetia.dashboard.flash.events_none")
     end
 
     redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: notice
@@ -66,15 +66,15 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
 
   def stress_test
     if @deal.deal_summary.blank?
-      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: "資料処理が完了してからストレステストを実行できます"
+      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: t("meetia.dashboard.flash.stress_need_summary")
       return
     end
 
     result = DealEngine::BuyerStressTestService.new(@deal, client: current_client).run!
     notice = if result[:created].to_i.positive?
-      "厳しいBuyer質問#{result[:tested]}件中、未カバー#{result[:created]}件をFAQ候補に追加しました"
+      t("meetia.dashboard.flash.stress_added", tested: result[:tested], created: result[:created])
     else
-      "ストレステスト完了：主要な質問はFAQでカバーされています"
+      t("meetia.dashboard.flash.stress_ok")
     end
 
     redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), notice: notice
@@ -89,7 +89,7 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
               current_client.deals.where(managed_by_admin: false).find(params[:deal_id])
             end
   rescue ActiveRecord::RecordNotFound
-    redirect_to dashboard_deals_path, alert: "商談が見つかりません。"
+    redirect_to dashboard_deals_path, alert: t("meetia.dashboard.flash.deal_not_found")
   end
 
   def set_faq

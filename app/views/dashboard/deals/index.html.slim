@@ -3,51 +3,51 @@
 
 .db-v2-header
   .db-v2-header__left
-    h1.db-v2-header__title 商談管理
+    h1.db-v2-header__title = t("meetia.dashboard.deals.index_title")
     p.db-v2-header__subtitle
       - if admin_signed_in?
-        | 全契約企業の商談一覧
+        = t("meetia.dashboard.deals.index_subtitle_admin")
       - elsif deal_limit
-        | プラン: #{plan[:name]} ／ 商談 #{current_client.deals_count} / #{deal_limit} 件
+        = t("meetia.dashboard.deals.index_subtitle_limited", plan: plan[:name], used: current_client.deals_count, limit: deal_limit)
       - else
-        | プラン: #{plan[:name]} ／ 商談 #{current_client.deals_count} 件（無制限）
+        = t("meetia.dashboard.deals.index_subtitle_unlimited", plan: plan[:name], used: current_client.deals_count)
   .db-v2-header__right
     = render "/dashboard/theme_switch"
     - if client_signed_in? || admin_signed_in?
       = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary" do
         i.fa-solid.fa-plus aria-hidden="true"
-        span = admin_signed_in? && !client_signed_in? ? "Admin商談を新規作成" : "商談を新規作成"
+        span = admin_signed_in? && !client_signed_in? ? t("meetia.dashboard.deals.create_admin") : t("meetia.dashboard.deals.create")
 
 .db-v2-bottom-card
   .db-v2-bottom-card__header.db-v2-bottom-card__header--split
-    h2.db-v2-bottom-card__title 商談一覧
-    span.db-v2-deals-count = "#{@deals.size} 件"
+    h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.list_title")
+    span.db-v2-deals-count = t("meetia.dashboard.common.count", count: @deals.size)
 
   .db-v2-bottom-card__body
     - if @deals.empty?
       .db-v2-empty-state
         .db-v2-empty-state__icon
           i.fa-solid.fa-briefcase aria-hidden="true"
-        p.db-v2-empty-state__text まだ商談がありません
+        p.db-v2-empty-state__text = t("meetia.dashboard.deals.empty")
         - if client_signed_in? || admin_signed_in?
           = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary" do
             i.fa-solid.fa-plus aria-hidden="true"
-            span = admin_signed_in? && !client_signed_in? ? "Admin商談を作成" : "最初の商談を作成"
+            span = admin_signed_in? && !client_signed_in? ? t("meetia.dashboard.deals.create_admin_short") : t("meetia.dashboard.deals.create_first")
     - else
       .db-v2-leads-table-wrap
         table.db-v2-leads-table.db-v2-deals-table
           thead
             tr
-              th ID
-              th タイトル
+              th = t("meetia.dashboard.deals.col_id")
+              th = t("meetia.dashboard.deals.col_title")
               - if admin_signed_in?
-                th 管理
-              th ステータス
-              th 言語
-              th 資料
-              th 公開
-              th 作成日
-              th 操作
+                th = t("meetia.dashboard.deals.col_managed")
+              th = t("meetia.dashboard.deals.col_status")
+              th = t("meetia.dashboard.deals.col_language")
+              th = t("meetia.dashboard.deals.col_docs")
+              th = t("meetia.dashboard.deals.col_published")
+              th = t("meetia.dashboard.deals.col_created")
+              th = t("meetia.dashboard.deals.col_actions")
           tbody
             - @deals.each do |deal|
               tr
@@ -63,14 +63,14 @@
                 td
                   - case deal.status
                   - when "uploading", "processing", "transcribing", "summarizing"
-                    span.db-v2-status-badge.db-v2-status-badge--progress 処理中
+                    span.db-v2-status-badge.db-v2-status-badge--progress = t("meetia.dashboard.status.processing")
                   - when "completed"
                     - if deal.playback_ready?
-                      span.db-v2-status-badge.db-v2-status-badge--live 公開中
+                      span.db-v2-status-badge.db-v2-status-badge--live = t("meetia.dashboard.status.live")
                     - else
-                      span.db-v2-status-badge.db-v2-status-badge--ready 準備完了
+                      span.db-v2-status-badge.db-v2-status-badge--ready = t("meetia.dashboard.status.ready")
                   - when "failed"
-                    span.db-v2-status-badge.db-v2-status-badge--fail 失敗
+                    span.db-v2-status-badge.db-v2-status-badge--fail = t("meetia.dashboard.status.failed")
                   - else
                     span.db-v2-status-badge = deal.status
                 td= deal.language.upcase
@@ -84,11 +84,11 @@
                 td
                   .db-v2-deals-table__actions
                     = link_to dashboard_deal_path(deal), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs" do
-                      span 詳細
+                      span = t("meetia.dashboard.common.detail")
                     = link_to presentation_dashboard_deal_path(deal), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", target: "_blank", rel: "noopener", data: { turbo: false } do
-                      span プレゼン
+                      span = t("meetia.dashboard.deals.action_presentation")
                     - if deal.access_token.present?
                       = link_to public_deal_session_path(deal.access_token), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", target: "_blank", rel: "noopener" do
-                        span 共有
-                    = button_to dashboard_deal_path(deal), method: :delete, class: "db-v2-btn db-v2-btn--danger db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo_confirm: "本当にこの商談を削除しますか？", confirm: "本当にこの商談を削除しますか？" } do
-                      span 削除
+                        span = t("meetia.dashboard.deals.action_share")
+                    = button_to dashboard_deal_path(deal), method: :delete, class: "db-v2-btn db-v2-btn--danger db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { turbo_confirm: t("meetia.dashboard.deals.delete_confirm"), confirm: t("meetia.dashboard.deals.delete_confirm") } do
+                      span = t("meetia.dashboard.common.delete")

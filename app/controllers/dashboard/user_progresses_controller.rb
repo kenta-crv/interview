@@ -25,6 +25,6 @@ class Dashboard::UserProgressesController < Dashboard::BaseController
               current_client.deals.find(params[:deal_id])
             end
   rescue ActiveRecord::RecordNotFound
-    redirect_to dashboard_deals_path, alert: "商談が見つかりません。"
+    redirect_to dashboard_deals_path, alert: t("meetia.dashboard.flash.deal_not_found")
   end
 end

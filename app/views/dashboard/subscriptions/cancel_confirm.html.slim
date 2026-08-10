@@ -1,22 +1,22 @@
 .db-v2-bottom-card
   .db-v2-bottom-card__header
-    h2.db-v2-bottom-card__title 解約の確認
+    h2.db-v2-bottom-card__title = t("meetia.dashboard.subscription.cancel_confirm_title")
   .db-v2-bottom-card__body
     .db-v2-alert.db-v2-alert--info
       i.fa-solid.fa-circle-info aria-hidden="true"
       div
-        p 解約手続きを完了すると、自動更新が停止されます。
+        p = t("meetia.dashboard.subscription.cancel_confirm_lead")
         p
-          strong 最終利用可能日： #{@available_until.strftime("%Y年%m月%d日")}
-        p.db-v2-checkout-alert-note この日付まで、有料機能を引き続きご利用いただけます。
+          strong = t("meetia.dashboard.subscription.cancel_until", date: l(@available_until.to_date, format: :long))
+        p.db-v2-checkout-alert-note = t("meetia.dashboard.subscription.cancel_until_note")
 
     .db-v2-subscription-status
       .db-v2-subscription-status__row
-        span.db-v2-subscription-status__label 現在のプラン
+        span.db-v2-subscription-status__label = t("meetia.dashboard.subscription.current_plan")
         span.db-v2-subscription-status__value = @target_client.current_plan_config[:name]
 
     .db-v2-checkout-form__actions
       = link_to dashboard_subscription_path(subscription_path_options), class: "db-v2-btn db-v2-btn--ghost" do
-        span 戻る
-      = button_to cancel_dashboard_subscription_path(subscription_path_options), method: :post, class: "db-v2-btn db-v2-btn--danger", data: { turbo_confirm: "本当に解約しますか？", confirm: "本当に解約しますか？" } do
-        span 解約を確定する
+        span = t("meetia.dashboard.common.back")
+      = button_to cancel_dashboard_subscription_path(subscription_path_options), method: :post, class: "db-v2-btn db-v2-btn--danger", data: { turbo_confirm: t("meetia.dashboard.subscription.cancel_confirm_dialog"), confirm: t("meetia.dashboard.subscription.cancel_confirm_dialog") } do
+        span = t("meetia.dashboard.subscription.cancel_confirm_btn")

@@ -1,0 +1,1190 @@
+ja:
+  meetia:
+    dashboard:
+      common:
+        close: 閉じる
+        save: 保存
+        cancel: キャンセル
+        delete: 削除
+        detail: 詳細
+        open: 開く
+        copy: コピー
+        back: 戻る
+        update: 更新
+        skip: スキップ
+        count: "%{count} 件"
+        count_companies: "%{count} 社"
+        breadcrumb: パンくず
+        dashboard: ダッシュボード
+        sign_out: ログアウト
+        theme_switch: テーマ切替
+        scheduled: 予定
+        unlimited_paren: "（無制限）"
+        points: "%{score}点"
+        'yes': はい
+      nav:
+        main_menu: メインメニュー
+        close_menu: メニューを閉じる
+        open_menu: メニューを開く
+        section_overview: 概要
+        section_deals: 商談
+        section_account: アカウント
+        section_current_deal: 現在の商談
+        dashboard: ダッシュボード
+        deals: 商談一覧
+        leads: リード管理
+        leads_hint: 商談作成後
+        studio: スタジオ
+        lead: リード
+        plan_billing: プラン・契約
+        companies: 契約企業
+        account_menu: アカウントメニュー
+        account: アカウント
+        company_profile: 企業情報
+        report_problem: 問題報告
+        onboarding: 契約フロー
+        top: トップ
+        choose_plan: プラン選択
+        subscription_status: 契約状況
+      problem:
+        title: 問題報告
+        form_title: 問題報告フォーム
+      home:
+        greeting: こんにちは、%{name} さん
+        admin_name: 管理者
+        subtitle: AI商談の成果サマリー
+        metric_page_views: URLアクセス
+        metric_page_views_hint: 公開URLの閲覧数
+        metric_leads: 登録リード
+        metric_leads_hint: 情報登録した見込み客
+        metric_lead_rate: 登録率 %{rate}%
+        metric_sessions_started: セッション開始
+        metric_sessions_started_hint: プレゼン開始数
+        metric_start_rate: 開始率 %{rate}%
+        metric_sessions_completed: セッション完了
+        metric_sessions_completed_hint: 評価付き終了
+        metric_completion_rate: 完了率 %{rate}%
+        metric_avg_rating: 平均評価
+        metric_rating_count: "%{count}件の評価"
+        metric_funnel: ファネル
+        funnel_count: "%{count}件（%{share}%）"
+        lead_rate_label: 登録率
+        start_rate_label: 開始率
+        completion_rate_label: 完了率
+        rate_with_value: "%{label} %{rate}%"
+        rate_empty: "%{label} —"
+        funnel_empty: まだファネルデータがありません
+        funnel_empty_period: まだファネルデータがありません。
+        high_prospects: 高見込リード（A+B）
+        cta_clicks: CTAクリック
+        cta_hint: 契約・担当者商談など
+        follow_up: フォロー開封 / クリック
+        follow_up_sent: 送信 %{count} 通
+        follow_up_sent_inline: 送信 %{count}
+        avg_duration: 平均滞在時間
+        avg_duration_hint: セッション離脱時の計測
+        drop_offs_title: 離脱ページ
+        drop_offs_lead: セッション終了時にいたページ（多い順）
+        col_page: ページ
+        col_title: タイトル
+        col_dropoffs: 離脱数
+        col_share: 割合
+        deals_hub_title: 商談を選ぶ
+        deals_hub_lead: ここから商談を開き、スタジオ・配信・フォロー・分析を管理します
+        new: 新規作成
+        empty_deals: 商談がまだありません。まず商談を作成してください。
+        create_deal: 商談を新規作成
+        col_status: ステータス
+        col_updated: 更新日
+        recent_leads: 最近のリード
+        col_name: 名前
+        col_deal: 商談
+        funnel_center_completion: 完了率
+        funnel_center_access: アクセス
+        funnel_visit_only: 訪問のみ
+        funnel_lead_only: 登録のみ
+        funnel_started_only: 開始のみ
+        funnel_completed: 完了
+        prospect_grade_dist: 見込み度分布
+        no_analysis_yet: まだ分析結果がありません
+        avg_satisfaction: 平均満足度
+        avg_satisfaction_value: "%{rating} / 5（%{count}件）"
+        no_ratings_yet: まだ評価がありません
+        drop_offs_deal_lead: セッション終了時にいたページです。どこで離脱が多いか把握できます。
+        feedback_title: 満足度フィードバック（直近）
+        col_datetime: 日時
+        col_user: ユーザー
+        col_rating: 評価
+        col_feedback: フィードバック
+        events_title: プレゼン操作ログ（直近%{count}件）
+        events_lead: ユーザーのトピッククリック・離脱タイミングなどを記録しています
+        events_empty_title: プレゼン操作ログ
+        events_empty_lead: 商談セッション開始後、操作ログがここに表示されます。
+        col_type: 種別
+        col_topic_label: トピック / ラベル
+        col_detail: 詳細
+        preview_user: プレビュー
+        leads_sessions: リード・セッション
+        view_leads: リード一覧を見る
+        follow_up_value: "%{opened} / %{clicked}（送信 %{sent}）"
+      status:
+        live: 公開中
+        processing: 処理中
+        ready: 準備完了
+        failed: 失敗
+        editing: 編集中
+        active: 有効
+        cancelled: 解約済
+        trial: トライアル
+        no_contract: 未契約
+        admin_managed: Admin管理
+        client_managed: Client管理
+        trialing: トライアル中
+        cancel_pending: 解約手続き済み
+        analyzing: 分析待ち
+        opted_out: 導入見送り
+      deals:
+        index_title: 商談管理
+        index_subtitle_admin: 全契約企業の商談一覧
+        index_subtitle_limited: 'プラン: %{plan} ／ 商談 %{used} / %{limit} 件'
+        index_subtitle_unlimited: 'プラン: %{plan} ／ 商談 %{used} 件（無制限）'
+        create: 商談を新規作成
+        create_admin: Admin商談を新規作成
+        list_title: 商談一覧
+        empty: まだ商談がありません
+        create_first: 最初の商談を作成
+        create_admin_short: Admin商談を作成
+        col_id: ID
+        col_title: タイトル
+        col_managed: 管理
+        col_status: ステータス
+        col_language: 言語
+        col_docs: 資料
+        col_published: 公開
+        col_created: 作成日
+        col_actions: 操作
+        action_presentation: プレゼン
+        action_share: 共有
+        delete_confirm: 本当にこの商談を削除しますか？
+        new_title: 新規商談作成
+        new_current: 新規作成
+        new_subtitle: タイトルと基本設定だけ先に登録し、続けて資料・台本を整えます
+        back_to_list: 一覧に戻る
+        back_to_list_short: 一覧へ
+        basic_info: 基本情報
+        admin_create_note: Admin作成の商談は Admin のみ公開・編集できます（Client側では操作不可）。
+        field_title: タイトル
+        field_title_ph: '例: 新サービス紹介商談'
+        field_description: 説明
+        field_description_ph: 社内メモや商談の目的（任意）
+        field_language: 言語
+        field_voice: AIナレーションの声
+        voice_hint: 商談中に話すAIの声です。デフォルトは女性。あとからスタジオで変更できます。
+        submit_create: 作成して続ける
+        edit_title: 基本情報編集
+        edit_subtitle: タイトル・説明などのメタデータのみ編集します。台本・音声は商談詳細で編集してください。
+        back_to_deal: 商談詳細へ
+        manage: 商談管理
+        badge_ai: AI商談
+        default_subtitle: 資料アップロード・台本編集・公開設定
+        preview_only_title: プレビュー専用（リードは記録されません）
+        instant_present: 即時プレゼン
+        simulation: シミュレーション
+        list_short: 一覧
+        preview_note: 即時プレゼン／シミュレーションはプレビューです（リードは記録されません）。リード確認は共有URLの「開く」またはコピーした公開URLで登録してください。
+        share_url: 共有URL
+        processing_message: AI処理中です（要約・台本・音声生成）。このページは自動更新されます。
+        reset_stuck: 処理が止まっている場合はリセット
+        reset_confirm: 処理状態をリセットして再度アップロードできるようにします。よろしいですか？
+        processing_failed_reload: AI処理に失敗しました。ページを更新します…
+        processing_done_reload: AI処理が完了しました。ページを更新します…
+        processing_failed: AI処理に失敗しました。「PDFを再処理」から再実行してください。
+        tabs_aria: 商談管理タブ
+        tab_studio: スタジオ
+        tab_distribution: 配信設定
+        tab_follow_up: フォローメール
+        tab_analytics: ログ/分析
+        setup_incomplete: 設定未完了
+        upload_title: 資料アップロード
+        admin_only_upload: この商談はAdmin管理です。資料アップロード・公開はAdminで行ってください。
+        client_only_upload: この商談はClient管理です。資料アップロード・公開は企業アカウントで行ってください。
+        upload_blocked_processing: AI処理中のため、新しい資料はアップロードできません。完了後に再度お試しください。
+        upload_pdf_title: PDFをアップロード（バックグラウンドでAI処理）
+        upload_hint: 一度アップロードすると、この商談IDでは再アップロードできません。処理には数分かかります。
+        pdf_file: PDFファイル
+        choose_file: ファイルを選択
+        selected_files: 選択中のファイル
+        select_pdf_error: PDFファイルを選択してください
+        upload_start: アップロードしてAI処理開始
+        uploaded_docs: アップロード済み資料
+        proposal_locked_note: 提案資料はこの商談IDでは固定です。再アップロードするとFAQや音声台本の整合性が崩れるため、変更が必要な場合は新しい商談を作成してください。
+        open_pdf: PDFを開く
+        show_preview: この資料のプレビューを表示する
+        hide_preview: プレビューを閉じる
+        extracted_pages: '抽出ページ: %{pages}（全%{count}面）'
+        no_doc_data: 資料データがありません
+        processed_pages: 処理済み（%{count}ページ）
+        live_suffix: "／ 公開中"
+        awaiting_publish: "／ 編集・公開待ち"
+        unprocessed: 未処理です。「PDFを再処理」を実行してください。
+        reprocess: PDFを再処理
+        start_process: PDFを処理開始
+        reprocess_confirm: PDFを再処理します。バックグラウンドで実行されます。よろしいですか？
+        script_audio_title: 台本・音声編集
+        publish_confirm_coverage: ナレッジ完成度が%{coverage}%です。このまま公開しますか？
+        publish_confirm: 商談URLを公開しますか？
+        publish: 公開する
+        claim_admin: Admin管理にして公開可能にする
+        claim_admin_confirm: この商談をAdmin管理に切り替えます。以降はClientからは公開・編集できません。よろしいですか？
+        client_managed_note: この商談はClient管理です
+        admin_managed_note: Admin管理の商談です
+        owner_only_note: 公開・編集は商談オーナーのみ可能です
+        voice_bar_title: AIナレーションの声
+        voice_bar_current: '現在: %{voice}。サイトのAIアバターに寄せたトーンです。変更後は完了まで数十秒かかります。'
+        voice_rebuild: この声で読み上げを作り直す
+        voice_rebuild_busy: 作り直し中（完了までお待ちください）...
+        voice_rebuild_confirm: 選択した声で、冒頭〜全スライドの読み上げを作り直します。完了まで数十秒かかります。よろしいですか？
+        opening_parts: 冒頭パート
+        ai_improve: AI改善
+        ai_improve_confirm: AIで台本を改善します。数秒〜数十秒かかる場合があります。
+        slide_scripts: スライド台本（%{count}面）
+        slide_title: タイトル
+        slide_title_ph: スライド %{n}
+        slide_script: 読み上げ台本
+        rebuild_page_audio: このページだけ作り直す
+        rebuild_page_confirm: このページの読み上げだけ作り直しますか？
+        save_changes: 変更を保存
+        publish_status: 公開ステータス
+        url_live: 商談URLは公開中です
+        url_waiting: 台本確認後、スタジオタブの「公開する」を押してください
+        deal_url_label: 商談URL（LPに貼り付け）
+        visitor_reg_title: 参加者情報の入力
+        visitor_reg_lead: 商談URLを開いたときに、訪問者へ入力してもらう項目を設定します。情報なしで即商談に入ることも選べます。
+        skip_reg_title: 情報入力なしで即商談開始
+        skip_reg_hint: オンにすると、リンクを開いた直後に商談画面へ進みます
+        visitor_fields_note: 各項目の表示方法（上記をオンにした場合は使われません）
+        ai_summary: AI要約
+        ai_summary_empty: 資料アップロード後に自動生成されます
+        cta_title: プレゼンCTA
+        cta_lead: 契約ボタン・終了モーダルの文言とリンク先
+        cta_button_label: CTAボタン文言
+        cta_url: リンク先URL
+        exit_contract: 終了：契約ボタン
+        exit_sales: 終了：担当者商談
+        follow_up_title: 商談後フォローメール
+        follow_up_lead: 商談終了後に最大5通（即時・3日・7日・15日・30日）送ります。メール内の担当者／契約リンクをクリックすると以降は止まります。
+        follow_up_sales_url: 担当者に繋ぐリンク先URL
+        required_missing: 未入力
+        follow_up_sales_ph: https://calendly.com/... など
+        follow_up_sales_hint: ここか、配布タブの契約CTA URLのどちらかを入れてください
+        follow_up_sales_fallback: 未設定の場合は契約CTAのURLを使います
+        follow_up_enable_hint: 下のメールを1通以上オンにして保存してください
+        follow_up_days_later: "%{days}日後"
+        follow_up_timing: 送信タイミング
+        follow_up_days_after: 日後（商談終了から）
+        follow_up_subject: 件名
+        follow_up_body: 本文
+        follow_up_vars: '利用可能: {{user_name}} / {{deal_title}} / {{company_name}} /
+          {{prospect_grade}} / {{session_summary}} / {{interest_topics}} / {{next_action}}'
+        follow_up_sales_btn: 担当者に繋ぐボタン
+        follow_up_contract_btn: 契約を進めるボタン
+        follow_up_save: フォローアップ設定を保存
+        follow_up_locked_lead: Businessプラン以上で、商談終了後のメール追客・開封トラッキングが利用できます。
+        uploading: アップロード中...
+        ai_improving: AI改善中...
+        copy_ok: URLをコピーしました
+        copy_after_publish: 公開後にご利用いただけます
+        session_leave: P.%{page} で離脱（%{ms}ms）
+      knowledge:
+        title: ナレッジ補完（FAQ）
+        coverage: 完成度 %{pct}%
+        simulation: シミュレーション
+        pending_count: 未回答FAQが %{count} 件あります。クリックして回答してください。
+        supplement_title: "\U0001F4CE 補足資料（FAQ自動抽出）"
+        supplement_hint: 料金表・仕様書・FAQ PDFなど。スライドには使わずFAQのみ抽出します。
+        supplement_max: 補足PDFは最大%{max}件までです。これ以上の追加はできません。
+        supplement_remaining: 補足PDFは残り%{remaining}件（最大%{max}件）まで追加できます。
+        upload_supplement: 補足PDFをアップロード
+        unanswered: 未回答
+        answered: 回答済
+        question: 質問
+        answer: 回答
+        answer_ph: Buyer向けの回答を入力してください
+        category: カテゴリ
+        delete_confirm: このFAQを削除しますか？
+        empty_ready: 資料処理が完了しました。下のツールでFAQを充実させられます。
+        empty_waiting: 資料アップロード後、FAQの提案・追加ができます。
+        tools_trial: "\U0001F6E0 精度を上げる（任意）"
+        tools: AI分析・FAQ追加ツール
+        suggest_from_docs: 資料からFAQ提案
+        suggest_from_logs: 商談ログから提案
+        stress_test: Buyerストレステスト
+        trial_hint: トライアルは各分析が軽量モードです
+        add_manual: 質問を手動追加
+        add_question_ph: '例: 最低契約期間はありますか？'
+        add_answer_ph: Buyer向けの回答
+        add_faq: FAQを追加
+        trial_optional_prefix: トライアル中はFAQ入力は
+        trial_optional_strong: 任意
+        trial_optional_mid: です。PDFアップロード後、まず
+        trial_optional_suffix: " をお試しください。"
+      voice:
+        female: 女性
+        male: 男性
+        selected: 選択した声
+      language:
+        ja: 日本語
+        en: English
+      visitor_fields:
+        company: 会社名
+        name: お名前
+        job_title: 役職
+        email: メールアドレス
+        tel: 電話番号
+        address: 住所
+        url: WebサイトURL
+        consideration_phase: ご検討の状況
+        planned_introduction_date: 導入予定日
+        key_points_for_application: 決め手になるポイント
+      visitor_modes:
+        hidden: 非表示
+        optional: 任意
+        required: 必須
+      phases:
+        initial: 初期
+        information_gathering: 情報収集
+        evaluation: 評価
+        decision: 意思決定
+      faq:
+        categories:
+          pricing: 料金・契約
+          implementation: 導入・体制
+          security: セキュリティ
+          comparison: 競合・比較
+          support: サポート
+          contract: 契約条件
+          other: その他
+        sources:
+          manual: 手動
+          ai_gap: AI提案
+          template: テンプレート
+          supplement_pdf: 補足PDF
+          session_log: 商談ログ
+          stress_test: ストレステスト
+          checklist: チェックリスト
+      events:
+        presentation_start: プレゼン開始
+        topic_click: トピッククリック
+        free_text_send: 自由入力
+        ai_reply: AI回答
+        chat_toggle: チャット開閉
+        page_view: ページ閲覧
+        session_close: 離脱
+        evaluation_submit: 評価送信
+        cta_click: CTAボタン
+        exit_contract_click: 終了：契約へ進む
+        exit_sales_call_click: 終了：担当者商談希望
+        closing_play: クロージング再生
+        last_button_click: 最後にボタン
+        materials_download: 資料ダウンロード
+      follow_up:
+        initial: 初回フォロー
+        nurture: 追客 %{n}
+        lock_both: 担当者／契約のリンク先と、送信するメールが未設定です
+        lock_destination: 担当者または契約のリンク先URLが未設定です
+        lock_templates: 送信するフォローメールが1通もオンになっていません
+      scripts:
+        greeting: 挨拶
+        company_overview: 会社概要
+        usage_guide: 操作案内
+        closing: クロージング
+      limits:
+        deal_limit: 商談数の上限（%{limit}件）に達しています。プランをアップグレードしてください。
+      account:
+        title: 企業情報
+        company: 会社名
+        name: 担当者名
+        email: メールアドレス
+        tel: 電話番号
+        address: 住所
+        url: URL
+        save: 保存する
+        problem_title: 問題報告
+        problem_lead: サービス利用中に不具合や問題が発生した場合は、こちらからご報告ください。
+        problem_hint: 送信後、ダッシュボードに完了通知が表示されます。
+        problem_cta: 問題を報告する
+        problem_new_window: 新しいウィンドウで開く
+      subscription:
+        current_plan: 現在のプラン
+        plan_type: プランタイプ
+        status: ステータス
+        trial_ends: トライアル終了日
+        upgrade_title: プランのアップグレード・変更
+        change_plan: プランを変更する
+        cancel_trial_note: トライアル期間中でも解約できます。解約後はトライアル終了時の自動課金が停止されます。
+        cancel_active_note: 解約手続き後も、契約期間の終了日まではご利用いただけます。
+        cancel_cta: サブスクリプションを解約する
+        empty: アクティブなサブスクリプションがありません。
+        choose_plan: プランを選択する
+        payments: 支払い履歴
+        col_date: 日付
+        col_amount: 金額
+        col_desc: 説明
+        col_status: ステータス
+        no_payments: 支払い履歴はありません。
+        cancel_confirm_title: 解約の確認
+        cancel_confirm_lead: 解約手続きを完了すると、自動更新が停止されます。
+        cancel_until: 最終利用可能日： %{date}
+        cancel_until_note: この日付まで、有料機能を引き続きご利用いただけます。
+        cancel_confirm_btn: 解約を確定する
+        cancel_confirm_dialog: 本当に解約しますか？
+        change_to: "%{name}に変更"
+      management:
+        subtitle: 契約企業の一覧と使用状況
+        list_title: 契約企業一覧
+        empty: 登録されている契約企業はありません
+        col_company: 企業名
+        col_email: メールアドレス
+        col_contact: 担当者
+        col_plan: プラン
+        col_status: 契約状態
+        col_deals: 商談数
+        col_live: 公開中
+        col_leads: リード数
+        col_registered: 登録日
+        col_actions: 操作
+        deals_unlimited: "%{count}（無制限）"
+      leads:
+        title: リード管理
+        back_to_deal: 商談に戻る
+        list_title: リード一覧
+        empty: まだリード情報がありません
+        col_id: ID
+        col_name: リード名
+        col_job: 役職
+        col_company: 会社名
+        col_email: メール
+        col_prospect: 見込み度
+        col_satisfaction: 満足度
+        col_phase: 検討フェーズ
+        col_intro_date: 導入予定日
+        col_created: 作成日
+        col_actions: 操作
+        score_paren: "（%{score}）"
+        detail: 詳細
+        fallback_name: 'リード #%{id}'
+        analyzed_at: 分析日時
+        summary_title: 商談サマリー
+        challenge: 課題
+        interest: 関心
+        consideration: 検討
+        next_action: 次アクション
+        interest_topics: 関心トピック
+        main_questions: 主な質問
+        feedback_label: 満足度フィードバック
+        summary_empty: 商談終了後に自動分析されます。
+        basic_info: 基本情報
+        user_name: ユーザー名
+        phone: 電話
+        address: 住所
+        website: Webサイト
+        progress_info: 進捗情報
+        key_points: 重要ポイント
+        events_title: プレゼン操作ログ
+        col_datetime: 日時
+        col_type: 種別
+        col_page: ページ
+        col_topic: トピック
+        col_detail: 詳細
+        follow_history: フォローメール履歴
+        session_ended: 商談終了
+        opted_out_at: 導入見送り（%{at}）
+        col_seq: 通数
+        col_subject: 件名
+        col_scheduled_sent: 予定/送信
+        col_opened: 開封
+        col_sales_click: 担当者クリック
+        col_contract_click: 契約クリック
+        col_status: 状態
+        opt_out_history: 導入見送り履歴
+        back_to_list: 一覧に戻る
+        to_studio: 商談スタジオへ
+      js:
+        uploading: アップロード中...
+        ai_failed_reload: AI処理に失敗しました。ページを更新します…
+        ai_done_reload: AI処理が完了しました。ページを更新します…
+        copy_after_publish: 公開後にご利用いただけます
+        copy_ok: URLをコピーしました
+        ai_improving: AI改善中...
+      flash:
+        login_required: ログインが必要です。
+        presentation_opening: 即時プレゼン画面を開きます
+        content_updated: 商談コンテンツを更新しました
+        page_not_found: ページが見つかりません
+        script_empty: 台本が空のためAI改善できません。先に台本を入力するか、PDFを再処理してください。
+        unknown_target: 不明な対象です
+        ai_rewritten: AIで書き直しました
+        ai_rewrite_failed: 'AI改善に失敗しました: %{message}'
+        invalid_voice: 声の設定が不正です
+        page_voice_rebuilt: このページを%{voice}の声で作り直しました
+        all_voice_rebuilt: "%{voice}の声で読み上げを作り直しました。下のプレイヤーで確認できます。"
+        audio_failed: '読み上げの作成に失敗しました: %{message}'
+        no_documents: 資料がありません。先にPDFをアップロードしてください
+        ai_busy: AI処理中です。完了までお待ちください
+        ai_started: AI処理を開始しました。完了まで数分かかる場合があります
+        not_processing: 処理中ではありません
+        processing_reset: 処理状態をリセットしました。再度アップロードできます。
+        cta_updated: プレゼンCTA設定を更新しました
+        visitor_updated: 参加者情報の入力設定を更新しました
+        follow_up_unavailable: 現在のプランではフォローアップ機能を利用できません
+        follow_up_updated: フォローアップ設定を更新しました
+        no_file: ファイルが選択されていません
+        proposal_locked: この商談IDでは提案資料を再アップロードできません。変更が必要な場合は新しい商談を作成してください
+        upload_started: 資料をアップロードしました。AI処理をバックグラウンドで開始しています
+        db_busy: データベースが混雑しています。数秒待ってから再度お試しください
+        generic_error: 'エラーが発生しました: %{message}'
+        supplement_max: 補足PDFは最大%{max}件までです
+        supplement_remaining: 補足PDFは残り%{remaining}件までアップロードできます
+        supplement_uploaded: 補足資料をアップロードしました。FAQ抽出をバックグラウンドで実行しています
+        slides_missing: スライドが未生成です。先にPDFをアップロードしてください
+        published: 商談URLを公開しました
+        admin_only: Adminのみ実行できます
+        already_admin: すでにAdmin管理の商談です
+        claimed_admin: Admin管理に切り替えました。公開・編集できます
+        deal_created: 商談を作成しました
+        deal_updated: 商談を更新しました
+        deal_deleted: 商談を削除しました
+        deal_not_found: 商談が見つかりません。
+        client_create_required: クライアント商談の新規作成は企業アカウントでログインしてください。Admin商談はAdminで作成できます。
+        forbidden_client_managed: この商談はクライアント管理です。公開・編集は企業アカウントで行ってください。
+        forbidden_admin_managed: この商談はAdmin管理です。公開・編集はAdminアカウントで行ってください。
+        faq_added: FAQを追加しました
+        faq_updated: FAQを更新しました
+        faq_deleted: FAQを削除しました
+        faq_skipped: 提案をスキップしました
+        gap_need_summary: 資料処理が完了してからギャップ分析を実行できます
+        gap_suggested: 資料をもとにBuyerが聞きそうな質問を%{count}件提案しました
+        gap_none: 新しい提案はありません（既存FAQでカバー済みの可能性があります）
+        events_suggested: 商談ログから%{count}件のFAQ候補を追加しました
+        events_none: 新しいFAQ候補はありません
+        stress_need_summary: 資料処理が完了してからストレステストを実行できます
+        stress_added: 厳しいBuyer質問%{tested}件中、未カバー%{created}件をFAQ候補に追加しました
+        stress_ok: ストレステスト完了：主要な質問はFAQでカバーされています
+        invalid_plan: 無効なプランです。
+        same_plan: 同じプランです。
+        no_active_sub: 現在有効なサブスクリプションはありません。
+        sub_missing: サブスクリプションが存在しません。
+        cancel_done: 解約手続きが完了しました。期間終了日まで継続してご利用いただけます。
+        cancel_failed: 解約処理に失敗しました。
+        stripe_cancel_failed: Stripe側のキャンセル処理に失敗しました。
+        client_required: クライアントを指定してください。
+        account_updated: 企業情報を更新しました。
+en:
+  meetia:
+    dashboard:
+      common:
+        close: Close
+        save: Save
+        cancel: Cancel
+        delete: Delete
+        detail: Details
+        open: Open
+        copy: Copy
+        back: Back
+        update: Update
+        skip: Skip
+        count: "%{count}"
+        count_companies: "%{count} companies"
+        breadcrumb: Breadcrumb
+        dashboard: Dashboard
+        sign_out: Sign out
+        theme_switch: Theme
+        scheduled: Scheduled
+        unlimited_paren: "(unlimited)"
+        points: "%{score} pts"
+        'yes': 'Yes'
+      nav:
+        main_menu: Main menu
+        close_menu: Close menu
+        open_menu: Open menu
+        section_overview: Overview
+        section_deals: Deals
+        section_account: Account
+        section_current_deal: Current deal
+        dashboard: Dashboard
+        deals: Deals
+        leads: Leads
+        leads_hint: After creating a deal
+        studio: Studio
+        lead: Leads
+        plan_billing: Plan & billing
+        companies: Companies
+        account_menu: Account menu
+        account: Account
+        company_profile: Company profile
+        report_problem: Report a problem
+        onboarding: Onboarding
+        top: Home
+        choose_plan: Plans
+        subscription_status: Subscription
+      problem:
+        title: Report a problem
+        form_title: Problem report form
+      home:
+        greeting: Hello, %{name}
+        admin_name: Admin
+        subtitle: AI deal performance summary
+        metric_page_views: URL visits
+        metric_page_views_hint: Public URL page views
+        metric_leads: Registered leads
+        metric_leads_hint: Prospects who registered
+        metric_lead_rate: Signup rate %{rate}%
+        metric_sessions_started: Sessions started
+        metric_sessions_started_hint: Presentation starts
+        metric_start_rate: Start rate %{rate}%
+        metric_sessions_completed: Sessions completed
+        metric_sessions_completed_hint: Ended with rating
+        metric_completion_rate: Completion rate %{rate}%
+        metric_avg_rating: Avg. rating
+        metric_rating_count: "%{count} ratings"
+        metric_funnel: Funnel
+        funnel_count: "%{count} (%{share}%)"
+        lead_rate_label: Signup rate
+        start_rate_label: Start rate
+        completion_rate_label: Completion rate
+        rate_with_value: "%{label} %{rate}%"
+        rate_empty: "%{label} —"
+        funnel_empty: No funnel data yet
+        funnel_empty_period: No funnel data yet.
+        high_prospects: High-intent leads (A+B)
+        cta_clicks: CTA clicks
+        cta_hint: Contract & sales-call CTAs
+        follow_up: Follow-up opens / clicks
+        follow_up_sent: "%{count} sent"
+        follow_up_sent_inline: "%{count} sent"
+        avg_duration: Avg. time on session
+        avg_duration_hint: Measured at session end
+        drop_offs_title: Drop-off pages
+        drop_offs_lead: Pages at session end (most common first)
+        col_page: Page
+        col_title: Title
+        col_dropoffs: Drop-offs
+        col_share: Share
+        deals_hub_title: Choose a deal
+        deals_hub_lead: Open a deal to manage studio, distribution, follow-up, and
+          analytics
+        new: New
+        empty_deals: No deals yet. Create one to get started.
+        create_deal: Create a deal
+        col_status: Status
+        col_updated: Updated
+        recent_leads: Recent leads
+        col_name: Name
+        col_deal: Deal
+        funnel_center_completion: Completion
+        funnel_center_access: Visits
+        funnel_visit_only: Visit only
+        funnel_lead_only: Lead only
+        funnel_started_only: Started only
+        funnel_completed: Completed
+        prospect_grade_dist: Prospect grade mix
+        no_analysis_yet: No analysis yet
+        avg_satisfaction: Avg. satisfaction
+        avg_satisfaction_value: "%{rating} / 5 (%{count})"
+        no_ratings_yet: No ratings yet
+        drop_offs_deal_lead: Pages where sessions ended — useful for spotting drop-offs.
+        feedback_title: Recent satisfaction feedback
+        col_datetime: Date
+        col_user: User
+        col_rating: Rating
+        col_feedback: Feedback
+        events_title: Presentation events (latest %{count})
+        events_lead: Topic clicks, exits, and other presentation actions
+        events_empty_title: Presentation events
+        events_empty_lead: Events appear here after a deal session starts.
+        col_type: Type
+        col_topic_label: Topic / label
+        col_detail: Detail
+        preview_user: Preview
+        leads_sessions: Leads & sessions
+        view_leads: View leads
+        follow_up_value: "%{opened} / %{clicked} (%{sent} sent)"
+      status:
+        live: Live
+        processing: Processing
+        ready: Ready
+        failed: Failed
+        editing: Editing
+        active: Active
+        cancelled: Cancelled
+        trial: Trial
+        no_contract: No plan
+        admin_managed: Admin-managed
+        client_managed: Client-managed
+        trialing: On trial
+        cancel_pending: Cancellation scheduled
+        analyzing: Pending analysis
+        opted_out: Opted out
+      deals:
+        index_title: Deals
+        index_subtitle_admin: All company deals
+        index_subtitle_limited: 'Plan: %{plan} · Deals %{used} / %{limit}'
+        index_subtitle_unlimited: 'Plan: %{plan} · Deals %{used} (unlimited)'
+        create: Create deal
+        create_admin: Create admin deal
+        list_title: All deals
+        empty: No deals yet
+        create_first: Create your first deal
+        create_admin_short: Create admin deal
+        col_id: ID
+        col_title: Title
+        col_managed: Owner
+        col_status: Status
+        col_language: Language
+        col_docs: Files
+        col_published: Published
+        col_created: Created
+        col_actions: Actions
+        action_presentation: Present
+        action_share: Share
+        delete_confirm: Delete this deal?
+        new_title: New deal
+        new_current: New
+        new_subtitle: Save the title and basics first, then upload materials and scripts
+        back_to_list: Back to list
+        back_to_list_short: All deals
+        basic_info: Basics
+        admin_create_note: Admin-created deals can only be published/edited by Admin
+          (not by clients).
+        field_title: Title
+        field_title_ph: e.g. New product intro
+        field_description: Description
+        field_description_ph: Internal notes or goal (optional)
+        field_language: Language
+        field_voice: AI narration voice
+        voice_hint: Voice used during the deal. Default is female. Change later in
+          Studio.
+        submit_create: Create and continue
+        edit_title: Edit basics
+        edit_subtitle: Edit title and description only. Scripts and audio are edited
+          on the deal page.
+        back_to_deal: Back to deal
+        manage: Deals
+        badge_ai: AI deal
+        default_subtitle: Upload materials, edit scripts, and publish
+        preview_only_title: Preview only (leads are not recorded)
+        instant_present: Instant present
+        simulation: Simulation
+        list_short: All deals
+        preview_note: Instant present / simulation are previews (leads are not recorded).
+          Use Open or a copied public URL to capture leads.
+        share_url: Share URL
+        processing_message: AI processing (summary, scripts, audio). This page refreshes
+          automatically.
+        reset_stuck: Reset if processing is stuck
+        reset_confirm: Reset processing so you can upload again?
+        processing_failed_reload: AI processing failed. Reloading…
+        processing_done_reload: AI processing complete. Reloading…
+        processing_failed: AI processing failed. Use “Reprocess PDF” to retry.
+        tabs_aria: Deal tabs
+        tab_studio: Studio
+        tab_distribution: Distribution
+        tab_follow_up: Follow-up
+        tab_analytics: Logs / analytics
+        setup_incomplete: Setup incomplete
+        upload_title: Upload materials
+        admin_only_upload: This deal is Admin-managed. Upload and publish from an
+          Admin account.
+        client_only_upload: This deal is Client-managed. Upload and publish from a
+          company account.
+        upload_blocked_processing: Upload unavailable while AI is processing. Try
+          again when it finishes.
+        upload_pdf_title: Upload PDF (AI processes in background)
+        upload_hint: Once uploaded, this deal ID cannot be re-uploaded. Processing
+          may take a few minutes.
+        pdf_file: PDF file
+        choose_file: Choose file
+        selected_files: Selected files
+        select_pdf_error: Please select a PDF file
+        upload_start: Upload and start AI
+        uploaded_docs: Uploaded materials
+        proposal_locked_note: Proposal files are locked for this deal ID. To change
+          them, create a new deal so FAQ and scripts stay consistent.
+        open_pdf: Open PDF
+        show_preview: Show PDF preview
+        hide_preview: Hide preview
+        extracted_pages: 'Extracted pages: %{pages} (%{count} total)'
+        no_doc_data: No document data
+        processed_pages: Processed (%{count} pages)
+        live_suffix: " · Live"
+        awaiting_publish: " · Ready to publish"
+        unprocessed: Not processed yet. Run “Reprocess PDF”.
+        reprocess: Reprocess PDF
+        start_process: Start PDF processing
+        reprocess_confirm: Reprocess this PDF in the background?
+        script_audio_title: Scripts & audio
+        publish_confirm_coverage: Knowledge coverage is %{coverage}%. Publish anyway?
+        publish_confirm: Publish this deal URL?
+        publish: Publish
+        claim_admin: Take Admin ownership to publish
+        claim_admin_confirm: Switch this deal to Admin-managed? Clients will no longer
+          be able to publish or edit.
+        client_managed_note: This deal is Client-managed
+        admin_managed_note: This is an Admin-managed deal
+        owner_only_note: Only the deal owner can publish or edit
+        voice_bar_title: AI narration voice
+        voice_bar_current: 'Current: %{voice}. Matched to the on-site AI avatar. Changing
+          takes tens of seconds.'
+        voice_rebuild: Rebuild narration with this voice
+        voice_rebuild_busy: Rebuilding… please wait
+        voice_rebuild_confirm: Rebuild opening and all slide narration with the selected
+          voice? This may take tens of seconds.
+        opening_parts: Opening parts
+        ai_improve: AI rewrite
+        ai_improve_confirm: AI will rewrite the script. This may take several seconds.
+        slide_scripts: Slide scripts (%{count})
+        slide_title: Title
+        slide_title_ph: Slide %{n}
+        slide_script: Narration script
+        rebuild_page_audio: Rebuild this page only
+        rebuild_page_confirm: Rebuild narration for this page only?
+        save_changes: Save changes
+        publish_status: Publish status
+        url_live: Deal URL is live
+        url_waiting: After reviewing scripts, press Publish in the Studio tab
+        deal_url_label: Deal URL (paste on your LP)
+        visitor_reg_title: Visitor registration
+        visitor_reg_lead: Choose which fields visitors fill in when opening the deal
+          URL. You can also skip registration.
+        skip_reg_title: Skip registration and start immediately
+        skip_reg_hint: When on, visitors go straight into the deal room
+        visitor_fields_note: Field visibility (ignored when skip is on)
+        ai_summary: AI summary
+        ai_summary_empty: Generated automatically after upload
+        cta_title: Presentation CTAs
+        cta_lead: Contract button and exit modal labels/URLs
+        cta_button_label: CTA button label
+        cta_url: Link URL
+        exit_contract: 'Exit: contract button'
+        exit_sales: 'Exit: sales call'
+        follow_up_title: Post-deal follow-up email
+        follow_up_lead: Send up to 5 emails after the deal (immediate, 3, 7, 15, 30
+          days). Stops when a sales/contract link is clicked.
+        follow_up_sales_url: Sales handoff URL
+        required_missing: Required
+        follow_up_sales_ph: e.g. https://calendly.com/...
+        follow_up_sales_hint: Set this or the contract CTA URL in Distribution
+        follow_up_sales_fallback: Falls back to the contract CTA URL if empty
+        follow_up_enable_hint: Enable at least one email below and save
+        follow_up_days_later: In %{days} days
+        follow_up_timing: Send timing
+        follow_up_days_after: days after deal end
+        follow_up_subject: Subject
+        follow_up_body: Body
+        follow_up_vars: 'Available: {{user_name}} / {{deal_title}} / {{company_name}}
+          / {{prospect_grade}} / {{session_summary}} / {{interest_topics}} / {{next_action}}'
+        follow_up_sales_btn: Sales handoff button
+        follow_up_contract_btn: Contract button
+        follow_up_save: Save follow-up settings
+        follow_up_locked_lead: 'Available on Business and above: post-deal email nurturing
+          and open tracking.'
+        uploading: Uploading…
+        ai_improving: AI rewriting…
+        copy_ok: URL copied
+        copy_after_publish: Available after publishing
+        session_leave: Left on P.%{page} (%{ms}ms)
+      knowledge:
+        title: Knowledge (FAQ)
+        coverage: Coverage %{pct}%
+        simulation: Simulation
+        pending_count: "%{count} unanswered FAQ(s). Click to answer."
+        supplement_title: "\U0001F4CE Supplements (auto FAQ extract)"
+        supplement_hint: Pricing sheets, specs, FAQ PDFs, etc. Used for FAQs only
+          — not slides.
+        supplement_max: Supplement PDFs are capped at %{max}. No more can be added.
+        supplement_remaining: You can add %{remaining} more supplement PDF(s) (max
+          %{max}).
+        upload_supplement: Upload supplement PDF
+        unanswered: Unanswered
+        answered: Answered
+        question: Question
+        answer: Answer
+        answer_ph: Enter an answer for buyers
+        category: Category
+        delete_confirm: Delete this FAQ?
+        empty_ready: Materials are ready. Use the tools below to grow your FAQ.
+        empty_waiting: After upload, you can suggest and add FAQs.
+        tools_trial: "\U0001F6E0 Improve coverage (optional)"
+        tools: AI analysis & FAQ tools
+        suggest_from_docs: Suggest from materials
+        suggest_from_logs: Suggest from session logs
+        stress_test: Buyer stress test
+        trial_hint: Trial runs analyses in lightweight mode
+        add_manual: Add question manually
+        add_question_ph: e.g. Is there a minimum term?
+        add_answer_ph: Answer for buyers
+        add_faq: Add FAQ
+        trial_optional_prefix: 'During trial, FAQs are '
+        trial_optional_strong: optional
+        trial_optional_mid: ". After uploading a PDF, try "
+        trial_optional_suffix: " first."
+      voice:
+        female: Female
+        male: Male
+        selected: Selected voice
+      language:
+        ja: Japanese
+        en: English
+      visitor_fields:
+        company: Company
+        name: Name
+        job_title: Job title
+        email: Email
+        tel: Phone
+        address: Address
+        url: Website
+        consideration_phase: Consideration stage
+        planned_introduction_date: Planned start date
+        key_points_for_application: Key decision factors
+      visitor_modes:
+        hidden: Hidden
+        optional: Optional
+        required: Required
+      phases:
+        initial: Initial
+        information_gathering: Research
+        evaluation: Evaluation
+        decision: Decision
+      faq:
+        categories:
+          pricing: Pricing & contract
+          implementation: Implementation
+          security: Security
+          comparison: Comparison
+          support: Support
+          contract: Terms
+          other: Other
+        sources:
+          manual: Manual
+          ai_gap: AI suggestion
+          template: Template
+          supplement_pdf: Supplement PDF
+          session_log: Session log
+          stress_test: Stress test
+          checklist: Checklist
+      events:
+        presentation_start: Presentation start
+        topic_click: Topic click
+        free_text_send: Free text
+        ai_reply: AI reply
+        chat_toggle: Chat toggle
+        page_view: Page view
+        session_close: Session close
+        evaluation_submit: Rating submitted
+        cta_click: CTA click
+        exit_contract_click: 'Exit: contract'
+        exit_sales_call_click: 'Exit: sales call'
+        closing_play: Closing play
+        last_button_click: Last button
+        materials_download: Download materials
+      follow_up:
+        initial: Initial follow-up
+        nurture: Nurture %{n}
+        lock_both: Sales/contract links and follow-up emails are not set
+        lock_destination: Sales or contract URL is missing
+        lock_templates: No follow-up emails are enabled
+      scripts:
+        greeting: Greeting
+        company_overview: Company overview
+        usage_guide: How to use
+        closing: Closing
+      limits:
+        deal_limit: Deal limit reached (%{limit}). Please upgrade your plan.
+      account:
+        title: Company profile
+        company: Company
+        name: Contact name
+        email: Email
+        tel: Phone
+        address: Address
+        url: URL
+        save: Save
+        problem_title: Report a problem
+        problem_lead: Report bugs or issues you hit while using the product.
+        problem_hint: After submit, a confirmation appears on the dashboard.
+        problem_cta: Report a problem
+        problem_new_window: Open in new window
+      subscription:
+        current_plan: Current plan
+        plan_type: Plan
+        status: Status
+        trial_ends: Trial ends
+        upgrade_title: Upgrade or change plan
+        change_plan: Change plan
+        cancel_trial_note: You can cancel during trial. This stops automatic billing
+          when the trial ends.
+        cancel_active_note: After cancellation, you keep access until the period ends.
+        cancel_cta: Cancel subscription
+        empty: No active subscription.
+        choose_plan: Choose a plan
+        payments: Payment history
+        col_date: Date
+        col_amount: Amount
+        col_desc: Description
+        col_status: Status
+        no_payments: No payments yet.
+        cancel_confirm_title: Confirm cancellation
+        cancel_confirm_lead: Completing cancellation stops automatic renewal.
+        cancel_until: 'Access until: %{date}'
+        cancel_until_note: Paid features remain available until this date.
+        cancel_confirm_btn: Confirm cancellation
+        cancel_confirm_dialog: Cancel your subscription?
+        change_to: Switch to %{name}
+      management:
+        subtitle: Companies and usage
+        list_title: Companies
+        empty: No companies registered
+        col_company: Company
+        col_email: Email
+        col_contact: Contact
+        col_plan: Plan
+        col_status: Status
+        col_deals: Deals
+        col_live: Live
+        col_leads: Leads
+        col_registered: Registered
+        col_actions: Actions
+        deals_unlimited: "%{count} (unlimited)"
+      leads:
+        title: Leads
+        back_to_deal: Back to deal
+        list_title: Leads
+        empty: No leads yet
+        col_id: ID
+        col_name: Lead
+        col_job: Title
+        col_company: Company
+        col_email: Email
+        col_prospect: Prospect
+        col_satisfaction: Satisfaction
+        col_phase: Stage
+        col_intro_date: Planned start
+        col_created: Created
+        col_actions: Actions
+        score_paren: "(%{score})"
+        detail: Details
+        fallback_name: 'Lead #%{id}'
+        analyzed_at: Analyzed
+        summary_title: Deal summary
+        challenge: Challenge
+        interest: Interest
+        consideration: Consideration
+        next_action: Next action
+        interest_topics: Interest topics
+        main_questions: Top questions
+        feedback_label: Satisfaction feedback
+        summary_empty: Analyzed automatically after the deal ends.
+        basic_info: Profile
+        user_name: Name
+        phone: Phone
+        address: Address
+        website: Website
+        progress_info: Progress
+        key_points: Key points
+        events_title: Presentation events
+        col_datetime: Date
+        col_type: Type
+        col_page: Page
+        col_topic: Topic
+        col_detail: Detail
+        follow_history: Follow-up history
+        session_ended: Deal ended
+        opted_out_at: Opted out (%{at})
+        col_seq: "#"
+        col_subject: Subject
+        col_scheduled_sent: Scheduled / sent
+        col_opened: Opened
+        col_sales_click: Sales click
+        col_contract_click: Contract click
+        col_status: Status
+        opt_out_history: Opt-out history
+        back_to_list: Back to list
+        to_studio: Go to studio
+      js:
+        uploading: Uploading…
+        ai_failed_reload: AI processing failed. Reloading…
+        ai_done_reload: AI processing complete. Reloading…
+        copy_after_publish: Available after publishing
+        copy_ok: URL copied
+        ai_improving: AI rewriting…
+      flash:
+        login_required: Please sign in.
+        presentation_opening: Opening instant presentation
+        content_updated: Deal content updated
+        page_not_found: Page not found
+        script_empty: Script is empty — enter a script or reprocess the PDF first.
+        unknown_target: Unknown target
+        ai_rewritten: Rewritten with AI
+        ai_rewrite_failed: 'AI rewrite failed: %{message}'
+        invalid_voice: Invalid voice setting
+        page_voice_rebuilt: Rebuilt this page with the %{voice} voice
+        all_voice_rebuilt: Rebuilt narration with the %{voice} voice. Check the player
+          below.
+        audio_failed: 'Failed to build narration: %{message}'
+        no_documents: No materials yet. Upload a PDF first.
+        ai_busy: AI is still processing. Please wait.
+        ai_started: AI processing started. It may take a few minutes.
+        not_processing: Not currently processing
+        processing_reset: Processing reset. You can upload again.
+        cta_updated: Presentation CTA settings updated
+        visitor_updated: Visitor registration settings updated
+        follow_up_unavailable: Follow-up is not available on your current plan
+        follow_up_updated: Follow-up settings updated
+        no_file: No file selected
+        proposal_locked: Proposal files can’t be re-uploaded for this deal ID. Create
+          a new deal to change them.
+        upload_started: Upload complete. AI processing started in the background.
+        db_busy: Database is busy. Wait a few seconds and try again.
+        generic_error: 'Something went wrong: %{message}'
+        supplement_max: Supplement PDFs are capped at %{max}
+        supplement_remaining: You can upload %{remaining} more supplement PDF(s)
+        supplement_uploaded: Supplement uploaded. FAQ extraction is running in the
+          background.
+        slides_missing: Slides are not ready. Upload a PDF first.
+        published: Deal URL published
+        admin_only: Admin only
+        already_admin: Already Admin-managed
+        claimed_admin: Switched to Admin-managed. You can publish and edit.
+        deal_created: Deal created
+        deal_updated: Deal updated
+        deal_deleted: Deal deleted
+        deal_not_found: Deal not found.
+        client_create_required: Sign in with a company account to create client deals.
+          Admins can create admin deals.
+        forbidden_client_managed: This deal is client-managed. Publish/edit from a
+          company account.
+        forbidden_admin_managed: This deal is Admin-managed. Publish/edit from an
+          Admin account.
+        faq_added: FAQ added
+        faq_updated: FAQ updated
+        faq_deleted: FAQ deleted
+        faq_skipped: Suggestion skipped
+        gap_need_summary: Run gap analysis after materials processing finishes
+        gap_suggested: Suggested %{count} buyer question(s) from materials
+        gap_none: No new suggestions (existing FAQs may already cover them)
+        events_suggested: Added %{count} FAQ candidate(s) from session logs
+        events_none: No new FAQ candidates
+        stress_need_summary: Run stress test after materials processing finishes
+        stress_added: Added %{created} uncovered of %{tested} tough buyer questions
+          as FAQ candidates
+        stress_ok: 'Stress test done: key questions are covered by FAQs'
+        invalid_plan: Invalid plan.
+        same_plan: Already on this plan.
+        no_active_sub: No active subscription.
+        sub_missing: Subscription not found.
+        cancel_done: Cancellation scheduled. You can keep using Meetia until the period
+          ends.
+        cancel_failed: Cancellation failed.
+        stripe_cancel_failed: Stripe cancellation failed.
+        client_required: Please select a client.
+        account_updated: Company profile updated.

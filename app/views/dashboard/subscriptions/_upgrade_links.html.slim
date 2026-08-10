@@ -5,4 +5,4 @@
     - next if current_plan == plan_key.to_s
     = link_to checkout_confirmation_path(plan_type: plan_key, client_id: client_id), class: "db-v2-btn db-v2-btn--primary db-v2-btn--sm" do
       i.fa-solid.fa-arrow-up aria-hidden="true"
-      span = "#{config[:name]}に変更"
+      span = t("meetia.dashboard.subscription.change_to", name: config[:name])

@@ -1,67 +1,67 @@
-- lead_name = @user_progress.user&.name.presence || "リード ##{@user_progress.id}"
+- lead_name = @user_progress.user&.name.presence || t("meetia.dashboard.leads.fallback_name", id: @user_progress.id)
 - summary = @user_progress.session_summary_hash
 - evaluation = @user_progress.deal_evaluation
 - grade = @user_progress.prospect_grade
 - grade_mod = { "A" => "a", "B" => "b", "C" => "c", "D" => "d" }[grade] || "pending"
-- phase_label = { "initial" => "初期", "information_gathering" => "情報収集", "evaluation" => "評価", "decision" => "意思決定" }[@user_progress.consideration_phase]
+- phase_label = @user_progress.consideration_phase.present? ? t("meetia.dashboard.phases.#{@user_progress.consideration_phase}", default: @user_progress.consideration_phase.humanize) : nil
 
 .db-v2-lead-detail
   .db-v2-header
     .db-v2-header__left
-      nav.db-v2-breadcrumb aria-label="パンくず"
+      nav.db-v2-breadcrumb aria-label=t("meetia.dashboard.common.breadcrumb")
         = link_to dashboard_index_path, class: "db-v2-breadcrumb__link" do
           i.fa-solid.fa-gauge-high aria-hidden="true"
-          span ダッシュボード
+          span = t("meetia.dashboard.common.dashboard")
         i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
         = link_to @deal.title.truncate(24), dashboard_deal_path(@deal), class: "db-v2-breadcrumb__link"
         i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
-        = link_to "リード管理", dashboard_deal_user_progresses_path(@deal), class: "db-v2-breadcrumb__link"
+        = link_to t("meetia.dashboard.leads.title"), dashboard_deal_user_progresses_path(@deal), class: "db-v2-breadcrumb__link"
         i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
-        span.db-v2-breadcrumb__current 詳細
+        span.db-v2-breadcrumb__current = t("meetia.dashboard.leads.detail")
       .db-v2-lead-detail__meta
         - if grade.present?
           span class="db-v2-rank-badge db-v2-rank-badge--#{grade_mod}" = grade
         - else
-          span.db-v2-status-badge.db-v2-status-badge--progress 分析待ち
+          span.db-v2-status-badge.db-v2-status-badge--progress = t("meetia.dashboard.status.analyzing")
         - if phase_label.present?
           span.db-v2-status-badge.db-v2-status-badge--ready = phase_label
         - if @user_progress.follow_up_unsubscribed?
-          span.db-v2-status-badge.db-v2-status-badge--fail 導入見送り
+          span.db-v2-status-badge.db-v2-status-badge--fail = t("meetia.dashboard.status.opted_out")
       h1.db-v2-header__title = lead_name
       p.db-v2-header__subtitle = @deal.title
     .db-v2-header__right
       = render "/dashboard/theme_switch"
       = link_to dashboard_deal_user_progresses_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
         i.fa-solid.fa-arrow-left aria-hidden="true"
-        span 一覧に戻る
+        span = t("meetia.dashboard.leads.back_to_list")
 
   .db-v2-lead-detail__metrics
     .db-v2-lead-metric
       .db-v2-lead-metric__label
         i.fa-solid.fa-chart-simple aria-hidden="true"
-        span 見込み度
+        span = t("meetia.dashboard.leads.col_prospect")
       .db-v2-lead-metric__value
         - if grade.present?
           span class="db-v2-rank-badge db-v2-rank-badge--#{grade_mod} db-v2-rank-badge--lg" = grade
           - if @user_progress.prospect_score.present?
-            span.db-v2-lead-metric__score = "#{@user_progress.prospect_score}点"
+            span.db-v2-lead-metric__score = t("meetia.dashboard.common.points", score: @user_progress.prospect_score)
         - else
-          span.db-v2-lead-metric__empty 分析待ち
+          span.db-v2-lead-metric__empty = t("meetia.dashboard.status.analyzing")
     .db-v2-lead-metric
       .db-v2-lead-metric__label
         i.fa-solid.fa-clock aria-hidden="true"
-        span 分析日時
+        span = t("meetia.dashboard.leads.analyzed_at")
       .db-v2-lead-metric__value
         = @user_progress.session_analyzed_at ? l(@user_progress.session_analyzed_at, format: :short) : "—"
     .db-v2-lead-metric
       .db-v2-lead-metric__label
         i.fa-solid.fa-route aria-hidden="true"
-        span 検討フェーズ
+        span = t("meetia.dashboard.leads.col_phase")
       .db-v2-lead-metric__value = phase_label.presence || "—"
     .db-v2-lead-metric
       .db-v2-lead-metric__label
         i.fa-solid.fa-star aria-hidden="true"
-        span 満足度
+        span = t("meetia.dashboard.leads.col_satisfaction")
       .db-v2-lead-metric__value
         - if evaluation
           span.db-v2-lead-metric__rating = "#{evaluation.rating} / 5"
@@ -73,91 +73,91 @@
       .db-v2-bottom-card__header
         h2.db-v2-bottom-card__title
           i.fa-solid.fa-comments aria-hidden="true"
-          | 商談サマリー
+          = t("meetia.dashboard.leads.summary_title")
       .db-v2-bottom-card__body
         - if summary.present?
           .db-v2-lead-insights
             .db-v2-lead-insight
-              .db-v2-lead-insight__label 課題
+              .db-v2-lead-insight__label = t("meetia.dashboard.leads.challenge")
               .db-v2-lead-insight__value = summary["challenge"].presence || "—"
             .db-v2-lead-insight
-              .db-v2-lead-insight__label 関心
+              .db-v2-lead-insight__label = t("meetia.dashboard.leads.interest")
               .db-v2-lead-insight__value = summary["interest"].presence || "—"
             .db-v2-lead-insight
-              .db-v2-lead-insight__label 検討
+              .db-v2-lead-insight__label = t("meetia.dashboard.leads.consideration")
               .db-v2-lead-insight__value = summary["consideration"].presence || "—"
             .db-v2-lead-insight.db-v2-lead-insight--accent
-              .db-v2-lead-insight__label 次アクション
+              .db-v2-lead-insight__label = t("meetia.dashboard.leads.next_action")
               .db-v2-lead-insight__value = summary["next_action"].presence || "—"
           - if Array(summary["topics"]).any? || Array(summary["questions"]).any?
             .db-v2-lead-tags
               - if Array(summary["topics"]).any?
                 .db-v2-lead-tags__group
-                  .db-v2-lead-tags__label 関心トピック
+                  .db-v2-lead-tags__label = t("meetia.dashboard.leads.interest_topics")
                   .db-v2-lead-tags__list
                     - Array(summary["topics"]).each do |topic|
                       span.db-v2-lead-tag = topic
               - if Array(summary["questions"]).any?
                 .db-v2-lead-tags__group
-                  .db-v2-lead-tags__label 主な質問
+                  .db-v2-lead-tags__label = t("meetia.dashboard.leads.main_questions")
                   .db-v2-lead-tags__list
                     - Array(summary["questions"]).each do |question|
                       span.db-v2-lead-tag.db-v2-lead-tag--muted = question
           - if evaluation&.feedback.present?
             .db-v2-lead-feedback
-              .db-v2-lead-feedback__label 満足度フィードバック
+              .db-v2-lead-feedback__label = t("meetia.dashboard.leads.feedback_label")
               p.db-v2-lead-feedback__text = evaluation.feedback
         - else
           .db-v2-empty-state.db-v2-empty-state--compact
             .db-v2-empty-state__icon
               i.fa-solid.fa-hourglass-half aria-hidden="true"
-            p.db-v2-empty-state__text 商談終了後に自動分析されます。
+            p.db-v2-empty-state__text = t("meetia.dashboard.leads.summary_empty")
 
     .db-v2-lead-detail__side
       .db-v2-bottom-card
         .db-v2-bottom-card__header
           h2.db-v2-bottom-card__title
             i.fa-solid.fa-user aria-hidden="true"
-            | 基本情報
+            = t("meetia.dashboard.leads.basic_info")
         .db-v2-bottom-card__body
           .db-v2-lead-info
             .db-v2-lead-info__row
-              .db-v2-lead-info__label ユーザー名
+              .db-v2-lead-info__label = t("meetia.dashboard.leads.user_name")
               .db-v2-lead-info__value = @user_progress.user&.name.presence || "—"
             .db-v2-lead-info__row
-              .db-v2-lead-info__label 役職
+              .db-v2-lead-info__label = t("meetia.dashboard.leads.col_job")
               .db-v2-lead-info__value = @user_progress.user&.job_title.presence || "—"
             .db-v2-lead-info__row
-              .db-v2-lead-info__label 会社名
+              .db-v2-lead-info__label = t("meetia.dashboard.leads.col_company")
               .db-v2-lead-info__value = @user_progress.user&.company.presence || "—"
             .db-v2-lead-info__row
-              .db-v2-lead-info__label メール
+              .db-v2-lead-info__label = t("meetia.dashboard.leads.col_email")
               .db-v2-lead-info__value = @user_progress.user&.email.presence || "—"
             .db-v2-lead-info__row
-              .db-v2-lead-info__label 電話
+              .db-v2-lead-info__label = t("meetia.dashboard.leads.phone")
               .db-v2-lead-info__value = @user_progress.user&.tel.presence || "—"
             .db-v2-lead-info__row
-              .db-v2-lead-info__label 住所
+              .db-v2-lead-info__label = t("meetia.dashboard.leads.address")
               .db-v2-lead-info__value = @user_progress.user&.address.presence || "—"
             .db-v2-lead-info__row
-              .db-v2-lead-info__label Webサイト
+              .db-v2-lead-info__label = t("meetia.dashboard.leads.website")
               .db-v2-lead-info__value = @user_progress.user&.url.presence || "—"
 
       .db-v2-bottom-card
         .db-v2-bottom-card__header
           h2.db-v2-bottom-card__title
             i.fa-solid.fa-list-check aria-hidden="true"
-            | 進捗情報
+            = t("meetia.dashboard.leads.progress_info")
         .db-v2-bottom-card__body
           .db-v2-lead-info
             .db-v2-lead-info__row
-              .db-v2-lead-info__label 検討フェーズ
+              .db-v2-lead-info__label = t("meetia.dashboard.leads.col_phase")
               .db-v2-lead-info__value = phase_label.presence || "—"
             .db-v2-lead-info__row
-              .db-v2-lead-info__label 導入予定日
+              .db-v2-lead-info__label = t("meetia.dashboard.leads.col_intro_date")
               .db-v2-lead-info__value = @user_progress.planned_introduction_date.presence || "—"
             .db-v2-lead-info__row.db-v2-lead-info__row--stack
-              .db-v2-lead-info__label 重要ポイント
+              .db-v2-lead-info__label = t("meetia.dashboard.leads.key_points")
               .db-v2-lead-info__value.db-v2-lead-info__value--prose = simple_format(@user_progress.key_points_for_application.presence || "—")
 
   - if @presentation_events.any?
@@ -165,17 +165,17 @@
       .db-v2-bottom-card__header
         h2.db-v2-bottom-card__title
           i.fa-solid.fa-desktop aria-hidden="true"
-          | プレゼン操作ログ
+          = t("meetia.dashboard.leads.events_title")
       .db-v2-bottom-card__body
         .db-v2-leads-table-wrap
           table.db-v2-leads-table
             thead
               tr
-                th 日時
-                th 種別
-                th ページ
-                th トピック
-                th 詳細
+                th = t("meetia.dashboard.leads.col_datetime")
+                th = t("meetia.dashboard.leads.col_type")
+                th = t("meetia.dashboard.leads.col_page")
+                th = t("meetia.dashboard.leads.col_topic")
+                th = t("meetia.dashboard.leads.col_detail")
             tbody
               - @presentation_events.each do |event|
                 tr
@@ -186,7 +186,7 @@
                   td= event.label.presence || event.topic.presence || "-"
                   td
                     - if event.event_type == "session_close"
-                      | P.#{event.metadata["current_page_number"]} で離脱（#{event.metadata["duration_ms"]}ms）
+                      = t("meetia.dashboard.deals.session_leave", page: event.metadata["current_page_number"], ms: event.metadata["duration_ms"])
                     - elsif %w[free_text_send ai_reply].include?(event.event_type)
                       = event.message.to_s.truncate(50)
                     - else
@@ -197,28 +197,28 @@
       .db-v2-bottom-card__header
         h2.db-v2-bottom-card__title
           i.fa-solid.fa-envelope-open-text aria-hidden="true"
-          | フォローメール履歴
+          = t("meetia.dashboard.leads.follow_history")
       .db-v2-bottom-card__body
         - if @user_progress.session_ended_at.present?
           .db-v2-lead-info.db-v2-lead-info--inline
             .db-v2-lead-info__row
-              .db-v2-lead-info__label 商談終了
+              .db-v2-lead-info__label = t("meetia.dashboard.leads.session_ended")
               .db-v2-lead-info__value= l(@user_progress.session_ended_at, format: :short)
         - if @user_progress.follow_up_unsubscribed?
           .status-alert-box.warning
-            p 導入見送り（#{l(@user_progress.follow_up_unsubscribed_at, format: :short)}）
+            p = t("meetia.dashboard.leads.opted_out_at", at: l(@user_progress.follow_up_unsubscribed_at, format: :short))
         - if @follow_up_deliveries.any?
           .db-v2-leads-table-wrap
             table.db-v2-leads-table
               thead
                 tr
-                  th 通数
-                  th 件名
-                  th 予定/送信
-                  th 開封
-                  th 担当者クリック
-                  th 契約クリック
-                  th 状態
+                  th = t("meetia.dashboard.leads.col_seq")
+                  th = t("meetia.dashboard.leads.col_subject")
+                  th = t("meetia.dashboard.leads.col_scheduled_sent")
+                  th = t("meetia.dashboard.leads.col_opened")
+                  th = t("meetia.dashboard.leads.col_sales_click")
+                  th = t("meetia.dashboard.leads.col_contract_click")
+                  th = t("meetia.dashboard.leads.col_status")
               tbody
                 - @follow_up_deliveries.each do |delivery|
                   tr
@@ -229,14 +229,14 @@
                         = l(delivery.sent_at, format: :short)
                       - else
                         = l(delivery.scheduled_at, format: :short)
-                        |  予定
+                        = " " + t("meetia.dashboard.common.scheduled")
                     td= delivery.opened_at ? l(delivery.opened_at, format: :short) : "-"
                     td= delivery.sales_call_clicked_at ? l(delivery.sales_call_clicked_at, format: :short) : "-"
                     td= delivery.contract_clicked_at ? l(delivery.contract_clicked_at, format: :short) : "-"
                     td
                       span.db-v2-lead-event-type = delivery.status
         - if @follow_up_unsubscribes.any?
-          h3.db-v2-subsection-title 導入見送り履歴
+          h3.db-v2-subsection-title = t("meetia.dashboard.leads.opt_out_history")
           ul.deal-supplement-list.db-v2-lead-unsub-list
             - @follow_up_unsubscribes.each do |record|
               li= "#{l(record.unsubscribed_at, format: :short)} / #{record.source}"
@@ -244,7 +244,7 @@
   .db-v2-form-actions
     = link_to dashboard_deal_user_progresses_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
       i.fa-solid.fa-list aria-hidden="true"
-      span 一覧に戻る
+      span = t("meetia.dashboard.leads.back_to_list")
     = link_to dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--primary" do
       i.fa-solid.fa-clapperboard aria-hidden="true"
-      span 商談スタジオへ
+      span = t("meetia.dashboard.leads.to_studio")

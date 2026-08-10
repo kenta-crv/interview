@@ -1,36 +1,36 @@
 .db-v2-header
   .db-v2-header__left
     h1.db-v2-header__title Management
-    p.db-v2-header__subtitle 契約企業の一覧と使用状況
+    p.db-v2-header__subtitle = t("meetia.dashboard.management.subtitle")
   .db-v2-header__right
     = render "/dashboard/theme_switch"
 
 .db-v2-bottom-card
   .db-v2-bottom-card__header.db-v2-bottom-card__header--split
-    h2.db-v2-bottom-card__title 契約企業一覧
-    span.db-v2-deals-count = "#{@clients.size} 社"
+    h2.db-v2-bottom-card__title = t("meetia.dashboard.management.list_title")
+    span.db-v2-deals-count = t("meetia.dashboard.common.count_companies", count: @clients.size)
 
   .db-v2-bottom-card__body
     - if @clients.empty?
       .db-v2-empty-state
         .db-v2-empty-state__icon
           i.fa-solid.fa-building aria-hidden="true"
-        p.db-v2-empty-state__text 登録されている契約企業はありません
+        p.db-v2-empty-state__text = t("meetia.dashboard.management.empty")
     - else
       .db-v2-leads-table-wrap
         table.db-v2-leads-table.db-v2-deals-table
           thead
             tr
-              th 企業名
-              th メールアドレス
-              th 担当者
-              th プラン
-              th 契約状態
-              th 商談数
-              th 公開中
-              th リード数
-              th 登録日
-              th 操作
+              th = t("meetia.dashboard.management.col_company")
+              th = t("meetia.dashboard.management.col_email")
+              th = t("meetia.dashboard.management.col_contact")
+              th = t("meetia.dashboard.management.col_plan")
+              th = t("meetia.dashboard.management.col_status")
+              th = t("meetia.dashboard.management.col_deals")
+              th = t("meetia.dashboard.management.col_live")
+              th = t("meetia.dashboard.management.col_leads")
+              th = t("meetia.dashboard.management.col_registered")
+              th = t("meetia.dashboard.management.col_actions")
           tbody
             - @clients.each do |client|
               - plan_config = client.current_plan_config
@@ -46,20 +46,20 @@
                 td = plan_config[:name]
                 td
                   - if client.dashboard_accessible?
-                    span.db-v2-status-badge.db-v2-status-badge--live 有効
+                    span.db-v2-status-badge.db-v2-status-badge--live = t("meetia.dashboard.status.active")
                   - elsif client.subscription_status == "cancelled"
-                    span.db-v2-status-badge.db-v2-status-badge--fail 解約済
+                    span.db-v2-status-badge.db-v2-status-badge--fail = t("meetia.dashboard.status.cancelled")
                   - elsif client.on_trial?
-                    span.db-v2-status-badge.db-v2-status-badge--progress トライアル
+                    span.db-v2-status-badge.db-v2-status-badge--progress = t("meetia.dashboard.status.trial")
                   - else
-                    span.db-v2-status-badge = client.subscription_status.presence || "未契約"
+                    span.db-v2-status-badge = client.subscription_status.presence || t("meetia.dashboard.status.no_contract")
                 td
                   - if deal_limit
                     = "#{deal_count} / #{deal_limit}"
                   - else
-                    = "#{deal_count}（無制限）"
+                    = t("meetia.dashboard.management.deals_unlimited", count: deal_count)
                 td = published_count
                 td = lead_count
                 td= l(client.created_at, format: :short)
                 td
-                  = link_to "詳細", dashboard_subscription_path(client_id: client.id), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"
+                  = link_to t("meetia.dashboard.common.detail"), dashboard_subscription_path(client_id: client.id), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"

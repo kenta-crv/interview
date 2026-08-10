@@ -46,12 +46,12 @@ class Dashboard::DealsController < Dashboard::BaseController
 
   def presentation
     unless client_signed_in? || admin_signed_in?
-      redirect_to new_client_session_path, alert: "ログインが必要です。"
+      redirect_to new_client_session_path, alert: t("meetia.dashboard.flash.login_required")
       return
     end
 
     redirect_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1),
-                notice: "即時プレゼン画面を開きます"
+                notice: t("meetia.dashboard.flash.presentation_opening")
   end
 
   def update_content
@@ -66,7 +66,7 @@ class Dashboard::DealsController < Dashboard::BaseController
       end
     end
 
-    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), notice: '商談コンテンツを更新しました'
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), notice: t("meetia.dashboard.flash.content_updated")
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => e
     redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: e.message
   end
@@ -87,12 +87,12 @@ class Dashboard::DealsController < Dashboard::BaseController
     when 'page'
       page = @deal.deal_pages.find_by(id: params[:page_id])
       unless page
-        redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: 'ページが見つかりません'
+        redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: t("meetia.dashboard.flash.page_not_found")
         return
       end
       original = page.script.presence || page.page_text.presence
       if original.blank?
-        redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: '台本が空のためAI改善できません。先に台本を入力するか、PDFを再処理してください。'
+        redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: t("meetia.dashboard.flash.script_empty")
         return
       end
       rewritten = generator.rewrite_script(original, instruction: instruction)
@@ -101,45 +101,45 @@ class Dashboard::DealsController < Dashboard::BaseController
     when 'menu'
       generator.generate_menu_items!
     else
-      redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: '不明な対象です'
+      redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: t("meetia.dashboard.flash.unknown_target")
       return
     end
 
-    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), notice: 'AIで書き直しました'
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), notice: t("meetia.dashboard.flash.ai_rewritten")
   rescue => e
     Rails.logger.error("ai_rewrite failed: #{e.message}")
-    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: "AI改善に失敗しました: #{e.message}"
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: t("meetia.dashboard.flash.ai_rewrite_failed", message: e.message)
   end
 
   def regenerate_audio
     if params[:tts_voice_gender].present?
       gender = params[:tts_voice_gender].to_s
       unless Deal::TTS_VOICE_GENDERS.key?(gender)
-        redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: '声の設定が不正です'
+        redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: t("meetia.dashboard.flash.invalid_voice")
         return
       end
       @deal.update!(tts_voice_gender: gender)
     end
 
-    voice_label = Deal::TTS_VOICE_GENDERS[@deal.tts_voice_gender] || '選択した声'
+    voice_label = t("meetia.dashboard.voice.#{@deal.tts_voice_gender}", default: t("meetia.dashboard.voice.selected"))
 
     if params[:page_id].present?
       page = @deal.deal_pages.find(params[:page_id])
       DealEngine::AudioGeneratorService.new(@deal).generate_for_page!(page)
       redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'),
-                  notice: "このページを#{voice_label}の声で作り直しました"
+                  notice: t("meetia.dashboard.flash.page_voice_rebuilt", voice: voice_label)
     else
       # Sidekiqに頼ると完了前に画面へ戻り、古い音声のまま聞こえるため同期実行する
       DealEngine::AudioGeneratorService.new(@deal).generate_all!
       @deal.touch
       redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'),
-                  notice: "#{voice_label}の声で読み上げを作り直しました。下のプレイヤーで確認できます。"
+                  notice: t("meetia.dashboard.flash.all_voice_rebuilt", voice: voice_label)
     end
   rescue ActiveRecord::RecordInvalid => e
     redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: e.message
   rescue => e
     Rails.logger.error("regenerate_audio failed: #{e.class}: #{e.message}\n#{e.backtrace&.first(8)&.join("\n")}")
-    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: "読み上げの作成に失敗しました: #{e.message}"
+    redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: t("meetia.dashboard.flash.audio_failed", message: e.message)
   end
 
   def processing_status
@@ -154,33 +154,33 @@ class Dashboard::DealsController < Dashboard::BaseController
 
   def reprocess
     if @deal.deal_documents.empty?
-      redirect_to dashboard_deal_path(@deal), alert: '資料がありません。先にPDFをアップロードしてください'
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.no_documents")
       return
     end
 
     if @deal.processing?
-      redirect_to dashboard_deal_path(@deal), alert: 'AI処理中です。完了までお待ちください'
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.ai_busy")
       return
     end
 
     @deal.start_processing!
     ProcessDealJob.perform_later(@deal.id)
-    redirect_to dashboard_deal_path(@deal), notice: 'AI処理を開始しました。完了まで数分かかる場合があります'
+    redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.ai_started")
   end
 
   def reset_processing
     unless @deal.processing?
-      redirect_to dashboard_deal_path(@deal), alert: '処理中ではありません'
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.not_processing")
       return
     end
 
     @deal.fail!
-    redirect_to dashboard_deal_path(@deal), notice: '処理状態をリセットしました。再度アップロードできます。'
+    redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.processing_reset")
   end
 
   def update_presentation_settings
     @deal.update!(presentation_settings_params)
-    redirect_to dashboard_deal_path(@deal, anchor: 'presentation-cta'), notice: 'プレゼンCTA設定を更新しました'
+    redirect_to dashboard_deal_path(@deal, anchor: 'presentation-cta'), notice: t("meetia.dashboard.flash.cta_updated")
   rescue ActiveRecord::RecordInvalid => e
     redirect_to dashboard_deal_path(@deal, anchor: 'presentation-cta'), alert: e.message
   end
@@ -189,14 +189,14 @@ class Dashboard::DealsController < Dashboard::BaseController
     @deal.skip_visitor_registration = ActiveModel::Type::Boolean.new.cast(params.dig(:deal, :skip_visitor_registration))
     @deal.assign_visitor_info_fields!(params.dig(:deal, :visitor_info_fields) || {})
     @deal.save!
-    redirect_to dashboard_deal_path(@deal, anchor: 'visitor-registration'), notice: '参加者情報の入力設定を更新しました'
+    redirect_to dashboard_deal_path(@deal, anchor: 'visitor-registration'), notice: t("meetia.dashboard.flash.visitor_updated")
   rescue ActiveRecord::RecordInvalid => e
     redirect_to dashboard_deal_path(@deal, anchor: 'visitor-registration'), alert: e.message
   end
 
   def update_follow_up_settings
     unless follow_up_feature_available?(deal_owner)
-      redirect_to dashboard_deal_path(@deal), alert: '現在のプランではフォローアップ機能を利用できません'
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.follow_up_unavailable")
       return
     end
 
@@ -211,24 +211,24 @@ class Dashboard::DealsController < Dashboard::BaseController
       end
     end
 
-    redirect_to dashboard_deal_path(@deal, anchor: 'follow-up-settings'), notice: 'フォローアップ設定を更新しました'
+    redirect_to dashboard_deal_path(@deal, anchor: 'follow-up-settings'), notice: t("meetia.dashboard.flash.follow_up_updated")
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => e
     redirect_to dashboard_deal_path(@deal, anchor: 'follow-up-settings'), alert: e.message
   end
 
   def upload_documents
     if params[:files].blank?
-      redirect_to dashboard_deal_path(@deal), alert: 'ファイルが選択されていません'
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.no_file")
       return
     end
 
     if @deal.proposal_upload_locked?
-      redirect_to dashboard_deal_path(@deal), alert: 'この商談IDでは提案資料を再アップロードできません。変更が必要な場合は新しい商談を作成してください'
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.proposal_locked")
       return
     end
 
     if @deal.processing?
-      redirect_to dashboard_deal_path(@deal), alert: 'AI処理中です。完了までお待ちください'
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.ai_busy")
       return
     end
 
@@ -247,33 +247,33 @@ class Dashboard::DealsController < Dashboard::BaseController
     @deal.start_processing!
     ProcessDealJob.perform_later(@deal.id)
 
-    redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました。AI処理をバックグラウンドで開始しています'
+    redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.upload_started")
   rescue ActiveRecord::RecordInvalid => e
     redirect_to dashboard_deal_path(@deal), alert: e.message
   rescue ActiveRecord::StatementInvalid => e
     if defined?(SQLite3) && e.cause.is_a?(SQLite3::BusyException)
-      redirect_to dashboard_deal_path(@deal), alert: 'データベースが混雑しています。数秒待ってから再度お試しください'
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.db_busy")
     else
-      redirect_to dashboard_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.generic_error", message: e.message)
     end
   rescue StandardError => e
-    redirect_to dashboard_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"
+    redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.generic_error", message: e.message)
   end
 
   def upload_supplement_documents
     if params[:files].blank?
-      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: "ファイルが選択されていません"
+      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: t("meetia.dashboard.flash.no_file")
       return
     end
 
     if @deal.supplement_upload_limit_reached?
-      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: "補足PDFは最大#{Deal::MAX_SUPPLEMENT_DOCUMENTS}件までです"
+      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: t("meetia.dashboard.flash.supplement_max", max: Deal::MAX_SUPPLEMENT_DOCUMENTS)
       return
     end
 
     requested_count = Array(params[:files]).size
     if @deal.deal_documents.supplements.count + requested_count > Deal::MAX_SUPPLEMENT_DOCUMENTS
-      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: "補足PDFは残り#{@deal.supplement_uploads_remaining}件までアップロードできます"
+      redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: t("meetia.dashboard.flash.supplement_remaining", remaining: @deal.supplement_uploads_remaining)
       return
     end
 
@@ -295,34 +295,34 @@ class Dashboard::DealsController < Dashboard::BaseController
     created_docs.each { |doc| ExtractSupplementFaqsJob.perform_later(doc.id) }
 
     redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"),
-                notice: "補足資料をアップロードしました。FAQ抽出をバックグラウンドで実行しています"
+                notice: t("meetia.dashboard.flash.supplement_uploaded")
   rescue ActiveRecord::RecordInvalid => e
     redirect_to dashboard_deal_path(@deal, anchor: "deal-knowledge"), alert: e.message
   end
 
   def publish
     if @deal.deal_pages.empty?
-      redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: 'スライドが未生成です。先にPDFをアップロードしてください'
+      redirect_to dashboard_deal_path(@deal, anchor: 'content-edit'), alert: t("meetia.dashboard.flash.slides_missing")
       return
     end
 
     @deal.update!(playback_ready: true, status: :completed)
-    redirect_to dashboard_deal_path(@deal), notice: '商談URLを公開しました'
+    redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.published")
   end
 
   def claim_admin_management
     unless admin_signed_in?
-      redirect_to dashboard_deal_path(@deal), alert: 'Adminのみ実行できます'
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.admin_only")
       return
     end
 
     if @deal.managed_by_admin?
-      redirect_to dashboard_deal_path(@deal), notice: 'すでにAdmin管理の商談です'
+      redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.already_admin")
       return
     end
 
     @deal.update!(managed_by_admin: true)
-    redirect_to dashboard_deal_path(@deal), notice: 'Admin管理に切り替えました。公開・編集できます'
+    redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.claimed_admin")
   end
 
   def new
@@ -341,7 +341,7 @@ class Dashboard::DealsController < Dashboard::BaseController
     end
 
     if @deal.save
-      redirect_to dashboard_deal_path(@deal), notice: '商談を作成しました'
+      redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.deal_created")
     else
       render :new, status: :unprocessable_entity
     end
@@ -352,7 +352,7 @@ class Dashboard::DealsController < Dashboard::BaseController
 
   def update
     if @deal.update(deal_params)
-      redirect_to dashboard_deal_path(@deal), notice: '商談を更新しました'
+      redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.deal_updated")
     else
       render :edit, status: :unprocessable_entity
     end
@@ -360,7 +360,7 @@ class Dashboard::DealsController < Dashboard::BaseController
 
   def destroy
     @deal.destroy
-    redirect_to dashboard_deals_path, notice: '商談を削除しました'
+    redirect_to dashboard_deals_path, notice: t("meetia.dashboard.flash.deal_deleted")
   end
 
   private
@@ -372,7 +372,7 @@ class Dashboard::DealsController < Dashboard::BaseController
               current_client.deals.where(managed_by_admin: false).find(params[:id])
             end
   rescue ActiveRecord::RecordNotFound
-    redirect_to dashboard_deals_path, alert: "商談が見つかりません。"
+    redirect_to dashboard_deals_path, alert: t("meetia.dashboard.flash.deal_not_found")
   end
 
   def load_deal_associations

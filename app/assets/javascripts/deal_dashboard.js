@@ -1,4 +1,10 @@
 (function() {
+  function i18n(root, key, fallback) {
+    if (!root) return fallback;
+    var val = root.getAttribute('data-i18n-' + key);
+    return val && val.length ? val : fallback;
+  }
+
   function bindUploadHandlers(root) {
     if (root.dataset.dealUploadBound === 'true') return;
     root.dataset.dealUploadBound = 'true';
@@ -63,10 +69,11 @@
         if (errorBox) errorBox.hidden = true;
 
         if (submitButton) {
+          var uploading = i18n(root, 'uploading', 'Uploading…');
           if (submitButton.tagName === 'INPUT') {
-            submitButton.value = 'アップロード中...';
+            submitButton.value = uploading;
           } else {
-            submitButton.textContent = 'アップロード中...';
+            submitButton.textContent = uploading;
           }
           submitButton.disabled = true;
         }
@@ -100,8 +107,8 @@
             var banner = document.getElementById('processing-message');
             if (banner) {
               banner.textContent = data.failed
-                ? 'AI処理に失敗しました。ページを更新します…'
-                : 'AI処理が完了しました。ページを更新します…';
+                ? i18n(root, 'ai-failed', 'AI processing failed. Reloading…')
+                : i18n(root, 'ai-done', 'AI processing complete. Reloading…');
             }
             window.location.reload();
           }
@@ -126,7 +133,7 @@
 
     function copyShareUrl(value, triggerEl) {
       if (!shareReadyFrom(triggerEl || shareStrip)) {
-        alert('公開後にご利用いただけます');
+        alert(i18n(root, 'copy-after-publish', 'Available after publishing'));
         return;
       }
 
@@ -135,7 +142,7 @@
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(function() {
-          alert('URLをコピーしました');
+          alert(i18n(root, 'copy-ok', 'URL copied'));
         });
       } else {
         var temp = document.createElement('textarea');
@@ -144,7 +151,7 @@
         temp.select();
         document.execCommand('copy');
         document.body.removeChild(temp);
-        alert('URLをコピーしました');
+        alert(i18n(root, 'copy-ok', 'URL copied'));
       }
     }
 
@@ -164,7 +171,7 @@
       shareUrlOpenBtn.addEventListener('click', function(e) {
         if (!shareReadyFrom(shareUrlOpenBtn)) {
           e.preventDefault();
-          alert('公開後にご利用いただけます');
+          alert(i18n(root, 'copy-after-publish', 'Available after publishing'));
         }
       });
     }
@@ -199,7 +206,7 @@
     root.querySelectorAll('.btn-ai-rewrite').forEach(function(link) {
       link.addEventListener('click', function() {
         window.setTimeout(function() {
-          link.textContent = 'AI改善中...';
+          link.textContent = i18n(root, 'ai-improving', 'AI rewriting…');
           link.classList.add('is-disabled');
           link.style.pointerEvents = 'none';
         }, 0);
@@ -223,11 +230,4 @@
     document.addEventListener('turbo:load', onReady);
     document.addEventListener('turbolinks:load', onReady);
   }
-
-  document.addEventListener('turbo:before-cache', function() {
-    document.querySelectorAll('[data-deal-dashboard]').forEach(function(root) {
-      root.removeAttribute('data-deal-dashboard-bound');
-      root.removeAttribute('data-deal-upload-bound');
-    });
-  });
 })();

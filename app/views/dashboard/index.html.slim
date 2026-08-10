@@ -1,7 +1,7 @@
 .db-v2-header
   .db-v2-header__left
-    h1.db-v2-header__title こんにちは、#{@display_name} さん
-    p.db-v2-header__subtitle AI商談の成果サマリー
+    h1.db-v2-header__title = t("meetia.dashboard.home.greeting", name: @display_name)
+    p.db-v2-header__subtitle = t("meetia.dashboard.home.subtitle")
   .db-v2-header__right
     = render "/dashboard/theme_switch"
 
@@ -12,70 +12,70 @@
     .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--blue
       i.fa-solid.fa-link aria-hidden="true"
     .db-v2-summary-card__content
-      .db-v2-summary-card__label URLアクセス
+      .db-v2-summary-card__label = t("meetia.dashboard.home.metric_page_views")
       .db-v2-summary-card__value-row
         span.db-v2-summary-card__value = a[:page_views]
       .db-v2-summary-card__trend
-        span.db-v2-summary-card__trend-label 公開URLの閲覧数
+        span.db-v2-summary-card__trend-label = t("meetia.dashboard.home.metric_page_views_hint")
 
   .db-v2-summary-card
     .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--gold
       i.fa-solid.fa-user-plus aria-hidden="true"
     .db-v2-summary-card__content
-      .db-v2-summary-card__label 登録リード
+      .db-v2-summary-card__label = t("meetia.dashboard.home.metric_leads")
       .db-v2-summary-card__value-row
         span.db-v2-summary-card__value = a[:leads_count]
       .db-v2-summary-card__trend
         span.db-v2-summary-card__trend-label
           - if a[:lead_rate]
-            | 登録率 #{a[:lead_rate]}%
+            = t("meetia.dashboard.home.metric_lead_rate", rate: a[:lead_rate])
           - else
-            | 情報登録した見込み客
+            = t("meetia.dashboard.home.metric_leads_hint")
 
   .db-v2-summary-card
     .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--green
       i.fa-solid.fa-play aria-hidden="true"
     .db-v2-summary-card__content
-      .db-v2-summary-card__label セッション開始
+      .db-v2-summary-card__label = t("meetia.dashboard.home.metric_sessions_started")
       .db-v2-summary-card__value-row
         span.db-v2-summary-card__value = a[:sessions_started]
       .db-v2-summary-card__trend
         span.db-v2-summary-card__trend-label
           - if a[:start_rate]
-            | 開始率 #{a[:start_rate]}%
+            = t("meetia.dashboard.home.metric_start_rate", rate: a[:start_rate])
           - else
-            | プレゼン開始数
+            = t("meetia.dashboard.home.metric_sessions_started_hint")
 
   .db-v2-summary-card
     .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--purple
       i.fa-solid.fa-flag-checkered aria-hidden="true"
     .db-v2-summary-card__content
-      .db-v2-summary-card__label セッション完了
+      .db-v2-summary-card__label = t("meetia.dashboard.home.metric_sessions_completed")
       .db-v2-summary-card__value-row
         span.db-v2-summary-card__value = a[:sessions_completed]
       .db-v2-summary-card__trend
         span.db-v2-summary-card__trend-label
           - if a[:completion_rate]
-            | 完了率 #{a[:completion_rate]}%
+            = t("meetia.dashboard.home.metric_completion_rate", rate: a[:completion_rate])
           - else
-            | 評価付き終了
+            = t("meetia.dashboard.home.metric_sessions_completed_hint")
 
   .db-v2-summary-card
     .db-v2-summary-card__icon-wrap.db-v2-summary-card__icon-wrap--gold
       i.fa-solid.fa-star aria-hidden="true"
     .db-v2-summary-card__content
-      .db-v2-summary-card__label 平均評価
+      .db-v2-summary-card__label = t("meetia.dashboard.home.metric_avg_rating")
       .db-v2-summary-card__value-row
         span.db-v2-summary-card__value = a[:average_evaluation] || "—"
         - if a[:average_evaluation]
           span.db-v2-summary-card__unit
             | / 5
       .db-v2-summary-card__trend
-        span.db-v2-summary-card__trend-label = "#{a[:evaluation_count]}件の評価"
+        span.db-v2-summary-card__trend-label = t("meetia.dashboard.home.metric_rating_count", count: a[:evaluation_count])
 
   .db-v2-summary-card.db-v2-summary-card--span-3.db-v2-summary-card--funnel
     .db-v2-summary-card__content.db-v2-summary-card__content--funnel
-      .db-v2-summary-card__label ファネル
+      .db-v2-summary-card__label = t("meetia.dashboard.home.metric_funnel")
       - segments = a[:funnel_segments]
       - if segments.present?
         .db-v2-funnel-pie
@@ -90,18 +90,21 @@
                 span.db-v2-funnel-pie__badge style="background: #{seg[:color]};"
                 .db-v2-funnel-pie__legend-body
                   span.db-v2-funnel-pie__legend-label = seg[:label]
-                  span.db-v2-funnel-pie__legend-meta = "#{seg[:count]}件（#{seg[:share]}%）"
+                  span.db-v2-funnel-pie__legend-meta = t("meetia.dashboard.home.funnel_count", count: seg[:count], share: seg[:share])
             .db-v2-funnel-pie__rates
-              span = a[:lead_rate] ? "登録率 #{a[:lead_rate]}%" : "登録率 —"
-              span = a[:start_rate] ? "開始率 #{a[:start_rate]}%" : "開始率 —"
-              span = a[:completion_rate] ? "完了率 #{a[:completion_rate]}%" : "完了率 —"
+              - lead_label = t("meetia.dashboard.home.lead_rate_label")
+              - start_label = t("meetia.dashboard.home.start_rate_label")
+              - completion_label = t("meetia.dashboard.home.completion_rate_label")
+              span = a[:lead_rate] ? t("meetia.dashboard.home.rate_with_value", label: lead_label, rate: a[:lead_rate]) : t("meetia.dashboard.home.rate_empty", label: lead_label)
+              span = a[:start_rate] ? t("meetia.dashboard.home.rate_with_value", label: start_label, rate: a[:start_rate]) : t("meetia.dashboard.home.rate_empty", label: start_label)
+              span = a[:completion_rate] ? t("meetia.dashboard.home.rate_with_value", label: completion_label, rate: a[:completion_rate]) : t("meetia.dashboard.home.rate_empty", label: completion_label)
       - else
-        p.db-v2-muted style="margin:8px 0 0;" まだファネルデータがありません
+        p.db-v2-muted style="margin:8px 0 0;" = t("meetia.dashboard.home.funnel_empty")
 
 .db-v2-summary-grid
   .db-v2-summary-card
     .db-v2-summary-card__content
-      .db-v2-summary-card__label 高見込リード（A+B）
+      .db-v2-summary-card__label = t("meetia.dashboard.home.high_prospects")
       .db-v2-summary-card__value-row
         span.db-v2-summary-card__value = a[:high_prospect_count]
       .db-v2-summary-card__trend
@@ -112,42 +115,42 @@
 
   .db-v2-summary-card
     .db-v2-summary-card__content
-      .db-v2-summary-card__label CTAクリック
+      .db-v2-summary-card__label = t("meetia.dashboard.home.cta_clicks")
       .db-v2-summary-card__value-row
         span.db-v2-summary-card__value = a[:cta_clicks]
       .db-v2-summary-card__trend
-        span.db-v2-summary-card__trend-label 契約・担当者商談など
+        span.db-v2-summary-card__trend-label = t("meetia.dashboard.home.cta_hint")
 
   .db-v2-summary-card
     .db-v2-summary-card__content
-      .db-v2-summary-card__label フォロー開封 / クリック
+      .db-v2-summary-card__label = t("meetia.dashboard.home.follow_up")
       .db-v2-summary-card__value-row
         span.db-v2-summary-card__value = "#{a[:follow_up_opened]} / #{a[:follow_up_clicked]}"
       .db-v2-summary-card__trend
-        span.db-v2-summary-card__trend-label = "送信 #{a[:follow_up_sent]} 通"
+        span.db-v2-summary-card__trend-label = t("meetia.dashboard.home.follow_up_sent", count: a[:follow_up_sent])
 
   .db-v2-summary-card
     .db-v2-summary-card__content
-      .db-v2-summary-card__label 平均滞在時間
+      .db-v2-summary-card__label = t("meetia.dashboard.home.avg_duration")
       .db-v2-summary-card__value-row
         span.db-v2-summary-card__value = a[:average_duration_label]
       .db-v2-summary-card__trend
-        span.db-v2-summary-card__trend-label セッション離脱時の計測
+        span.db-v2-summary-card__trend-label = t("meetia.dashboard.home.avg_duration_hint")
 
 - if a[:drop_offs].any?
   .db-v2-bottom-card
     .db-v2-bottom-card__header
-      h2.db-v2-bottom-card__title 離脱ページ
-      p.db-v2-muted style="margin:0;" セッション終了時にいたページ（多い順）
+      h2.db-v2-bottom-card__title = t("meetia.dashboard.home.drop_offs_title")
+      p.db-v2-muted style="margin:0;" = t("meetia.dashboard.home.drop_offs_lead")
     .db-v2-bottom-card__body
       .db-v2-leads-table-wrap
         table.db-v2-leads-table
           thead
             tr
-              th ページ
-              th タイトル
-              th 離脱数
-              th 割合
+              th = t("meetia.dashboard.home.col_page")
+              th = t("meetia.dashboard.home.col_title")
+              th = t("meetia.dashboard.home.col_dropoffs")
+              th = t("meetia.dashboard.home.col_share")
           tbody
             - a[:drop_offs].first(8).each do |row|
               tr
@@ -159,22 +162,22 @@
 #deals-hub.db-v2-bottom-card.db-v2-deals-hub
   .db-v2-bottom-card__header.db-v2-deals-hub__header
     .db-v2-deals-hub__heading
-      h2.db-v2-bottom-card__title 商談を選ぶ
-      p.db-v2-deals-hub__lead ここから商談を開き、スタジオ・配信・フォロー・分析を管理します
+      h2.db-v2-bottom-card__title = t("meetia.dashboard.home.deals_hub_title")
+      p.db-v2-deals-hub__lead = t("meetia.dashboard.home.deals_hub_lead")
     - if client_signed_in?
       = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs" do
         i.fa-solid.fa-plus aria-hidden="true"
-        span 新規作成
+        span = t("meetia.dashboard.home.new")
   .db-v2-bottom-card__body
     - if @deals.empty?
       .db-v2-empty-state
         .db-v2-empty-state__icon
           i.fa-solid.fa-briefcase aria-hidden="true"
-        p.db-v2-empty-state__text 商談がまだありません。まず商談を作成してください。
+        p.db-v2-empty-state__text = t("meetia.dashboard.home.empty_deals")
         - if client_signed_in?
           = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary" do
             i.fa-solid.fa-plus aria-hidden="true"
-            span 商談を新規作成
+            span = t("meetia.dashboard.home.create_deal")
     - else
       - if @recent_deals.any?
         .db-v2-deal-quick-grid
@@ -183,18 +186,18 @@
               .db-v2-deal-quick-card__top
                 span.db-v2-deal-quick-card__title = truncate(deal.title, length: 28)
                 - if deal.playback_ready?
-                  span.db-v2-status-badge.db-v2-status-badge--live 公開中
+                  span.db-v2-status-badge.db-v2-status-badge--live = t("meetia.dashboard.status.live")
                 - elsif deal.processing?
-                  span.db-v2-status-badge.db-v2-status-badge--progress 処理中
+                  span.db-v2-status-badge.db-v2-status-badge--progress = t("meetia.dashboard.status.processing")
               span.db-v2-deal-quick-card__meta = l(deal.updated_at, format: :short)
 
       .db-v2-leads-table-wrap
         table.db-v2-leads-table.db-v2-deals-table
           thead
             tr
-              th タイトル
-              th ステータス
-              th 更新日
+              th = t("meetia.dashboard.home.col_title")
+              th = t("meetia.dashboard.home.col_status")
+              th = t("meetia.dashboard.home.col_updated")
               th
           tbody
             - @deals.each do |deal|
@@ -202,27 +205,27 @@
                 td.db-v2-deals-table__title = deal.title
                 td
                   - if deal.playback_ready?
-                    span.db-v2-status-badge.db-v2-status-badge--live 公開中
+                    span.db-v2-status-badge.db-v2-status-badge--live = t("meetia.dashboard.status.live")
                   - elsif deal.processing?
-                    span.db-v2-status-badge.db-v2-status-badge--progress 処理中
+                    span.db-v2-status-badge.db-v2-status-badge--progress = t("meetia.dashboard.status.processing")
                   - else
                     span.db-v2-status-badge = deal.status
                 td = l(deal.updated_at, format: :short)
                 td
-                  = link_to "開く", dashboard_deal_path(deal), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"
+                  = link_to t("meetia.dashboard.common.open"), dashboard_deal_path(deal), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"
 
 - if @recent_leads.any?
   .db-v2-bottom-card
     .db-v2-bottom-card__header
-      h2.db-v2-bottom-card__title 最近のリード
+      h2.db-v2-bottom-card__title = t("meetia.dashboard.home.recent_leads")
     .db-v2-bottom-card__body
       .db-v2-leads-table-wrap
         table.db-v2-leads-table
           thead
             tr
-              th 名前
-              th 商談
-              th 更新日
+              th = t("meetia.dashboard.home.col_name")
+              th = t("meetia.dashboard.home.col_deal")
+              th = t("meetia.dashboard.home.col_updated")
           tbody
             - @recent_leads.each do |lead|
               tr

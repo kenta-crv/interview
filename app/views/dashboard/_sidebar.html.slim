@@ -1,54 +1,56 @@
 - nav_deal = sidebar_nav_deal
 
 .db-v2-sidebar
-  button.db-v2-sidebar__close type="button" aria-label="メニューを閉じる" data-dashboard-sidebar-close=""
+  button.db-v2-sidebar__close type="button" aria-label=t("meetia.dashboard.nav.close_menu") data-dashboard-sidebar-close=""
     i.fa-solid.fa-xmark
 
   .db-v2-sidebar__inner
     = link_to dashboard_index_path, class: "db-v2-sidebar__logo-area" do
       = image_tag "meetia_logo.png", alt: "Meetia", class: "db-v2-sidebar__logo-image"
 
-    nav.db-v2-sidebar__nav aria-label="メインメニュー"
+    nav.db-v2-sidebar__nav aria-label=t("meetia.dashboard.nav.main_menu")
       .db-v2-sidebar__section
-        p.db-v2-sidebar__section-label 概要
+        p.db-v2-sidebar__section-label = t("meetia.dashboard.nav.section_overview")
         = link_to dashboard_index_path, class: sidebar_link_class(:dashboard) do
           i.fa-solid.fa-gauge-high aria-hidden="true"
-          span ダッシュボード
+          span = t("meetia.dashboard.nav.dashboard")
 
       .db-v2-sidebar__section
-        p.db-v2-sidebar__section-label 商談
+        p.db-v2-sidebar__section-label = t("meetia.dashboard.nav.section_deals")
         = link_to dashboard_deals_path, class: sidebar_link_class(:deals) do
           i.fa-solid.fa-briefcase aria-hidden="true"
-          span 商談一覧
+          span = t("meetia.dashboard.nav.deals")
         = link_to sidebar_leads_path, class: sidebar_link_class(:leads) do
           i.fa-solid.fa-users aria-hidden="true"
-          span リード管理
+          span = t("meetia.dashboard.nav.leads")
           - if client_signed_in? && !nav_deal
-            span.db-v2-sidebar__hint 商談作成後
+            span.db-v2-sidebar__hint = t("meetia.dashboard.nav.leads_hint")
 
       - if client_signed_in? && sidebar_show_deal_context? && nav_deal
         .db-v2-sidebar__section.db-v2-sidebar__section--deal
-          p.db-v2-sidebar__section-label 現在の商談
+          p.db-v2-sidebar__section-label = t("meetia.dashboard.nav.section_current_deal")
           .db-v2-sidebar__deal-title title=nav_deal.title = truncate(nav_deal.title, length: 24)
           = link_to dashboard_deal_path(nav_deal), class: sidebar_link_class(:deal_studio, "db-v2-sidebar__link--nested") do
             i.fa-solid.fa-clapperboard aria-hidden="true"
-            span スタジオ
+            span = t("meetia.dashboard.nav.studio")
           = link_to dashboard_deal_user_progresses_path(nav_deal), class: sidebar_link_class(:leads, "db-v2-sidebar__link--nested") do
             i.fa-solid.fa-address-book aria-hidden="true"
-            span リード
+            span = t("meetia.dashboard.nav.lead")
 
       .db-v2-sidebar__section
-        p.db-v2-sidebar__section-label アカウント
+        p.db-v2-sidebar__section-label = t("meetia.dashboard.nav.section_account")
         - if client_signed_in? && !admin_signed_in?
           = link_to dashboard_subscription_path, class: sidebar_link_class(:subscription) do
             i.fa-solid.fa-credit-card aria-hidden="true"
-            span プラン・契約
+            span = t("meetia.dashboard.nav.plan_billing")
         - if admin_signed_in?
           = link_to dashboard_management_path, class: sidebar_link_class(:management) do
             i.fa-solid.fa-building-columns aria-hidden="true"
-            span 契約企業
+            span = t("meetia.dashboard.nav.companies")
 
     .db-v2-sidebar__footer
+      .db-v2-sidebar__lang
+        = render "shared/lang_switch"
       - avatar_name = admin_signed_in? ? current_admin.email : sidebar_user_display_name
       - sign_out_path = admin_signed_in? ? destroy_admin_session_path : destroy_client_session_path
       .db-v2-sidebar__account data-sidebar-account=""
@@ -64,13 +66,13 @@
               span.db-v2-sidebar__user-role = sidebar_plan_label
           i.fa-solid.fa-chevron-up.db-v2-sidebar__account-caret aria-hidden="true"
 
-        #sidebar-account-menu.db-v2-sidebar__account-menu role="menu" aria-label="アカウントメニュー"
-          p.db-v2-sidebar__account-menu-label アカウント
+        #sidebar-account-menu.db-v2-sidebar__account-menu role="menu" aria-label=t("meetia.dashboard.nav.account_menu")
+          p.db-v2-sidebar__account-menu-label = t("meetia.dashboard.nav.account")
           - if client_signed_in? && !admin_signed_in?
             = link_to dashboard_account_path, class: "db-v2-sidebar__link", role: "menuitem" do
               i.fa-solid.fa-building aria-hidden="true"
-              span 企業情報
+              span = t("meetia.dashboard.nav.company_profile")
             button.db-v2-sidebar__link type="button" role="menuitem" data-problem-modal-open=""
               i.fa-solid.fa-bug aria-hidden="true"
-              span 問題報告
-          = render "shared/sign_out_button", path: sign_out_path, variant: :sidebar
+              span = t("meetia.dashboard.nav.report_problem")
+          = render "shared/sign_out_button", path: sign_out_path, variant: :sidebar, label: t("meetia.dashboard.common.sign_out")

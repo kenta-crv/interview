@@ -146,10 +146,10 @@ module DealEngine
       views = [views, leads].max
 
       raw = [
-        { key: "visit_only", label: "訪問のみ", count: views - leads, color: "#94a3b8" },
-        { key: "lead_only", label: "登録のみ", count: leads - started, color: "#c9a227" },
-        { key: "started_only", label: "開始のみ", count: started - completed, color: "#2f9e6b" },
-        { key: "completed", label: "完了", count: completed, color: "#4f6bed" }
+        { key: "visit_only", label: I18n.t("meetia.dashboard.home.funnel_visit_only"), count: views - leads, color: "#94a3b8" },
+        { key: "lead_only", label: I18n.t("meetia.dashboard.home.funnel_lead_only"), count: leads - started, color: "#c9a227" },
+        { key: "started_only", label: I18n.t("meetia.dashboard.home.funnel_started_only"), count: started - completed, color: "#2f9e6b" },
+        { key: "completed", label: I18n.t("meetia.dashboard.home.funnel_completed"), count: completed, color: "#4f6bed" }
       ]
 
       total = raw.sum { |row| row[:count] }

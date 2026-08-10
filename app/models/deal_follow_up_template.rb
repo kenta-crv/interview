@@ -18,9 +18,10 @@ class DealFollowUpTemplate < ApplicationRecord
   end
 
   def label
-    case sequence
-    when 1 then "初回フォロー"
-    else "追客 #{sequence - 1}"
+    if sequence == 1
+      I18n.t("meetia.dashboard.follow_up.initial")
+    else
+      I18n.t("meetia.dashboard.follow_up.nurture", n: sequence - 1)
     end
   end
 end

@@ -151,6 +151,23 @@ html.dashboard-html {
   overflow: visible;
 }
 
+.dashboard-v2-container .db-v2-sidebar__lang {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+}
+
+.dashboard-v2-container .db-v2-sidebar__lang .lang-switch {
+  width: 100%;
+  justify-content: stretch;
+}
+
+.dashboard-v2-container .db-v2-sidebar__lang .lang-switch__btn {
+  flex: 1;
+  padding: 6px 8px !important;
+  font-size: 11px !important;
+}
+
 .dashboard-v2-container .db-v2-sidebar__account {
   position: relative;
   z-index: 2;

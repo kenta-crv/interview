@@ -1,7 +1,22 @@
+- currency_code = (@session&.currency.presence || "jpy").to_s.downcase
+- amount_display = if @amount.present? && @amount.to_i > 0
+    if currency_code == "jpy"
+      "¥#{number_with_delimiter(@amount.to_i)}"
+    else
+      major = (@amount.to_f / 100.0)
+      "$#{number_with_delimiter(format('%.2f', major))}"
+    end
+  end
+- plan_label = if english_ui? && @plan_type.present?
+    (Subscription::PLAN_CATALOG.dig(@plan_type.to_sym, :name_en) || @plan_name)
+  else
+    @plan_name
+  end
+
 .db-v2-header
   .db-v2-header__left
-    h1.db-v2-header__title お手続き完了
-    p.db-v2-header__subtitle プランの適用が完了しました
+    h1.db-v2-header__title = t("meetia.auth.checkout_success_title")
+    p.db-v2-header__subtitle = t("meetia.auth.checkout_success_subtitle")
   .db-v2-header__right
     = render "/dashboard/theme_switch"
 
@@ -10,33 +25,33 @@
     .db-v2-checkout-success__icon
       i.fa-solid.fa-circle-check aria-hidden="true"
 
-    h2.db-v2-checkout-success__title 決済が完了しました
+    h2.db-v2-checkout-success__title = t("meetia.auth.checkout_success_heading")
     p.db-v2-checkout-success__lead
-      | お手続きありがとうございます。
+      = t("meetia.auth.checkout_success_thanks")
       br
-      | プランの適用が完了いたしました。
+      = t("meetia.auth.checkout_success_applied")
 
     .db-v2-checkout-summary
       .db-v2-checkout-summary__row
-        span.db-v2-checkout-summary__label 選択プラン
-        span.db-v2-checkout-summary__value = @plan_name
-      - if @amount.present? && @amount > 0
+        span.db-v2-checkout-summary__label = t("meetia.auth.checkout_selected_plan")
+        span.db-v2-checkout-summary__value = plan_label
+      - if amount_display.present?
         .db-v2-checkout-summary__row
-          span.db-v2-checkout-summary__label 支払い金額
-          span.db-v2-checkout-summary__value = "¥#{number_with_delimiter(@amount)}"
+          span.db-v2-checkout-summary__label = t("meetia.auth.checkout_amount")
+          span.db-v2-checkout-summary__value = amount_display
       - if @invoice_id.present?
         .db-v2-checkout-summary__row
-          span.db-v2-checkout-summary__label 決済ID
+          span.db-v2-checkout-summary__label = t("meetia.auth.checkout_success_payment_id")
           span.db-v2-checkout-summary__value.db-v2-checkout-summary__value--mono = @invoice_id
 
     .db-v2-checkout-form__actions
       - if current_client.dashboard_accessible?
         = link_to dashboard_root_path, class: "db-v2-btn db-v2-btn--primary db-v2-btn--block" do
-          span ダッシュボードへ進む
+          span = t("meetia.auth.checkout_success_to_dashboard")
           i.fa-solid.fa-arrow-right aria-hidden="true"
       - else
         = link_to dashboard_subscription_path, class: "db-v2-btn db-v2-btn--primary db-v2-btn--block" do
-          span 契約状況を確認する
+          span = t("meetia.auth.checkout_success_to_subscription")
           i.fa-solid.fa-arrow-right aria-hidden="true"
 
 

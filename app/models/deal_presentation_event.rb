@@ -49,7 +49,7 @@ class DealPresentationEvent < ApplicationRecord
   scope :for_session, ->(key) { where(session_key: key) }
 
   def display_event_type
-    EVENT_LABELS[event_type] || event_type
+    I18n.t("meetia.dashboard.events.#{event_type}", default: EVENT_LABELS[event_type] || event_type)
   end
 
   def self.log!(deal:, session_key:, event_type:, user: nil, user_progress: nil, **attrs)
