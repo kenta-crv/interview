@@ -22,6 +22,11 @@ ja:
         unlimited_paren: "（無制限）"
         points: "%{score}点"
         'yes': はい
+        duration_empty: "—"
+        duration_seconds: "%{seconds}秒"
+        duration_minutes: "%{minutes}分"
+        duration_minutes_seconds: "%{minutes}分%{seconds}秒"
+        page_number: ページ%{page}
       nav:
         main_menu: メインメニュー
         close_menu: メニューを閉じる
@@ -39,7 +44,8 @@ ja:
         plan_billing: プラン・契約
         companies: 契約企業
         account_menu: アカウントメニュー
-        account: アカウント
+        settings: 設定
+        account: アカウント・言語
         company_profile: 企業情報
         report_problem: 問題報告
         onboarding: 契約フロー
@@ -294,7 +300,7 @@ ja:
         ai_improving: AI改善中...
         copy_ok: URLをコピーしました
         copy_after_publish: 公開後にご利用いただけます
-        session_leave: P.%{page} で離脱（%{ms}ms）
+        session_leave: ページ%{page}で離脱（%{duration}）
       knowledge:
         title: ナレッジ補完（FAQ）
         coverage: 完成度 %{pct}%
@@ -402,6 +408,10 @@ ja:
         deal_limit: 商談数の上限（%{limit}件）に達しています。プランをアップグレードしてください。
       account:
         title: 企業情報
+        language_title: 表示言語
+        language_hint: ダッシュボードの表示言語を選択します。変更はすぐに反映されます。
+        language_ja: 日本語
+        language_en: English
         company: 会社名
         name: 担当者名
         email: メールアドレス
@@ -603,6 +613,11 @@ en:
         unlimited_paren: "(unlimited)"
         points: "%{score} pts"
         'yes': 'Yes'
+        duration_empty: "—"
+        duration_seconds: "%{seconds} sec"
+        duration_minutes: "%{minutes} min"
+        duration_minutes_seconds: "%{minutes} min %{seconds} sec"
+        page_number: Page %{page}
       nav:
         main_menu: Main menu
         close_menu: Close menu
@@ -620,7 +635,8 @@ en:
         plan_billing: Plan & billing
         companies: Companies
         account_menu: Account menu
-        account: Account
+        settings: Settings
+        account: Account & language
         company_profile: Company profile
         report_problem: Report a problem
         onboarding: Onboarding
@@ -892,7 +908,7 @@ en:
         ai_improving: AI rewriting…
         copy_ok: URL copied
         copy_after_publish: Available after publishing
-        session_leave: Left on P.%{page} (%{ms}ms)
+        session_leave: Left on page %{page} (%{duration})
       knowledge:
         title: Knowledge (FAQ)
         coverage: Coverage %{pct}%
@@ -1002,6 +1018,10 @@ en:
         deal_limit: Deal limit reached (%{limit}). Please upgrade your plan.
       account:
         title: Company profile
+        language_title: Display language
+        language_hint: Choose the dashboard UI language. Changes apply immediately.
+        language_ja: 日本語
+        language_en: English
         company: Company
         name: Contact name
         email: Email

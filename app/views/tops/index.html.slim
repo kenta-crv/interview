@@ -30,12 +30,16 @@
           br
           = t("meetia.lp.hero_title_2")
         p.meetia-hero__lead = t("meetia.lp.hero_lead")
-        .meetia-hero__actions
-          = link_to lp_trial_experience_path, lp_trial_experience_link_options.merge(class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-btn--cta-play") do
-            span = t("meetia.lp.cta_experience")
-            span.meetia-btn__play-icon aria-hidden="true"
-              i.fa-solid.fa-play
-          = link_to t("meetia.lp.cta_features"), "#features", class: "meetia-btn meetia-btn--outline meetia-btn--lg"
+        .meetia-hero__cta-block
+          .meetia-hero__actions
+            = link_to lp_trial_experience_path, lp_trial_experience_link_options.merge(class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-btn--cta-play") do
+              span = t("meetia.lp.cta_experience")
+              span.meetia-btn__play-icon aria-hidden="true"
+                i.fa-solid.fa-play
+            = link_to t("meetia.lp.cta_features"), "#features", class: "meetia-btn meetia-btn--outline meetia-btn--lg"
+          p.meetia-hero__trial-note
+            i.fa-solid.fa-circle-check aria-hidden="true"
+            span = t("meetia.lp.hero_trial_note", days: Subscription::TRIAL_DAYS)
 
       .meetia-hero__visual aria-hidden="true"
         .meetia-hero-portal
@@ -507,7 +511,7 @@
           span.meetia-reviews-summary__label
             | / 5.0
         .meetia-reviews-summary__stat
-          span.meetia-reviews-summary__value 1,200+
+          span.meetia-reviews-summary__value 500+
           span.meetia-reviews-summary__label = t("meetia.lp.body.reviews_companies")
         .meetia-reviews-summary__stat
           span.meetia-reviews-summary__value 98%

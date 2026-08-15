@@ -106,4 +106,27 @@ module DashboardHelper
   def funnel_pie_center_label(analytics)
     analytics[:sessions_started].to_i.positive? ? t("meetia.dashboard.home.funnel_center_completion") : t("meetia.dashboard.home.funnel_center_access")
   end
+
+  # 滞在時間（ms）。ja: 3分37秒 / en: 3 min 37 sec
+  def format_duration_ms(ms)
+    return t("meetia.dashboard.common.duration_empty") if ms.blank?
+
+    seconds = (ms.to_f / 1000.0).round
+    return t("meetia.dashboard.common.duration_seconds", seconds: seconds) if seconds < 60
+
+    minutes = seconds / 60
+    remain = seconds % 60
+    if remain.zero?
+      t("meetia.dashboard.common.duration_minutes", minutes: minutes)
+    else
+      t("meetia.dashboard.common.duration_minutes_seconds", minutes: minutes, seconds: remain)
+    end
+  end
+
+  def session_leave_detail(metadata)
+    meta = metadata.is_a?(Hash) ? metadata : {}
+    page = meta["current_page_number"].presence || meta[:current_page_number].presence || "—"
+    duration = format_duration_ms(meta["duration_ms"] || meta[:duration_ms])
+    t("meetia.dashboard.deals.session_leave", page: page, duration: duration)
+  end
 end

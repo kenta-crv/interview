@@ -46,7 +46,7 @@ module DealEngine
         follow_up_opened: 0,
         follow_up_clicked: 0,
         average_duration_ms: nil,
-        average_duration_label: "—",
+        average_duration_label: I18n.t("meetia.dashboard.common.duration_empty"),
         drop_offs: [],
         funnel_segments: []
       }
@@ -207,14 +207,18 @@ module DealEngine
     end
 
     def format_duration(ms)
-      return "—" if ms.blank?
+      return I18n.t("meetia.dashboard.common.duration_empty") if ms.blank?
 
       seconds = (ms / 1000.0).round
-      return "#{seconds}秒" if seconds < 60
+      return I18n.t("meetia.dashboard.common.duration_seconds", seconds: seconds) if seconds < 60
 
       minutes = seconds / 60
       remain = seconds % 60
-      remain.zero? ? "#{minutes}分" : "#{minutes}分#{remain}秒"
+      if remain.zero?
+        I18n.t("meetia.dashboard.common.duration_minutes", minutes: minutes)
+      else
+        I18n.t("meetia.dashboard.common.duration_minutes_seconds", minutes: minutes, seconds: remain)
+      end
     end
   end
 end

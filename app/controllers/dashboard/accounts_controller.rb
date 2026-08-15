@@ -1,9 +1,10 @@
 module Dashboard
   class AccountsController < Dashboard::BaseController
-    before_action :authenticate_client!
-    before_action :set_client
+    before_action :authenticate_client!, only: [:update]
+    before_action :set_client, only: [:update]
 
     def show
+      @client = current_client if client_signed_in?
     end
 
     def update

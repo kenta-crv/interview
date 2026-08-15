@@ -376,6 +376,26 @@ html.meetia-lp-html,
     min-width: 0; }
     .meetia-modern-lp .meetia-hero__actions .meetia-btn {
       max-width: 100%; }
+  .meetia-modern-lp .meetia-hero__cta-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0; }
+  .meetia-modern-lp .meetia-hero__trial-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 0 16px;
+    color: var(--lp-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.5; }
+    .meetia-modern-lp .meetia-hero__trial-note i {
+      color: inherit;
+      font-size: 0.85em;
+      flex-shrink: 0; }
   .meetia-modern-lp .meetia-btn--cta-play {
     gap: 12px;
     padding-right: 24px;
@@ -2874,6 +2894,13 @@ html.meetia-lp-html,
         white-space: normal;
         text-align: center;
         box-sizing: border-box; }
+    .meetia-modern-lp .meetia-hero__cta-block {
+      width: 100%;
+      max-width: 420px;
+      align-items: center;
+      text-align: center; }
+    .meetia-modern-lp .meetia-hero__trial-note {
+      justify-content: center; }
     .meetia-modern-lp .meetia-ai-deal-flow__step-label {
       min-height: auto; }
     .meetia-modern-lp .meetia-ai-deal-flow__panel {

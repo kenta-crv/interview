@@ -1,23 +1,25 @@
-.db-v2-header
-  .db-v2-header__left
-    h1.db-v2-header__title = t("meetia.auth.plans_title")
-    p.db-v2-header__subtitle = t("meetia.auth.plans_subtitle")
-  .db-v2-header__right
-    = render "shared/lang_switch"
-    = render "/dashboard/theme_switch"
-    - unless @is_new_account
-      = link_to dashboard_subscription_path, class: "db-v2-btn db-v2-btn--ghost" do
-        i.fa-solid.fa-arrow-left aria-hidden="true"
-        span = t("meetia.auth.plans_back")
+.db-v2-plans
+  .db-v2-header.db-v2-header--plans
+    .db-v2-header__bar-left
+      - unless @is_new_account
+        = link_to dashboard_subscription_path, class: "db-v2-btn db-v2-btn--ghost" do
+          i.fa-solid.fa-arrow-left aria-hidden="true"
+          span = t("meetia.auth.plans_back")
+    .db-v2-header__left
+      h1.db-v2-header__title = t("meetia.auth.plans_title")
+      p.db-v2-header__subtitle = t("meetia.auth.plans_subtitle")
+    .db-v2-header__bar-right
+      = render "shared/lang_switch"
+      = render "/dashboard/theme_switch"
 
-- trial_config = Subscription.plan_config(:trial)
-- if @is_new_account
-  .db-v2-alert.db-v2-alert--info
-    i.fa-solid.fa-circle-info aria-hidden="true"
-    div
-      p
-        = t("meetia.auth.plans_trial_prefix")
-        strong = t("meetia.auth.plans_trial_strong", days: Subscription::TRIAL_DAYS)
-        = t("meetia.auth.plans_trial_suffix", deals: trial_config[:deal_limit])
+  - trial_config = Subscription.plan_config(:trial)
+  - if @is_new_account
+    .db-v2-alert.db-v2-alert--info
+      i.fa-solid.fa-circle-info aria-hidden="true"
+      div
+        p
+          = t("meetia.auth.plans_trial_prefix")
+          strong = t("meetia.auth.plans_trial_strong", days: Subscription::TRIAL_DAYS)
+          = t("meetia.auth.plans_trial_suffix", deals: trial_config[:deal_limit])
 
-= render "plans/pricing_slider"
+  = render "plans/pricing_slider"

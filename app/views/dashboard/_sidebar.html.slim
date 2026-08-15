@@ -37,20 +37,14 @@
             i.fa-solid.fa-address-book aria-hidden="true"
             span = t("meetia.dashboard.nav.lead")
 
-      .db-v2-sidebar__section
-        p.db-v2-sidebar__section-label = t("meetia.dashboard.nav.section_account")
-        - if client_signed_in? && !admin_signed_in?
+      - if client_signed_in? && !admin_signed_in?
+        .db-v2-sidebar__section
+          p.db-v2-sidebar__section-label = t("meetia.dashboard.nav.section_account")
           = link_to dashboard_subscription_path, class: sidebar_link_class(:subscription) do
             i.fa-solid.fa-credit-card aria-hidden="true"
             span = t("meetia.dashboard.nav.plan_billing")
-        - if admin_signed_in?
-          = link_to dashboard_management_path, class: sidebar_link_class(:management) do
-            i.fa-solid.fa-building-columns aria-hidden="true"
-            span = t("meetia.dashboard.nav.companies")
 
     .db-v2-sidebar__footer
-      .db-v2-sidebar__lang
-        = render "shared/lang_switch"
       - avatar_name = admin_signed_in? ? current_admin.email : sidebar_user_display_name
       - sign_out_path = admin_signed_in? ? destroy_admin_session_path : destroy_client_session_path
       .db-v2-sidebar__account data-sidebar-account=""
@@ -67,11 +61,18 @@
           i.fa-solid.fa-chevron-up.db-v2-sidebar__account-caret aria-hidden="true"
 
         #sidebar-account-menu.db-v2-sidebar__account-menu role="menu" aria-label=t("meetia.dashboard.nav.account_menu")
-          p.db-v2-sidebar__account-menu-label = t("meetia.dashboard.nav.account")
-          - if client_signed_in? && !admin_signed_in?
-            = link_to dashboard_account_path, class: "db-v2-sidebar__link", role: "menuitem" do
-              i.fa-solid.fa-building aria-hidden="true"
-              span = t("meetia.dashboard.nav.company_profile")
+          p.db-v2-sidebar__account-menu-label = t("meetia.dashboard.nav.settings")
+          - if admin_signed_in?
+            = link_to dashboard_management_path, class: sidebar_link_class(:management), role: "menuitem" do
+              i.fa-solid.fa-building-columns aria-hidden="true"
+              span = t("meetia.dashboard.nav.companies")
+            = link_to dashboard_account_path, class: sidebar_link_class(:account), role: "menuitem" do
+              i.fa-solid.fa-globe aria-hidden="true"
+              span = t("meetia.dashboard.nav.account")
+          - elsif client_signed_in?
+            = link_to dashboard_account_path, class: sidebar_link_class(:account), role: "menuitem" do
+              i.fa-solid.fa-globe aria-hidden="true"
+              span = t("meetia.dashboard.nav.account")
             button.db-v2-sidebar__link type="button" role="menuitem" data-problem-modal-open=""
               i.fa-solid.fa-bug aria-hidden="true"
               span = t("meetia.dashboard.nav.report_problem")

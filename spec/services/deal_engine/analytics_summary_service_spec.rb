@@ -102,7 +102,9 @@ RSpec.describe DealEngine::AnalyticsSummaryService do
     expect(result[:high_prospect_count]).to eq(1)
     expect(result[:average_evaluation]).to eq(4.0)
     expect(result[:cta_clicks]).to eq(1)
-    expect(result[:average_duration_label]).to eq("2分")
+    expect(result[:average_duration_label]).to eq(
+      I18n.t("meetia.dashboard.common.duration_minutes", minutes: 2)
+    )
     expect(result[:drop_offs].first[:page_number]).to eq(2)
     expect(result[:drop_offs].first[:title]).to eq("料金")
     expect(result[:drop_offs].first[:count]).to eq(1)

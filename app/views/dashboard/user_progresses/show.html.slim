@@ -186,7 +186,7 @@
                   td= event.label.presence || event.topic.presence || "-"
                   td
                     - if event.event_type == "session_close"
-                      = t("meetia.dashboard.deals.session_leave", page: event.metadata["current_page_number"], ms: event.metadata["duration_ms"])
+                      = session_leave_detail(event.metadata)
                     - elsif %w[free_text_send ai_reply].include?(event.event_type)
                       = event.message.to_s.truncate(50)
                     - else

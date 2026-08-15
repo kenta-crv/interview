@@ -239,13 +239,13 @@ module TopsHelper
 
   TRIAL_FEATURES = [
     { icon: "fa-rocket", label: "即日スタート", desc: "資料をアップロードするだけで、すぐにAI商談ルームを体験できます。" },
-    { icon: "fa-shield-halved", label: "セキュア設計", desc: "通信暗号化とアクセス制御で、企業利用にも安心の環境を提供します。" },
+    { icon: "fa-credit-card", label: "クレジットカード不要", desc: "カード登録なしでトライアル開始。終了後の自動課金もありません。" },
     { icon: "fa-chart-simple", label: "成果を可視化", desc: "見込み度判定や商談ログをダッシュボードで確認できます。" }
   ].freeze
 
   TRIAL_FEATURES_EN = [
     { icon: "fa-rocket", label: "Start today", desc: "Upload materials and try an AI deal room right away." },
-    { icon: "fa-shield-halved", label: "Secure design", desc: "Encryption and access controls for business use." },
+    { icon: "fa-credit-card", label: "No credit card", desc: "Start trial without a card. No auto-charge when it ends." },
     { icon: "fa-chart-simple", label: "Visible results", desc: "Review intent grades and session logs on the dashboard." }
   ].freeze
 

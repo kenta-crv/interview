@@ -1,59 +1,72 @@
 .db-v2-bottom-card
   .db-v2-bottom-card__header
     h2.db-v2-bottom-card__title
-      i.fa-solid.fa-building aria-hidden="true"
+      i.fa-solid.fa-globe aria-hidden="true"
       |  
-      = t("meetia.dashboard.account.title")
+      = t("meetia.dashboard.account.language_title")
   .db-v2-bottom-card__body
-    = form_with model: @client, url: dashboard_account_path, method: :patch, local: true do |f|
-      - if @client.errors.any?
-        .db-v2-alert.db-v2-alert--danger
-          ul
-            - @client.errors.full_messages.each do |message|
-              li = message
+    p.db-v2-locale-switch__hint = t("meetia.dashboard.account.language_hint")
+    .db-v2-locale-switch role="group" aria-label=t("meetia.dashboard.account.language_title")
+      = link_to t("meetia.dashboard.account.language_ja"), locale_switch_path_for(:ja, return_to: dashboard_account_path), class: "db-v2-locale-switch__btn#{' is-active' if current_locale.to_s == 'ja'}", "aria-pressed": (current_locale.to_s == "ja").to_s
+      = link_to t("meetia.dashboard.account.language_en"), locale_switch_path_for(:en, return_to: dashboard_account_path), class: "db-v2-locale-switch__btn#{' is-active' if current_locale.to_s == 'en'}", "aria-pressed": (current_locale.to_s == "en").to_s
 
-      .db-v2-form-group
-        = f.label :company, t("meetia.dashboard.account.company"), class: "db-v2-form-label"
-        = f.text_field :company, class: "db-v2-form-control", required: true
+- if client_signed_in?
+  .db-v2-bottom-card
+    .db-v2-bottom-card__header
+      h2.db-v2-bottom-card__title
+        i.fa-solid.fa-building aria-hidden="true"
+        |  
+        = t("meetia.dashboard.account.title")
+    .db-v2-bottom-card__body
+      = form_with model: @client, url: dashboard_account_path, method: :patch, local: true do |f|
+        - if @client.errors.any?
+          .db-v2-alert.db-v2-alert--danger
+            ul
+              - @client.errors.full_messages.each do |message|
+                li = message
 
-      .db-v2-form-group
-        = f.label :name, t("meetia.dashboard.account.name"), class: "db-v2-form-label"
-        = f.text_field :name, class: "db-v2-form-control", required: true
+        .db-v2-form-group
+          = f.label :company, t("meetia.dashboard.account.company"), class: "db-v2-form-label"
+          = f.text_field :company, class: "db-v2-form-control", required: true
 
-      .db-v2-form-group
-        = f.label :email, t("meetia.dashboard.account.email"), class: "db-v2-form-label"
-        = f.email_field :email, class: "db-v2-form-control", required: true
+        .db-v2-form-group
+          = f.label :name, t("meetia.dashboard.account.name"), class: "db-v2-form-label"
+          = f.text_field :name, class: "db-v2-form-control", required: true
 
-      .db-v2-form-group
-        = f.label :tel, t("meetia.dashboard.account.tel"), class: "db-v2-form-label"
-        = f.telephone_field :tel, class: "db-v2-form-control", required: true
+        .db-v2-form-group
+          = f.label :email, t("meetia.dashboard.account.email"), class: "db-v2-form-label"
+          = f.email_field :email, class: "db-v2-form-control", required: true
 
-      .db-v2-form-group
-        = f.label :address, t("meetia.dashboard.account.address"), class: "db-v2-form-label"
-        = f.text_field :address, class: "db-v2-form-control", required: true
+        .db-v2-form-group
+          = f.label :tel, t("meetia.dashboard.account.tel"), class: "db-v2-form-label"
+          = f.telephone_field :tel, class: "db-v2-form-control", required: true
 
-      .db-v2-form-group
-        = f.label :url, t("meetia.dashboard.account.url"), class: "db-v2-form-label"
-        = f.url_field :url, class: "db-v2-form-control", placeholder: "https://example.com"
+        .db-v2-form-group
+          = f.label :address, t("meetia.dashboard.account.address"), class: "db-v2-form-label"
+          = f.text_field :address, class: "db-v2-form-control", required: true
 
-      .db-v2-form-actions
-        = f.submit t("meetia.dashboard.account.save"), class: "db-v2-btn db-v2-btn--primary"
+        .db-v2-form-group
+          = f.label :url, t("meetia.dashboard.account.url"), class: "db-v2-form-label"
+          = f.url_field :url, class: "db-v2-form-control", placeholder: "https://example.com"
 
-.db-v2-bottom-card
-  .db-v2-bottom-card__header
-    h2.db-v2-bottom-card__title
-      i.fa-solid.fa-bug aria-hidden="true"
-      |  
-      = t("meetia.dashboard.account.problem_title")
-  .db-v2-bottom-card__body
-    .db-v2-problem-report
-      .db-v2-problem-report__copy
-        p.db-v2-problem-report__lead = t("meetia.dashboard.account.problem_lead")
-        p.db-v2-problem-report__hint = t("meetia.dashboard.account.problem_hint")
-      .db-v2-problem-report__actions
-        button.db-v2-btn.db-v2-btn--primary type="button" data-problem-modal-open=""
-          i.fa-solid.fa-bug aria-hidden="true"
-          span = t("meetia.dashboard.account.problem_cta")
-        = link_to new_problem_path, class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener noreferrer" do
-          i.fa-solid.fa-arrow-up-right-from-square aria-hidden="true"
-          span = t("meetia.dashboard.account.problem_new_window")
+        .db-v2-form-actions
+          = f.submit t("meetia.dashboard.account.save"), class: "db-v2-btn db-v2-btn--primary"
+
+  .db-v2-bottom-card
+    .db-v2-bottom-card__header
+      h2.db-v2-bottom-card__title
+        i.fa-solid.fa-bug aria-hidden="true"
+        |  
+        = t("meetia.dashboard.account.problem_title")
+    .db-v2-bottom-card__body
+      .db-v2-problem-report
+        .db-v2-problem-report__copy
+          p.db-v2-problem-report__lead = t("meetia.dashboard.account.problem_lead")
+          p.db-v2-problem-report__hint = t("meetia.dashboard.account.problem_hint")
+        .db-v2-problem-report__actions
+          button.db-v2-btn.db-v2-btn--primary type="button" data-problem-modal-open=""
+            i.fa-solid.fa-bug aria-hidden="true"
+            span = t("meetia.dashboard.account.problem_cta")
+          = link_to new_problem_path, class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener noreferrer" do
+            i.fa-solid.fa-arrow-up-right-from-square aria-hidden="true"
+            span = t("meetia.dashboard.account.problem_new_window")

@@ -8,7 +8,7 @@ class LocalesController < ApplicationController
       return
     end
 
-    session[:ui_locale] = locale
+    persist_ui_locale!(locale)
     current_client.update(preferred_locale: locale) if client_signed_in?
 
     redirect_to locale_switch_destination(locale)

@@ -563,7 +563,7 @@
                             | -
                         td
                           - if event.event_type == "session_close" && event.metadata.present?
-                            | P.#{event.metadata["current_page_number"]} / #{event.metadata["duration_ms"]}ms
+                            = session_leave_detail(event.metadata)
                           - elsif event.event_type == "free_text_send"
                             = event.message.to_s.truncate(40)
                           - elsif event.event_type.in?(%w[cta_click exit_contract_click exit_sales_call_click])
