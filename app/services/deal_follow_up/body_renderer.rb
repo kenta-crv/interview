@@ -9,49 +9,22 @@ module DealFollowUp
     end
 
     def subject
-      render_text(@delivery.subject)
+      with_deal_locale { render_text(@delivery.subject) }
     end
 
     def text_body
-      [
-        render_text(@delivery.body),
-        history_text_section,
-        cta_text_section,
-        "配信停止: #{unsubscribe_url}"
-      ].compact.reject(&:blank?).join("\n\n")
+      with_deal_locale do
+        [
+          render_text(@delivery.body),
+          history_text_section,
+          cta_text_section,
+          t("meetia.follow_up.unsubscribe_url", url: unsubscribe_url)
+        ].compact.reject(&:blank?).join("\n\n")
+      end
     end
 
     def html_body
-      <<~HTML.gsub(/\n\s*/, "")
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f1f5f9;padding:24px 12px;">
-          <tr>
-            <td align="center">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
-                <tr>
-                  <td style="background:#0f172a;padding:22px 28px;">
-                    <p style="margin:0;font-size:13px;letter-spacing:0.14em;color:#94a3b8;font-family:Arial,sans-serif;">MEETIA</p>
-                    <p style="margin:8px 0 0;font-size:20px;line-height:1.4;color:#ffffff;font-weight:700;font-family:Arial,sans-serif;">#{h(@deal.title)} — 商談フォロー</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:28px 28px 8px;font-family:Arial,'Hiragino Sans','Hiragino Kaku Gothic ProN',Meiryo,sans-serif;color:#0f172a;">
-                    #{greeting_html}
-                    #{history_html_section}
-                    #{appeal_html}
-                    #{cta_html_section}
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:8px 28px 28px;font-family:Arial,sans-serif;">
-                    <p style="margin:24px 0 0;font-size:11px;line-height:1.6;color:#94a3b8;">このメールは「#{h(@deal.title)}」のAI商談にご参加いただいた方へお送りしています。</p>
-                    <p style="margin:10px 0 0;font-size:10px;line-height:1.4;"><a href="#{unsubscribe_url}" style="color:#cbd5e1;text-decoration:underline;">配信停止</a></p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      HTML
+      with_deal_locale { build_html_body }
     end
 
     def open_tracking_url
@@ -68,6 +41,52 @@ module DealFollowUp
       ERB::Util.html_escape(text.to_s)
     end
 
+    def t(key, **opts)
+      I18n.t(key, **opts)
+    end
+
+    def with_deal_locale
+      loc = @deal.language.to_s == "en" ? :en : :ja
+      I18n.with_locale(loc) { yield }
+    end
+
+    def list_sep
+      I18n.locale.to_s == "en" ? ", " : "、"
+    end
+
+    def build_html_body
+      <<~HTML.gsub(/\n\s*/, "")
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f1f5f9;padding:24px 12px;">
+          <tr>
+            <td align="center">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
+                <tr>
+                  <td style="background:#0f172a;padding:22px 28px;">
+                    <p style="margin:0;font-size:13px;letter-spacing:0.14em;color:#94a3b8;font-family:Arial,sans-serif;">MEETIA</p>
+                    <p style="margin:8px 0 0;font-size:20px;line-height:1.4;color:#ffffff;font-weight:700;font-family:Arial,sans-serif;">#{h(@deal.title)} — #{h(t("meetia.follow_up.header_suffix"))}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:28px 28px 8px;font-family:Arial,'Hiragino Sans','Hiragino Kaku Gothic ProN',Meiryo,sans-serif;color:#0f172a;">
+                    #{greeting_html}
+                    #{history_html_section}
+                    #{appeal_html}
+                    #{cta_html_section}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 28px 28px;font-family:Arial,sans-serif;">
+                    <p style="margin:24px 0 0;font-size:11px;line-height:1.6;color:#94a3b8;">#{h(t("meetia.follow_up.footer", title: @deal.title))}</p>
+                    <p style="margin:10px 0 0;font-size:10px;line-height:1.4;"><a href="#{unsubscribe_url}" style="color:#cbd5e1;text-decoration:underline;">#{h(t("meetia.follow_up.unsubscribe_label"))}</a></p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      HTML
+    end
+
     def default_host
       ActionMailer::Base.default_url_options[:host].presence || ENV.fetch("APP_HOST", "meetia.pro")
     end
@@ -78,13 +97,13 @@ module DealFollowUp
 
     def render_text(text)
       text.to_s
-          .gsub("{{user_name}}", @user.name.presence || "お客")
+          .gsub("{{user_name}}", @user.name.presence || t("meetia.follow_up.guest_name"))
           .gsub("{{deal_title}}", @deal.title.to_s)
           .gsub("{{company_name}}", @user.company.presence || "")
           .gsub("{{prospect_grade}}", "")
           .gsub("{{session_summary}}", "")
-          .gsub("{{interest_topics}}", topic_labels.join("、").presence || "ご検討内容")
-          .gsub("{{next_action}}", customer_offer.presence || "担当者からの個別ご案内")
+          .gsub("{{interest_topics}}", topic_labels.join(list_sep).presence || t("meetia.follow_up.topics_fallback"))
+          .gsub("{{next_action}}", customer_offer.presence || t("meetia.follow_up.next_fallback"))
           .gsub(/\n{3,}/, "\n\n")
           .gsub(/[ \t]+\n/, "\n")
           .strip
@@ -113,26 +132,26 @@ module DealFollowUp
 
     def customer_offer
       topics = topic_labels
-      if topics.any? { |t| t.match?(/料金|価格|プラン|費用|コスト/) }
-        return "料金・プランについて、担当者より詳しくご案内できます"
+      if topics.any? { |item| item.match?(/料金|価格|プラン|費用|コスト|pricing|price|plan|cost|roi/i) }
+        return t("meetia.follow_up.offer_pricing")
       end
-      if topics.any? { |t| t.match?(/機能|デモ|使い方|導入/) }
-        return "ご確認いただいた機能について、導入イメージをご案内できます"
+      if topics.any? { |item| item.match?(/機能|デモ|使い方|導入|feature|demo|implement/i) }
+        return t("meetia.follow_up.offer_product")
       end
       if stated_priority.present?
-        return "「#{stated_priority}」を踏まえ、担当者より個別にご案内できます"
+        return t("meetia.follow_up.offer_priority", priority: stated_priority)
       end
       if topics.present?
-        return "ご確認いただいた内容の続きを、担当者よりご案内できます"
+        return t("meetia.follow_up.offer_topics")
       end
 
-      "ご不明点の解消から契約のご相談まで、担当者が対応します"
+      t("meetia.follow_up.offer_default")
     end
 
     def history_items
-      items = topic_labels.map { |t| { label: "ご確認", value: t } }
+      items = topic_labels.map { |item| { label: t("meetia.follow_up.history_label"), value: item } }
       if stated_priority.present?
-        items << { label: "ご関心", value: stated_priority }
+        items << { label: t("meetia.follow_up.interest_label"), value: stated_priority }
       end
       items.first(5)
     end
@@ -141,7 +160,7 @@ module DealFollowUp
       items = history_items
       return nil if items.blank?
 
-      lines = ["【ご確認いただいた内容】"]
+      lines = ["【#{t("meetia.follow_up.history_title")}】"]
       items.each { |item| lines << "・#{item[:value]}" }
       lines.join("\n")
     end
@@ -158,7 +177,7 @@ module DealFollowUp
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0 20px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
           <tr>
             <td style="padding:16px 18px;">
-              <p style="margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:0.04em;color:#0f172a;">ご確認いただいた内容</p>
+              <p style="margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:0.04em;color:#0f172a;">#{h(t("meetia.follow_up.history_title"))}</p>
               #{bullets}
             </td>
           </tr>
@@ -167,7 +186,7 @@ module DealFollowUp
     end
 
     def appeal_html
-      %(<p style="margin:0 0 20px;padding:14px 16px;background:#0f172a;color:#ffffff;border-radius:10px;font-size:14px;line-height:1.7;">#{h(customer_offer)}。下のボタンからすぐ進められます。</p>)
+      %(<p style="margin:0 0 20px;padding:14px 16px;background:#0f172a;color:#ffffff;border-radius:10px;font-size:14px;line-height:1.7;">#{h(customer_offer)}. #{h(t("meetia.follow_up.appeal_suffix"))}</p>)
     end
 
     def template
@@ -208,8 +227,8 @@ module DealFollowUp
 
     def cta_text_section
       lines = []
-      lines << "契約について相談する: #{contract_tracking_url}" if show_contract_link?
-      lines << "担当者に相談する: #{sales_tracking_url}" if show_sales_call_link?
+      lines << "#{t("meetia.follow_up.cta_contract")}: #{contract_tracking_url}" if show_contract_link?
+      lines << "#{t("meetia.follow_up.cta_sales")}: #{sales_tracking_url}" if show_sales_call_link?
       lines.presence&.join("\n")
     end
 
@@ -217,13 +236,13 @@ module DealFollowUp
       return "" unless show_contract_link? || show_sales_call_link?
 
       left = if show_contract_link?
-        button_cell(contract_tracking_url, "契約について相談する", "#0f172a", "#ffffff")
+        button_cell(contract_tracking_url, t("meetia.follow_up.cta_contract"), "#0f172a", "#ffffff")
       else
         "<td></td>"
       end
 
       right = if show_sales_call_link?
-        button_cell(sales_tracking_url, "担当者に相談する", "#ffffff", "#0f172a", border: true)
+        button_cell(sales_tracking_url, t("meetia.follow_up.cta_sales"), "#ffffff", "#0f172a", border: true)
       else
         "<td></td>"
       end

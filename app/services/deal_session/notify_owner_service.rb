@@ -14,7 +14,7 @@ module DealSession
 
     def call
       recipient_email = notification_email
-      raise ArgumentError, "担当者メールが設定されていません" if recipient_email.blank?
+      raise ArgumentError, I18n.t("meetia.owner_mail.missing_email") if recipient_email.blank?
 
       ensure_session_analyzed!
 

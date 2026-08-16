@@ -1,26 +1,26 @@
-AI商談が終了しました。
+<%= t("meetia.owner_mail.completed_intro") %>
 
-商談: <%= @deal.title %>
+<%= t("meetia.owner_mail.deal") %>: <%= @deal.title %>
 
-会社名: <%= @user.company.presence || "—" %>
-お名前: <%= @user.name.presence || "—" %>
-役職: <%= @user.job_title.presence || "—" %>
-メール: <%= @user.email.presence || "—" %>
-電話番号: <%= @user.tel.presence || "—" %>
-いまのご状況: <%= @phase_label %>
-導入予定: <%= @user_progress.planned_introduction_date.presence || "—" %>
-決め手: <%= @user_progress.key_points_for_application.presence || "—" %>
-見込み度: <%= @grade_label %>
-満足度: <%= @rating.present? ? "#{@rating} / 5" : "—" %>
-ご意見: <%= @feedback.presence || "—" %>
+<%= t("meetia.dashboard.visitor_fields.company") %>: <%= @user.company.presence || "—" %>
+<%= t("meetia.dashboard.visitor_fields.name") %>: <%= @user.name.presence || "—" %>
+<%= t("meetia.dashboard.visitor_fields.job_title") %>: <%= @user.job_title.presence || "—" %>
+<%= t("meetia.dashboard.visitor_fields.email") %>: <%= @user.email.presence || "—" %>
+<%= t("meetia.dashboard.visitor_fields.tel") %>: <%= @user.tel.presence || "—" %>
+<%= t("meetia.dashboard.visitor_fields.consideration_phase") %>: <%= @phase_label %>
+<%= t("meetia.dashboard.visitor_fields.planned_introduction_date") %>: <%= @user_progress.planned_introduction_date.presence || "—" %>
+<%= t("meetia.dashboard.visitor_fields.key_points_for_application") %>: <%= @user_progress.key_points_for_application.presence || "—" %>
+<%= t("meetia.owner_mail.grade") %>: <%= @grade_label %>
+<%= t("meetia.owner_mail.rating") %>: <%= @rating.present? ? "#{@rating} / 5" : "—" %>
+<%= t("meetia.owner_mail.feedback") %>: <%= @feedback.presence || "—" %>
 <% if @summary_lines.present? %>
 
-【商談サマリー】
+<%= t("meetia.owner_mail.summary_title") %>
 <%= @summary_lines.join("\n") %>
 <% end %>
 <% if @interest_topics.present? %>
 
-関心トピック: <%= @interest_topics %>
+<%= t("meetia.owner_mail.topics") %>: <%= @interest_topics %>
 <% end %>
 
-リード詳細: <%= @dashboard_url %>
+<%= t("meetia.owner_mail.dashboard_cta") %>: <%= @dashboard_url %>

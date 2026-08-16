@@ -39,7 +39,7 @@ module DealEngine
 
       {
         type: 'page',
-        text: page.script.presence || "#{page.title || page_number}ページ目についてご説明します。",
+        text: page.script.presence || page_fallback_text(page, page_number),
         page_number: page.page_number,
         page_title: page.title,
         audio_url: audio_url_for(page.page_audio),
@@ -143,13 +143,22 @@ module DealEngine
 
       user_context = if @user_progress
         user = @user_progress.user
-        parts = [
-          ("参加者: #{user&.name}" if user&.name.present?),
-          ("役職: #{user.job_title}" if user&.job_title.present?),
-          ("会社: #{user.company}" if user&.company.present?),
-          ("検討フェーズ: #{@user_progress.consideration_phase}")
-        ].compact
-        parts.join(', ')
+        parts = if @language == 'ja'
+          [
+            ("参加者: #{user&.name}" if user&.name.present?),
+            ("役職: #{user.job_title}" if user&.job_title.present?),
+            ("会社: #{user.company}" if user&.company.present?),
+            ("検討フェーズ: #{@user_progress.consideration_phase}")
+          ]
+        else
+          [
+            ("Visitor: #{user&.name}" if user&.name.present?),
+            ("Title: #{user.job_title}" if user&.job_title.present?),
+            ("Company: #{user.company}" if user&.company.present?),
+            ("Stage: #{@user_progress.consideration_phase}")
+          ]
+        end
+        parts.compact.join(', ')
       else
         ''
       end
@@ -210,6 +219,14 @@ module DealEngine
         else
           'Tone: polite and concise.'
         end
+      end
+    end
+
+    def page_fallback_text(page, page_number)
+      if @language == 'ja'
+        "#{page.title || page_number}ページ目についてご説明します。"
+      else
+        "Let me walk you through #{page.title.presence || "page #{page_number}"}."
       end
     end
 

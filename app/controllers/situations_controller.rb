@@ -19,7 +19,7 @@ class SituationsController < ApplicationController
   def create
     @situation = current_client.situations.new(situation_params)
     if @situation.save
-      redirect_to @situation, notice: '面接フォームを作成しました。'
+      redirect_to @situation, notice: t("meetia.situations.created_notice")
     else
       render :new
     end
@@ -30,7 +30,7 @@ class SituationsController < ApplicationController
 
   def update
     if @situation.update(situation_params)
-      redirect_to @situation, notice: '面接フォームを更新しました。'
+      redirect_to @situation, notice: t("meetia.situations.updated_notice")
     else
       render :edit
     end
@@ -38,7 +38,7 @@ class SituationsController < ApplicationController
 
   def destroy
     @situation.destroy
-    redirect_to situations_path, notice: '面接フォームを削除しました。'
+    redirect_to situations_path, notice: t("meetia.situations.deleted_notice")
   end
 
   private

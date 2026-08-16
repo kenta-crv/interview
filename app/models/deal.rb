@@ -120,13 +120,41 @@ class Deal < ApplicationRecord
   end
 
   def presentation_cta_payload
+    with_deal_locale do
+      {
+        "label" => localized_default_label(presentation_cta_label, "meetia.deal.cta_label", DEFAULT_CTA_LABEL),
+        "url" => presentation_cta_url.to_s,
+        "sales_url" => follow_up_sales_url.to_s,
+        "exit_contract_label" => localized_default_label(exit_contract_label, "meetia.deal.exit_contract", DEFAULT_EXIT_CONTRACT_LABEL),
+        "exit_sales_call_label" => localized_default_label(exit_sales_call_label, "meetia.deal.exit_sales", DEFAULT_EXIT_SALES_CALL_LABEL)
+      }
+    end
+  end
+
+  def materials_download_payload
+    doc = deal_documents.proposals.order(:created_at).reverse_order.detect { |d| d.file.attached? }
+    return nil unless doc
+
     {
-      'label' => presentation_cta_label.presence || DEFAULT_CTA_LABEL,
-      'url' => presentation_cta_url.to_s,
-      'sales_url' => follow_up_sales_url.to_s,
-      'exit_contract_label' => exit_contract_label.presence || DEFAULT_EXIT_CONTRACT_LABEL,
-      'exit_sales_call_label' => exit_sales_call_label.presence || DEFAULT_EXIT_SALES_CALL_LABEL
+      "label" => with_deal_locale { I18n.t("meetia.deal.download_materials") },
+      "url" => Rails.application.routes.url_helpers.rails_blob_path(doc.file, disposition: "attachment", only_path: true),
+      "filename" => doc.file.filename.to_s
     }
+  end
+
+  def ui_locale
+    language.to_s == "en" ? :en : :ja
+  end
+
+  def with_deal_locale
+    I18n.with_locale(ui_locale) { yield }
+  end
+
+  def localized_default_label(stored, key, japanese_default)
+    value = stored.to_s.strip
+    return I18n.t(key) if value.blank? || value == japanese_default
+
+    value
   end
 
   def resolved_visitor_info_fields
@@ -176,17 +204,6 @@ class Deal < ApplicationRecord
       normalized[key] = VISITOR_INFO_FIELD_MODES.include?(mode.to_s) ? mode.to_s : DEFAULT_VISITOR_INFO_FIELDS[key]
     end
     self.visitor_info_fields = normalized
-  end
-
-  def materials_download_payload
-    doc = deal_documents.proposals.order(:created_at).reverse_order.detect { |d| d.file.attached? }
-    return nil unless doc
-
-    {
-      'label' => '使用資料をダウンロード',
-      'url' => Rails.application.routes.url_helpers.rails_blob_path(doc.file, disposition: 'attachment', only_path: true),
-      'filename' => doc.file.filename.to_s
-    }
   end
 
   def page_role_for(page)
@@ -284,7 +301,17 @@ class Deal < ApplicationRecord
 
   def menu_items_for_conversation
     items = presentation_menu_items
-    items.any? ? items : DEFAULT_CONVERSATION_TOPICS
+    return items if items.any?
+
+    with_deal_locale do
+      %w[overview pricing trial contract].map.with_index(1) do |key, page_number|
+        {
+          'key' => key,
+          'label' => I18n.t("meetia.deal.default_topics.#{key}"),
+          'page_number' => page_number
+        }
+      end
+    end
   end
 
   def presentation_opening_segments
@@ -294,19 +321,19 @@ class Deal < ApplicationRecord
     [
       {
         'page_number' => payload['greeting_page'],
-        'title' => 'ご挨拶',
+        'title' => with_deal_locale { I18n.t("meetia.deal.opening_greeting") },
         'text' => payload['greeting_text'],
         'audio_url' => payload['greeting_audio']
       },
       {
         'page_number' => payload['company_page'],
-        'title' => '会社概要',
+        'title' => with_deal_locale { I18n.t("meetia.deal.opening_company") },
         'text' => payload['company_overview_text'],
         'audio_url' => payload['company_overview_audio']
       },
       {
         'page_number' => guide_page,
-        'title' => 'ご案内',
+        'title' => with_deal_locale { I18n.t("meetia.deal.opening_guide") },
         'text' => usage_guide_script.presence || default_usage_guide_text,
         'audio_url' => opening_speech_url('usage_guide')
       }
@@ -333,7 +360,7 @@ class Deal < ApplicationRecord
 
       {
         'key' => (item['key'] || item[:key] || "page_#{page.page_number}").to_s,
-        'label' => label.presence || page.title.presence || "スライド #{page.page_number}",
+        'label' => label.presence || page.title.presence || fallback_slide_label(page.page_number),
         'page_number' => page.page_number
       }
     end.sort_by { |item| item['page_number'].to_i }
@@ -527,10 +554,14 @@ class Deal < ApplicationRecord
     pages.reject { |page| cover_page?(page) }.map do |page|
       {
         'key' => "page_#{page.page_number}",
-        'label' => page.title.presence || "スライド #{page.page_number}",
+        'label' => page.title.presence || fallback_slide_label(page.page_number),
         'page_number' => page.page_number
       }
     end
+  end
+
+  def fallback_slide_label(page_number)
+    with_deal_locale { I18n.t("meetia.deal.slide_n", n: page_number) }
   end
 
   def parse_stored_menu_items

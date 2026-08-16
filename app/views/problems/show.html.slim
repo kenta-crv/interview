@@ -1,35 +1,35 @@
 .container
-  h1.mb-4 契約詳細
+  h1.mb-4 = t("meetia.problems.show_title")
 
   .card.shadow-sm
     .card-body
 
       table.table
         tr
-          th 会社名
+          th = t("meetia.problems.company")
           td = @problem.company
         tr
-          th メール
+          th = t("meetia.problems.email")
           td = @problem.email
         tr
-          th 内容
+          th = t("meetia.problems.body")
           td = @problem.body
         tr
-          th 添付画像
+          th = t("meetia.problems.photo")
           td
             - if @problem.photo.present?
               = image_tag @problem.photo.url, class: "img-fluid rounded", style: "max-width: 300px;"
             - else
-              span.text-muted なし
+              span.text-muted = t("meetia.problems.none")
 
         tr
-          th 作成日
+          th = t("meetia.interview.created")
           td.text-muted = @problem.created_at.strftime("%Y-%m-%d")
 
     .card-footer.text-end
-      = link_to "編集", edit_problem_path(@problem), class: "btn btn-outline-success"
-      = link_to "削除", problem_path(@problem),
+      = link_to t("meetia.situations.edit"), edit_problem_path(@problem), class: "btn btn-outline-success"
+      = link_to t("meetia.dashboard.common.delete"), problem_path(@problem),
         method: :delete,
-        data: { confirm: "本当に削除しますか？" },
+        data: { confirm: t("meetia.problems.confirm_delete") },
         class: "btn btn-outline-danger ms-2"
-      = link_to "一覧へ", problems_path, class: "btn btn-secondary ms-2"
+      = link_to t("meetia.problems.back_index"), problems_path, class: "btn btn-secondary ms-2"

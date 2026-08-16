@@ -1,57 +1,57 @@
 .db-v2-header
   .db-v2-header__left
-    h1.db-v2-header__title 面接結果 ##{@result.id}
+    h1.db-v2-header__title = "#{t("meetia.interview.result_title")} ##{@result.id}"
     p.db-v2-header__subtitle = @result.interview.situation&.title
   .db-v2-header__right
     = render "/dashboard/theme_switch"
     = link_to admin_interview_results_path, class: "db-v2-btn db-v2-btn--ghost" do
       i.fa-solid.fa-arrow-left aria-hidden="true"
-      span 一覧へ戻る
+      span = t("meetia.interview.back_list")
 
 .db-v2-bottom-card
   .db-v2-bottom-card__header
-    h2.db-v2-bottom-card__title サマリー
+    h2.db-v2-bottom-card__title = t("meetia.interview.summary")
   .db-v2-bottom-card__body
     .db-v2-summary-grid
       .db-v2-summary-card
-        span.db-v2-summary-card__label 応募者
+        span.db-v2-summary-card__label = t("meetia.interview.applicant")
         span.db-v2-summary-card__value = @result.interview.user&.email
       .db-v2-summary-card
-        span.db-v2-summary-card__label ステータス
+        span.db-v2-summary-card__label = t("meetia.interview.status")
         span.db-v2-summary-card__value = @result.final_status
       .db-v2-summary-card
-        span.db-v2-summary-card__label 平均スコア
+        span.db-v2-summary-card__label = t("meetia.interview.avg_score")
         span.db-v2-summary-card__value = @result.average_score
 
     - if @result.summary.present?
       p = @result.summary
 
     - if Array(@result.strengths).any?
-      h3 強み
+      h3 = t("meetia.interview.strengths")
       ul
         - Array(@result.strengths).each do |item|
           li = item
 
     - if Array(@result.weaknesses).any?
-      h3 弱み
+      h3 = t("meetia.interview.improvements")
       ul
         - Array(@result.weaknesses).each do |item|
           li = item
 
     - if @result.recommendation.present?
-      h3 推薦
+      h3 = t("meetia.interview.recommendation")
       p = @result.recommendation
 
 .db-v2-bottom-card
   .db-v2-bottom-card__header
-    h2.db-v2-bottom-card__title 回答一覧
+    h2.db-v2-bottom-card__title = t("meetia.interview.responses")
   .db-v2-bottom-card__body
     - @result.interview.interview_responses.in_order.each do |resp|
       .db-v2-lead-card
         p.db-v2-lead-card__title = resp.question.question_text
-        p スコア: #{resp.score}
+        p = t("meetia.interview.score", score: resp.score)
         p = resp.audio_transcript
         - if resp.answer_audio.attached?
-          p = link_to "音声", rails_blob_path(resp.answer_audio, disposition: "attachment", only_path: true), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"
+          p = link_to t("meetia.interview.audio"), rails_blob_path(resp.answer_audio, disposition: "attachment", only_path: true), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"
         - if resp.answer_video.attached?
-          p = link_to "動画", rails_blob_path(resp.answer_video, disposition: "attachment", only_path: true), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"
+          p = link_to t("meetia.interview.video"), rails_blob_path(resp.answer_video, disposition: "attachment", only_path: true), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"

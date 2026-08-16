@@ -17,7 +17,7 @@ class ProblemsController < ApplicationController
     @embed = embed_request?
 
     if @problem.save
-      flash[:notice] = "報告完了しました"
+      flash[:notice] = t("meetia.problems.submitted")
       begin
         ProblemMailer.report_email(@problem).deliver
       rescue StandardError => e
@@ -45,7 +45,7 @@ class ProblemsController < ApplicationController
   def destroy
     @problem = Problem.find(params[:id])
     @problem.destroy
-    redirect_to problems_path, alert: "削除しました"
+    redirect_to problems_path, alert: t("meetia.problems.deleted")
   end
 
   def update

@@ -28,17 +28,17 @@ module Api
       @deal = current_client.deals.find(params[:id])
 
       if params[:files].blank?
-        redirect_to dashboard_deal_path(@deal), alert: 'ファイルが選択されていません'
+        redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.no_file")
         return
       end
 
       if @deal.proposal_upload_locked?
-        redirect_to dashboard_deal_path(@deal), alert: 'この商談IDでは提案資料を再アップロードできません'
+        redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.proposal_locked")
         return
       end
 
       if @deal.processing?
-        redirect_to dashboard_deal_path(@deal), alert: 'AI処理中です。完了までお待ちください。'
+        redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.ai_busy")
         return
       end
 
@@ -60,11 +60,11 @@ module Api
       @deal.start_processing!
       ProcessDealJob.perform_later(@deal.id)
 
-      redirect_to dashboard_deal_path(@deal), notice: '資料をアップロードしました。AI処理をバックグラウンドで開始しています。'
+      redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.upload_started")
     rescue ActiveRecord::RecordInvalid => e
       redirect_to dashboard_deal_path(@deal), alert: e.message
     rescue => e
-      redirect_to dashboard_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.generic_error", message: e.message)
     end
 
     # POST /api/deals/:id/process_pdf
@@ -77,7 +77,7 @@ module Api
       end
 
       if @deal.processing?
-        render json: { message: 'AI処理中です', status: @deal.status }, status: :accepted
+        render json: { message: t("meetia.dashboard.flash.ai_busy"), status: @deal.status }, status: :accepted
         return
       end
 
@@ -85,7 +85,7 @@ module Api
       ProcessDealJob.perform_later(@deal.id)
 
       render json: {
-        message: 'AI処理をキューに登録しました。完了まで数分かかる場合があります。',
+        message: t("meetia.dashboard.flash.ai_started"),
         status: @deal.status
       }, status: :accepted
     end
@@ -95,7 +95,7 @@ module Api
       @deal = current_client.deals.find(params[:id])
 
       if params[:audio].blank?
-        redirect_to dashboard_deal_path(@deal), alert: '音声ファイルが選択されていません'
+        redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.no_file")
         return
       end
 
@@ -118,9 +118,9 @@ module Api
       @deal.start_processing!
       ProcessDealJob.perform_later(@deal.id)
 
-      redirect_to dashboard_deal_path(@deal), notice: '音声ファイルをアップロードしました。AI処理をバックグラウンドで開始しています。'
+      redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.upload_started")
     rescue => e
-      redirect_to dashboard_deal_path(@deal), alert: "エラーが発生しました: #{e.message}"
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.generic_error", message: e.message)
     end
 
     # POST /api/deals/:id/generate_speech

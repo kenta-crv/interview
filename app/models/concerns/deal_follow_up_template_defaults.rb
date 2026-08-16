@@ -1,72 +1,24 @@
 module DealFollowUpTemplateDefaults
   extend ActiveSupport::Concern
 
-  DEFAULT_TEMPLATES = [
-    {
-      delay_days: 0,
-      subject: "「{{deal_title}}」の次のステップをご案内します",
-      body: <<~BODY.strip,
-        {{user_name}} 様
+  DEFAULT_TEMPLATES = [].freeze
 
-        先ほどは「{{deal_title}}」のAI商談にお時間をいただき、ありがとうございました。
+  def default_follow_up_templates
+    locale = language.to_s == "en" ? :en : :ja
+    items = I18n.with_locale(locale) { I18n.t("meetia.follow_up.templates") }
+    Array(items).map do |item|
+      hash = item.respond_to?(:symbolize_keys) ? item.symbolize_keys : item
+      {
+        delay_days: hash[:delay_days].to_i,
+        subject: hash[:subject].to_s,
+        body: hash[:body].to_s.strip,
+        include_sales_call_link: ActiveModel::Type::Boolean.new.cast(hash[:include_sales_call_link]),
+        include_contract_link: ActiveModel::Type::Boolean.new.cast(hash[:include_contract_link])
+      }
+    end
+  end
 
-        商談で確認いただいた内容を踏まえ、次に進むためのご案内を準備しています。
-        契約のご相談も、担当者へのご質問も、下のボタンからすぐ進められます。
-      BODY
-      include_sales_call_link: true,
-      include_contract_link: true
-    },
-    {
-      delay_days: 3,
-      subject: "「{{deal_title}}」導入に向けて、続きをご案内できます",
-      body: <<~BODY.strip,
-        {{user_name}} 様
-
-        先日はAI商談にご参加いただきありがとうございました。
-        導入時期や活用方法について、担当者が個別にご案内できます。
-      BODY
-      include_sales_call_link: true,
-      include_contract_link: true
-    },
-    {
-      delay_days: 7,
-      subject: "ご検討状況はいかがでしょうか — {{deal_title}}",
-      body: <<~BODY.strip,
-        {{user_name}} 様
-
-        前回のAI商談から少しお時間が経ちました。
-        ご検討の進捗に合わせて、次のステップをご提案できます。
-      BODY
-      include_sales_call_link: true,
-      include_contract_link: false
-    },
-    {
-      delay_days: 15,
-      subject: "「{{deal_title}}」のご判断材料をご用意できます",
-      body: <<~BODY.strip,
-        {{user_name}} 様
-
-        「{{deal_title}}」のご検討から2週間ほどが経ちました。
-        導入判断の材料として、担当者より個別にご説明できます。
-      BODY
-      include_sales_call_link: true,
-      include_contract_link: true
-    },
-    {
-      delay_days: 30,
-      subject: "ご導入のタイミング、いま一度ご確認ください",
-      body: <<~BODY.strip,
-        {{user_name}} 様
-
-        AI商談から約1か月が経ちました。
-        ご都合の良いタイミングで、次のステップをご案内できます。
-      BODY
-      include_sales_call_link: true,
-      include_contract_link: true
-    }
-  ].freeze
-
-  CANONICAL_DELAY_DAYS = DEFAULT_TEMPLATES.map { |attrs| attrs[:delay_days] }.freeze
+  CANONICAL_DELAY_DAYS = [0, 3, 7, 15, 30].freeze
 
   LEGACY_CUSTOMER_BODY_MARKERS = [
     "【商談サマリー】",
@@ -132,7 +84,7 @@ module DealFollowUpTemplateDefaults
   end
 
   def ensure_canonical_follow_up_templates!
-    DEFAULT_TEMPLATES.each do |attrs|
+    default_follow_up_templates.each do |attrs|
       template = deal_follow_up_templates.find_by(delay_days: attrs[:delay_days])
       if template
         refresh_legacy_customer_template!(template, attrs)

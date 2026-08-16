@@ -1,0 +1,841 @@
+ja:
+  meetia:
+    meta:
+      title: "AI商談代行サービス"
+      description: "資料アップロードだけで24時間365日、AIが音声商談を代行。商談結果の分析・見込み度判定・自動フォローまで一気通貫で営業工数を削減します。"
+    common:
+      required: 必須
+      optional: 任意
+      play: 再生
+      pause: 一時停止
+      select_placeholder: 選択してください
+      guest: ゲスト
+      invalid_url: 無効なURLです
+      invalid_link: 無効なリンクです
+    deal:
+      unpublished_title: 商談はまだ公開されていません
+      unpublished_lead_1: 資料の準備と公開設定が完了するまで、このURLでは商談を開始できません。
+      unpublished_lead_2: 公開後にもう一度アクセスしてください。
+      unpublished_help: ご不明点は、商談のご案内元へお問い合わせください。
+      register_title: 商談参加登録
+      register_lead: 必要事項を入力して、音声付きAI商談を開始してください。
+      section_participant: 参加者情報
+      section_consideration: ご検討の状況
+      submit_register: 登録してAI商談を開始
+      field_required: "%{field}は必須です"
+      registered: 情報を登録しました
+      not_published: この商談はまだ公開されていません
+      register_first: まず情報を登録してください
+      rating_range: 評価は1〜5で指定してください
+      rating_saved: 評価を保存しました
+      sales_notified: 担当者へ連絡しました
+      start_title: AI商談を開始
+      start_desc: タップして音声付きAI商談を開始
+      room_title: 商談ルーム
+      room_live: AI商談中
+      sales_call: 担当者に繋ぐ
+      exit: 終了する
+      pages_nav: ページ一覧
+      slide_n: "スライド %{n}"
+      no_document: 資料データがありません
+      no_pages: ページがありません。資料をアップロードして処理してください。
+      prev_choices: 前の選択肢を見る
+      next_choices: 次の選択肢を見る
+      free_text_ph: "例: 導入までの期間はどのくらいですか？"
+      send: 送信
+      avatar_alt: AIアバター
+      chat_history: メッセージ履歴
+      assistant: AIアシスタント
+      you: あなた
+      exit_title: 商談を終了します
+      exit_lead: ご検討ありがとうございました。次のアクションをお選びください。
+      exit_notice: 商談を終了するには、満足度（星）を選び「評価を送信」を押してください。
+      rating_label: 満足度（星5つ中）
+      feedback_label: ご意見・ご要望
+      feedback_ph: 自由にご意見をお聞かせください
+      submit_rating: 評価を送信して終了
+      preview_done_title: プレビュー終了
+      preview_done_lead: プレビューのため、リードは保存されません。このタブを閉じます。
+      cta_label: 契約を進める
+      exit_contract: 契約へ進む
+      exit_sales: 担当者と商談を希望
+      download_materials: 使用資料をダウンロード
+      job_title_ph: "例: 営業部長 / 情報システム担当"
+      address_ph: "例: 東京都渋谷区..."
+      ended_flash: 商談が終了しました。ご参加ありがとうございました。
+      opening_greeting: ご挨拶
+      opening_company: 会社概要
+      opening_guide: ご案内
+      default_topics:
+        overview: サービス概要
+        pricing: 料金プラン
+        trial: トライアル
+        contract: 契約フロー
+      phase_options:
+        initial: まだ調べ始めたばかり
+        information_gathering: 情報を集めている
+        evaluation: いくつか比較している
+        decision: 導入を決めようとしている
+      key_point_options:
+        - 料金・費用対効果
+        - 導入のしやすさ
+        - 機能の充実度
+        - サポート体制
+        - セキュリティ・コンプライアンス
+        - 実績・信頼性
+        - 社内の承認のしやすさ
+      planned_options:
+        - すぐにでも
+        - 1ヶ月以内
+        - 3ヶ月以内
+        - 未定
+      js:
+        play: 再生
+        pause: 一時停止
+        evaluate_url_missing: 評価の送信先が設定されていません
+        evaluate_failed: 評価の送信に失敗しました
+        evaluate_reload: 評価の送信に失敗しました。ページを再読み込みしてから再度お試しください。
+        need_rating_exit: 商談を終了するには、満足度（星）を選び「評価を送信して終了」を押してください。
+        need_rating_alert: 満足度の評価を送信してから終了してください。
+        ended_title: 商談が終了しました
+        ended_lead: このタブを閉じてください。
+        ended_doc_title: 商談終了
+        ended_redirect_lead: トップページへ移動します…
+        preview_title: プレビュー終了
+        preview_lead: プレビューのため、リードは保存されません。このタブを閉じます。
+        preview_doc_title: プレビュー終了
+        contract_url_missing: 契約ページのURLが設定されていません。
+        need_rating_submit: 商談を終了するには、満足度（星）を選び「評価を送信」を押してください。
+        exit_contract: 契約へ進む
+        sales_call: 担当者に繋ぐ
+        sales_unavailable: 担当者への連絡機能が利用できません。
+        send_failed_retry: 送信に失敗しました。しばらくしてから再度お試しください。
+        preview_no_sales_mail: プレビューのため、担当者へのメールは送信されません。
+        sales_sent: 担当者へご連絡しました。折り返しご連絡いたします。
+        sales_done: 連絡済み
+        send_failed: 送信に失敗しました。
+        assistant: AIアシスタント
+        you: あなた
+        preparing: 回答を用意しています
+        reply_failed: 回答を取得できませんでした。
+        submitting: 送信中…
+        send_again: 送信に失敗しました。もう一度お試しください。
+        timeout: 送信がタイムアウトしました。通信状況を確認して再度お試しください。
+    follow_up:
+      header_suffix: 商談フォロー
+      unsubscribe_label: 配信停止
+      unsubscribe_url: "配信停止: %{url}"
+      footer: このメールは「%{title}」のAI商談にご参加いただいた方へお送りしています。
+      history_title: ご確認いただいた内容
+      history_label: ご確認
+      interest_label: ご関心
+      guest_name: お客
+      topics_fallback: ご検討内容
+      next_fallback: 担当者からの個別ご案内
+      appeal_suffix: 下のボタンからすぐ進められます。
+      cta_contract: 契約について相談する
+      cta_sales: 担当者に相談する
+      offer_pricing: 料金・プランについて、担当者より詳しくご案内できます
+      offer_product: ご確認いただいた機能について、導入イメージをご案内できます
+      offer_priority: 「%{priority}」を踏まえ、担当者より個別にご案内できます
+      offer_topics: ご確認いただいた内容の続きを、担当者よりご案内できます
+      offer_default: ご不明点の解消から契約のご相談まで、担当者が対応します
+      received_title: 受け付け完了
+      received_sales: 担当者へのご相談を受け付けました
+      received_contract: 契約についてのご相談を受け付けました
+      received_body: 担当者よりご連絡いたします。今後、この商談に関する自動フォローメールは送信されません。
+      unsubscribed_title: 配信停止完了
+      unsubscribed_heading: 配信を停止しました
+      unsubscribed_body: 今後、この商談に関するフォローメールは送信されません。
+      templates:
+        - delay_days: 0
+          subject: 「{{deal_title}}」の次のステップをご案内します
+          body: |
+            {{user_name}} 様
+
+            先ほどは「{{deal_title}}」のAI商談にお時間をいただき、ありがとうございました。
+
+            商談で確認いただいた内容を踏まえ、次に進むためのご案内を準備しています。
+            契約のご相談も、担当者へのご質問も、下のボタンからすぐ進められます。
+          include_sales_call_link: true
+          include_contract_link: true
+        - delay_days: 3
+          subject: 「{{deal_title}}」導入に向けて、続きをご案内できます
+          body: |
+            {{user_name}} 様
+
+            先日はAI商談にご参加いただきありがとうございました。
+            導入時期や活用方法について、担当者が個別にご案内できます。
+          include_sales_call_link: true
+          include_contract_link: true
+        - delay_days: 7
+          subject: ご検討状況はいかがでしょうか — {{deal_title}}
+          body: |
+            {{user_name}} 様
+
+            前回のAI商談から少しお時間が経ちました。
+            ご検討の進捗に合わせて、次のステップをご提案できます。
+          include_sales_call_link: true
+          include_contract_link: false
+        - delay_days: 15
+          subject: 「{{deal_title}}」のご判断材料をご用意できます
+          body: |
+            {{user_name}} 様
+
+            「{{deal_title}}」のご検討から2週間ほどが経ちました。
+            導入判断の材料として、担当者より個別にご説明できます。
+          include_sales_call_link: true
+          include_contract_link: true
+        - delay_days: 30
+          subject: ご導入のタイミング、いま一度ご確認ください
+          body: |
+            {{user_name}} 様
+
+            AI商談から約1か月が経ちました。
+            ご都合の良いタイミングで、次のステップをご案内できます。
+          include_sales_call_link: true
+          include_contract_link: true
+    owner_mail:
+      prospect_fallback: 見込み客
+      request_subject: "【Meetia】担当者商談の希望：%{name}様"
+      completed_subject: "【Meetia】AI商談が終了しました：%{name}様"
+      intro_follow_sales: フォローメールから「担当者に相談する」が押されました。
+      intro_follow_contract: フォローメールから「契約について相談する」が押されました。
+      intro_room: 商談ルームから「担当者に繋ぐ」が押されました。
+      completed_intro: AI商談が終了しました。
+      deal: 商談
+      dashboard_cta: ダッシュボードでリード詳細を見る
+      source: 送信元
+      grade_with_score: "%{grade}（%{score}点）"
+      score_only: "%{score}点"
+      summary_title: 商談サマリー
+      topics: 関心トピック
+      rating: 満足度
+      feedback: ご意見
+      grade: 見込み度
+      challenge: "課題：%{text}"
+      interest: "関心：%{text}"
+      consideration: "検討：%{text}"
+      next_action: "次アクション：%{text}"
+      missing_email: 担当者メールが設定されていません
+    problems:
+      title: 問題報告
+      subtitle: サービスに関する問題や不具合を報告できます
+      embed_lead: 不具合や改善のご要望があれば、内容を記入して送信してください。
+      back: ダッシュボードへ
+      section: 報告内容
+      page_lead: 発生した症状や再現手順、可能であればスクリーンショットを添えてご報告ください。送信後、ダッシュボードに完了通知が表示されます。
+      company: 会社名
+      email: メールアドレス
+      photo: 添付画像
+      body: 内容
+      company_ph: 株式会社〇〇〇〇
+      photo_hint: スクリーンショットなど、状況が伝わる画像があれば添付してください。
+      body_ph: 発生した症状、再現手順、表示されたメッセージなど
+      submit: 報告を送信する
+      submitted: 報告完了しました
+      submitted_title: 報告完了
+      submitted_redirect: 報告完了しました。ダッシュボードへ移動しています…
+      deleted: 削除しました
+      mail_intro: 以下の内容で問題報告がありました。
+      mail_subject: "【Meetia問題報告】%{company}様より"
+      mail_empty: （内容なし）
+      mail_photo: 添付された写真
+      mail_photo_named: "添付画像あり（ファイル名: %{name}）"
+      mail_unknown_file: 不明
+      index_title: 契約一覧
+      show_title: 契約詳細
+      confirm_delete: 本当に削除しますか？
+      none: なし
+      date: 日付
+      back_index: 一覧へ
+    unsubscribe:
+      done_title: 配信停止完了
+      done_heading: 配信停止しました
+      done_body: 今後フォーム送信は行われません。
+    interview:
+      step_select: 面接選択
+      step_run: 面接実施
+      step_result: 結果確認
+      title: AI面接インタビュー
+      lead: AIが面接官となり、あなたの回答をリアルタイムで評価します。面接フォームを選択して開始してください。
+      form_label: 面接フォーム
+      form_blank: "-- 選択してください --"
+      language_label: 回答言語
+      language_ja: 日本語
+      language_en: English
+      start: 面接を開始する
+      resume: 前回の面接を再開
+      in_progress: 面接進行中
+      ready: 準備完了
+      question: 質問
+      interviewer: AIインタビュアー
+      click_to_start: 「面接を開始する」をクリックしてください。
+      your_answer: あなたの回答
+      text_answer: テキストで回答
+      text_ph: 回答を入力してください...
+      voice_answer: 音声で回答
+      record_start: 録音開始
+      record_stop: 録音停止
+      record_idle: 待機中
+      upload_audio: 音声ファイルをアップロード
+      upload_video: 動画ファイルをアップロード（任意）
+      submit_answer: 回答を送信
+      complete: 面接を完了する
+      result_title: 面接結果
+      result_loading: 結果を読み込み中...
+      verdict: 判定
+      avg_score: 平均スコア
+      answer_count: 回答数
+      summary: 総評
+      strengths: 強み
+      improvements: 改善点
+      recommendation: 推薦コメント
+      back: トップに戻る
+      results_index_title: 面接結果
+      results_index_sub: 全応募者の面接結果一覧
+      results_list: 面接結果一覧
+      results_empty: 面接結果はまだありません
+      applicant: 応募者
+      scenario: シナリオ
+      status: ステータス
+      created: 作成日
+      responses: 回答一覧
+      score: "スコア: %{score}"
+      audio: 音声
+      video: 動画
+      back_list: 一覧へ戻る
+      passed: 合格
+      failed: 不合格
+      js:
+        session_expired: セッションが切れたか、ログアウトされています。ログイン画面へ移動します。
+        network_error: "ネットワークエラー: %{message}"
+        parse_failed: サーバー応答の解析に失敗しました。
+        server_error: "サーバーエラー (%{status})"
+        pick_form: 面接フォームを選択してください。
+        starting: 開始中...
+        start: 面接を開始する
+        start_failed: 面接の開始に失敗しました。
+        error_prefix: "エラー: %{message}"
+        saved_missing: 保存された面接が見つかりません。
+        fetch_failed: 面接の取得に失敗しました。
+        already_done: この面接は既に完了しています。
+        not_started: 面接がまだ開始されていません。
+        resume_failed: 面接の再開に失敗しました。
+        no_question: 回答する質問がありません。
+        need_answer: 回答を入力してください。テキスト、音声、または選択肢のいずれかを入力してください。
+        submitting: 送信中...
+        submit_failed: 回答の送信に失敗しました。
+        idle: 待機中
+        submit_answer: 回答を送信
+        completing: 完了処理中...
+        complete_failed: 面接の完了に失敗しました。
+        complete: 面接を完了する
+        completed: 面接が完了しました。
+        already_taken: この面接は既に受験済みです。同じ面接は1回のみ受験できます。
+        question_count: "%{answered} / %{total} 問"
+        unsupported: このブラウザでは録音がサポートされていません。
+        no_audio: 録音データが取得できません。
+        recorded: 録音完了
+        mic_denied: マイクの使用が許可されていません。
+        recording: 録音中...
+        passed: 合格
+        failed: 不合格
+        started: 面接開始
+        resuming: 面接を再開中...
+        ended: 面接が終了しました。
+        status_failed: ステータス取得失敗
+        submitted_next: 回答を送信しました。次の質問を読み込み中...
+    situations:
+      index_title: 面接フォーム一覧
+      new_cta: 新しい面接フォームを作成
+      title: タイトル
+      created: 作成日
+      actions: 操作
+      show: 表示
+      edit: 編集
+      destroy: 削除
+      confirm_destroy: 本当に削除しますか？
+      show_title: "面接フォーム詳細: %{title}"
+      description: 説明
+      questions: 質問一覧
+      add_question: 新しい質問を追加
+      order: 順序
+      question_text: 質問内容
+      type: タイプ
+      options: 選択肢
+      back: 一覧に戻る
+      new_title: 新しい面接フォームを作成
+      edit_title: 面接フォームを編集
+      language: 言語
+      archived: アーカイブ
+      created_notice: 面接フォームを作成しました。
+      updated_notice: 面接フォームを更新しました。
+      deleted_notice: 面接フォームを削除しました。
+    questions:
+      index_title: "質問一覧: %{title}"
+      new_cta: 新しい質問
+      new_title: 新しい質問を作成
+      edit_title: 質問を編集
+      show_title: 質問詳細
+      question_text: 質問内容
+      question_type: 質問タイプ
+      type_text: テキスト
+      type_choice: 選択肢
+      options: 選択肢（choice の場合のみ, JSON形式で入力）
+      order: 表示順
+      required: 必須質問
+      category: カテゴリ
+      category_ph: "例: 技術, コミュニケーション, リーダーシップ"
+      branching: 分岐ルール（JSON形式）
+      branching_hint: "type: selected_option / score_above / score_below / answered　action: include / skip"
+      back: 戻る
+      created_notice: 質問を作成しました。
+      updated_notice: 質問を更新しました。
+      deleted_notice: 質問を削除しました。
+    header:
+      situations: 面接フォーム管理
+      interview_results: 面接結果
+      deals: AI商談
+      interview: AI面接
+      top: トップページ
+      login: ログイン
+      login_client: ログイン（企業）
+      login_user: ログイン（応募者）
+      login_admin: 管理者
+      client: 企業（クライアント）
+      applicant: 応募者（ユーザー）
+      admin_prefix: "管理者:"
+    applicant:
+      login_title: ログイン
+      login_lead: 応募者アカウントでサインイン
+      signup_title: 新規登録
+      signup_lead: 応募者アカウントを作成
+      name: 氏名
+    admin_auth:
+      login_title: 管理者ログイン
+      login_lead: 管理者アカウントでサインイン
+      signup_title: 管理者登録
+      signup_lead: 管理者アカウントを作成
+      approve: 承認する
+
+en:
+  meetia:
+    meta:
+      title: "AI Sales Agent"
+      description: "Upload a PDF and let AI run voice sales conversations around the clock. A–D intent scoring, funnel analytics, and automated follow-up in one flow."
+    common:
+      required: Required
+      optional: Optional
+      play: Play
+      pause: Pause
+      select_placeholder: Please select
+      guest: Guest
+      invalid_url: Invalid URL
+      invalid_link: Invalid link
+    deal:
+      unpublished_title: This deal is not published yet
+      unpublished_lead_1: This URL cannot start a deal until materials and publishing are ready.
+      unpublished_lead_2: Please come back after it is published.
+      unpublished_help: If you have questions, contact the team who shared this link.
+      register_title: Join the deal
+      register_lead: Enter your details to start a voice AI deal.
+      section_participant: Your details
+      section_consideration: Where you are in the process
+      submit_register: Register and start the AI deal
+      field_required: "%{field} is required"
+      registered: Information saved
+      not_published: This deal is not published yet
+      register_first: Please register your details first
+      rating_range: Rating must be between 1 and 5
+      rating_saved: Rating saved
+      sales_notified: We notified the account owner
+      start_title: Start AI deal
+      start_desc: Tap to start a voice AI deal
+      room_title: Deal room
+      room_live: AI deal in progress
+      sales_call: Talk to a person
+      exit: Leave
+      pages_nav: Pages
+      slide_n: "Slide %{n}"
+      no_document: No materials available
+      no_pages: No pages yet. Upload materials and process them first.
+      prev_choices: Previous topics
+      next_choices: Next topics
+      free_text_ph: "e.g. How long does implementation take?"
+      send: Send
+      avatar_alt: AI avatar
+      chat_history: Message history
+      assistant: AI assistant
+      you: You
+      exit_title: End this deal
+      exit_lead: Thank you. Choose a next step below.
+      exit_notice: To leave, pick a star rating and tap Submit rating.
+      rating_label: Satisfaction (out of 5)
+      feedback_label: Comments
+      feedback_ph: Share any thoughts
+      submit_rating: Submit rating and leave
+      preview_done_title: Preview ended
+      preview_done_lead: Preview mode — no lead is saved. This tab will close.
+      cta_label: Continue to contract
+      exit_contract: Continue to contract
+      exit_sales: Request a human meeting
+      download_materials: Download materials
+      job_title_ph: "e.g. Sales manager / IT owner"
+      address_ph: "e.g. 1 Market St, San Francisco"
+      ended_flash: The deal has ended. Thank you for joining.
+      opening_greeting: Greeting
+      opening_company: Company overview
+      opening_guide: How this works
+      default_topics:
+        overview: Overview
+        pricing: Pricing
+        trial: Trial
+        contract: Contract flow
+      phase_options:
+        initial: Just getting started
+        information_gathering: Gathering information
+        evaluation: Comparing options
+        decision: Ready to decide
+      key_point_options:
+        - Pricing and ROI
+        - Ease of adoption
+        - Feature depth
+        - Support
+        - Security and compliance
+        - Track record and trust
+        - Internal approval
+      planned_options:
+        - Immediately
+        - Within 1 month
+        - Within 3 months
+        - Not sure
+      js:
+        play: Play
+        pause: Pause
+        evaluate_url_missing: Rating endpoint is not configured
+        evaluate_failed: Could not submit your rating
+        evaluate_reload: Could not submit your rating. Reload the page and try again.
+        need_rating_exit: To leave, pick a star rating and tap Submit rating and leave.
+        need_rating_alert: Please submit a satisfaction rating before leaving.
+        ended_title: The deal has ended
+        ended_lead: You can close this tab.
+        ended_doc_title: Deal ended
+        ended_redirect_lead: Taking you to the homepage…
+        preview_title: Preview ended
+        preview_lead: Preview mode — no lead is saved. This tab will close.
+        preview_doc_title: Preview ended
+        contract_url_missing: No contract URL is set.
+        need_rating_submit: To leave, pick a star rating and tap Submit rating.
+        exit_contract: Continue to contract
+        sales_call: Talk to a person
+        sales_unavailable: Contacting the owner is not available.
+        send_failed_retry: Could not send. Please try again in a moment.
+        preview_no_sales_mail: Preview mode — no email is sent to the owner.
+        sales_sent: We notified the owner. They will follow up with you.
+        sales_done: Contacted
+        send_failed: Could not send.
+        assistant: AI assistant
+        you: You
+        preparing: Preparing an answer
+        reply_failed: Could not get a reply.
+        submitting: Sending…
+        send_again: Could not send. Please try again.
+        timeout: The request timed out. Check your connection and try again.
+    follow_up:
+      header_suffix: Deal follow-up
+      unsubscribe_label: Unsubscribe
+      unsubscribe_url: "Unsubscribe: %{url}"
+      footer: You are receiving this because you joined an AI deal for “%{title}”.
+      history_title: What you looked at
+      history_label: Reviewed
+      interest_label: Interest
+      guest_name: there
+      topics_fallback: what you reviewed
+      next_fallback: a conversation with our team
+      appeal_suffix: You can continue with the buttons below.
+      cta_contract: Discuss a contract
+      cta_sales: Talk to our team
+      offer_pricing: Our team can walk you through pricing and plans
+      offer_product: We can show how the features you reviewed would work in practice
+      offer_priority: Based on “%{priority}”, our team can follow up personally
+      offer_topics: Our team can continue from what you reviewed
+      offer_default: Our team can answer questions or help you move to a contract
+      received_title: Request received
+      received_sales: We received your request to talk with our team
+      received_contract: We received your request about a contract
+      received_body: Someone from the team will contact you. You will not receive more automated follow-up for this deal.
+      unsubscribed_title: Unsubscribed
+      unsubscribed_heading: You are unsubscribed
+      unsubscribed_body: You will not receive more follow-up email for this deal.
+      templates:
+        - delay_days: 0
+          subject: Next steps for “{{deal_title}}”
+          body: |
+            Hi {{user_name}},
+
+            Thank you for spending time in the “{{deal_title}}” AI deal.
+
+            We prepared next steps based on what you reviewed.
+            Use the buttons below to discuss a contract or talk with our team.
+          include_sales_call_link: true
+          include_contract_link: true
+        - delay_days: 3
+          subject: We can help you roll out “{{deal_title}}”
+          body: |
+            Hi {{user_name}},
+
+            Thanks again for joining the AI deal.
+            Our team can walk you through timing and how to use it.
+          include_sales_call_link: true
+          include_contract_link: true
+        - delay_days: 7
+          subject: How is your evaluation of {{deal_title}} going?
+          body: |
+            Hi {{user_name}},
+
+            A week has passed since your AI deal.
+            We can suggest a next step that matches where you are now.
+          include_sales_call_link: true
+          include_contract_link: false
+        - delay_days: 15
+          subject: Material to help you decide on “{{deal_title}}”
+          body: |
+            Hi {{user_name}},
+
+            It has been about two weeks since you looked at “{{deal_title}}”.
+            Our team can share details to support your decision.
+          include_sales_call_link: true
+          include_contract_link: true
+        - delay_days: 30
+          subject: Checking in on timing for “{{deal_title}}”
+          body: |
+            Hi {{user_name}},
+
+            About a month has passed since the AI deal.
+            When the timing is right, we can help with next steps.
+          include_sales_call_link: true
+          include_contract_link: true
+    owner_mail:
+      prospect_fallback: a prospect
+      request_subject: "[Meetia] Meeting request from %{name}"
+      completed_subject: "[Meetia] AI deal ended: %{name}"
+      intro_follow_sales: Someone tapped “Talk to our team” in a follow-up email.
+      intro_follow_contract: Someone tapped “Discuss a contract” in a follow-up email.
+      intro_room: Someone tapped “Talk to a person” in the deal room.
+      completed_intro: An AI deal has ended.
+      deal: Deal
+      dashboard_cta: View lead in dashboard
+      source: Source
+      grade_with_score: "%{grade} (%{score} pts)"
+      score_only: "%{score} pts"
+      summary_title: Deal summary
+      topics: Topics of interest
+      rating: Satisfaction
+      feedback: Comments
+      grade: Intent
+      challenge: "Pain: %{text}"
+      interest: "Interest: %{text}"
+      consideration: "Evaluation: %{text}"
+      next_action: "Next action: %{text}"
+      missing_email: Owner email is not set
+    problems:
+      title: Report a problem
+      subtitle: Report bugs or issues with the product
+      embed_lead: Describe the issue or idea and send it to us.
+      back: Back to dashboard
+      section: Report details
+      page_lead: Include what happened, how to reproduce it, and a screenshot if you can. You will see a confirmation on the dashboard after submit.
+      company: Company
+      email: Email
+      photo: Screenshot
+      body: Details
+      company_ph: Acme Inc.
+      photo_hint: Attach a screenshot if it helps explain the issue.
+      body_ph: What happened, how to reproduce it, and any error message
+      submit: Send report
+      submitted: Report sent
+      submitted_title: Report sent
+      submitted_redirect: Report sent. Taking you back to the dashboard…
+      deleted: Deleted
+      mail_intro: A problem report was submitted.
+      mail_subject: "[Meetia problem report] %{company}"
+      mail_empty: (No details)
+      mail_photo: Attached image
+      mail_photo_named: "Attachment included (filename: %{name})"
+      mail_unknown_file: unknown
+      index_title: Reports
+      show_title: Report details
+      confirm_delete: Delete this report?
+      none: None
+      date: Date
+      back_index: Back to list
+    unsubscribe:
+      done_title: Unsubscribed
+      done_heading: You are unsubscribed
+      done_body: You will not receive further form submissions.
+    interview:
+      step_select: Select
+      step_run: Interview
+      step_result: Results
+      title: AI interview
+      lead: AI interviews you and scores answers in real time. Choose a form to start.
+      form_label: Interview form
+      form_blank: "-- Select --"
+      language_label: Answer language
+      language_ja: Japanese
+      language_en: English
+      start: Start interview
+      resume: Resume previous interview
+      in_progress: Interview in progress
+      ready: Ready
+      question: Question
+      interviewer: AI interviewer
+      click_to_start: Click “Start interview”.
+      your_answer: Your answer
+      text_answer: Answer in text
+      text_ph: Type your answer...
+      voice_answer: Answer with voice
+      record_start: Start recording
+      record_stop: Stop recording
+      record_idle: Idle
+      upload_audio: Upload audio
+      upload_video: Upload video (optional)
+      submit_answer: Submit answer
+      complete: Finish interview
+      result_title: Interview results
+      result_loading: Loading results...
+      verdict: Result
+      avg_score: Average score
+      answer_count: Answers
+      summary: Summary
+      strengths: Strengths
+      improvements: Areas to improve
+      recommendation: Recommendation
+      back: Back to start
+      results_index_title: Interview results
+      results_index_sub: All applicant results
+      results_list: Results
+      results_empty: No interview results yet
+      applicant: Applicant
+      scenario: Scenario
+      status: Status
+      created: Created
+      responses: Answers
+      score: "Score: %{score}"
+      audio: Audio
+      video: Video
+      back_list: Back to list
+      passed: Passed
+      failed: Failed
+      js:
+        session_expired: Your session ended or you were signed out. Redirecting to sign in.
+        network_error: "Network error: %{message}"
+        parse_failed: Could not parse the server response.
+        server_error: "Server error (%{status})"
+        pick_form: Please choose an interview form.
+        starting: Starting...
+        start: Start interview
+        start_failed: Could not start the interview.
+        error_prefix: "Error: %{message}"
+        saved_missing: Saved interview not found.
+        fetch_failed: Could not load the interview.
+        already_done: This interview is already complete.
+        not_started: The interview has not started yet.
+        resume_failed: Could not resume the interview.
+        no_question: There is no question to answer.
+        need_answer: Please enter an answer as text, audio, or a choice.
+        submitting: Sending...
+        submit_failed: Could not submit the answer.
+        idle: Idle
+        submit_answer: Submit answer
+        completing: Finishing...
+        complete_failed: Could not finish the interview.
+        complete: Finish interview
+        completed: Interview complete.
+        already_taken: You already completed this interview. It can only be taken once.
+        question_count: "%{answered} / %{total} Q"
+        unsupported: Recording is not supported in this browser.
+        no_audio: Could not capture audio.
+        recorded: Recording saved
+        mic_denied: Microphone access was denied.
+        recording: Recording...
+        passed: Passed
+        failed: Failed
+        started: Interview started
+        resuming: Resuming interview...
+        ended: The interview ended.
+        status_failed: Could not load status
+        submitted_next: Answer sent. Loading the next question...
+    situations:
+      index_title: Interview forms
+      new_cta: Create interview form
+      title: Title
+      created: Created
+      actions: Actions
+      show: View
+      edit: Edit
+      destroy: Delete
+      confirm_destroy: Delete this form?
+      show_title: "Interview form: %{title}"
+      description: Description
+      questions: Questions
+      add_question: Add question
+      order: Order
+      question_text: Question
+      type: Type
+      options: Options
+      back: Back to list
+      new_title: Create interview form
+      edit_title: Edit interview form
+      language: Language
+      archived: Archived
+      created_notice: Interview form created.
+      updated_notice: Interview form updated.
+      deleted_notice: Interview form deleted.
+    questions:
+      index_title: "Questions: %{title}"
+      new_cta: New question
+      new_title: Create question
+      edit_title: Edit question
+      show_title: Question
+      question_text: Question
+      question_type: Type
+      type_text: Text
+      type_choice: Choice
+      options: Options (choice only, JSON)
+      order: Order
+      required: Required
+      category: Category
+      category_ph: "e.g. technical, communication, leadership"
+      branching: Branching rules (JSON)
+      branching_hint: "type: selected_option / score_above / score_below / answered  action: include / skip"
+      back: Back
+      created_notice: Question created.
+      updated_notice: Question updated.
+      deleted_notice: Question deleted.
+    header:
+      situations: Interview forms
+      interview_results: Interview results
+      deals: AI deals
+      interview: AI interview
+      top: Home
+      login: Log in
+      login_client: Log in (company)
+      login_user: Log in (applicant)
+      login_admin: Admin
+      client: Company
+      applicant: Applicant
+      admin_prefix: "Admin:"
+    applicant:
+      login_title: Log in
+      login_lead: Sign in with your applicant account
+      signup_title: Create account
+      signup_lead: Create an applicant account
+      name: Name
+    admin_auth:
+      login_title: Admin login
+      login_lead: Sign in with an admin account
+      signup_title: Admin sign up
+      signup_lead: Create an admin account
+      approve: Approve

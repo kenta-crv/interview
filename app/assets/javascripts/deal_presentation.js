@@ -28,6 +28,24 @@
     }
   }
 
+  function readI18n() {
+    var el = document.getElementById('deal-presentation-i18n');
+    if (!el) return {};
+    try {
+      var data = JSON.parse(el.textContent);
+      return data && typeof data === 'object' ? data : {};
+    } catch (_e) {
+      return {};
+    }
+  }
+
+  function t(key, fallback) {
+    var val = I18N[key];
+    return (val && String(val).length) ? String(val) : fallback;
+  }
+
+  var I18N = readI18n();
+
   function csrfToken() {
     var meta = document.querySelector('meta[name="csrf-token"]');
     return meta ? meta.content : '';
@@ -44,6 +62,7 @@
     };
 
     bind(wrapper, 'data-meetia-bound', function(root) {
+      I18N = readI18n();
       var config = readConfig();
       var pages = config.pages;
       var opening = config.opening;
@@ -107,7 +126,7 @@
       function setPlayButtonPlaying(playing) {
         if (!voiceBtn) return;
         voiceBtn.classList.toggle('presentation-play-btn--playing', !!playing);
-        voiceBtn.setAttribute('aria-label', playing ? '一時停止' : '再生');
+        voiceBtn.setAttribute('aria-label', playing ? t('pause', 'Pause') : t('play', 'Play'));
       }
 
       function isSpeechActive() {
@@ -639,7 +658,7 @@
         closeLogged = true;
 
         if (!evaluateUrl) {
-          return Promise.reject(new Error('評価の送信先が設定されていません'));
+          return Promise.reject(new Error(t('evaluate_url_missing', 'Rating endpoint is not configured')));
         }
 
         // evaluate と track_event を並列にすると SQLite で database is locked になる。
@@ -660,12 +679,12 @@
           var contentType = (response.headers.get('content-type') || '').toLowerCase();
           return response.json().catch(function() { return {}; }).then(function(payload) {
             if (!response.ok) {
-              var message = (payload && payload.errors && payload.errors[0]) || '評価の送信に失敗しました';
+              var message = (payload && payload.errors && payload.errors[0]) || t('evaluate_failed', 'Could not submit your rating');
               throw new Error(message);
             }
             // 認証切れなどで HTML にリダイレクトされると「成功」扱いになりトップへ飛ぶ事故になる
             if (contentType.indexOf('application/json') === -1) {
-              throw new Error('評価の送信に失敗しました。ページを再読み込みしてから再度お試しください。');
+              throw new Error(t('evaluate_reload', 'Could not submit your rating. Reload the page and try again.'));
             }
             return payload;
           });
@@ -686,9 +705,9 @@
       function showEvaluationRequiredNotice() {
         if (evaluationNotice) {
           evaluationNotice.classList.add('is-warning');
-          evaluationNotice.textContent = '商談を終了するには、満足度（星）を選び「評価を送信して終了」を押してください。';
+          evaluationNotice.textContent = t('need_rating_exit', 'To leave, pick a star rating and tap Submit rating and leave.');
         }
-        alert('満足度の評価を送信してから終了してください。');
+        alert(t('need_rating_alert', 'Please submit a satisfaction rating before leaving.'));
       }
 
       function showCompleteScreen(options) {
@@ -704,9 +723,9 @@
         document.body.classList.remove('presentation-exit-open', 'presentation-locked');
         document.body.classList.add('presentation-complete-open');
 
-        if (titleEl) titleEl.textContent = opts.title || '商談が終了しました';
+        if (titleEl) titleEl.textContent = opts.title || t('ended_title', 'The deal has ended');
         if (leadEl) {
-          leadEl.textContent = opts.lead || 'このタブを閉じてください。';
+          leadEl.textContent = opts.lead || t('ended_lead', 'You can close this tab.');
         }
         if (actionsEl) {
           actionsEl.hidden = !!opts.hideActions;
@@ -717,7 +736,7 @@
           screen.setAttribute('aria-hidden', 'false');
         }
 
-        document.title = opts.documentTitle || '商談終了';
+        document.title = opts.documentTitle || t('ended_doc_title', 'Deal ended');
       }
 
       function closePresentationWindow() {
@@ -728,10 +747,10 @@
           pausePlayback();
           // 商談ページが一瞬見えるのを防ぐため、先に完了画面を被せてから遷移する
           showCompleteScreen({
-            title: '商談が終了しました',
-            lead: 'トップページへ移動します…',
+            title: t('ended_title', 'The deal has ended'),
+            lead: t('ended_redirect_lead', 'Taking you to the homepage…'),
             hideActions: true,
-            documentTitle: '商談終了'
+            documentTitle: t('ended_doc_title', 'Deal ended')
           });
           var home = (config.home_url || '/').toString();
           var sep = home.indexOf('?') >= 0 ? '&' : '?';
@@ -743,10 +762,10 @@
 
         if (isPreview) {
           showCompleteScreen({
-            title: 'プレビュー終了',
-            lead: 'プレビューのため、リードは保存されません。このタブを閉じます。',
+            title: t('preview_title', 'Preview ended'),
+            lead: t('preview_lead', 'Preview mode — no lead is saved. This tab will close.'),
             hideActions: true,
-            documentTitle: 'プレビュー終了'
+            documentTitle: t('preview_doc_title', 'Preview ended')
           });
           window.setTimeout(function() {
             try { window.close(); } catch (_e) {}
@@ -759,10 +778,10 @@
         try { window.close(); } catch (_e2) {}
         if (!window.closed) {
           showCompleteScreen({
-            title: '商談が終了しました',
-            lead: 'このタブを閉じてください。',
+            title: t('ended_title', 'The deal has ended'),
+            lead: t('ended_lead', 'You can close this tab.'),
             hideActions: true,
-            documentTitle: '商談終了'
+            documentTitle: t('ended_doc_title', 'Deal ended')
           });
         }
       }
@@ -783,7 +802,7 @@
       function openCtaUrl(source) {
         var url = ctaUrl();
         if (!url) {
-          alert('契約ページのURLが設定されていません。');
+          alert(t('contract_url_missing', 'No contract URL is set.'));
           return false;
         }
         return openExternalUrl(url);
@@ -805,7 +824,7 @@
           startPresentation().then(function() {
             trackCtaClick(source, label);
             if (url) openCtaUrl(source);
-            else alert('契約ページのURLが設定されていません。');
+            else alert(t('contract_url_missing', 'No contract URL is set.'));
           });
           return;
         }
@@ -813,7 +832,7 @@
         trackCtaClick(source, label);
         if (!url) {
           if (e) e.preventDefault();
-          alert('契約ページのURLが設定されていません。');
+          alert(t('contract_url_missing', 'No contract URL is set.'));
         }
       }
 
@@ -833,7 +852,7 @@
         document.body.classList.remove('presentation-exit-open');
         if (evaluationNotice) {
           evaluationNotice.classList.remove('is-warning');
-          evaluationNotice.textContent = '商談を終了するには、満足度（星）を選び「評価を送信」を押してください。';
+          evaluationNotice.textContent = t('need_rating_submit', 'To leave, pick a star rating and tap Submit rating.');
         }
       }
 
@@ -842,7 +861,7 @@
       }
 
       function handleExitContractClick(e) {
-        var label = ctaConfig.exit_contract_label || (exitContractBtn && exitContractBtn.textContent.trim()) || '契約へ進む';
+        var label = ctaConfig.exit_contract_label || (exitContractBtn && exitContractBtn.textContent.trim()) || t('exit_contract', 'Continue to contract');
         var url = ctaUrl();
 
         trackEvent('exit_contract_click', {
@@ -852,7 +871,7 @@
 
         if (!url) {
           if (e) e.preventDefault();
-          alert('契約ページのURLが設定されていません。');
+          alert(t('contract_url_missing', 'No contract URL is set.'));
           return;
         }
       }
@@ -863,11 +882,11 @@
         var button = e && e.currentTarget;
         var label = (button && (button.dataset.label || button.textContent.trim())) ||
           ctaConfig.exit_sales_call_label ||
-          '担当者に繋ぐ';
+          t('sales_call', 'Talk to a person');
         var source = button && button.id === 'presentation-sales-call-btn' ? 'header' : 'modal';
 
         if (!salesCallUrl) {
-          alert('担当者への連絡機能が利用できません。');
+          alert(t('sales_unavailable', 'Contacting the owner is not available.'));
           return;
         }
 
@@ -893,23 +912,23 @@
         }).then(function(response) {
           return response.json().catch(function() { return {}; }).then(function(data) {
             if (!response.ok) {
-              var msg = (data.errors && data.errors[0]) || '送信に失敗しました。しばらくしてから再度お試しください。';
+              var msg = (data.errors && data.errors[0]) || t('send_failed_retry', 'Could not send. Please try again in a moment.');
               throw new Error(msg);
             }
             return data;
           });
         }).then(function(data) {
           if (data && data.preview) {
-            alert('プレビューのため、担当者へのメールは送信されません。');
+            alert(t('preview_no_sales_mail', 'Preview mode — no email is sent to the owner.'));
           } else {
-            alert('担当者へご連絡しました。折り返しご連絡いたします。');
+            alert(t('sales_sent', 'We notified the owner. They will follow up with you.'));
           }
           if (button) {
-            button.textContent = '連絡済み';
+            button.textContent = t('sales_done', 'Contacted');
             button.dataset.sending = '0';
           }
         }).catch(function(err) {
-          alert(err.message || '送信に失敗しました。');
+          alert(err.message || t('send_failed', 'Could not send.'));
           if (button) {
             button.disabled = false;
             button.dataset.sending = '0';
@@ -1371,7 +1390,7 @@
 
         var messageDiv = document.createElement('div');
         messageDiv.className = 'message message--' + role;
-        var roleText = role === 'assistant' ? 'AIアシスタント' : 'あなた';
+        var roleText = role === 'assistant' ? t('assistant', 'AI assistant') : t('you', 'You');
         var safeContent = String(content).replace(/\n/g, '<br>');
 
         messageDiv.innerHTML =
@@ -1408,9 +1427,9 @@
         var el = document.createElement('div');
         el.className = 'message message--assistant message--typing';
         el.setAttribute('aria-live', 'polite');
-        el.setAttribute('aria-label', '回答を用意しています');
+        el.setAttribute('aria-label', t('preparing', 'Preparing an answer'));
         el.innerHTML =
-          '<div class="message-header"><span class="message-role">AIアシスタント</span></div>' +
+          '<div class="message-header"><span class="message-role">' + t('assistant', 'AI assistant') + '</span></div>' +
           '<div class="message-content message-typing-dots" aria-hidden="true">' +
             '<span></span><span></span><span></span>' +
           '</div>';
@@ -1443,7 +1462,7 @@
           pushHistory('assistant', result.text);
         }).catch(function() {
           removeTypingIndicator(typing);
-          appendChatMessage('回答を取得できませんでした。', 'assistant', null, { skipAudio: true });
+          appendChatMessage(t('reply_failed', 'Could not get a reply.'), 'assistant', null, { skipAudio: true });
         }).then(function() {
           setFreeTextBusy(false);
           if (freeTextInput) freeTextInput.focus();
@@ -1560,7 +1579,7 @@
           appendChatMessage(result.text, 'assistant', result.audio_url);
           scheduleAutoAdvance(IDLE_BEFORE_AUTO_MS);
         }).catch(function() {
-          appendChatMessage('回答を取得できませんでした。', 'assistant', null);
+          appendChatMessage(t('reply_failed', 'Could not get a reply.'), 'assistant', null);
         });
       }
 
@@ -1745,7 +1764,7 @@
           submitEvaluationBtn.dataset.sending = '1';
           submitEvaluationBtn.disabled = true;
           var originalLabel = submitEvaluationBtn.textContent;
-          submitEvaluationBtn.textContent = '送信中…';
+          submitEvaluationBtn.textContent = t('submitting', 'Sending…');
 
           finalizeSession('evaluation_submit', rating.value, feedbackEl ? feedbackEl.value : '')
             .then(function() {
@@ -1756,8 +1775,8 @@
               submitEvaluationBtn.disabled = false;
               submitEvaluationBtn.textContent = originalLabel;
               closeLogged = false;
-              var msg = (err && err.message) ? err.message : '送信に失敗しました。もう一度お試しください。';
-              if (msg === 'timeout') msg = '送信がタイムアウトしました。通信状況を確認して再度お試しください。';
+              var msg = (err && err.message) ? err.message : t('send_again', 'Could not send. Please try again.');
+              if (msg === 'timeout') msg = t('timeout', 'The request timed out. Check your connection and try again.');
               alert(msg);
             });
         });

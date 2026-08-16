@@ -15,9 +15,11 @@ class Public::FollowUpTrackingController < ApplicationController
                FollowUpDelivery.find_by(contract_click_token: params[:token])
 
     unless delivery
-      redirect_to root_path, alert: "無効なリンクです"
+      redirect_to root_path, alert: t("meetia.common.invalid_link")
       return
     end
+
+    apply_deal_locale!(delivery.deal)
 
     if delivery.sales_click_token == params[:token]
       handle_sales_click!(delivery)
@@ -30,9 +32,11 @@ class Public::FollowUpTrackingController < ApplicationController
     user_progress = UserProgress.find_by(follow_up_unsubscribe_token: params[:token])
 
     unless user_progress
-      render plain: "無効なURLです", status: :not_found
+      render plain: t("meetia.common.invalid_url"), status: :not_found
       return
     end
+
+    apply_deal_locale!(user_progress.deal)
 
     DealFollowUp::UnsubscribeService.call(
       user_progress: user_progress,
@@ -59,7 +63,7 @@ class Public::FollowUpTrackingController < ApplicationController
     end
 
     notify_owner_for_email_cta!(delivery, source: "follow_up_sales_click")
-    render inline: cta_received_html("担当者へのご相談を受け付けました"), layout: false
+    render inline: cta_received_html(t("meetia.follow_up.received_sales")), layout: false
   end
 
   def handle_contract_click!(delivery)
@@ -76,7 +80,7 @@ class Public::FollowUpTrackingController < ApplicationController
     end
 
     notify_owner_for_email_cta!(delivery, source: "follow_up_contract_click")
-    render inline: cta_received_html("契約についてのご相談を受け付けました"), layout: false
+    render inline: cta_received_html(t("meetia.follow_up.received_contract")), layout: false
   end
 
   def notify_owner_for_email_cta!(delivery, source:)
@@ -98,10 +102,10 @@ class Public::FollowUpTrackingController < ApplicationController
   def cta_received_html(title)
     <<~HTML
       <!DOCTYPE html>
-      <html lang="ja">
+      <html lang="#{I18n.locale}">
       <head>
         <meta charset="UTF-8">
-        <title>受け付け完了</title>
+        <title>#{ERB::Util.html_escape(t("meetia.follow_up.received_title"))}</title>
         <style>
           body { font-family: sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
           .box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; max-width: 420px; }
@@ -111,8 +115,8 @@ class Public::FollowUpTrackingController < ApplicationController
       </head>
       <body>
         <div class="box">
-          <h1>#{title}</h1>
-          <p>担当者よりご連絡いたします。今後、この商談に関する自動フォローメールは送信されません。</p>
+          <h1>#{ERB::Util.html_escape(title)}</h1>
+          <p>#{ERB::Util.html_escape(t("meetia.follow_up.received_body"))}</p>
         </div>
       </body>
       </html>
@@ -122,10 +126,10 @@ class Public::FollowUpTrackingController < ApplicationController
   def unsubscribe_html
     <<~HTML
       <!DOCTYPE html>
-      <html lang="ja">
+      <html lang="#{I18n.locale}">
       <head>
         <meta charset="UTF-8">
-        <title>配信停止完了</title>
+        <title>#{ERB::Util.html_escape(t("meetia.follow_up.unsubscribed_title"))}</title>
         <style>
           body { font-family: sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
           .box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; max-width: 420px; }
@@ -135,8 +139,8 @@ class Public::FollowUpTrackingController < ApplicationController
       </head>
       <body>
         <div class="box">
-          <h1>配信を停止しました</h1>
-          <p>今後、この商談に関するフォローメールは送信されません。</p>
+          <h1>#{ERB::Util.html_escape(t("meetia.follow_up.unsubscribed_heading"))}</h1>
+          <p>#{ERB::Util.html_escape(t("meetia.follow_up.unsubscribed_body"))}</p>
         </div>
       </body>
       </html>

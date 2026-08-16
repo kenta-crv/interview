@@ -224,7 +224,7 @@ RSpec.describe 'Deal experience smoke', type: :request do
       get dashboard_deal_path(deal)
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(reprocess_dashboard_deal_path(deal))
-      expect(response.body).to include('deal_dashboard')
+      expect(response.body).to include('data-deal-dashboard')
       expect(response.body).not_to include('process-pdf-btn')
     end
 

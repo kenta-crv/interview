@@ -3,42 +3,24 @@
   .deal-public-page__shell
     - if @deal_not_ready
       header.deal-public-page__header
-        h1.deal-public-page__title 商談はまだ公開されていません
+        h1.deal-public-page__title = t("meetia.deal.unpublished_title")
         p.deal-public-page__deal-title = @deal.title
         p.deal-public-page__lead
-          | 資料の準備と公開設定が完了するまで、このURLでは商談を開始できません。
+          = t("meetia.deal.unpublished_lead_1")
           br
-          | 公開後にもう一度アクセスしてください。
+          = t("meetia.deal.unpublished_lead_2")
       .deal-public-page__card
-        p.deal-public-page__lead style="margin:0;" ご不明点は、商談のご案内元へお問い合わせください。
+        p.deal-public-page__lead style="margin:0;" = t("meetia.deal.unpublished_help")
     - else
       - visible_user_fields = Deal::VISITOR_USER_FIELDS.select { |key| @deal.visitor_info_field_visible?(key) }
       - visible_progress_fields = Deal::VISITOR_PROGRESS_FIELDS.select { |key| @deal.visitor_info_field_visible?(key) }
-      - consideration_phase_options = [ \
-          ["まだ調べ始めたばかり", "initial"], \
-          ["情報を集めている", "information_gathering"], \
-          ["いくつか比較している", "evaluation"], \
-          ["導入を決めようとしている", "decision"] \
-        ]
-      - key_points_options = [ \
-          "料金・費用対効果", \
-          "導入のしやすさ", \
-          "機能の充実度", \
-          "サポート体制", \
-          "セキュリティ・コンプライアンス", \
-          "実績・信頼性", \
-          "社内の承認のしやすさ" \
-        ]
-      - planned_introduction_options = [ \
-          "すぐにでも", \
-          "1ヶ月以内", \
-          "3ヶ月以内", \
-          "未定" \
-        ]
+      - consideration_phase_options = Deal::VISITOR_PROGRESS_FIELDS.include?("consideration_phase") ? %w[initial information_gathering evaluation decision].map { |k| [t("meetia.deal.phase_options.#{k}"), k] } : []
+      - key_points_options = Array(t("meetia.deal.key_point_options"))
+      - planned_introduction_options = Array(t("meetia.deal.planned_options"))
       header.deal-public-page__header
-        h1.deal-public-page__title 商談参加登録
+        h1.deal-public-page__title = t("meetia.deal.register_title")
         p.deal-public-page__deal-title = @deal.title
-        p.deal-public-page__lead 必要事項を入力して、音声付きAI商談を開始してください。
+        p.deal-public-page__lead = t("meetia.deal.register_lead")
 
       .deal-public-page__card
         - if flash[:alert].present?
@@ -46,53 +28,53 @@
         = form_with url: create_user_info_public_deal_session_path(token: @deal.access_token), local: true, html: { class: "deal-public-form" } do |f|
           - if visible_user_fields.any?
             .deal-public-form__section
-              h2.deal-public-form__section-title 参加者情報
+              h2.deal-public-form__section-title = t("meetia.deal.section_participant")
               .deal-public-form__fields
                 - if @deal.visitor_info_field_visible?("company")
                   .deal-public-form__group
-                    = label_tag "user[company]", "会社名", class: "deal-public-form__label"
+                    = label_tag "user[company]", t("meetia.dashboard.visitor_fields.company"), class: "deal-public-form__label"
                     = text_field_tag "user[company]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("company"), autocomplete: "organization"
                 - if @deal.visitor_info_field_visible?("name")
                   .deal-public-form__group
-                    = label_tag "user[name]", "お名前", class: "deal-public-form__label"
+                    = label_tag "user[name]", t("meetia.dashboard.visitor_fields.name"), class: "deal-public-form__label"
                     = text_field_tag "user[name]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("name"), autocomplete: "name"
                 - if @deal.visitor_info_field_visible?("job_title")
                   .deal-public-form__group
-                    = label_tag "user[job_title]", "役職", class: "deal-public-form__label"
-                    = text_field_tag "user[job_title]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("job_title"), placeholder: "例: 営業部長 / 情報システム担当"
+                    = label_tag "user[job_title]", t("meetia.dashboard.visitor_fields.job_title"), class: "deal-public-form__label"
+                    = text_field_tag "user[job_title]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("job_title"), placeholder: t("meetia.deal.job_title_ph")
                 - if @deal.visitor_info_field_visible?("email")
                   .deal-public-form__group
-                    = label_tag "user[email]", "メールアドレス", class: "deal-public-form__label"
+                    = label_tag "user[email]", t("meetia.dashboard.visitor_fields.email"), class: "deal-public-form__label"
                     = email_field_tag "user[email]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("email"), autocomplete: "email"
                 - if @deal.visitor_info_field_visible?("tel")
                   .deal-public-form__group
-                    = label_tag "user[tel]", "電話番号", class: "deal-public-form__label"
+                    = label_tag "user[tel]", t("meetia.dashboard.visitor_fields.tel"), class: "deal-public-form__label"
                     = telephone_field_tag "user[tel]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("tel"), autocomplete: "tel"
                 - if @deal.visitor_info_field_visible?("address")
                   .deal-public-form__group
-                    = label_tag "user[address]", "住所", class: "deal-public-form__label"
-                    = text_field_tag "user[address]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("address"), autocomplete: "street-address", placeholder: "例: 東京都渋谷区..."
+                    = label_tag "user[address]", t("meetia.dashboard.visitor_fields.address"), class: "deal-public-form__label"
+                    = text_field_tag "user[address]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("address"), autocomplete: "street-address", placeholder: t("meetia.deal.address_ph")
                 - if @deal.visitor_info_field_visible?("url")
                   .deal-public-form__group
-                    = label_tag "user[url]", "WebサイトURL", class: "deal-public-form__label"
+                    = label_tag "user[url]", t("meetia.dashboard.visitor_fields.url"), class: "deal-public-form__label"
                     = url_field_tag "user[url]", "", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("url"), placeholder: "https://"
 
           - if visible_progress_fields.any?
             .deal-public-form__section
-              h2.deal-public-form__section-title ご検討の状況
+              h2.deal-public-form__section-title = t("meetia.deal.section_consideration")
               .deal-public-form__fields
                 - if @deal.visitor_info_field_visible?("consideration_phase")
                   .deal-public-form__group
-                    = label_tag :consideration_phase, "いまのご状況", class: "deal-public-form__label"
-                    = select_tag :consideration_phase, options_for_select(consideration_phase_options), include_blank: (@deal.visitor_info_field_required?("consideration_phase") ? false : "選択してください"), class: "deal-public-form__control", required: @deal.visitor_info_field_required?("consideration_phase")
+                    = label_tag :consideration_phase, t("meetia.dashboard.visitor_fields.consideration_phase"), class: "deal-public-form__label"
+                    = select_tag :consideration_phase, options_for_select(consideration_phase_options), include_blank: (@deal.visitor_info_field_required?("consideration_phase") ? false : t("meetia.common.select_placeholder")), class: "deal-public-form__control", required: @deal.visitor_info_field_required?("consideration_phase")
                 - if @deal.visitor_info_field_visible?("planned_introduction_date")
                   .deal-public-form__group
-                    = label_tag :planned_introduction_date, "導入予定日", class: "deal-public-form__label"
-                    = select_tag :planned_introduction_date, options_for_select(planned_introduction_options), include_blank: "選択してください", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("planned_introduction_date")
+                    = label_tag :planned_introduction_date, t("meetia.dashboard.visitor_fields.planned_introduction_date"), class: "deal-public-form__label"
+                    = select_tag :planned_introduction_date, options_for_select(planned_introduction_options), include_blank: t("meetia.common.select_placeholder"), class: "deal-public-form__control", required: @deal.visitor_info_field_required?("planned_introduction_date")
                 - if @deal.visitor_info_field_visible?("key_points_for_application")
                   .deal-public-form__group
-                    = label_tag :key_points_for_application, "決め手になるポイント", class: "deal-public-form__label"
-                    = select_tag :key_points_for_application, options_for_select(key_points_options), include_blank: "選択してください", class: "deal-public-form__control", required: @deal.visitor_info_field_required?("key_points_for_application")
+                    = label_tag :key_points_for_application, t("meetia.dashboard.visitor_fields.key_points_for_application"), class: "deal-public-form__label"
+                    = select_tag :key_points_for_application, options_for_select(key_points_options), include_blank: t("meetia.common.select_placeholder"), class: "deal-public-form__control", required: @deal.visitor_info_field_required?("key_points_for_application")
 
           .deal-public-form__actions
-            = f.submit "登録してAI商談を開始", class: "deal-public-form__submit", name: "commit"
+            = f.submit t("meetia.deal.submit_register"), class: "deal-public-form__submit", name: "commit"

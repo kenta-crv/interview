@@ -41,10 +41,10 @@ class UserProgress < ApplicationRecord
   def session_summary_lines
     summary = session_summary_hash
     [
-      ("課題：#{summary['challenge']}" if summary['challenge'].present?),
-      ("関心：#{summary['interest']}" if summary['interest'].present?),
-      ("検討：#{summary['consideration']}" if summary['consideration'].present?),
-      ("次アクション：#{summary['next_action']}" if summary['next_action'].present?)
+      (I18n.t("meetia.owner_mail.challenge", text: summary["challenge"]) if summary["challenge"].present?),
+      (I18n.t("meetia.owner_mail.interest", text: summary["interest"]) if summary["interest"].present?),
+      (I18n.t("meetia.owner_mail.consideration", text: summary["consideration"]) if summary["consideration"].present?),
+      (I18n.t("meetia.owner_mail.next_action", text: summary["next_action"]) if summary["next_action"].present?)
     ].compact
   end
 

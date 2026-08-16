@@ -1,127 +1,122 @@
 javascript:
   var accessToken = null;
 
+script type="application/json" id="interview-i18n"
+  = raw json_escape(t("meetia.interview.js").to_json)
+
 .section-interview
   .interview-container
-    /! ステップインジケーター
     .step-indicator
       .step-indicator__item.active data-step="1"
         .step-indicator__number 1
-        .step-indicator__label 面接選択
+        .step-indicator__label = t("meetia.interview.step_select")
       .step-indicator__item data-step="2"
         .step-indicator__number 2
-        .step-indicator__label 面接実施
+        .step-indicator__label = t("meetia.interview.step_run")
       .step-indicator__item data-step="3"
         .step-indicator__number 3
-        .step-indicator__label 結果確認
+        .step-indicator__label = t("meetia.interview.step_result")
 
-    /! ===== Step 1: 面接選択 =====
     #step-1.step.active
       .interview-card.interview-card--hero
-        h1 AI面接インタビュー
-        p AIが面接官となり、あなたの回答をリアルタイムで評価します。面接フォームを選択して開始してください。
+        h1 = t("meetia.interview.title")
+        p = t("meetia.interview.lead")
 
         .form-group
-          label.form-label 面接フォーム
+          label.form-label = t("meetia.interview.form_label")
           select#situation_id.form-input
-            option value="" -- 選択してください --
+            option value="" = t("meetia.interview.form_blank")
             - @situations.each do |s|
               option value=s.id #{s.title}
 
         .form-group
-          label.form-label 回答言語
+          label.form-label = t("meetia.interview.language_label")
           select#language.form-input
-            option value="ja" 日本語
-            option value="en" English
+            option value="ja" = t("meetia.interview.language_ja")
+            option value="en" = t("meetia.interview.language_en")
 
         .interview-actions
-          button#start_interview.btn-start 面接を開始する
-          / サーバーで「再開可能」と判定された場合のみJSが表示する。新規ユーザーには見せない。
-          button#resume_interview.btn-resume style="display:none" 前回の面接を再開
+          button#start_interview.btn-start = t("meetia.interview.start")
+          button#resume_interview.btn-resume style="display:none" = t("meetia.interview.resume")
 
-    /! ===== Step 2: 面接実施 =====
     #step-2.step
-      /! ステータス・プログレス
       .interview-card
         .interview-header
-          h2 面接進行中
-          span#interview_status.status-badge 準備完了
+          h2 = t("meetia.interview.in_progress")
+          span#interview_status.status-badge = t("meetia.interview.ready")
         .interview-progress
           .interview-progress__bar
             span#progress_bar
         .interview-meta
           span#progress_text 0%
-          span#question_count 0 / 0 問
+          span#question_count = t("meetia.interview.js.question_count", answered: 0, total: 0)
 
-      /! 質問表示
       .interview-card
-        h2 質問
+        h2 = t("meetia.interview.question")
         .avatar
           .avatar__icon
-          .avatar__label AIインタビュアー
-        p#question_text.question-display 「面接を開始する」をクリックしてください。
+          .avatar__label = t("meetia.interview.interviewer")
+        p#question_text.question-display = t("meetia.interview.click_to_start")
         audio#question_audio controls=true
         #mcq_options.mcq-options
 
-      /! 回答入力
       .interview-card
-        h2 あなたの回答
+        h2 = t("meetia.interview.your_answer")
         .form-group
-          label.form-label テキストで回答
-          textarea#text_answer.form-input rows="3" placeholder="回答を入力してください..."
+          label.form-label = t("meetia.interview.text_answer")
+          textarea#text_answer.form-input rows="3" placeholder=t("meetia.interview.text_ph")
 
         .recorder
-          label.form-label 音声で回答
+          label.form-label = t("meetia.interview.voice_answer")
           .recorder__controls
-            button#record_start.btn-record 録音開始
-            button#record_stop.btn-record.btn-record--stop disabled=true 録音停止
-            span#record_status.record-status 待機中
+            button#record_start.btn-record = t("meetia.interview.record_start")
+            button#record_stop.btn-record.btn-record--stop disabled=true = t("meetia.interview.record_stop")
+            span#record_status.record-status = t("meetia.interview.record_idle")
           audio#recorded_audio controls=true
 
         .form-group
-          label.form-label 音声ファイルをアップロード
+          label.form-label = t("meetia.interview.upload_audio")
           input#audio_file.form-file type="file" accept="audio/*"
 
         .form-group
-          label.form-label 動画ファイルをアップロード（任意）
+          label.form-label = t("meetia.interview.upload_video")
           input#video_file.form-file type="file" accept="video/*"
 
         .interview-actions
-          button#submit_answer.btn-start 回答を送信
-          button#complete_interview.btn-complete style="display:none" 面接を完了する
+          button#submit_answer.btn-start = t("meetia.interview.submit_answer")
+          button#complete_interview.btn-complete style="display:none" = t("meetia.interview.complete")
 
-    /! ===== Step 3: 結果確認 =====
     #step-3.step
       .interview-card.interview-card--result
-        h2 面接結果
-        p#result_status.result-message 結果を読み込み中...
+        h2 = t("meetia.interview.result_title")
+        p#result_status.result-message = t("meetia.interview.result_loading")
 
         .result-grid
           .result-item
-            .result-item__label 判定
+            .result-item__label = t("meetia.interview.verdict")
             .result-item__value#result_final_status -
           .result-item
-            .result-item__label 平均スコア
+            .result-item__label = t("meetia.interview.avg_score")
             .result-item__value#result_avg_score -
           .result-item
-            .result-item__label 回答数
+            .result-item__label = t("meetia.interview.answer_count")
             .result-item__value#result_qs -
 
       .interview-card
-        h3 総評
+        h3 = t("meetia.interview.summary")
         p#result_summary -
 
       .interview-card
-        h3 強み
+        h3 = t("meetia.interview.strengths")
         ul#result_strengths
 
       .interview-card
-        h3 改善点
+        h3 = t("meetia.interview.improvements")
         ul#result_weaknesses
 
       .interview-card
-        h3 推薦コメント
+        h3 = t("meetia.interview.recommendation")
         p#result_recommendation -
 
       .interview-actions.interview-actions--center
-        button#back_to_start.btn-resume トップに戻る
+        button#back_to_start.btn-resume = t("meetia.interview.back")

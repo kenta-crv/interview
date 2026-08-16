@@ -1,13 +1,13 @@
-h1.mb-4 契約一覧
+h1.mb-4 = t("meetia.problems.index_title")
 
 .container
   table.table.table-hover.align-middle
     thead.table-light
       tr
-        th 会社名
-        th メール
-        th 日付
-        th.text-end 操作
+        th = t("meetia.problems.company")
+        th = t("meetia.problems.email")
+        th = t("meetia.problems.date")
+        th.text-end = t("meetia.situations.actions")
 
     tbody
       - @problems.each do |problem|
@@ -17,11 +17,11 @@ h1.mb-4 契約一覧
           td.text-muted = problem.created_at.strftime("%Y-%m-%d")
 
           td.text-end
-            = link_to "詳細", problem_path(problem), class: "btn btn-sm btn-outline-primary me-1"
-            = link_to "編集", edit_problem_path(problem), class: "btn btn-sm btn-outline-success me-1"
-            = link_to "削除", problem_path(problem),
+            = link_to t("meetia.dashboard.common.detail"), problem_path(problem), class: "btn btn-sm btn-outline-primary me-1"
+            = link_to t("meetia.situations.edit"), edit_problem_path(problem), class: "btn btn-sm btn-outline-success me-1"
+            = link_to t("meetia.dashboard.common.delete"), problem_path(problem),
               method: :delete,
-              data: { confirm: "本当に削除しますか？" },
+              data: { confirm: t("meetia.problems.confirm_delete") },
               class: "btn btn-sm btn-outline-danger"
 
 .mt-3

@@ -5,7 +5,7 @@
 - btn_classes = ["presentation-play-btn"]
 - btn_classes << extra_class if extra_class.present?
 - btn_classes << "presentation-play-btn--playing" if auto_play
-button class=btn_classes.join(" ") type="button" aria-label=(auto_play ? "一時停止" : "再生") id=btn_id data-hero-play=""
+button class=btn_classes.join(" ") type="button" aria-label=(auto_play ? t("meetia.common.pause") : t("meetia.common.play")) id=btn_id data-hero-play="" data-i18n-play=t("meetia.common.play") data-i18n-pause=t("meetia.common.pause")
   svg.presentation-play-btn__svg viewBox="0 0 56 56" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
     defs
       radialGradient id=grad_id cx="50%" cy="32%" r="58%"

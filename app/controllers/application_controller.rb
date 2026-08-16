@@ -68,11 +68,14 @@ class ApplicationController < ActionController::Base
     path = "/" if path.blank?
     # 公開SEO用URLは表示localeを強制するが、ユーザーのUI希望(session/cookie)は消さない
     return if public_switchable_path?(path)
+    return if visitor_locale_path?(path)
 
     persist_ui_locale!(locale)
   end
 
   def persist_ui_locale!(locale)
+    return if visitor_locale_path?(request.path.to_s)
+
     value = locale.to_s
     return unless Client::LOCALES.include?(value)
 
@@ -125,6 +128,17 @@ class ApplicationController < ActionController::Base
       path.start_with?("/clients/sign_in") ||
       path.start_with?("/clients/sign_up") ||
       path.start_with?("/clients/password")
+  end
+
+  def visitor_locale_path?(path)
+    path.start_with?("/public/deal") ||
+      path.start_with?("/follow_up") ||
+      path.start_with?("/unsubscribe")
+  end
+
+  def apply_deal_locale!(deal)
+    loc = deal&.language.to_s
+    I18n.locale = loc if Client::LOCALES.include?(loc)
   end
 
   def after_sign_in_path_for(resource)

@@ -1,4 +1,3 @@
-/ app/views/situations/new.html.slim
-h1 新しい面接フォームを作成
+h1 = t("meetia.situations.new_title")
 = render 'form'
-= link_to '一覧に戻る', situations_path, class: 'btn btn-secondary mt-2'
+= link_to t("meetia.situations.back"), situations_path, class: 'btn btn-secondary mt-2'

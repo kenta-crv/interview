@@ -1,13 +1,13 @@
 doctype html
-html lang="ja"
+html lang=I18n.locale
   head
     meta charset="utf-8"
     meta name="viewport" content="width=device-width, initial-scale=1"
     - dash_url = dashboard_index_path
     meta http-equiv="refresh" content="0;url=#{dash_url}"
-    title 報告完了
+    title = t("meetia.problems.submitted_title")
   body
-    p 報告完了しました。ダッシュボードへ移動しています…
+    p = t("meetia.problems.submitted_redirect")
     script type="text/javascript"
       | (function () {
           var url = #{dash_url.to_json};

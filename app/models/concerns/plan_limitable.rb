@@ -89,14 +89,14 @@ module PlanLimitable
   end
 
   def service_limit_message
-    "サービス数（資料提示URL）の上限（#{service_limit}件）に達しています。プランをアップグレードしてください。"
+    I18n.t("meetia.dashboard.limits.service_limit", limit: service_limit)
   end
 
   def monthly_session_limit_message
     limit = monthly_session_limit
     return nil if limit.nil?
 
-    "月間商談セッションの上限（#{limit}件）に達しています。プランをアップグレードしてください。"
+    I18n.t("meetia.dashboard.limits.monthly_session_limit", limit: limit)
   end
 
   def usage_ratio_for(limit_key)

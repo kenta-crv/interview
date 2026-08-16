@@ -4,18 +4,18 @@
   <% end %>
 
   <div class="meetia-auth__card">
-    <h1 class="meetia-auth__title">パスワードをお忘れですか？</h1>
-    <p class="meetia-auth__lead">登録メールアドレスに再設定用の案内を送信します</p>
+    <h1 class="meetia-auth__title"><%= t("meetia.auth.password_forgot_title") %></h1>
+    <p class="meetia-auth__lead"><%= t("meetia.auth.password_forgot_lead") %></p>
 
     <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
       <%= render "admins/shared/error_messages", resource: resource %>
 
       <div class="meetia-auth__field">
-        <%= f.label :email, "メールアドレス", class: "meetia-auth__label" %>
+        <%= f.label :email, t("meetia.auth.email"), class: "meetia-auth__label" %>
         <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "meetia-auth__input" %>
       </div>
 
-      <%= f.submit "再設定メールを送信", class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit" %>
+      <%= f.submit t("meetia.auth.submit_password_email"), class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit" %>
     <% end %>
   </div>
 

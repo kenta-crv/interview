@@ -1,10 +1,10 @@
 module DealSalesCall
   class NotifyClientService
     PHASE_LABELS = {
-      "initial" => "まだ調べ始めたばかり",
-      "information_gathering" => "情報を集めている",
-      "evaluation" => "いくつか比較している",
-      "decision" => "導入を決めようとしている"
+      "initial" => "meetia.deal.phase_options.initial",
+      "information_gathering" => "meetia.deal.phase_options.information_gathering",
+      "evaluation" => "meetia.deal.phase_options.evaluation",
+      "decision" => "meetia.deal.phase_options.decision"
     }.freeze
 
     def self.call(user_progress:, source: "presentation", session_key: nil)
@@ -21,7 +21,7 @@ module DealSalesCall
 
     def call
       recipient_email = notification_email
-      raise ArgumentError, "担当者メールが設定されていません" if recipient_email.blank?
+      raise ArgumentError, I18n.t("meetia.owner_mail.missing_email") if recipient_email.blank?
 
       # 担当者通知は遅延キューに乗せると Sidekiq 未起動時に届かないため同期送信する
       DealSalesCallMailer.request_notification(
@@ -39,9 +39,10 @@ module DealSalesCall
     end
 
     def self.phase_label(user_progress)
-      PHASE_LABELS[user_progress.consideration_phase.to_s].presence ||
-        user_progress.consideration_phase.to_s.presence ||
-        "—"
+      key = PHASE_LABELS[user_progress.consideration_phase.to_s]
+      return I18n.t(key) if key.present?
+
+      user_progress.consideration_phase.to_s.presence || "—"
     end
 
     private
@@ -58,7 +59,7 @@ module DealSalesCall
         user_progress: @user_progress,
         session_key: @session_key,
         event_type: "exit_sales_call_click",
-        label: "担当者に繋ぐ",
+        label: I18n.t("meetia.deal.sales_call"),
         metadata: {
           source: @source,
           notified_email: recipient_email,

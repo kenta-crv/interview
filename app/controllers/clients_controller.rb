@@ -49,7 +49,7 @@ class ClientsController < ApplicationController
   def authorize_client!
     return if @client == current_client
 
-    redirect_to root_path, alert: "権限がありません。"
+    redirect_to root_path, alert: t("meetia.auth.unauthorized")
   end
 
 def client_params

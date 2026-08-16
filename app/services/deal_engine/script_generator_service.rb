@@ -264,7 +264,7 @@ module DealEngine
         'menu_items' => pages.reject { |p| p.page_number == 1 && p.title.to_s.match?(/表紙|挨拶|cover/i) }.map do |page|
           {
             'key' => "page_#{page.page_number}",
-            'label' => page.title.presence || "スライド #{page.page_number}",
+            'label' => page.title.presence || slide_fallback_label(page.page_number),
             'page_number' => page.page_number
           }
         end
@@ -292,10 +292,14 @@ module DealEngine
 
         {
           'key' => key,
-          'label' => label.presence || page.title.presence || "スライド #{page.page_number}",
+          'label' => label.presence || page.title.presence || slide_fallback_label(page.page_number),
           'page_number' => page.page_number
         }
       end.sort_by { |item| item['page_number'].to_i }
+    end
+
+    def slide_fallback_label(page_number)
+      @language == 'ja' ? "スライド #{page_number}" : "Slide #{page_number}"
     end
   end
 end

@@ -2,8 +2,8 @@ module ApplicationHelper
   def default_meta_tags
     {
       site: "Meetia",
-      title: "AI商談代行サービス",
-      description: "資料アップロードだけで24時間365日、AIが音声商談を代行。商談結果の分析・見込み度判定・自動フォローまで一気通貫で営業工数を削減します。",
+      title: I18n.t("meetia.meta.title"),
+      description: I18n.t("meetia.meta.description"),
       canonical: request.original_url,
       charset: "UTF-8",
       reverse: true,
@@ -84,13 +84,8 @@ module ApplicationHelper
       "url" => "https://meetia.pro/",
       "logo" => "https://meetia.pro#{image_path('favicon.ico')}",
       "description" => default_meta_tags[:description],
-      "address" => {
-        "@type" => "PostalAddress",
-        "addressLocality" => "港区",
-        "addressRegion" => "東京都",
-        "streetAddress" => "浜松町２丁目２番１５号２Ｆ",
-        "addressCountry" => "JP"
-      }
+      "inLanguage" => I18n.locale.to_s,
+      "address" => organization_postal_address
     }.to_json
   end
 
@@ -130,5 +125,25 @@ module ApplicationHelper
       "@type" => "FAQPage",
       "mainEntity" => entities
     }.to_json
+  end
+
+  def organization_postal_address
+    if english_ui?
+      {
+        "@type" => "PostalAddress",
+        "addressLocality" => "Minato",
+        "addressRegion" => "Tokyo",
+        "streetAddress" => "2-2-15 Hamamatsucho 2F",
+        "addressCountry" => "JP"
+      }
+    else
+      {
+        "@type" => "PostalAddress",
+        "addressLocality" => "港区",
+        "addressRegion" => "東京都",
+        "streetAddress" => "浜松町２丁目２番１５号２Ｆ",
+        "addressCountry" => "JP"
+      }
+    end
   end
 end

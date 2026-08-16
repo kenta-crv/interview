@@ -3,6 +3,7 @@ module Public
   class DealSessionsController < ApplicationController
     skip_before_action :verify_authenticity_token, only: [:respond, :evaluate, :track_event, :request_sales_call]
     before_action :set_deal_by_token
+    before_action :apply_public_deal_locale
     before_action :require_publicly_ready
     before_action :require_registered_user, only: [:conversation, :playback, :respond, :evaluate, :request_sales_call]
     before_action :load_tracking_context, only: [:track_event]
@@ -33,7 +34,7 @@ module Public
 
       errors = visitor_registration_errors
       if errors.any?
-        flash.now[:alert] = errors.join("、")
+        flash.now[:alert] = errors.join(I18n.locale.to_s == "en" ? "; " : "、")
         render :show, status: :unprocessable_entity
         return
       end
@@ -48,9 +49,9 @@ module Public
         @user_progress.update!(filtered_progress_attrs)
 
         session[:user_id] = @user.id
-        redirect_to conversation_public_deal_session_path(token: @deal.access_token), notice: '情報を登録しました'
+        redirect_to conversation_public_deal_session_path(token: @deal.access_token), notice: t("meetia.deal.registered")
       else
-        flash.now[:alert] = @user.errors.full_messages.join("、")
+        flash.now[:alert] = @user.errors.full_messages.join(I18n.locale.to_s == "en" ? "; " : "、")
         render :show, status: :unprocessable_entity
       end
     end
@@ -96,7 +97,7 @@ module Public
       data = evaluate_request_params
       rating = data[:rating].to_i
       unless (1..5).cover?(rating)
-        render json: { errors: ['評価は1〜5で指定してください'] }, status: :unprocessable_entity
+        render json: { errors: [t("meetia.deal.rating_range")] }, status: :unprocessable_entity
         return
       end
 
@@ -112,7 +113,7 @@ module Public
       enqueue_follow_up_after_evaluation!
       notify_owner_after_evaluation!(rating: rating, feedback: data[:feedback])
 
-      render json: { message: '評価を保存しました', ok: true }
+      render json: { message: t("meetia.deal.rating_saved"), ok: true }
     end
 
     def request_sales_call
@@ -131,7 +132,7 @@ module Public
         session_key: session_key
       )
 
-      render json: { message: '担当者へ連絡しました' }
+      render json: { message: t("meetia.deal.sales_notified") }
     rescue ArgumentError => e
       render json: { errors: [e.message] }, status: :unprocessable_entity
     end
@@ -233,9 +234,9 @@ module Public
         @deal_not_ready = true
         render :show, status: :forbidden
       elsif json_api_request?
-        render json: { errors: ['この商談はまだ公開されていません'] }, status: :forbidden
+        render json: { errors: [t("meetia.deal.not_published")] }, status: :forbidden
       else
-        redirect_to public_deal_session_path(token: @deal.access_token), alert: 'この商談はまだ公開されていません'
+        redirect_to public_deal_session_path(token: @deal.access_token), alert: t("meetia.deal.not_published")
       end
     end
 
@@ -262,17 +263,17 @@ module Public
 
     def render_invalid_deal_link
       if json_api_request?
-        render json: { errors: ['無効なリンクです'] }, status: :not_found
+        render json: { errors: [t("meetia.common.invalid_link")] }, status: :not_found
       else
-        redirect_to root_path, alert: '無効なリンクです'
+        redirect_to root_path, alert: t("meetia.common.invalid_link")
       end
     end
 
     def render_registration_required
       if json_api_request?
-        render json: { errors: ['まず情報を登録してください'] }, status: :unauthorized
+        render json: { errors: [t("meetia.deal.register_first")] }, status: :unauthorized
       else
-        redirect_to public_deal_session_path(token: @deal.access_token), alert: 'まず情報を登録してください'
+        redirect_to public_deal_session_path(token: @deal.access_token), alert: t("meetia.deal.register_first")
       end
     end
 
@@ -381,13 +382,17 @@ module Public
                 end
         next if value.present?
 
-        errors << "#{Deal::VISITOR_INFO_FIELD_LABELS[key]}は必須です"
+        errors << t("meetia.deal.field_required", field: t("meetia.dashboard.visitor_fields.#{key}"))
       end
       errors
     end
 
+    def apply_public_deal_locale
+      apply_deal_locale!(@deal)
+    end
+
     def apply_visitor_user_fallbacks!(user)
-      user.name = user.name.presence || "ゲスト"
+      user.name = user.name.presence || t("meetia.common.guest")
       user.job_title = user.job_title.presence || "-"
       user.email = user.email.presence || User.guest_email
     end

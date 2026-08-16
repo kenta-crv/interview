@@ -1,21 +1,24 @@
-/ app/views/questions/show.html.slim
-h1 質問詳細
+h1 = t("meetia.questions.show_title")
 
 p
-  strong 順序:
+  strong = t("meetia.questions.order")
+  | :
   = @question.order
 
 p
-  strong 質問内容:
+  strong = t("meetia.questions.question_text")
+  | :
   = @question.question_text
 
 p
-  strong タイプ:
+  strong = t("meetia.questions.question_type")
+  | :
   = @question.question_type
 
 p
-  strong 選択肢:
+  strong = t("meetia.situations.options")
+  | :
   = @question.options
 
-= link_to '編集', edit_situation_question_path(@situation, @question), class: 'btn btn-warning'
-= link_to '一覧に戻る', situation_questions_path(@situation), class: 'btn btn-secondary'
+= link_to t("meetia.situations.edit"), edit_situation_question_path(@situation, @question), class: 'btn btn-warning'
+= link_to t("meetia.situations.back"), situation_questions_path(@situation), class: 'btn btn-secondary'

@@ -1,43 +1,53 @@
-<h2>Edit <%= resource_name.to_s.humanize %></h2>
-
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
-  <%= render "admins/shared/error_messages", resource: resource %>
-
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
-  </div>
-
-  <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-    <div>Currently waiting confirmation for: <%= resource.unconfirmed_email %></div>
+<div class="meetia-auth__page">
+  <%= link_to root_path, class: "meetia-auth__brand" do %>
+    <%= image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-auth__logo" %>
   <% end %>
 
-  <div class="field">
-    <%= f.label :password %> <i>(leave blank if you don't want to change it)</i><br />
-    <%= f.password_field :password, autocomplete: "new-password" %>
-    <% if @minimum_password_length %>
-      <br />
-      <em><%= @minimum_password_length %> characters minimum</em>
+  <div class="meetia-auth__card">
+    <h1 class="meetia-auth__title"><%= t("meetia.auth.account_edit_title") %></h1>
+
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+      <%= render "admins/shared/error_messages", resource: resource %>
+
+      <div class="meetia-auth__field">
+        <%= f.label :email, t("meetia.auth.email"), class: "meetia-auth__label" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "meetia-auth__input" %>
+      </div>
+
+      <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+        <p class="meetia-auth__lead"><%= t("meetia.auth.waiting_confirmation", email: resource.unconfirmed_email) %></p>
+      <% end %>
+
+      <div class="meetia-auth__field">
+        <%= f.label :password, t("meetia.auth.password"), class: "meetia-auth__label" %>
+        <em class="meetia-auth__hint"><%= t("meetia.auth.password_leave_blank") %></em>
+        <% if @minimum_password_length %>
+          <em class="meetia-auth__hint"><%= t("meetia.auth.password_hint", count: @minimum_password_length) %></em>
+        <% end %>
+        <%= f.password_field :password, autocomplete: "new-password", class: "meetia-auth__input" %>
+      </div>
+
+      <div class="meetia-auth__field">
+        <%= f.label :password_confirmation, t("meetia.auth.password_confirmation"), class: "meetia-auth__label" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "meetia-auth__input" %>
+      </div>
+
+      <div class="meetia-auth__field">
+        <%= f.label :current_password, t("meetia.auth.password"), class: "meetia-auth__label" %>
+        <em class="meetia-auth__hint"><%= t("meetia.auth.current_password_hint") %></em>
+        <%= f.password_field :current_password, autocomplete: "current-password", class: "meetia-auth__input" %>
+      </div>
+
+      <%= f.submit t("meetia.auth.submit_update"), class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit" %>
     <% end %>
+
+    <p class="meetia-auth__lead">
+      <%= t("meetia.auth.cancel_account_lead") %>
+      <%= button_to t("meetia.auth.cancel_account"), registration_path(resource_name), data: { confirm: t("meetia.auth.cancel_account_confirm"), turbo_confirm: t("meetia.auth.cancel_account_confirm") }, method: :delete, class: "meetia-btn meetia-btn--ghost" %>
+    </p>
   </div>
 
-  <div class="field">
-    <%= f.label :password_confirmation %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+  <div class="meetia-auth__links">
+    <%= link_to t("meetia.auth.back"), :back %>
   </div>
-
-  <div class="field">
-    <%= f.label :current_password %> <i>(we need your current password to confirm your changes)</i><br />
-    <%= f.password_field :current_password, autocomplete: "current-password" %>
-  </div>
-
-  <div class="actions">
-    <%= f.submit "Update" %>
-  </div>
-<% end %>
-
-<h3>Cancel my account</h3>
-
-<div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete %></div>
-
-<%= link_to "Back", :back %>
+</div>

@@ -13,28 +13,28 @@
 
   .db-v2-form-group
     = f.label :company, class: "db-v2-form-label" do
-      | 会社名
-      span.db-v2-form-label__req 必須
-    = f.text_field :company, class: "db-v2-form-control", placeholder: "株式会社〇〇〇〇", required: true, autocomplete: "organization"
+      = t("meetia.problems.company")
+      span.db-v2-form-label__req = t("meetia.common.required")
+    = f.text_field :company, class: "db-v2-form-control", placeholder: t("meetia.problems.company_ph"), required: true, autocomplete: "organization"
 
   .db-v2-form-group
     = f.label :email, class: "db-v2-form-label" do
-      | メールアドレス
-      span.db-v2-form-label__req 必須
+      = t("meetia.problems.email")
+      span.db-v2-form-label__req = t("meetia.common.required")
     = f.email_field :email, class: "db-v2-form-control", placeholder: "you@example.com", required: true, autocomplete: "email"
 
   .db-v2-form-group
     = f.label :photo, class: "db-v2-form-label" do
-      | 添付画像
-      span.db-v2-form-label__opt 任意
+      = t("meetia.problems.photo")
+      span.db-v2-form-label__opt = t("meetia.common.optional")
     = f.file_field :photo, class: "db-v2-form-control db-v2-form-control--file", accept: "image/*"
-    span.db-v2-form-hint スクリーンショットなど、状況が伝わる画像があれば添付してください。
+    span.db-v2-form-hint = t("meetia.problems.photo_hint")
 
   .db-v2-form-group
     = f.label :body, class: "db-v2-form-label" do
-      | 内容
-      span.db-v2-form-label__opt 任意
-    = f.text_area :body, class: "db-v2-form-control", rows: 5, placeholder: "発生した症状、再現手順、表示されたメッセージなど"
+      = t("meetia.problems.body")
+      span.db-v2-form-label__opt = t("meetia.common.optional")
+    = f.text_area :body, class: "db-v2-form-control", rows: 5, placeholder: t("meetia.problems.body_ph")
 
   .db-v2-form-actions
-    = f.submit "報告を送信する", class: "db-v2-btn db-v2-btn--primary"
+    = f.submit t("meetia.problems.submit"), class: "db-v2-btn db-v2-btn--primary"

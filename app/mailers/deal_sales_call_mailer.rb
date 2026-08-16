@@ -7,16 +7,19 @@ class DealSalesCallMailer < ApplicationMailer
     @deal = user_progress.deal
     @client = @deal.client
     @source = source.to_s
-    @intro = request_notification_intro(@source)
-    @phase_label = DealSalesCall::NotifyClientService.phase_label(user_progress)
     @dashboard_url = dashboard_url_for(@deal, user_progress)
     recipient = @client&.email.presence || Admin.order(:id).pick(:email)
+    name = @user.company.presence || @user.name.presence || I18n.t("meetia.owner_mail.prospect_fallback")
 
-    mail(
-      to: recipient,
-      reply_to: @user.email.presence,
-      subject: "【Meetia】担当者商談の希望：#{@user.company.presence || @user.name.presence || '見込み客'}様"
-    )
+    I18n.with_locale(owner_locale) do
+      @intro = request_notification_intro(@source)
+      @phase_label = DealSalesCall::NotifyClientService.phase_label(user_progress)
+      mail(
+        to: recipient,
+        reply_to: @user.email.presence,
+        subject: I18n.t("meetia.owner_mail.request_subject", name: name)
+      )
+    end
   end
 
   def session_completed(user_progress:, rating: nil, feedback: nil)
@@ -26,31 +29,39 @@ class DealSalesCallMailer < ApplicationMailer
     @client = @deal.client
     @rating = rating
     @feedback = feedback.to_s
-    @phase_label = DealSalesCall::NotifyClientService.phase_label(user_progress)
-    @summary_lines = user_progress.session_summary_lines
-    summary = user_progress.session_summary_hash
-    @interest_topics = Array(summary["topics"]).map(&:presence).compact.join("、")
-    @grade_label = grade_label_for(user_progress)
     @dashboard_url = dashboard_url_for(@deal, user_progress)
     recipient = @client&.email.presence || Admin.order(:id).pick(:email)
+    name = @user.company.presence || @user.name.presence || I18n.t("meetia.owner_mail.prospect_fallback")
 
-    mail(
-      to: recipient,
-      reply_to: @user.email.presence,
-      subject: "【Meetia】AI商談が終了しました：#{@user.company.presence || @user.name.presence || '見込み客'}様"
-    )
+    I18n.with_locale(owner_locale) do
+      @phase_label = DealSalesCall::NotifyClientService.phase_label(user_progress)
+      @summary_lines = user_progress.session_summary_lines
+      summary = user_progress.session_summary_hash
+      @interest_topics = Array(summary["topics"]).map(&:presence).compact.join(I18n.locale.to_s == "en" ? ", " : "、")
+      @grade_label = grade_label_for(user_progress)
+      mail(
+        to: recipient,
+        reply_to: @user.email.presence,
+        subject: I18n.t("meetia.owner_mail.completed_subject", name: name)
+      )
+    end
   end
 
   private
 
+  def owner_locale
+    loc = @client.respond_to?(:ui_locale) ? @client.ui_locale.to_s : "ja"
+    Client::LOCALES.include?(loc) ? loc.to_sym : :ja
+  end
+
   def request_notification_intro(source)
     case source.to_s
     when "follow_up_sales_click"
-      "フォローメールから「担当者に相談する」が押されました。"
+      I18n.t("meetia.owner_mail.intro_follow_sales")
     when "follow_up_contract_click"
-      "フォローメールから「契約について相談する」が押されました。"
+      I18n.t("meetia.owner_mail.intro_follow_contract")
     else
-      "商談ルームから「担当者に繋ぐ」が押されました。"
+      I18n.t("meetia.owner_mail.intro_room")
     end
   end
 
@@ -58,10 +69,10 @@ class DealSalesCallMailer < ApplicationMailer
     grade = user_progress.prospect_grade.presence
     score = user_progress.prospect_score
     return "—" if grade.blank? && score.blank?
-    return "#{grade}（#{score}点）" if grade.present? && score.present?
+    return I18n.t("meetia.owner_mail.grade_with_score", grade: grade, score: score) if grade.present? && score.present?
     return grade if grade.present?
 
-    "#{score}点"
+    I18n.t("meetia.owner_mail.score_only", score: score)
   end
 
   def dashboard_url_for(deal, user_progress)

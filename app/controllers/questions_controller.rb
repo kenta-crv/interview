@@ -15,7 +15,7 @@ class QuestionsController < ApplicationController
   def create
     @question = @situation.questions.new(question_params)
     if @question.save
-      redirect_to situation_questions_path(@situation), notice: '質問を作成しました。'
+      redirect_to situation_questions_path(@situation), notice: t("meetia.questions.created_notice")
     else
       render :new
     end
@@ -26,7 +26,7 @@ class QuestionsController < ApplicationController
 
   def update
     if @question.update(question_params)
-      redirect_to situation_questions_path(@situation), notice: '質問を更新しました。'
+      redirect_to situation_questions_path(@situation), notice: t("meetia.questions.updated_notice")
     else
       render :edit
     end
@@ -34,7 +34,7 @@ class QuestionsController < ApplicationController
 
   def destroy
     @question.destroy
-    redirect_to situation_questions_path(@situation), notice: '質問を削除しました。'
+    redirect_to situation_questions_path(@situation), notice: t("meetia.questions.deleted_notice")
   end
 
   private

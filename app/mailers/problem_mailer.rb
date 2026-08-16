@@ -8,7 +8,7 @@ class ProblemMailer < ApplicationMailer
     mail(
       to: "info@j-work.jp",
       from: @problem.email,
-      subject: "【Meetia問題報告】#{@problem.company}様より"
+      subject: t("meetia.problems.mail_subject", company: @problem.company)
     )
   end
 

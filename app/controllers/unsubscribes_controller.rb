@@ -7,7 +7,7 @@ class UnsubscribesController < ApplicationController
     )
 
     if customer.blank?
-      render plain: '無効なURLです', status: :not_found
+      render plain: t("meetia.common.invalid_url"), status: :not_found
       return
     end
 
@@ -17,10 +17,10 @@ class UnsubscribesController < ApplicationController
 
     render inline: <<~HTML
       <!DOCTYPE html>
-      <html lang="ja">
+      <html lang="#{I18n.locale}">
       <head>
         <meta charset="UTF-8">
-        <title>配信停止完了</title>
+        <title>#{ERB::Util.html_escape(t("meetia.unsubscribe.done_title"))}</title>
 
         <style>
           body {
@@ -53,8 +53,8 @@ class UnsubscribesController < ApplicationController
 
       <body>
         <div class="box">
-          <h1>配信停止しました</h1>
-          <p>今後フォーム送信は行われません。</p>
+          <h1>#{ERB::Util.html_escape(t("meetia.unsubscribe.done_heading"))}</h1>
+          <p>#{ERB::Util.html_escape(t("meetia.unsubscribe.done_body"))}</p>
         </div>
       </body>
       </html>

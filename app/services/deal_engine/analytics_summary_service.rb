@@ -176,7 +176,7 @@ module DealEngine
       counts.sort_by { |page, count| [-count, page] }.map do |page, count|
         {
           page_number: page,
-          title: page_titles[page].presence || "ページ#{page}",
+          title: page_titles[page].presence || I18n.t("meetia.dashboard.common.page_number", page: page),
           count: count,
           share: total.positive? ? ((count / total) * 100).round(1) : 0.0
         }

@@ -1,45 +1,49 @@
-h1 Interview Result ##{@result.id}
+h1 #{t("meetia.interview.result_title")} ##{@result.id}
 
 p
-  strong Applicant:
+  strong = t("meetia.interview.applicant")
+  | :
   = @result.interview.user&.email
 p
-  strong Situation:
+  strong = t("meetia.interview.scenario")
+  | :
   = @result.interview.situation&.title
 p
-  strong Status:
+  strong = t("meetia.interview.status")
+  | :
   = @result.final_status
 p
-  strong Average Score:
+  strong = t("meetia.interview.avg_score")
+  | :
   = @result.average_score
 
-h2 Summary
+h2 = t("meetia.interview.summary")
 p= @result.summary
 
-h3 Strengths
+h3 = t("meetia.interview.strengths")
 ul
   - Array(@result.strengths).each do |item|
     li= item
 
-h3 Weaknesses
+h3 = t("meetia.interview.improvements")
 ul
   - Array(@result.weaknesses).each do |item|
     li= item
 
-h3 Recommendation
+h3 = t("meetia.interview.recommendation")
 p= @result.recommendation
 
-h2 Responses
+h2 = t("meetia.interview.responses")
 ul
   - @result.interview.interview_responses.in_order.each do |resp|
     li
       strong= resp.question.question_text
-      |  — Score: #{resp.score}
+      |  — #{t("meetia.interview.score", score: resp.score)}
       br
-      | Answer: #{resp.audio_transcript}
+      = resp.audio_transcript
       - if resp.answer_audio.attached?
         br
-        = link_to 'Audio', rails_blob_path(resp.answer_audio, disposition: 'attachment', only_path: true)
+        = link_to t("meetia.interview.audio"), rails_blob_path(resp.answer_audio, disposition: 'attachment', only_path: true)
       - if resp.answer_video.attached?
         br
-        = link_to 'Video', rails_blob_path(resp.answer_video, disposition: 'attachment', only_path: true)
+        = link_to t("meetia.interview.video"), rails_blob_path(resp.answer_video, disposition: 'attachment', only_path: true)

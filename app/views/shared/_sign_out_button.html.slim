@@ -1,5 +1,5 @@
 / locals: path (required), variant: :sidebar | :nav | :header (default :header), label: (default ログアウト)
-- label ||= "ログアウト"
+- label ||= t("meetia.dashboard.common.sign_out")
 - variant ||= :header
 
 - if variant == :sidebar

@@ -262,10 +262,12 @@ module TopsHelper
   end
 
   def featured_columns_for_lp
+    return FEATURED_COLUMNS_EN if lp_english?
+
     live = FeaturedColumnsLoader.call(limit: 5)
     return live if live.present?
 
-    lp_english? ? FEATURED_COLUMNS_EN : FEATURED_COLUMNS
+    FEATURED_COLUMNS
   end
 
   def feature_tabs

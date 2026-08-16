@@ -1,4 +1,3 @@
-/ app/views/situations/edit.html.slim
-h1 面接フォームを編集
+h1 = t("meetia.situations.edit_title")
 = render 'form'
-= link_to '一覧に戻る', situations_path, class: 'btn btn-secondary mt-2'
+= link_to t("meetia.situations.back"), situations_path, class: 'btn btn-secondary mt-2'

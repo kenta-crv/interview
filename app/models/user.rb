@@ -30,7 +30,7 @@ class User < ApplicationRecord
   def self.build_guest!(attrs = {})
     create!(
       email: attrs[:email].presence || guest_email,
-      name: attrs[:name].presence || "ゲスト",
+      name: attrs[:name].presence || I18n.t("meetia.common.guest"),
       job_title: attrs[:job_title].presence || "-",
       company: attrs[:company],
       tel: attrs[:tel],

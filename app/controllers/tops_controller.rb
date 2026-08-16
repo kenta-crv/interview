@@ -5,7 +5,7 @@ class TopsController < ApplicationController
 
   def index
     if params[:deal_session].to_s == "ended"
-      flash[:notice] = "商談が終了しました。ご参加ありがとうございました。"
+      flash[:notice] = t("meetia.deal.ended_flash")
       redirect_to root_path and return
     end
   end

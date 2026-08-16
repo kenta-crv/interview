@@ -1,16 +1,25 @@
-<h2>Resend confirmation instructions</h2>
+<div class="meetia-auth__page">
+  <%= link_to root_path, class: "meetia-auth__brand" do %>
+    <%= image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-auth__logo" %>
+  <% end %>
 
-<%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f| %>
-  <%= render "admins/shared/error_messages", resource: resource %>
+  <div class="meetia-auth__card">
+    <h1 class="meetia-auth__title"><%= t("meetia.auth.resend_confirmation_title") %></h1>
+    <p class="meetia-auth__lead"><%= t("meetia.auth.resend_confirmation_lead") %></p>
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email", value: (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email) %>
+    <%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f| %>
+      <%= render "admins/shared/error_messages", resource: resource %>
+
+      <div class="meetia-auth__field">
+        <%= f.label :email, t("meetia.auth.email"), class: "meetia-auth__label" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "meetia-auth__input", value: (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email) %>
+      </div>
+
+      <%= f.submit t("meetia.auth.resend_confirmation"), class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit" %>
+    <% end %>
   </div>
 
-  <div class="actions">
-    <%= f.submit "Resend confirmation instructions" %>
+  <div class="meetia-auth__links">
+    <%= render "admins/shared/links" %>
   </div>
-<% end %>
-
-<%= render "admins/shared/links" %>
+</div>

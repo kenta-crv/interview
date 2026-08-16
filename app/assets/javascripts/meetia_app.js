@@ -79,10 +79,10 @@ document.addEventListener('DOMContentLoaded', () => {
       ev.preventDefault();
       const btn = form.querySelector('.hero-main-submit');
       btn.disabled = true;
-      btn.textContent = '送信中...';
+      btn.textContent = btn.getAttribute('data-i18n-sending') || 'Sending...';
       btn.style.opacity = '0.9';
       setTimeout(() => {
-        btn.textContent = '送信しました';
+        btn.textContent = btn.getAttribute('data-i18n-sent') || 'Sent';
         btn.style.background = '#0A8E4A';
       }, 1200);
     });

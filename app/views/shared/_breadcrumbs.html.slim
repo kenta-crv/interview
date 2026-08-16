@@ -5,7 +5,7 @@
     | body>.hero:has(.breadcrumbs){position:static!important;height:auto!important;overflow:visible!important;pointer-events:auto!important}
     | .breadcrumbs a{color:#111!important;text-decoration:underline!important;text-underline-offset:2px!important;pointer-events:auto!important}
 
-nav.breadcrumbs aria-label="パンくず"
+nav.breadcrumbs aria-label=t("meetia.dashboard.common.breadcrumb")
   - breadcrumbs.each_with_index do |crumb, i|
     - if crumb[:path].present?
       = link_to crumb[:label], crumb[:path]

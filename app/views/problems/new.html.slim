@@ -1,25 +1,25 @@
 - if @embed
   .db-v2-problem-embed
     .db-v2-problem-embed__intro
-      p.db-v2-problem-embed__lead 不具合や改善のご要望があれば、内容を記入して送信してください。
+      p.db-v2-problem-embed__lead = t("meetia.problems.embed_lead")
     = render "form", problem: @problem, embed: true
 - else
   .db-v2-header
     .db-v2-header__left
-      h1.db-v2-header__title 問題報告
-      p.db-v2-header__subtitle サービスに関する問題や不具合を報告できます
+      h1.db-v2-header__title = t("meetia.problems.title")
+      p.db-v2-header__subtitle = t("meetia.problems.subtitle")
     .db-v2-header__right
       = render "/dashboard/theme_switch"
       = link_to dashboard_index_path, class: "db-v2-btn db-v2-btn--ghost" do
         i.fa-solid.fa-arrow-left aria-hidden="true"
-        span ダッシュボードへ
+        span = t("meetia.problems.back")
 
   .db-v2-bottom-card.db-v2-problem-page-card
     .db-v2-bottom-card__header
       h2.db-v2-bottom-card__title
         i.fa-solid.fa-bug aria-hidden="true"
-        |  報告内容
+        |  
+        = t("meetia.problems.section")
     .db-v2-bottom-card__body
-      p.db-v2-problem-page-card__lead
-        | 発生した症状や再現手順、可能であればスクリーンショットを添えてご報告ください。送信後、ダッシュボードに完了通知が表示されます。
+      p.db-v2-problem-page-card__lead = t("meetia.problems.page_lead")
       = render "form", problem: @problem, embed: false

@@ -1,25 +1,26 @@
-/ app/views/situations/show.html.slim
-h1 面接フォーム詳細: #{@situation.title}
+h1 = t("meetia.situations.show_title", title: @situation.title)
 
 p
-  strong 説明:
+  strong = t("meetia.situations.description")
+  | :
   = @situation.description
 
 p
-  strong 作成日:
+  strong = t("meetia.situations.created")
+  | :
   = @situation.created_at.strftime('%Y-%m-%d %H:%M')
 
-h2 質問一覧
-= link_to '新しい質問を追加', new_situation_question_path(@situation), class: 'btn btn-primary mb-2'
+h2 = t("meetia.situations.questions")
+= link_to t("meetia.situations.add_question"), new_situation_question_path(@situation), class: 'btn btn-primary mb-2'
 
 table.table.table-striped
   thead
     tr
-      th 順序
-      th 質問内容
-      th タイプ
-      th 選択肢
-      th 操作
+      th = t("meetia.situations.order")
+      th = t("meetia.situations.question_text")
+      th = t("meetia.situations.type")
+      th = t("meetia.situations.options")
+      th = t("meetia.situations.actions")
   tbody
     - @situation.questions.order(:order).each do |q|
       tr
@@ -28,7 +29,7 @@ table.table.table-striped
         td= q.question_type
         td= q.options
         td
-          = link_to '編集', edit_situation_question_path(@situation, q), class: 'btn btn-sm btn-warning'
-          = link_to '削除', situation_question_path(@situation, q), method: :delete, data: { confirm: '削除しますか？' }, class: 'btn btn-sm btn-danger'
+          = link_to t("meetia.situations.edit"), edit_situation_question_path(@situation, q), class: 'btn btn-sm btn-warning'
+          = link_to t("meetia.situations.destroy"), situation_question_path(@situation, q), method: :delete, data: { confirm: t("meetia.situations.confirm_destroy") }, class: 'btn btn-sm btn-danger'
 
-= link_to '一覧に戻る', situations_path, class: 'btn btn-secondary mt-3'
+= link_to t("meetia.situations.back"), situations_path, class: 'btn btn-secondary mt-3'

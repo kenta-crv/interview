@@ -3,31 +3,31 @@
     = image_tag "meetia_logo.png", alt: "Meetia", class: "meetia-auth__logo"
 
   .meetia-auth__card
-    h1.meetia-auth__title 新規登録
-    p.meetia-auth__lead 応募者アカウントを作成
+    h1.meetia-auth__title = t("meetia.applicant.signup_title")
+    p.meetia-auth__lead = t("meetia.applicant.signup_lead")
 
     = form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f|
       = render "users/shared/error_messages", resource: resource
 
       .meetia-auth__field
-        = f.label :name, "氏名", class: "meetia-auth__label"
+        = f.label :name, t("meetia.applicant.name"), class: "meetia-auth__label"
         = f.text_field :name, autofocus: true, autocomplete: "name", class: "meetia-auth__input"
 
       .meetia-auth__field
-        = f.label :email, "メールアドレス", class: "meetia-auth__label"
+        = f.label :email, t("meetia.auth.email"), class: "meetia-auth__label"
         = f.email_field :email, autocomplete: "email", class: "meetia-auth__input"
 
       .meetia-auth__field
-        = f.label :password, "パスワード", class: "meetia-auth__label"
+        = f.label :password, t("meetia.auth.password"), class: "meetia-auth__label"
         - if @minimum_password_length
-          em.meetia-auth__hint = "（#{@minimum_password_length}文字以上）"
+          em.meetia-auth__hint = t("meetia.auth.password_hint", count: @minimum_password_length)
         = f.password_field :password, autocomplete: "new-password", class: "meetia-auth__input"
 
       .meetia-auth__field
-        = f.label :password_confirmation, "パスワード（確認）", class: "meetia-auth__label"
+        = f.label :password_confirmation, t("meetia.auth.password_confirmation"), class: "meetia-auth__label"
         = f.password_field :password_confirmation, autocomplete: "new-password", class: "meetia-auth__input"
 
-      = f.submit "アカウントを作成", class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit"
+      = f.submit t("meetia.auth.submit_signup"), class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-auth__submit"
 
   .meetia-auth__links
     = render "users/shared/links"

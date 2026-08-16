@@ -259,7 +259,7 @@
       MeetiaPageInit.bindOnce(btn, 'data-hero-play-bound', function(button) {
         function setPlaying(playing) {
           button.classList.toggle('presentation-play-btn--playing', !!playing);
-          button.setAttribute('aria-label', playing ? '一時停止' : '再生');
+          button.setAttribute('aria-label', playing ? (button.getAttribute('data-i18n-pause') || 'Pause') : (button.getAttribute('data-i18n-play') || 'Play'));
         }
 
         button.addEventListener('click', function() {

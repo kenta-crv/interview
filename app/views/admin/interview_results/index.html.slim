@@ -1,32 +1,32 @@
 .db-v2-header
   .db-v2-header__left
-    h1.db-v2-header__title 面接結果
-    p.db-v2-header__subtitle 全応募者の面接結果一覧
+    h1.db-v2-header__title = t("meetia.interview.results_index_title")
+    p.db-v2-header__subtitle = t("meetia.interview.results_index_sub")
   .db-v2-header__right
     = render "/dashboard/theme_switch"
 
 .db-v2-bottom-card
   .db-v2-bottom-card__header.db-v2-bottom-card__header--split
-    h2.db-v2-bottom-card__title 面接結果一覧
-    span.db-v2-deals-count = "#{@results.size} 件"
+    h2.db-v2-bottom-card__title = t("meetia.interview.results_list")
+    span.db-v2-deals-count = t("meetia.dashboard.common.count", count: @results.size)
 
   .db-v2-bottom-card__body
     - if @results.empty?
       .db-v2-empty-state
         .db-v2-empty-state__icon
           i.fa-solid.fa-clipboard-list aria-hidden="true"
-        p.db-v2-empty-state__text 面接結果はまだありません
+        p.db-v2-empty-state__text = t("meetia.interview.results_empty")
     - else
       .db-v2-leads-table-wrap
         table.db-v2-leads-table.db-v2-deals-table
           thead
             tr
               th ID
-              th 応募者
-              th シナリオ
-              th ステータス
-              th 平均スコア
-              th 作成日
+              th = t("meetia.interview.applicant")
+              th = t("meetia.interview.scenario")
+              th = t("meetia.interview.status")
+              th = t("meetia.interview.avg_score")
+              th = t("meetia.interview.created")
               th
           tbody
             - @results.each do |result|
@@ -38,4 +38,4 @@
                 td = result.average_score
                 td = l(result.created_at, format: :short)
                 td
-                  = link_to "詳細", admin_interview_result_path(result), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"
+                  = link_to t("meetia.dashboard.common.detail"), admin_interview_result_path(result), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"

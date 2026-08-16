@@ -7,6 +7,22 @@
 
     function byId(id) { return document.getElementById(id); }
 
+    var I18N = {};
+    try {
+      var i18nEl = document.getElementById('interview-i18n');
+      if (i18nEl) I18N = JSON.parse(i18nEl.textContent) || {};
+    } catch (_e) {}
+
+    function t(key, vars) {
+      var s = (I18N[key] != null && String(I18N[key]).length) ? String(I18N[key]) : key;
+      if (vars) {
+        Object.keys(vars).forEach(function(k) {
+          s = s.split('%{' + k + '}').join(vars[k]);
+        });
+      }
+      return s;
+    }
+
     // Step 1 elements
     const startBtn = byId('start_interview');
     const resumeBtn = byId('resume_interview');
@@ -63,14 +79,14 @@
       try {
         res = await fetch(url, options);
       } catch (netErr) {
-        throw new Error('\u30CD\u30C3\u30C8\u30EF\u30FC\u30AF\u30A8\u30E9\u30FC: ' + netErr.message);
+        throw new Error(t('network_error', { message: netErr.message }));
       }
 
       // 認証エラー(401)またはレスポンスURLがログイン画面を指している場合、
       // fetchの内部フリーズを回避してブラウザごと強制遷移させる
       if (res.status === 401 || res.url.indexOf('/users/sign_in') !== -1) {
         clearSavedInterview();
-        alert('\u30BB\u30C3\u30B7\u30E7\u30F3\u304C\u5207\u308C\u305F\u304B\u3001\u30ED\u30B0\u30A1\u30A2\u30A2\u30A6\u30C8\u3055\u308C\u3066\u3044\u307E\u3059\u3002\u30ED\u30B0\u30A4\u30F3\u753A\u9762\u3078\u79FB\u52D5\u3057\u307E\u3059\u3002');
+        alert(t('session_expired'));
         window.location.href = '/users/sign_in';
         return { status: res.status, ok: false, data: { success: false } };
       }
@@ -81,10 +97,10 @@
         try {
           data = await res.json();
         } catch (e) {
-          throw new Error('\u30B5\u30FC\u30D0\u30FC\u5FDC\u7B54\u306E\u89E3\u6790\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002');
+          throw new Error(t('parse_failed'));
         }
       } else {
-        data = { success: false, error: '\u30B5\u30FC\u30D0\u30FC\u30A8\u30E9\u30FC (' + res.status + ')' };
+        data = { success: false, error: t('server_error', { status: res.status }) };
       }
 
       if (res.status === 410 && data.reason === 'timeout') {
@@ -125,7 +141,7 @@
       var pct = Math.max(0, Math.min(100, progress || 0));
       if (progressBar) progressBar.style.width = pct + '%';
       if (progressText) progressText.textContent = Math.round(pct) + '%';
-      if (questionCount) questionCount.textContent = (answered || 0) + ' / ' + (total || 0) + ' \u554F';
+      if (questionCount) questionCount.textContent = t('question_count', { answered: answered || 0, total: total || 0 });
     }
 
     // ===== localStorage =====
@@ -150,12 +166,12 @@
       var language = byId('language').value || 'ja';
 
       if (!situationId) {
-        alert('\u9762\u63A5\u30D5\u30A9\u30FC\u30E0\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002');
+        alert(t('pick_form'));
         return;
       }
 
       startBtn.disabled = true;
-      startBtn.textContent = '\u958B\u59CB\u4E2D...';
+      startBtn.textContent = t('starting');
 
       try {
         var result = await apiRequest('/api/interviews/start', {
@@ -173,7 +189,7 @@
           clearSavedInterview();
           showStep(3);
           displayResults({
-            message: '\u3053\u306E\u9762\u63A5\u306F\u65E2\u306B\u53D7\u9A13\u6E08\u307F\u3067\u3059\u3002\u540C\u3058\u9762\u63A5\u306F1\u56DE\u306E\u307F\u53D7\u9A13\u3067\u304D\u307E\u3059\u3002',
+            message: t('already_taken'),
             result: {
               final_status: 'completed',
               average_score: null,
@@ -182,38 +198,38 @@
             }
           });
           startBtn.disabled = false;
-          startBtn.textContent = '\u9762\u63A5\u3092\u958B\u59CB\u3059\u308B';
+          startBtn.textContent = t('start');
           return;
         }
 
         if (!data.success) {
-          alert(data.error || '\u9762\u63A5\u306E\u958B\u59CB\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002');
+          alert(data.error || t('start_failed'));
           startBtn.disabled = false;
-          startBtn.textContent = '\u9762\u63A5\u3092\u958B\u59CB\u3059\u308B';
+          startBtn.textContent = t('start');
           return;
         }
 
         interviewId = data.interview_id;
         saveInterview(interviewId, data.language);
-        setStatus('\u9762\u63A5\u958B\u59CB');
+        setStatus(t('started'));
         showStep(2);
         await loadNextQuestion();
       } catch (e) {
-        alert('\u30A8\u30E9\u30FC: ' + e.message);
+        alert(t('error_prefix', { message: e.message }));
         startBtn.disabled = false;
-        startBtn.textContent = '\u9762\u63A5\u3092\u958B\u59CB\u3059\u308B';
+        startBtn.textContent = t('start');
       }
     }
 
     async function resumeInterview() {
       var savedId = loadSavedInterview();
       if (!savedId) {
-        alert('\u4FDD\u5B58\u3055\u308C\u305F\u9762\u63A5\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002');
+        alert(t('saved_missing'));
         return;
       }
       interviewId = savedId;
       showStep(2);
-      setStatus('\u9762\u63A5\u3092\u518D\u958B\u4E2D...');
+      setStatus(t('resuming'));
 
       try {
         var statusResult = await apiRequest('/api/interviews/' + interviewId + '/status', {});
@@ -222,7 +238,7 @@
         if (statusData.__timeout || statusData.__unauthorized) return;
 
         if (!statusData.success) {
-          alert(statusData.error || '\u9762\u63A5\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002');
+          alert(statusData.error || t('fetch_failed'));
           clearSavedInterview();
           showStep(1);
           return;
@@ -231,14 +247,14 @@
         var currentStatus = statusData.state && statusData.state.status;
 
         if (currentStatus === 'completed' || currentStatus === 'failed') {
-          alert('\u3053\u306E\u9762\u63A5\u306F\u65E2\u306B\u5B8C\u4E86\u3057\u3066\u3041\u307E\u3059\u3002');
+          alert(t('already_done'));
           clearSavedInterview();
           showStep(1);
           return;
         }
 
         if (currentStatus === 'not_started') {
-          alert('\u9762\u63A5\u304C\u307E\u3060\u958B\u59CB\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002');
+          alert(t('not_started'));
           clearSavedInterview();
           showStep(1);
           return;
@@ -253,7 +269,7 @@
           if (resumeData.__timeout || resumeData.__unauthorized) return;
           
           if (!resumeData.success) {
-            alert(resumeData.error || '\u9762\u63A5\u306E\u518D\u958B\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002');
+            alert(resumeData.error || t('resume_failed'));
             clearSavedInterview();
             showStep(1);
             return;
@@ -263,7 +279,7 @@
         await refreshStatus();
         await loadNextQuestion();
       } catch (e) {
-        alert('\u30A8\u30E9\u30FC: ' + e.message);
+        alert(t('error_prefix', { message: e.message }));
         clearSavedInterview();
         showStep(1);
       }
@@ -283,8 +299,8 @@
           var rejectionMsg = data.state.rejection_reason || '';
           displayResults({
             message: s === 'failed'
-              ? '\u9762\u63A5\u304C\u7D42\u4E86\u3057\u307E\u3057\u305F\u3002' + (rejectionMsg ? ('\n' + rejectionMsg) : '')
-              : '\u9762\u63A5\u304C\u5B8C\u4E86\u3057\u307E\u3057\u305F\u3002',
+              ? t('ended') + (rejectionMsg ? ('\n' + rejectionMsg) : '')
+              : t('completed'),
             result: {
               final_status: s === 'failed' ? 'failed' : 'passed',
               average_score: null,
@@ -307,13 +323,13 @@
         if (data.__timeout || data.__unauthorized) return;
         
         if (!data.success) {
-          setStatus(data.error || '\u30B9\u30C6\u30FC\u30BF\u30B9\u53D6\u5F97\u5931\u6557');
+          setStatus(data.error || t('status_failed'));
           return;
         }
         var state = data.state;
         setProgress(state.progress, state.answered_questions, state.total_questions);
       } catch (e) {
-        setStatus('\u30B9\u30C6\u30FC\u30BF\u30B9\u53D6\u5F97\u5931\u6557');
+        setStatus(t('status_failed'));
       }
     }
 
@@ -342,7 +358,7 @@
     async function submitAnswer() {
       if (isSubmitting) return;
       if (!currentQuestion) {
-        alert('\u56DE\u7B54\u3059\u308B\u8CEA\u554F\u304C\u3042\u308A\u307E\u305B\u3093\u3002');
+        alert(t('no_question'));
         return;
       }
 
@@ -357,13 +373,13 @@
       var hasSelection = selectedOption;
 
       if (!hasText && !hasAudio && !hasVideo && !hasRecording && !hasSelection) {
-        alert('\u56DE\u7B54\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u30C6\u30AD\u30B9\u30C8\u3001\u97F3\u58F0\u3001\u307E\u305F\u306F\u9078\u629E\u80A2\u306E\u3044\u305A\u308C\u304B\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002');
+        alert(t('need_answer'));
         return;
       }
 
       isSubmitting = true;
       submitBtn.disabled = true;
-      submitBtn.textContent = '\u9001\u4FE1\u4E2D...';
+      submitBtn.textContent = t('submitting');
 
       var form = new FormData();
       form.append('question_id', currentQuestion.question_id);
@@ -393,7 +409,7 @@
         if (data.__timeout || data.__unauthorized) return;
 
         if (!data.success) {
-          alert(data.error || '\u56DE\u7B54\u306E\u9001\u4FE1\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002');
+          alert(data.error || t('submit_failed'));
           return;
         }
 
@@ -401,25 +417,25 @@
         recordedBlob = null;
         selectedOption = null;
         if (recordedAudio) recordedAudio.src = '';
-        if (recordStatus) recordStatus.textContent = '\u5F85\u6A5F\u4E2D';
+        if (recordStatus) recordStatus.textContent = t('idle');
         byId('text_answer').value = '';
         audioFileInput.value = '';
         videoFileInput.value = '';
 
-        setStatus('\u56DE\u7B54\u3092\u9001\u4FE1\u3057\u307E\u3057\u305F\u3002\u6B21\u306E\u8CEA\u554F\u3092\u8AAD\u307F\u8FBC\u307F\u4E2D...');
+        setStatus(t('submitted_next'));
         await loadNextQuestion();
       } catch (e) {
-        alert('\u30A8\u30E9\u30FC: ' + e.message);
+        alert(t('error_prefix', { message: e.message }));
       } finally {
         isSubmitting = false;
         submitBtn.disabled = false;
-        submitBtn.textContent = '\u56DE\u7B54\u3092\u9001\u4FE1';
+        submitBtn.textContent = t('submit_answer');
       }
     }
 
     async function completeInterview() {
       completeBtn.disabled = true;
-      completeBtn.textContent = '\u5B8C\u4E86\u51E6\u7406\u4E2D...';
+      completeBtn.textContent = t('completing');
 
       try {
         var result = await apiRequest('/api/interviews/' + interviewId + '/complete', {
@@ -430,9 +446,9 @@
         if (data.__timeout || data.__unauthorized) return;
 
         if (!data.success) {
-          alert(data.error || '\u9762\u63A5\u306E\u5B8C\u4E86\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002');
+          alert(data.error || t('complete_failed'));
           completeBtn.disabled = false;
-          completeBtn.textContent = '\u9762\u63A5\u3092\u5B8C\u4E86\u3059\u308B';
+          completeBtn.textContent = t('complete');
           return;
         }
 
@@ -440,23 +456,23 @@
         showStep(3);
         displayResults(data);
       } catch (e) {
-        alert('\u30A8\u30E9\u30FC: ' + e.message);
+        alert(t('error_prefix', { message: e.message }));
         completeBtn.disabled = false;
-        completeBtn.textContent = '\u9762\u63A5\u3092\u5B8C\u4E86\u3059\u308B';
+        completeBtn.textContent = t('complete');
       }
     }
 
     function displayResults(data) {
       var result = data.result || {};
-      resultStatus.textContent = data.message || '\u9762\u63A5\u304C\u5B8C\u4E86\u3057\u307E\u3057\u305F\u3002';
+      resultStatus.textContent = data.message || t('completed');
 
       var finalStatus = result.final_status || '-';
-      resultFinal.textContent = finalStatus === 'passed' ? '\u5408\u683C' : finalStatus === 'failed' ? '\u4E0D\u5408\u683C' : finalStatus;
+      resultFinal.textContent = finalStatus === 'passed' ? t('passed') : finalStatus === 'failed' ? t('failed') : finalStatus;
       resultFinal.className = 'result-item__value result-status--' + finalStatus;
 
       var avgScore = result.average_score;
       resultAvg.textContent = avgScore != null ? avgScore.toFixed(1) + ' / 100' : '-';
-      resultQs.textContent = (result.answered_questions || 0) + ' / ' + (result.total_questions || 0) + ' \u554F';
+      resultQs.textContent = t('question_count', { answered: result.answered_questions || 0, total: result.total_questions || 0 });
 
       fetchDetailedResults();
     }
@@ -497,7 +513,7 @@
 
     async function setupRecorder() {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        recordStatus.textContent = '\u3053\u306E\u30D6\u30E9\u30A6\u30B6\u3067\u306F\u9332\u97F3\u304C\u30B5\u30DD\u30FC\u30C8\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002';
+        recordStatus.textContent = t('unsupported');
         return;
       }
 
@@ -512,7 +528,7 @@
         mediaRecorder.onstop = function() {
           if (recordedChunks.length === 0) {
             recordedBlob = null;
-            recordStatus.textContent = '\u9332\u97F3\u30C7\u30FC\u30BF\u304C\u53D6\u5F97\u3067\u304D\u307E\u305B\u3093\u3002';
+            recordStatus.textContent = t('no_audio');
             return;
           }
           var blob = new Blob(recordedChunks, { type: 'audio/webm' });
@@ -521,10 +537,10 @@
             URL.revokeObjectURL(recordedAudio.src);
           }
           recordedAudio.src = URL.createObjectURL(blob);
-          recordStatus.textContent = '\u9332\u97F3\u5B8C\u4E86';
+          recordStatus.textContent = t('recorded');
         };
       } catch (e) {
-        recordStatus.textContent = '\u30DE\u30A4\u30AF\u306E\u4F7F\u7528\u304C\u8A31\u53EF\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002';
+        recordStatus.textContent = t('mic_denied');
         mediaRecorder = null;
       }
     }
@@ -548,7 +564,7 @@
         mediaRecorder.start();
         recordStart.disabled = true;
         recordStop.disabled = false;
-        recordStatus.textContent = '\u9332\u97F3\u4E2D...';
+        recordStatus.textContent = t('recording');
       };
     }
 
@@ -565,7 +581,7 @@
       backToStartBtn.onclick = function() {
         showStep(1);
         startBtn.disabled = false;
-        startBtn.textContent = '\u9762\u63A5\u3092\u958B\u59CB\u3059\u308B';
+        startBtn.textContent = t('start');
       };
     }
 

@@ -2,82 +2,86 @@
 - cta = deal_record ? deal_record.presentation_cta_payload : (local_assigns[:cta_payload] || {})
 - materials = deal_record&.materials_download_payload
 - closing = deal_record ? deal_record.presentation_closing_payload : {}
-- topic_items = (menu_items.any? ? menu_items : deal_pages.reject { |p| p.page_number == 1 }.map { |page| { 'label' => (page.title.presence || "スライド #{page.page_number}"), 'page_number' => page.page_number, 'key' => "page_#{page.page_number}" } }).sort_by { |item| item['page_number'].to_i }
+- topic_items = (menu_items.any? ? menu_items : deal_pages.reject { |p| p.page_number == 1 }.map { |page| { 'label' => (page.title.presence || t("meetia.deal.slide_n", n: page.page_number)), 'page_number' => page.page_number, 'key' => "page_#{page.page_number}" } }).sort_by { |item| item['page_number'].to_i }
 - pages_payload = deal_pages.map { |p| { page_number: p.page_number, title: p.title, script: p.script, audio_url: (deal_record ? deal_record.page_audio_path(p) : (p.page_audio.attached? ? rails_blob_path(p.page_audio, only_path: true) : p.audio_url)), role: (deal_record ? deal_record.page_role_for(p) : nil) } }
 - preview_mode = local_assigns.fetch(:preview_mode, false)
 - sales_call_url = local_assigns[:sales_call_url]
 - config_payload = { pages: pages_payload, opening: opening_payload, opening_segments: opening_segments, closing: closing, respond_url: respond_url, evaluate_url: evaluate_url, track_url: (local_assigns[:track_url].presence), sales_call_url: sales_call_url, public_mode: public_mode, preview_mode: preview_mode, home_url: root_path, cta: cta, materials: materials }.to_json
+- i18n_payload = t("meetia.deal.js")
 
 script type="application/json" id="deal-presentation-config"
   = raw json_escape(config_payload)
+
+script type="application/json" id="deal-presentation-i18n"
+  = raw json_escape(i18n_payload.to_json)
 
 .presentation-wrapper data-turbo="false" data-deal-presentation="" data-respond-url=respond_url data-evaluate-url=evaluate_url data-track-url=(local_assigns[:track_url].presence) data-sales-call-url=sales_call_url style="--presentation-bg: url('#{asset_path('presentation_room_bg.png')}')"
   .presentation-room
     header.presentation-room-header
       .presentation-room-header__brand
         .presentation-room-title-row
-          h1.presentation-room-title 商談ルーム
+          h1.presentation-room-title = t("meetia.deal.room_title")
           p.presentation-room-status
             span.presentation-room-status-dot aria-hidden="true"
-            span AI商談中
+            span = t("meetia.deal.room_live")
           span.presentation-room-timer#presentation-timer 00:00:00
       .presentation-room-header__actions
         - if cta['url'].to_s.strip.present?
           = link_to cta['label'], cta['url'], target: '_blank', rel: 'noopener noreferrer', class: 'btn-presentation-cta btn-presentation-cta--primary btn-presentation-cta--header', id: 'presentation-cta-btn', data: { label: cta['label'], turbo: false }
         - else
           = button_tag cta['label'], type: 'button', class: 'btn-presentation-cta btn-presentation-cta--primary btn-presentation-cta--header', id: 'presentation-cta-btn', data: { label: cta['label'] }
-        = button_tag '担当者に繋ぐ', type: 'button', class: 'btn-presentation-cta btn-presentation-cta--secondary btn-presentation-cta--header', id: 'presentation-sales-call-btn', data: { label: '担当者に繋ぐ' }
+        = button_tag t("meetia.deal.sales_call"), type: 'button', class: 'btn-presentation-cta btn-presentation-cta--secondary btn-presentation-cta--header', id: 'presentation-sales-call-btn', data: { label: t("meetia.deal.sales_call") }
         - if finish_url
-          = link_to '終了する', finish_url, class: 'btn-room-exit', data: { turbo: false }
+          = link_to t("meetia.deal.exit"), finish_url, class: 'btn-room-exit', data: { turbo: false }
         - else
-          = button_tag '終了する', type: 'button', class: 'btn-room-exit', id: 'end-conversation-btn'
+          = button_tag t("meetia.deal.exit"), type: 'button', class: 'btn-room-exit', id: 'end-conversation-btn'
 
     .presentation-room-body
       .presentation-left
         .document-area#presentation-document-area
           - if deal_pages.any?
             .document-area__layout
-              nav.presentation-page-nav#presentation-page-nav aria-label="ページ一覧"
+              nav.presentation-page-nav#presentation-page-nav aria-label=t("meetia.deal.pages_nav")
                 - deal_pages.each_with_index do |page, index|
                   button.presentation-page-nav__item type="button" data-page-number=page.page_number class=(index.zero? ? 'is-active' : '')
                     span.presentation-page-nav__num = page.page_number
-                    span.presentation-page-nav__title = page.title.presence || "スライド #{page.page_number}"
+                    span.presentation-page-nav__title = page.title.presence || t("meetia.deal.slide_n", n: page.page_number)
               .document-viewport
                 - deal_pages.each_with_index do |page, index|
                   - pdf_src = page.deal_document.file.attached? ? Rails.application.routes.url_helpers.rails_blob_path(page.deal_document.file, only_path: true) : nil
                   - pdf_iframe = pdf_src ? "#{pdf_src}#page=#{page.page_number}&toolbar=0&navpanes=0&scrollbar=0&zoom=page-fit&view=Fit" : nil
                   .document-slide id="slide-#{page.id}" data-page-number=page.page_number data-pdf-url=pdf_src class="#{index == 0 ? 'active' : ''}"
                     - if pdf_src
-                      iframe.document-pdf-clean src=pdf_iframe title="スライド #{page.page_number}" tabindex="-1"
+                      iframe.document-pdf-clean src=pdf_iframe title=t("meetia.deal.slide_n", n: page.page_number) tabindex="-1"
                       canvas.document-pdf-canvas aria-hidden="true"
                     - else
-                      .document-placeholder 資料データがありません
+                      .document-placeholder = t("meetia.deal.no_document")
           - else
             .document-placeholder
-              p ページがありません。資料をアップロードして処理してください。
+              p = t("meetia.deal.no_pages")
 
         .presentation-bottom-controls
           .presentation-controls-row
-            .presentation-choice-scroller-wrap#presentation-choice-scroller-wrap
-              button.presentation-choice-more.presentation-choice-more--prev#presentation-choice-more-prev type="button" aria-label="前の選択肢を見る" hidden=true
+            .presentation-choice-scroller-wrap.presentation-topics-bar#presentation-choice-scroller-wrap
+              button.presentation-choice-more.presentation-choice-more--prev#presentation-choice-more-prev type="button" aria-label=t("meetia.deal.prev_choices") hidden=true
                 span ‹
               .presentation-choice-scroller#presentation-choice-scroller
                 .presentation-choice-track#choice-buttons
                   - topic_items.each do |item|
                     = button_tag item['label'], class: 'btn-choice', type: 'button', data: { page_number: item['page_number'], label: item['label'], topic: item['key'], choice: item['key'] }
-              button.presentation-choice-more#presentation-choice-more-next type="button" aria-label="次の選択肢を見る" hidden=true
+              button.presentation-choice-more#presentation-choice-more-next type="button" aria-label=t("meetia.deal.next_choices") hidden=true
                 span ›
 
           - if public_mode
             .presentation-free-text
               .input-group-copy
-                input.form-control#free-text-input type="text" placeholder="例: 導入までの期間はどのくらいですか？"
-                button.btn-primary-custom#send-free-text type="button" 送信
+                input.form-control#free-text-input type="text" placeholder=t("meetia.deal.free_text_ph")
+                button.btn-primary-custom#send-free-text type="button" = t("meetia.deal.send")
 
       aside.avatar-sidebar
         .presentation-avatar
-          = image_tag 'avatar_3.png', alt: 'AIアバター', class: 'presentation-avatar__img', id: 'presentation-avatar-img', loading: 'eager', decoding: 'sync'
-          button.presentation-play-btn type="button" aria-label="再生" id="presentation-voice-btn"
+          = image_tag 'avatar_3.png', alt: t("meetia.deal.avatar_alt"), class: 'presentation-avatar__img', id: 'presentation-avatar-img', loading: 'eager', decoding: 'sync'
+          button.presentation-play-btn type="button" aria-label=t("meetia.common.play") id="presentation-voice-btn"
             svg.presentation-play-btn__svg viewBox="0 0 56 56" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
               defs
                 radialGradient#presentationPlayGrad cx="50%" cy="32%" r="58%"
@@ -97,14 +101,14 @@ script type="application/json" id="deal-presentation-config"
 
         .presentation-chat-panel.presentation-chat-panel--open#presentation-chat-panel
           button.presentation-chat-toggle type="button" id="presentation-chat-toggle" aria-expanded="true" aria-controls="presentation-chat-panel-body"
-            span.presentation-chat-toggle-label メッセージ履歴
+            span.presentation-chat-toggle-label = t("meetia.deal.chat_history")
             span.presentation-chat-toggle-icon aria-hidden="true" ▼
           .presentation-chat-panel__body#presentation-chat-panel-body
             .conversation-messages#conversation-messages
               - opening_messages.each do |msg|
                 .message.message--assistant
                   .message-header
-                    span.message-role AIアシスタント
+                    span.message-role = t("meetia.deal.assistant")
                   .message-content = simple_format(msg[:content] || msg['content'])
 
 - unless finish_url
@@ -112,11 +116,11 @@ script type="application/json" id="deal-presentation-config"
     .presentation-exit-modal__backdrop data-close-modal="true"
     .modal-content.presentation-exit-modal__dialog
       .modal-header
-        h2#evaluation-modal-title 商談を終了します
+        h2#evaluation-modal-title = t("meetia.deal.exit_title")
       .modal-body
-        p.presentation-exit-modal__lead ご検討ありがとうございました。次のアクションをお選びください。
+        p.presentation-exit-modal__lead = t("meetia.deal.exit_lead")
         p.presentation-exit-modal__notice#evaluation-notice
-          | 商談を終了するには、満足度（星）を選び「評価を送信」を押してください。
+          = t("meetia.deal.exit_notice")
         .presentation-exit-actions
           - if cta['url'].to_s.strip.present?
             = link_to cta['exit_contract_label'], cta['url'], target: '_blank', rel: 'noopener noreferrer', class: 'btn-exit-action btn-exit-action--primary', id: 'exit-contract-btn', data: { turbo: false }
@@ -128,22 +132,22 @@ script type="application/json" id="deal-presentation-config"
             = link_to materials['label'], materials['url'], class: 'presentation-exit-materials__link', id: 'presentation-materials-download', data: { turbo: false }, download: materials['filename']
         .presentation-exit-divider
         .form-group
-          label.form-label 満足度（星5つ中）
+          label.form-label = t("meetia.deal.rating_label")
           .star-rating
             - 5.times do |i|
               = radio_button_tag 'rating', 5 - i, false, id: "star-#{5 - i}", class: 'star-rating-input'
               = label_tag "star-#{5 - i}", '★', class: 'star-rating-label'
         .form-group
-          = label_tag 'feedback', 'ご意見・ご要望', class: 'form-label'
-          = text_area_tag 'feedback', '', class: 'form-control', rows: 4, placeholder: '自由にご意見をお聞かせください'
+          = label_tag 'feedback', t("meetia.deal.feedback_label"), class: 'form-label'
+          = text_area_tag 'feedback', '', class: 'form-control', rows: 4, placeholder: t("meetia.deal.feedback_ph")
       .modal-footer
-        = button_tag '評価を送信して終了', class: 'btn-info-custom', id: 'submit-evaluation', type: 'button'
+        = button_tag t("meetia.deal.submit_rating"), class: 'btn-info-custom', id: 'submit-evaluation', type: 'button'
 
 .presentation-complete-screen#presentation-complete-screen hidden=true role="status" aria-live="polite"
   .presentation-complete-screen__card
-    h1.presentation-complete-screen__title#presentation-complete-title プレビュー終了
+    h1.presentation-complete-screen__title#presentation-complete-title = t("meetia.deal.preview_done_title")
     p.presentation-complete-screen__lead#presentation-complete-lead
-      | プレビューのため、リードは保存されません。このタブを閉じます。
+      = t("meetia.deal.preview_done_lead")
     .presentation-complete-screen__actions#presentation-complete-actions hidden=true
 
 = render 'public/deal_sessions/deal_start_overlay'

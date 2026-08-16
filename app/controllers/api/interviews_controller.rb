@@ -272,7 +272,7 @@ module Api
       unless client_signed_in? || user_signed_in? || admin_signed_in?
         respond_to do |format|
           format.json { render json: { error: 'Unauthorized' }, status: :unauthorized }
-          format.all  { redirect_to new_client_session_path, alert: 'セッションが終了しました。ログインしてください。' }
+          format.all  { redirect_to new_client_session_path, alert: t("meetia.auth.login_required") }
         end
         return
       end
