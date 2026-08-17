@@ -1,4 +1,28 @@
 // Turbo / DOMContentLoaded 両対応のページ初期化ヘルパー
+(function() {
+  function ensureNoTurboCacheMeta() {
+    if (!document.head) return;
+    if (document.querySelector('meta[name="turbo-cache-control"]')) return;
+    var meta = document.createElement('meta');
+    meta.name = 'turbo-cache-control';
+    meta.content = 'no-cache';
+    document.head.appendChild(meta);
+  }
+  ensureNoTurboCacheMeta();
+  if (window.Turbolinks && typeof window.Turbolinks.pagesCached === 'function') {
+    window.Turbolinks.pagesCached(0);
+  }
+  document.addEventListener('turbo:before-prefetch', function(event) {
+    event.preventDefault();
+  });
+  document.addEventListener('turbo:before-cache', function() {
+    document.body.style.overflow = '';
+  });
+  document.addEventListener('turbolinks:before-cache', function() {
+    document.body.style.overflow = '';
+  });
+})();
+
 (function(global) {
   function onPageReady(fn) {
     if (document.readyState === 'loading') {
