@@ -183,19 +183,18 @@ html.meetia-lp-html,
     border-bottom: 1px solid rgba(139, 92, 246, 0.22);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(139, 92, 246, 0.15); }
   .meetia-modern-lp .meetia-nav__inner {
-    max-width: 1280px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 14px 16px;
+    padding: 14px 20px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0;
     flex-wrap: nowrap; }
   .meetia-modern-lp .meetia-nav__logo {
     display: flex;
     align-items: baseline;
     gap: 6px;
     text-decoration: none;
-    margin-right: auto;
     flex-shrink: 0; }
   .meetia-modern-lp .meetia-nav__logo-image {
     display: block;
@@ -203,6 +202,7 @@ html.meetia-lp-html,
     height: auto; }
   .meetia-modern-lp .meetia-nav__toggle {
     display: none;
+    margin-left: auto;
     flex-direction: column;
     gap: 5px;
     width: 38px;
@@ -220,14 +220,20 @@ html.meetia-lp-html,
   .meetia-modern-lp .meetia-nav__menu {
     display: flex;
     align-items: center;
-    gap: 6px;
+    flex: 1 1 auto;
+    min-width: 0; }
+  .meetia-modern-lp .meetia-nav__links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    gap: 2px;
     flex-wrap: nowrap;
     min-width: 0; }
-  .meetia-modern-lp .meetia-nav__menu-actions {
+  .meetia-modern-lp .meetia-nav__actions {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-left: 8px;
     flex-shrink: 0;
     flex-wrap: nowrap;
     white-space: nowrap; }
@@ -2854,8 +2860,13 @@ html.meetia-lp-html,
       border-bottom: 1px solid rgba(139, 92, 246, 0.15); }
       .meetia-modern-lp .meetia-nav__menu.is-open {
         display: flex; }
-    .meetia-modern-lp .meetia-nav__menu-actions {
-      margin-left: 0;
+    .meetia-modern-lp .meetia-nav__links {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 2px; }
+    .meetia-modern-lp .meetia-nav__actions {
       margin-top: 8px;
       width: 100%;
       justify-content: flex-start;

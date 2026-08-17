@@ -11,9 +11,10 @@
         span
         span
       nav.meetia-nav__menu data-lp-nav-menu=""
-        - lp_nav_items.each do |item|
-          = link_to item[:label], item[:href], class: "meetia-nav__item"
-        .meetia-nav__menu-actions
+        .meetia-nav__links
+          - lp_nav_items.each do |item|
+            = link_to item[:label], item[:href], class: "meetia-nav__item"
+        .meetia-nav__actions
           = render "shared/lang_switch"
           = link_to lp_login_label, lp_login_path, class: "meetia-btn meetia-btn--ghost meetia-btn--sm"
           = link_to t("meetia.lp.cta_trial"), lp_sign_up_path, class: "meetia-btn meetia-btn--primary meetia-btn--sm"

@@ -11,13 +11,21 @@ html.meetia-lp-html lang=I18n.locale
         .lang-switch__btn{display:inline-flex!important;align-items:center;justify-content:center;padding:7px 12px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:rgba(255,255,255,.55)!important;font-size:12px!important;font-weight:700!important;line-height:1!important;text-decoration:none!important;white-space:nowrap!important;box-shadow:none!important;transition:all .2s ease}
         .lang-switch__btn:hover{color:#fff!important}
         .lang-switch__btn.is-active{background:linear-gradient(135deg,#7c3aed,#a855f7)!important;color:#fff!important;box-shadow:0 0 14px rgba(139,92,246,.3)!important}
-        .meetia-modern-lp .meetia-nav__inner{flex-wrap:nowrap}
-        .meetia-modern-lp .meetia-nav__menu{flex-wrap:nowrap;min-width:0}
-        .meetia-modern-lp .meetia-nav__menu-actions{flex-shrink:0;flex-wrap:nowrap;white-space:nowrap}
+        .meetia-modern-lp .meetia-nav__inner{display:flex!important;align-items:center;flex-wrap:nowrap}
+        .meetia-modern-lp .meetia-nav__logo{flex-shrink:0}
+        .meetia-modern-lp .meetia-nav__menu{display:flex!important;align-items:center;flex:1 1 auto;min-width:0}
+        .meetia-modern-lp .meetia-nav__links{display:flex!important;align-items:center;justify-content:center;flex:1 1 auto;gap:2px;flex-wrap:nowrap;min-width:0}
+        .meetia-modern-lp .meetia-nav__actions{display:flex!important;align-items:center;gap:8px;flex-shrink:0;flex-wrap:nowrap;white-space:nowrap}
         .meetia-modern-lp .meetia-nav__item{flex-shrink:0;padding:8px 10px;font-size:.78rem}
         @media (max-width:1100px){
           .meetia-modern-lp .meetia-nav__item{padding:8px 7px;font-size:.72rem}
           .lang-switch__btn{padding:6px 9px!important;font-size:11px!important}
+        }
+        @media (max-width:991px){
+          .meetia-modern-lp .meetia-nav__menu{display:none!important}
+          .meetia-modern-lp .meetia-nav__menu.is-open{display:flex!important;flex-direction:column;align-items:stretch}
+          .meetia-modern-lp .meetia-nav__links{flex-direction:column;align-items:stretch;justify-content:flex-start}
+          .meetia-modern-lp .meetia-nav__actions{width:100%;flex-wrap:wrap;margin-top:8px}
         }
         .meetia-lp-flash-stack{position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:10px;max-width:min(420px,calc(100vw - 40px))}
         .meetia-lp-flash{padding:14px 18px;border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.18);font-size:14px;font-weight:600;line-height:1.5;color:#fff;animation:meetiaFlashIn .28s ease-out}
