@@ -8,7 +8,7 @@ class Dashboard::DealsController < Dashboard::BaseController
   before_action :ensure_deal_quota!, only: [:new, :create]
 
   def index
-    @deals = if admin_signed_in?
+    @deals = if acting_as_admin?
                Deal.includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
              else
                current_client.deals.where(managed_by_admin: false).includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
@@ -45,7 +45,7 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def presentation
-    unless client_signed_in? || admin_signed_in?
+    unless client_signed_in? || acting_as_admin?
       redirect_to new_client_session_path, alert: t("meetia.dashboard.flash.login_required")
       return
     end
@@ -311,7 +311,7 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def claim_admin_management
-    unless admin_signed_in?
+    unless acting_as_admin?
       redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.admin_only")
       return
     end
@@ -366,7 +366,7 @@ class Dashboard::DealsController < Dashboard::BaseController
   private
 
   def set_deal
-    @deal = if admin_signed_in?
+    @deal = if acting_as_admin?
               Deal.find(params[:id])
             else
               current_client.deals.where(managed_by_admin: false).find(params[:id])
@@ -421,6 +421,6 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def admin_creating_deal?
-    admin_signed_in? && !client_signed_in?
+    acting_as_admin? && !client_signed_in?
   end
 end

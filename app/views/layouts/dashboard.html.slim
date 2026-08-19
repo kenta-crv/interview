@@ -27,6 +27,8 @@ html.dashboard-html lang=current_locale
               .db-v2-alert class=alert_class
                 i.fa-solid class=icon_class aria-hidden="true"
                 p = message
+        - if client_signed_in?
+          = render "shared/plan_upgrade_banner"
         - hide_toolbar = (controller_name == "dashboard" && action_name == "index") || (controller_name == "deals" && %w[index show].include?(action_name)) || controller_name == "user_progresses" || controller_name == "management" || controller_name == "plans" || controller_path == "admin/interview_results"
         - unless hide_toolbar
           = render "/dashboard/dashboard_toolbar"

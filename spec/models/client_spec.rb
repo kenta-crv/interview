@@ -55,4 +55,24 @@ RSpec.describe Client, type: :model do
       expect(client.situations.count).to eq(2)
     end
   end
+
+  describe '#intro_discount_eligible?' do
+    it 'is true during trial before a paid plan' do
+      client = create(:client)
+      expect(client).to be_intro_discount_eligible
+    end
+
+    it 'is false after any paid plan exists' do
+      client = create(:client)
+      client.subscriptions.create!(plan_type: :standard, status: :cancelled)
+      expect(client).not_to be_intro_discount_eligible
+    end
+  end
+
+  describe '#trial_start_available?' do
+    it 'is false once a trial subscription exists' do
+      client = create(:client)
+      expect(client).not_to be_trial_start_available
+    end
+  end
 end

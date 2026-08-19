@@ -112,9 +112,6 @@
                       .db-v2-upload-form__controls
                         label.db-v2-form-label for="deal-documents-input" = t("meetia.dashboard.deals.pdf_file")
                         = file_field_tag "files[]", multiple: true, accept: ".pdf,application/pdf", class: "db-v2-form-control db-v2-upload-form__input", id: "deal-documents-input", disabled: @deal.processing?
-                        button.db-v2-btn.db-v2-btn--ghost type="button" id="deal-documents-pick" disabled=@deal.processing?
-                          i.fa-solid.fa-folder-open aria-hidden="true"
-                          span = t("meetia.dashboard.deals.choose_file")
                     #deal-documents-selected.db-v2-upload-zone__selected hidden=true
                       p.db-v2-upload-zone__selected-label = t("meetia.dashboard.deals.selected_files")
                       ul#deal-documents-file-list.db-v2-upload-zone__file-list
@@ -146,7 +143,7 @@
                           .db-v2-doc-row__actions
                             = link_to t("meetia.dashboard.deals.open_pdf"), rails_blob_path(doc.file, disposition: "inline"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", target: "_blank", rel: "noopener"
                             = link_to "DL", rails_blob_path(doc.file, disposition: "attachment"), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs"
-                      details.db-v2-doc-accordion data-pdf-preview=""
+                      details.db-v2-doc-accordion
                         summary.db-v2-doc-accordion__summary
                           span.db-v2-doc-accordion__cta.db-v2-doc-accordion__cta--closed
                             = t("meetia.dashboard.deals.show_preview")
@@ -154,10 +151,12 @@
                             = t("meetia.dashboard.deals.hide_preview")
                         - if preview_src
                           .db-v2-doc-accordion__body
-                            .db-v2-pdf-preview__frame
-                              iframe data-src=preview_src title=File.basename(doc.file.filename.to_s) loading="lazy"
-                            - if related_pages.any?
-                              p.db-v2-pdf-preview__meta = t("meetia.dashboard.deals.extracted_pages", pages: related_pages.map(&:page_number).join(", "), count: related_pages.size)
+                            .db-v2-pdf-preview
+                              h3.db-v2-pdf-preview__title = t("meetia.dashboard.deals.pdf_preview", filename: File.basename(doc.file.filename.to_s))
+                              .db-v2-pdf-preview__frame
+                                iframe src=preview_src title=File.basename(doc.file.filename.to_s)
+                              - if related_pages.any?
+                                p.db-v2-pdf-preview__meta = t("meetia.dashboard.deals.extracted_pages", pages: related_pages.map(&:page_number).join(", "), count: related_pages.size)
                         - else
                           .db-v2-doc-accordion__body
                             p.db-v2-pdf-preview__meta = t("meetia.dashboard.deals.no_doc_data")
@@ -198,7 +197,7 @@
                     - else
                       - publish_confirm = t("meetia.dashboard.deals.publish_confirm")
                     = button_to t("meetia.dashboard.deals.publish"), publish_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: publish_confirm, turbo: false }
-                  - elsif admin_signed_in? && !@deal.managed_by_admin?
+                  - elsif acting_as_admin? && !@deal.managed_by_admin?
                     = button_to t("meetia.dashboard.deals.claim_admin"), claim_admin_management_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost", data: { confirm: t("meetia.dashboard.deals.claim_admin_confirm"), turbo: false }
                     span.db-v2-muted = t("meetia.dashboard.deals.client_managed_note")
                   - else

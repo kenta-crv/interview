@@ -21,15 +21,13 @@
 
         .db-v2-subscription-status__row
           span.db-v2-subscription-status__label = t("meetia.dashboard.subscription.status")
-          span.db-v2-subscription-status__value class=("db-v2-subscription-status__value--trial" if is_trial)
-            - if is_trial
-              = t("meetia.dashboard.status.trialing")
-            - elsif @subscription&.cancelled?
-              = t("meetia.dashboard.status.cancel_pending")
-            - elsif is_active
-              = t("meetia.dashboard.status.active")
+          span.db-v2-subscription-status__value
+            - if @subscription&.cancelled?
+              = t("meetia.dashboard.status.cancelled")
+            - elsif @subscription&.expired? || @subscription&.trial_expired?
+              = t("meetia.dashboard.status.expired")
             - else
-              = @subscription&.status || "—"
+              = t("meetia.dashboard.status.active")
 
         - current_trial_ends_at = nil
         - if is_trial
@@ -40,7 +38,7 @@
             span.db-v2-subscription-status__label = t("meetia.dashboard.subscription.trial_ends")
             span.db-v2-subscription-status__value = l(current_trial_ends_at.to_date, format: :long)
 
-      - unless admin_signed_in?
+      - unless acting_as_admin?
         .db-v2-subscription-upgrade
           h3.db-v2-subscription-upgrade__title = t("meetia.dashboard.subscription.upgrade_title")
           = link_to plans_path, class: "db-v2-btn db-v2-btn--primary" do

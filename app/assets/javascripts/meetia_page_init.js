@@ -473,6 +473,25 @@
     });
   }
 
+  function dismissFlashMessages() {
+    document.querySelectorAll('.meetia-lp-flash, .flash-message, .db-v2-flash-stack .db-v2-alert').forEach(function(flash) {
+      if (flash.getAttribute('data-flash-dismiss-scheduled') === 'true') return;
+      flash.setAttribute('data-flash-dismiss-scheduled', 'true');
+      window.setTimeout(function() {
+        flash.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+        flash.style.opacity = '0';
+        flash.style.transform = 'translateY(-8px)';
+        window.setTimeout(function() {
+          var stack = flash.parentElement;
+          flash.remove();
+          if (stack && (stack.classList.contains('meetia-lp-flash-stack') || stack.classList.contains('db-v2-flash-stack')) && !stack.children.length) {
+            stack.remove();
+          }
+        }, 350);
+      }, 2500);
+    });
+  }
+
   MeetiaPageInit.onPageReady(initLpNav);
   MeetiaPageInit.onPageReady(initFeatureTabs);
   MeetiaPageInit.onPageReady(initFaqChat);
@@ -480,4 +499,5 @@
   MeetiaPageInit.onPageReady(initFaqSearch);
   MeetiaPageInit.onPageReady(initLpCardScroll);
   MeetiaPageInit.onPageReady(initReviewsSlider);
+  MeetiaPageInit.onPageReady(dismissFlashMessages);
 })(window);

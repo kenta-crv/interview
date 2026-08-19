@@ -1,0 +1,31 @@
+- return unless client_signed_in?
+- return if acting_as_admin?
+- return if controller_name == "plans" || controller_name == "checkout"
+
+- client = current_client
+- billing_currency = BillingCurrency.resolve(locale: I18n.locale, accept_language: request.env["HTTP_ACCEPT_LANGUAGE"])
+- standard_price = Subscription.format_price(:standard, currency: billing_currency)
+- trial_ends = client.trial_ends_at || client.current_subscription&.trial_ends_at
+- show_trial = client.on_trial?
+- show_expired = client.trial_expired_without_paid?
+- show_usage = !show_expired && client.approaching_limit?(threshold: 0.8)
+
+- if show_expired
+  .plan-upgrade-banner.plan-upgrade-banner--expired role="status"
+    .plan-upgrade-banner__body
+      strong = t("meetia.dashboard.banner.trial_ended_title")
+      span = t("meetia.dashboard.banner.trial_ended_body", price: standard_price)
+    = link_to t("meetia.dashboard.banner.view_plans"), plans_path, class: "plan-upgrade-banner__cta"
+- elsif show_trial
+  - trial_label = t("meetia.dashboard.banner.trialing_title")
+  - trial_label += t("meetia.dashboard.banner.trial_ends", date: trial_ends.strftime("%Y/%m/%d")) if trial_ends.present?
+  .plan-upgrade-banner.plan-upgrade-banner--trial role="status"
+    .plan-upgrade-banner__body
+      strong = trial_label
+    = link_to t("meetia.dashboard.banner.plans_billing"), plans_path, class: "plan-upgrade-banner__cta"
+- elsif show_usage
+  .plan-upgrade-banner.plan-upgrade-banner--usage role="status"
+    .plan-upgrade-banner__body
+      strong = t("meetia.dashboard.banner.quota_title")
+      span = t("meetia.dashboard.banner.quota_body")
+    = link_to t("meetia.dashboard.banner.check_plans"), plans_path, class: "plan-upgrade-banner__cta"

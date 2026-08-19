@@ -4,7 +4,7 @@
 
 - if variant == :sidebar
   = form_with url: path, method: :delete, class: "db-v2-sidebar__logout-form", local: true do
-    button.db-v2-sidebar__link.db-v2-sidebar__link--logout type="submit" role="menuitem"
+    button.db-v2-sidebar__link.db-v2-sidebar__link--logout type="submit"
       i.fa-solid.fa-right-from-bracket aria-hidden="true"
       span = label
 - elsif variant == :nav

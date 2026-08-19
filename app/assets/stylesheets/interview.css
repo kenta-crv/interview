@@ -1310,8 +1310,13 @@ audio {
   display: none !important;
 }
 
-.presentation-body .presentation-topics-bar {
-  display: none !important;
+.presentation-body .presentation-topics-bar,
+.presentation-body .presentation-choice-scroller-wrap {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  min-height: 40px !important;
 }
 
 .presentation-body .btn-choice {

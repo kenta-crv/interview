@@ -25,7 +25,7 @@
               span.db-v2-pricing__badge class=badge_class = badge_label
         .db-v2-pricing__card-head
           h3.db-v2-pricing__plan = lp_plan_name(config)
-          - if plan_key == :standard
+          - if plan_key == :standard && current_client.intro_discount_eligible?
             - intro_price = Subscription.intro_price_for(:standard, currency: billing_currency)
             .db-v2-pricing__price.db-v2-pricing__price--sale
               p.db-v2-pricing__list

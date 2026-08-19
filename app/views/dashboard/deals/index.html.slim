@@ -5,7 +5,7 @@
   .db-v2-header__left
     h1.db-v2-header__title = t("meetia.dashboard.deals.index_title")
     p.db-v2-header__subtitle
-      - if admin_signed_in?
+      - if acting_as_admin?
         = t("meetia.dashboard.deals.index_subtitle_admin")
       - elsif deal_limit
         = t("meetia.dashboard.deals.index_subtitle_limited", plan: plan[:name], used: current_client.deals_count, limit: deal_limit)
@@ -13,10 +13,10 @@
         = t("meetia.dashboard.deals.index_subtitle_unlimited", plan: plan[:name], used: current_client.deals_count)
   .db-v2-header__right
     = render "/dashboard/theme_switch"
-    - if client_signed_in? || admin_signed_in?
+    - if client_signed_in? || acting_as_admin?
       = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary" do
         i.fa-solid.fa-plus aria-hidden="true"
-        span = admin_signed_in? && !client_signed_in? ? t("meetia.dashboard.deals.create_admin") : t("meetia.dashboard.deals.create")
+        span = acting_as_admin? && !client_signed_in? ? t("meetia.dashboard.deals.create_admin") : t("meetia.dashboard.deals.create")
 
 .db-v2-bottom-card
   .db-v2-bottom-card__header.db-v2-bottom-card__header--split
@@ -29,10 +29,10 @@
         .db-v2-empty-state__icon
           i.fa-solid.fa-briefcase aria-hidden="true"
         p.db-v2-empty-state__text = t("meetia.dashboard.deals.empty")
-        - if client_signed_in? || admin_signed_in?
+        - if client_signed_in? || acting_as_admin?
           = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary" do
             i.fa-solid.fa-plus aria-hidden="true"
-            span = admin_signed_in? && !client_signed_in? ? t("meetia.dashboard.deals.create_admin_short") : t("meetia.dashboard.deals.create_first")
+            span = acting_as_admin? && !client_signed_in? ? t("meetia.dashboard.deals.create_admin_short") : t("meetia.dashboard.deals.create_first")
     - else
       .db-v2-leads-table-wrap
         table.db-v2-leads-table.db-v2-deals-table
@@ -40,7 +40,7 @@
             tr
               th = t("meetia.dashboard.deals.col_id")
               th = t("meetia.dashboard.deals.col_title")
-              - if admin_signed_in?
+              - if acting_as_admin?
                 th = t("meetia.dashboard.deals.col_managed")
               th = t("meetia.dashboard.deals.col_status")
               th = t("meetia.dashboard.deals.col_language")
@@ -54,7 +54,7 @@
                 td.db-v2-deals-table__id = deal.id
                 td.db-v2-deals-table__title
                   = link_to deal.title, dashboard_deal_path(deal), class: "db-v2-deals-table__link"
-                - if admin_signed_in?
+                - if acting_as_admin?
                   td
                     - if deal.managed_by_admin?
                       span.db-v2-status-badge.db-v2-status-badge--live Admin

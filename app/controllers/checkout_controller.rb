@@ -36,13 +36,13 @@ class CheckoutController < ApplicationController
       @amount = 0
       @formatted_amount = Subscription.format_price(:trial, currency: @billing_currency)
 
-      if current_client.new_account? == false || current_client.subscriptions.where(plan_type: :trial).exists?
+      unless current_client.trial_start_available?
         redirect_to helpers.plans_path_for_locale, alert: t("meetia.auth.trial_new_only")
         return
       end
     else
       @description = I18n.locale.to_s == "en" ? (@plan_config[:name_en] || @plan_config[:name]) : @plan_config[:name]
-      @intro_discount = (@plan_type.to_s == "standard")
+      @intro_discount = (@plan_type.to_s == "standard") && current_client.intro_discount_eligible?
     end
 
     @subscription = Subscription.new(plan_type: @plan_type)
@@ -148,7 +148,7 @@ class CheckoutController < ApplicationController
   end
 
   def process_trial_checkout!
-    unless current_client.new_account?
+    unless current_client.trial_start_available?
       redirect_to helpers.plans_path_for_locale, alert: t("meetia.auth.trial_new_only")
       return
     end
@@ -193,7 +193,7 @@ class CheckoutController < ApplicationController
       cancel_url: checkout_cancel_url
     }
 
-    if plan_type.to_s == "standard"
+    if plan_type.to_s == "standard" && current_client.intro_discount_eligible?
       coupon_id = Subscription.intro_coupon_id_for(:standard)
       session_params[:discounts] = [{ coupon: coupon_id }] if coupon_id.present?
     end

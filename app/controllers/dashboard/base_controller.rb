@@ -8,14 +8,14 @@ class Dashboard::BaseController < ApplicationController
   private
 
   def authenticate_dashboard_user!
-    return if client_signed_in? || admin_signed_in?
+    return if client_signed_in? || acting_as_admin?
 
     redirect_to new_client_session_path, alert: t("meetia.dashboard.flash.login_required")
   end
 
   # Client自身の商談、または Admin管理商談のみ操作可能
   def authenticate_deal_manager!
-    return if client_signed_in? || admin_signed_in?
+    return if client_signed_in? || acting_as_admin?
 
     redirect_to dashboard_root_path, alert: t("meetia.dashboard.flash.login_required")
   end
@@ -37,14 +37,14 @@ class Dashboard::BaseController < ApplicationController
     return false if deal.blank?
 
     if deal.managed_by_admin?
-      admin_signed_in?
+      acting_as_admin?
     else
       client_signed_in? && deal.client_id == current_client.id
     end
   end
 
   def deal_management_forbidden_message
-    if admin_signed_in?
+    if acting_as_admin?
       t("meetia.dashboard.flash.forbidden_client_managed")
     else
       t("meetia.dashboard.flash.forbidden_admin_managed")
@@ -69,6 +69,6 @@ class Dashboard::BaseController < ApplicationController
 
   # Admin はプランに関係なく追客設定・検証を行える
   def follow_up_feature_available?(owner = deal_owner)
-    admin_signed_in? || owner&.prospect_follow_up_enabled?
+    acting_as_admin? || owner&.prospect_follow_up_enabled?
   end
 end

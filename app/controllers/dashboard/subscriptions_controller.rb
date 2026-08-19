@@ -103,7 +103,7 @@ module Dashboard
     private
 
     def set_target_client
-      if admin_signed_in?
+      if acting_as_admin?
         if params[:client_id].present?
           @target_client = Client.find(params[:client_id])
         else

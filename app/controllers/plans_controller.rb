@@ -4,7 +4,7 @@ class PlansController < ApplicationController
   before_action :authenticate_client!
 
   def index
-    @is_new_account = current_client.new_account?
+    @is_new_account = current_client.trial_start_available?
 
     @subscription = current_client.subscriptions
                                  .where(status: :active)
@@ -31,7 +31,7 @@ class PlansController < ApplicationController
     end
 
     if plan_type == "trial"
-      unless current_client.new_account?
+      unless current_client.trial_start_available?
         redirect_to helpers.plans_path_for_locale, alert: t("meetia.auth.trial_new_only")
         return
       end

@@ -7,8 +7,12 @@ class ApplicationController < ActionController::Base
   before_action :stash_omniauth_locale
   before_action :init_breadcrumbs
   helper_method :breadcrumbs, :current_locale, :locale_root_href, :href_for_locale,
-                :available_ui_locales, :locale_switch_path_for
+                :available_ui_locales, :locale_switch_path_for, :acting_as_admin?
   before_action :check_trial_expiration
+
+  def acting_as_admin?
+    admin_signed_in? && !client_signed_in?
+  end
 
   def check_trial_expiration
     return unless current_client.present?
@@ -88,12 +92,21 @@ class ApplicationController < ActionController::Base
     }
   end
 
+  def auth_url_locale
+    return "en" if params[:locale].to_s == "en"
+    return "en" if request.path.to_s.match?(%r{\A/en(/|\z)})
+
+    "ja"
+  end
+
   # OAuth は /clients/auth/*（/en 外）へ飛ぶため、開始時点の UI locale を session に残す
   def stash_omniauth_locale
     return unless request.path.to_s.start_with?("/clients/auth/")
     return if request.path.to_s.include?("/callback")
 
-    locale = session[:ui_locale].presence || I18n.locale.to_s
+    locale = params[:locale].presence.to_s
+    locale = session[:omniauth_locale].to_s unless Client::LOCALES.include?(locale)
+    locale = auth_url_locale unless Client::LOCALES.include?(locale)
     session[:omniauth_locale] = locale if Client::LOCALES.include?(locale)
   end
 
@@ -127,7 +140,9 @@ class ApplicationController < ActionController::Base
       path.start_with?("/interview") ||
       path.start_with?("/clients/sign_in") ||
       path.start_with?("/clients/sign_up") ||
-      path.start_with?("/clients/password")
+      path.start_with?("/clients/password") ||
+      path.start_with?("/clients/auth") ||
+      (path == "/clients" && !client_signed_in?)
   end
 
   def visitor_locale_path?(path)
@@ -141,9 +156,18 @@ class ApplicationController < ActionController::Base
     I18n.locale = loc if Client::LOCALES.include?(loc)
   end
 
+  def reject_client_auth_while_admin!
+    return unless admin_signed_in?
+
+    redirect_to dashboard_root_path,
+                alert: t("meetia.auth.admin_session_blocks_client",
+                         default: "管理者でログイン中です。企業アカウントの登録・ログインは、管理者をログアウトしてから行ってください。")
+  end
+
   def after_sign_in_path_for(resource)
     case resource
     when Admin
+      sign_out(:client) if client_signed_in?
       dashboard_root_path
     when Client
       dashboard_root_path

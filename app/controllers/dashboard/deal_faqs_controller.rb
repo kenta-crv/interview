@@ -83,7 +83,7 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
   private
 
   def set_deal
-    @deal = if admin_signed_in?
+    @deal = if acting_as_admin?
               Deal.find(params[:deal_id])
             else
               current_client.deals.where(managed_by_admin: false).find(params[:deal_id])

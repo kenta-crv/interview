@@ -40,7 +40,7 @@ class DealFaq < ApplicationRecord
   end
 
   def answered?
-    answer.present?
+    status == "approved" && answer.present?
   end
 
   def pending?

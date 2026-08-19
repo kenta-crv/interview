@@ -26,54 +26,37 @@
           - if client_signed_in? && !nav_deal
             span.db-v2-sidebar__hint = t("meetia.dashboard.nav.leads_hint")
 
-      - if client_signed_in? && sidebar_show_deal_context? && nav_deal
-        .db-v2-sidebar__section.db-v2-sidebar__section--deal
-          p.db-v2-sidebar__section-label = t("meetia.dashboard.nav.section_current_deal")
-          .db-v2-sidebar__deal-title title=nav_deal.title = truncate(nav_deal.title, length: 24)
-          = link_to dashboard_deal_path(nav_deal), class: sidebar_link_class(:deal_studio, "db-v2-sidebar__link--nested") do
-            i.fa-solid.fa-clapperboard aria-hidden="true"
-            span = t("meetia.dashboard.nav.studio")
-          = link_to dashboard_deal_user_progresses_path(nav_deal), class: sidebar_link_class(:leads, "db-v2-sidebar__link--nested") do
-            i.fa-solid.fa-address-book aria-hidden="true"
-            span = t("meetia.dashboard.nav.lead")
-
-      - if client_signed_in? && !admin_signed_in?
-        .db-v2-sidebar__section
-          p.db-v2-sidebar__section-label = t("meetia.dashboard.nav.section_account")
+      .db-v2-sidebar__section
+        p.db-v2-sidebar__section-label = t("meetia.dashboard.nav.section_account")
+        - if acting_as_admin?
+          = link_to dashboard_management_path, class: sidebar_link_class(:management) do
+            i.fa-solid.fa-building-columns aria-hidden="true"
+            span = t("meetia.dashboard.nav.companies")
+          = link_to dashboard_account_path, class: sidebar_link_class(:account) do
+            i.fa-solid.fa-globe aria-hidden="true"
+            span = t("meetia.dashboard.nav.account")
+        - elsif client_signed_in?
           = link_to dashboard_subscription_path, class: sidebar_link_class(:subscription) do
             i.fa-solid.fa-credit-card aria-hidden="true"
             span = t("meetia.dashboard.nav.plan_billing")
+          = link_to dashboard_account_path, class: sidebar_link_class(:account) do
+            i.fa-solid.fa-globe aria-hidden="true"
+            span = t("meetia.dashboard.nav.account")
+          button.db-v2-sidebar__link type="button" data-problem-modal-open=""
+            i.fa-solid.fa-bug aria-hidden="true"
+            span = t("meetia.dashboard.nav.report_problem")
+        = render "shared/sign_out_button", path: (acting_as_admin? ? destroy_admin_session_path : destroy_client_session_path), variant: :sidebar, label: t("meetia.dashboard.common.sign_out")
 
     .db-v2-sidebar__footer
-      - avatar_name = admin_signed_in? ? current_admin.email : sidebar_user_display_name
-      - sign_out_path = admin_signed_in? ? destroy_admin_session_path : destroy_client_session_path
-      .db-v2-sidebar__account data-sidebar-account=""
-        button.db-v2-sidebar__user type="button" data-sidebar-account-toggle="" aria-expanded="false" aria-haspopup="true" aria-controls="sidebar-account-menu"
-          .db-v2-sidebar__user-avatar
-            img src="https://ui-avatars.com/api/?name=#{CGI.escape(avatar_name)}&background=7c3aed&color=fff&size=64" alt=""
+      - avatar_name = acting_as_admin? ? current_admin.email : sidebar_user_display_name
+      .db-v2-sidebar__account
+        .db-v2-sidebar__user
+          .db-v2-sidebar__user-avatar aria-hidden="true"
+            span.db-v2-sidebar__user-avatar-initials = sidebar_avatar_initials(avatar_name)
           .db-v2-sidebar__user-meta
-            - if admin_signed_in?
+            - if acting_as_admin?
               span.db-v2-sidebar__user-name = current_admin.email
               span.db-v2-sidebar__user-role Admin
             - else
               span.db-v2-sidebar__user-name = sidebar_user_display_name
               span.db-v2-sidebar__user-role = sidebar_plan_label
-          i.fa-solid.fa-chevron-up.db-v2-sidebar__account-caret aria-hidden="true"
-
-        #sidebar-account-menu.db-v2-sidebar__account-menu role="menu" aria-label=t("meetia.dashboard.nav.account_menu")
-          p.db-v2-sidebar__account-menu-label = t("meetia.dashboard.nav.settings")
-          - if admin_signed_in?
-            = link_to dashboard_management_path, class: sidebar_link_class(:management), role: "menuitem" do
-              i.fa-solid.fa-building-columns aria-hidden="true"
-              span = t("meetia.dashboard.nav.companies")
-            = link_to dashboard_account_path, class: sidebar_link_class(:account), role: "menuitem" do
-              i.fa-solid.fa-globe aria-hidden="true"
-              span = t("meetia.dashboard.nav.account")
-          - elsif client_signed_in?
-            = link_to dashboard_account_path, class: sidebar_link_class(:account), role: "menuitem" do
-              i.fa-solid.fa-globe aria-hidden="true"
-              span = t("meetia.dashboard.nav.account")
-            button.db-v2-sidebar__link type="button" role="menuitem" data-problem-modal-open=""
-              i.fa-solid.fa-bug aria-hidden="true"
-              span = t("meetia.dashboard.nav.report_problem")
-          = render "shared/sign_out_button", path: sign_out_path, variant: :sidebar, label: t("meetia.dashboard.common.sign_out")

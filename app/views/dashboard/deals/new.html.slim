@@ -21,7 +21,7 @@
     h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.basic_info")
   .db-v2-bottom-card__body
     = form_with model: @deal, url: dashboard_deals_path, local: true, method: :post do |f|
-      - if admin_signed_in? && !client_signed_in?
+      - if acting_as_admin? && !client_signed_in?
         .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
           p = t("meetia.dashboard.deals.admin_create_note")
       .db-v2-form-group

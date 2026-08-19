@@ -80,6 +80,14 @@ class Client < ApplicationRecord
     subscription_plan == "trial" && trial_ends_at.present? && trial_ends_at > Time.current
   end
 
+  def trial_expired_without_paid?
+    subscription = current_subscription
+    return true if subscription&.expired?
+    return true if subscription_plan == "trial" && trial_ends_at.present? && trial_ends_at <= Time.current
+
+    false
+  end
+
   def subscription_active?
     subscription_status == "active"
   end
@@ -96,6 +104,20 @@ class Client < ApplicationRecord
     return true if created_at.nil?
 
     created_at > Subscription::TRIAL_DAYS.days.ago
+  end
+
+  def used_trial?
+    subscriptions.exists?(plan_type: :trial)
+  end
+
+  def trial_start_available?
+    !used_trial?
+  end
+
+  def intro_discount_eligible?
+    return false if subscriptions.where.not(plan_type: :trial).exists?
+
+    on_trial? || trial_expired_without_paid?
   end
 
   def dashboard_accessible?

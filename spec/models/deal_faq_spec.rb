@@ -43,6 +43,8 @@ RSpec.describe DealEngine::FaqTemplateService do
     described_class.new(deal).seed_if_empty!
     expect(deal.deal_faqs.count).to eq(3)
     expect(deal.deal_faqs.pluck(:source).uniq).to eq(["template"])
+    expect(deal.deal_faqs.pluck(:status).uniq).to eq(["pending"])
+    expect(deal.deal_faqs.pluck(:answer)).to all(be_blank)
   end
 
   it "does not duplicate when faqs already exist" do

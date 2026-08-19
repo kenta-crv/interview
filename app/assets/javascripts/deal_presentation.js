@@ -100,6 +100,12 @@
       var materialsDownloadLink = document.getElementById('presentation-materials-download');
       var ctaConfig = config.cta || {};
       var currentAudio = null;
+      var playbackEl = new Audio();
+      playbackEl.preload = 'auto';
+      playbackEl.setAttribute('playsinline', 'true');
+      playbackEl.playsInline = true;
+      var audioUnlocked = false;
+      var SILENT_WAV = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
       var presentationStarted = false;
       var currentPageNumber = parseInt((opening.greeting_page || opening['greeting-page'] || 1), 10);
       var sessionStartedAt = Date.now();
@@ -275,14 +281,44 @@
         }
       }
 
-      function takeCachedAudio(url) {
-        if (url && audioCache[url]) {
-          var cached = audioCache[url];
-          delete audioCache[url];
-          try { cached.currentTime = 0; } catch (_e) {}
-          return cached;
+      function unlockAudio() {
+        if (audioUnlocked) return;
+        audioUnlocked = true;
+        try {
+          playbackEl.muted = true;
+          playbackEl.src = SILENT_WAV;
+          playbackEl.setAttribute('data-src', SILENT_WAV);
+          var attempt = playbackEl.play();
+          if (attempt && attempt.then) {
+            attempt.then(function() {
+              if (playbackEl.getAttribute('data-src') === SILENT_WAV) {
+                playbackEl.pause();
+                playbackEl.removeAttribute('data-src');
+              }
+              playbackEl.muted = false;
+            }).catch(function() {
+              playbackEl.muted = false;
+            });
+          } else {
+            playbackEl.muted = false;
+          }
+        } catch (_e) {
+          playbackEl.muted = false;
         }
-        return url ? new Audio(url) : null;
+      }
+
+      function takePlaybackAudio(url) {
+        if (!url) return null;
+        try { playbackEl.pause(); } catch (_pauseErr) {}
+        playbackEl.onended = null;
+        playbackEl.onerror = null;
+        if (playbackEl.getAttribute('data-src') !== url) {
+          playbackEl.src = url;
+          playbackEl.setAttribute('data-src', url);
+        }
+        try { playbackEl.currentTime = 0; } catch (_seekErr) {}
+        playbackEl.muted = false;
+        return playbackEl;
       }
 
       function afterLayout(fn) {
@@ -1015,18 +1051,11 @@
           setAvatarSpeaking(true);
           setPlayButtonPlaying(true);
 
-          // cancel 直後の speak はブラウザによって無音になることがある
-          window.setTimeout(function() {
-            if (activeToken !== playbackToken || isPaused) {
-              resolve();
-              return;
-            }
-            try {
-              window.speechSynthesis.speak(utterance);
-            } catch (_speakErr) {
-              finish();
-            }
-          }, 40);
+          try {
+            window.speechSynthesis.speak(utterance);
+          } catch (_speakErr) {
+            finish();
+          }
         });
       }
 
@@ -1062,7 +1091,7 @@
 
           stopCurrentAudio(true);
 
-          var audio = takeCachedAudio(url);
+          var audio = takePlaybackAudio(url);
           currentAudio = audio;
           setAvatarSpeaking(true);
           setPlayButtonPlaying(true);
@@ -1091,38 +1120,23 @@
             else finishAudio();
           }
 
-          audio.addEventListener('ended', finishAudio, { once: true });
-          audio.addEventListener('error', fallback, { once: true });
+          audio.onended = finishAudio;
+          audio.onerror = fallback;
 
-          // クリック直後に play() を試し、失敗時のみ準備待ち→再試行/フォールバック
-          // （PDF描画待ちでユーザー操作コンテキストが切れると無音になる）
-          function attemptPlay() {
-            if (token !== playbackToken || isPaused) {
-              finish();
-              return;
-            }
-            var playAttempt = audio.play();
-            if (playAttempt && playAttempt.then) {
-              playAttempt.then(function() {
-                // playing
-              }).catch(function() {
-                whenAudioReady(audio, 2500).then(function(ready) {
-                  if (token !== playbackToken || isPaused) {
-                    finish();
-                    return;
-                  }
-                  if (!ready && audio.readyState < 2) {
-                    fallback();
-                    return;
-                  }
-                  var retry = audio.play();
-                  if (retry && retry.catch) retry.catch(fallback);
-                });
-              });
-            }
+          if (token !== playbackToken || isPaused) {
+            finish();
+            return;
           }
-
-          attemptPlay();
+          var playAttempt = audio.play();
+          if (playAttempt && playAttempt.then) {
+            playAttempt.catch(function() {
+              if (token !== playbackToken || isPaused) {
+                finish();
+                return;
+              }
+              fallback();
+            });
+          }
         });
       }
 
@@ -1502,6 +1516,7 @@
           return Promise.resolve();
         }
         presentationStarted = true;
+        unlockAudio();
         updateLastButtonVisibility();
         trackEvent('presentation_start', { page_number: currentPageNumber });
         hideOverlay();
@@ -1553,6 +1568,7 @@
         var label = button.dataset.label;
         if (!pageNumber) return Promise.resolve();
 
+        unlockAudio();
         resumePresentationFlow();
         stopAllSpeech();
         heat.topicClicks += 1;
@@ -1584,11 +1600,14 @@
       }
 
       function ensureStarted(thenFn) {
-        if (presentationStarted) {
-          thenFn();
-          return;
+        if (!presentationStarted) {
+          presentationStarted = true;
+          unlockAudio();
+          updateLastButtonVisibility();
+          trackEvent('presentation_start', { page_number: currentPageNumber });
+          hideOverlay();
         }
-        startPresentation().then(thenFn);
+        thenFn();
       }
 
       if (chatToggle && chatPanel) {
@@ -1674,6 +1693,7 @@
 
       if (voiceBtn) {
         voiceBtn.addEventListener('click', function() {
+          unlockAudio();
           var actuallyPlaying = !!(
             (currentAudio && !currentAudio.paused && !currentAudio.ended) ||
             (isSpeechActive() && !window.speechSynthesis.paused) ||

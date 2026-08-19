@@ -151,7 +151,7 @@ module Public
         metadata = metadata.to_unsafe_h if metadata.respond_to?(:to_unsafe_h)
         metadata = metadata.stringify_keys
         metadata["preview"] = true if client_preview?
-        metadata["admin_force"] = true if admin_signed_in? && !client_preview?
+        metadata["admin_force"] = true if acting_as_admin? && !client_preview?
 
         @deal.deal_presentation_events.create!(
           user: @user,
@@ -323,7 +323,7 @@ module Public
     def client_preview?
       return false unless params[:preview].present?
 
-      if admin_signed_in?
+      if acting_as_admin?
         return true
       end
 
@@ -332,7 +332,7 @@ module Public
 
     def record_public_page_view!
       return if client_preview?
-      return if admin_signed_in?
+      return if acting_as_admin?
       return if client_signed_in? && @deal.client_id == current_client.id
 
       @deal.record_public_page_view!
@@ -418,7 +418,7 @@ module Public
       DealFollowUp::EnqueueCampaignService.call(
         user_progress: @user_progress,
         ended_at: Time.current,
-        force: admin_signed_in?
+        force: acting_as_admin?
       )
     rescue StandardError => e
       Rails.logger.error("[DealFollowUp] evaluate enqueue failed user_progress_id=#{@user_progress.id}: #{e.class}: #{e.message}")

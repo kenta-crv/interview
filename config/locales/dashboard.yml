@@ -140,7 +140,8 @@ ja:
         failed: 失敗
         editing: 編集中
         active: 有効
-        cancelled: 解約済
+        cancelled: 解約
+        expired: 期限切れ
         trial: トライアル
         no_contract: 未契約
         admin_managed: Admin管理
@@ -227,6 +228,7 @@ ja:
         open_pdf: PDFを開く
         show_preview: この資料のプレビューを表示する
         hide_preview: プレビューを閉じる
+        pdf_preview: 'PDFプレビュー: %{filename}'
         extracted_pages: '抽出ページ: %{pages}（全%{count}面）'
         no_doc_data: 資料データがありません
         processed_pages: 処理済み（%{count}ページ）
@@ -305,35 +307,31 @@ ja:
         title: ナレッジ補完（FAQ）
         coverage: 完成度 %{pct}%
         simulation: シミュレーション
-        pending_count: 未回答FAQが %{count} 件あります。クリックして回答してください。
-        supplement_title: "\U0001F4CE 補足資料（FAQ自動抽出）"
-        supplement_hint: 料金表・仕様書・FAQ PDFなど。スライドには使わずFAQのみ抽出します。
-        supplement_max: 補足PDFは最大%{max}件までです。これ以上の追加はできません。
-        supplement_remaining: 補足PDFは残り%{remaining}件（最大%{max}件）まで追加できます。
-        upload_supplement: 補足PDFをアップロード
+        pending_count: 未回答 %{count}件
+        supplement_title: 補足PDF
+        supplement_hint: FAQ抽出・最大%{max}件
+        supplement_max: 上限（%{max}件）に達しています
+        supplement_remaining: 残り%{remaining}件
+        upload_supplement: アップロード
         unanswered: 未回答
         answered: 回答済
         question: 質問
         answer: 回答
-        answer_ph: Buyer向けの回答を入力してください
+        answer_ph: Buyer向けの回答
         category: カテゴリ
         delete_confirm: このFAQを削除しますか？
-        empty_ready: 資料処理が完了しました。下のツールでFAQを充実させられます。
-        empty_waiting: 資料アップロード後、FAQの提案・追加ができます。
-        tools_trial: "\U0001F6E0 精度を上げる（任意）"
-        tools: AI分析・FAQ追加ツール
-        suggest_from_docs: 資料からFAQ提案
-        suggest_from_logs: 商談ログから提案
-        stress_test: Buyerストレステスト
-        trial_hint: トライアルは各分析が軽量モードです
-        add_manual: 質問を手動追加
+        empty_ready: 下のツールからFAQを追加できます
+        empty_waiting: 資料処理後にFAQを追加できます
+        tools_trial: 精度を上げる
+        tools: FAQツール
+        suggest_from_docs: 資料から提案
+        suggest_from_logs: ログから提案
+        stress_test: ストレステスト
+        trial_hint: 軽量モード
+        add_manual: 質問を追加
         add_question_ph: '例: 最低契約期間はありますか？'
         add_answer_ph: Buyer向けの回答
         add_faq: FAQを追加
-        trial_optional_prefix: トライアル中はFAQ入力は
-        trial_optional_strong: 任意
-        trial_optional_mid: です。PDFアップロード後、まず
-        trial_optional_suffix: " をお試しください。"
       voice:
         female: 女性
         male: 男性
@@ -426,6 +424,16 @@ ja:
         problem_hint: 送信後、ダッシュボードに完了通知が表示されます。
         problem_cta: 問題を報告する
         problem_new_window: 新しいウィンドウで開く
+      banner:
+        trial_ended_title: トライアル終了
+        trial_ended_body: スタンダード（%{price}/月）へアップグレード
+        view_plans: プランを見る
+        trialing_title: トライアル中
+        trial_ends: '（%{date}まで）'
+        plans_billing: プラン
+        quota_title: 利用枠が残りわずか
+        quota_body: 上限の80%に達しています
+        check_plans: プランを確認
       subscription:
         current_plan: 現在のプラン
         plan_type: プランタイプ
@@ -735,6 +743,7 @@ en:
         editing: Editing
         active: Active
         cancelled: Cancelled
+        expired: Expired
         trial: Trial
         no_contract: No plan
         admin_managed: Admin-managed
@@ -831,6 +840,7 @@ en:
         open_pdf: Open PDF
         show_preview: Show PDF preview
         hide_preview: Hide preview
+        pdf_preview: 'PDF preview: %{filename}'
         extracted_pages: 'Extracted pages: %{pages} (%{count} total)'
         no_doc_data: No document data
         processed_pages: Processed (%{count} pages)
@@ -915,37 +925,31 @@ en:
         title: Knowledge (FAQ)
         coverage: Coverage %{pct}%
         simulation: Simulation
-        pending_count: "%{count} unanswered FAQ(s). Click to answer."
-        supplement_title: "\U0001F4CE Supplements (auto FAQ extract)"
-        supplement_hint: Pricing sheets, specs, FAQ PDFs, etc. Used for FAQs only
-          — not slides.
-        supplement_max: Supplement PDFs are capped at %{max}. No more can be added.
-        supplement_remaining: You can add %{remaining} more supplement PDF(s) (max
-          %{max}).
-        upload_supplement: Upload supplement PDF
+        pending_count: "%{count} unanswered"
+        supplement_title: Supplement PDF
+        supplement_hint: FAQ extract · max %{max}
+        supplement_max: Limit reached (%{max})
+        supplement_remaining: "%{remaining} left"
+        upload_supplement: Upload
         unanswered: Unanswered
         answered: Answered
         question: Question
         answer: Answer
-        answer_ph: Enter an answer for buyers
+        answer_ph: Answer for buyers
         category: Category
         delete_confirm: Delete this FAQ?
-        empty_ready: Materials are ready. Use the tools below to grow your FAQ.
-        empty_waiting: After upload, you can suggest and add FAQs.
-        tools_trial: "\U0001F6E0 Improve coverage (optional)"
-        tools: AI analysis & FAQ tools
-        suggest_from_docs: Suggest from materials
-        suggest_from_logs: Suggest from session logs
-        stress_test: Buyer stress test
-        trial_hint: Trial runs analyses in lightweight mode
-        add_manual: Add question manually
+        empty_ready: Add FAQs from the tools below
+        empty_waiting: Add FAQs after materials are processed
+        tools_trial: Improve coverage
+        tools: FAQ tools
+        suggest_from_docs: From materials
+        suggest_from_logs: From logs
+        stress_test: Stress test
+        trial_hint: Lightweight mode
+        add_manual: Add a question
         add_question_ph: e.g. Is there a minimum term?
         add_answer_ph: Answer for buyers
         add_faq: Add FAQ
-        trial_optional_prefix: 'During trial, FAQs are '
-        trial_optional_strong: optional
-        trial_optional_mid: ". After uploading a PDF, try "
-        trial_optional_suffix: " first."
       voice:
         female: Female
         male: Male
@@ -1038,6 +1042,16 @@ en:
         problem_hint: After submit, a confirmation appears on the dashboard.
         problem_cta: Report a problem
         problem_new_window: Open in new window
+      banner:
+        trial_ended_title: Trial ended
+        trial_ended_body: Upgrade to Standard (%{price}/mo)
+        view_plans: View plans
+        trialing_title: Trial
+        trial_ends: '(until %{date})'
+        plans_billing: Plans
+        quota_title: Usage nearly full
+        quota_body: 80% of this month's limit used
+        check_plans: View plans
       subscription:
         current_plan: Current plan
         plan_type: Plan

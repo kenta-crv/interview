@@ -18,16 +18,6 @@ module DashboardHelper
     deal&.persisted? ? dashboard_deal_user_progresses_path(deal) : dashboard_index_path(anchor: "deals-hub")
   end
 
-  def sidebar_show_deal_context?
-    deal = sidebar_nav_deal
-    return false unless deal&.persisted?
-
-    deal_context_controller = controller_name == "user_progresses" ||
-      (controller_name == "deals" && %w[show edit update].include?(action_name))
-
-    (defined?(@deal) && @deal&.persisted?) || deal_context_controller
-  end
-
   def sidebar_dashboard_accessible?
     sidebar_account_client&.dashboard_accessible?
   end
@@ -41,11 +31,9 @@ module DashboardHelper
     when :dashboard
       controller_name == "dashboard"
     when :deals
-      controller_name == "deals" && %w[index new create].include?(action_name)
+      controller_name == "deals"
     when :leads
       controller_name == "user_progresses"
-    when :deal_studio
-      controller_name == "deals" && %w[show edit update].include?(action_name)
     when :subscription
       controller_name == "subscriptions"
     when :account
@@ -72,8 +60,21 @@ module DashboardHelper
     client&.name.presence || client&.email.to_s.split("@").first.presence || "User"
   end
 
+  def sidebar_avatar_initials(name)
+    str = name.to_s.strip
+    return "?" if str.blank?
+
+    parts = str.split(/[\s@._-]+/).reject(&:blank?)
+    first = parts.first.to_s
+    if first.match?(/\A[\p{Han}\p{Hiragana}\p{Katakana}]/)
+      first[0]
+    else
+      parts.first(2).map { |part| part[0] }.join.upcase
+    end
+  end
+
   def subscription_path_options
-    if admin_signed_in? && defined?(@target_client) && @target_client.present?
+    if acting_as_admin? && defined?(@target_client) && @target_client.present?
       { client_id: @target_client.id }
     else
       {}
@@ -85,7 +86,7 @@ module DashboardHelper
   end
 
   def subscription_can_cancel?(client)
-    return false if admin_signed_in?
+    return false if acting_as_admin?
 
     client.subscription_cancellable?
   end

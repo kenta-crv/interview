@@ -117,7 +117,7 @@ RSpec.describe 'Deal experience smoke', type: :request do
       expect(response.body).to include('btn-choice')
       expect(response.body).to include('presentation-free-text')
       expect(response.body).to include('free-text-input')
-      expect(response.body).to include('presentation-topics-bar')
+      expect(response.body).to include('presentation-choice-scroller-wrap')
       expect(response.body).to include('こんにちは。AI商談を開始します。')
       expect(response.body).to include('presentation-start-overlay')
       expect(response.body).to include('deal-presentation-config')
@@ -233,6 +233,25 @@ RSpec.describe 'Deal experience smoke', type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).not_to include(upload_documents_dashboard_deal_path(deal))
       expect(response.body).to include('この商談IDでは固定')
+    end
+
+    it 'renders accordion PDF preview with an immediate iframe src' do
+      pdf_path = Rails.root.join('docs/report_day14.pdf')
+      document = deal.deal_documents.proposals.first
+      document.file.attach(
+        io: File.open(pdf_path),
+        filename: 'report.pdf',
+        content_type: 'application/pdf'
+      )
+
+      get dashboard_deal_path(deal)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('db-v2-doc-accordion')
+      expect(response.body).to include('この資料のプレビューを表示する')
+      expect(response.body).to include('プレビューを閉じる')
+      expect(response.body).to include('db-v2-pdf-preview')
+      expect(response.body).to include('PDFプレビュー:')
+      expect(response.body).to include(rails_blob_path(document.file, disposition: "inline"))
     end
 
     it 'shows proposal upload form when no materials exist' do

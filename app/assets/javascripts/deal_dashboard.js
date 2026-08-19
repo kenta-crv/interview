@@ -185,20 +185,6 @@
       });
     });
 
-    root.querySelectorAll('[data-pdf-preview]').forEach(function(preview) {
-      function loadPreviewIframe() {
-        if (!preview.open) return;
-        var frame = preview.querySelector('iframe[data-src]');
-        if (!frame) return;
-        var src = frame.getAttribute('data-src');
-        if (!src || frame.getAttribute('src')) return;
-        frame.setAttribute('src', src);
-      }
-
-      preview.addEventListener('toggle', loadPreviewIframe);
-      loadPreviewIframe();
-    });
-
     root._meetiaPollTimer = pollTimer;
 
     bindUploadHandlers(root);

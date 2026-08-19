@@ -20,12 +20,12 @@ html.meetia-lp-html,
 
 .meetia-lp-atmosphere__network {
   position: absolute;
-  top: -4%;
+  top: 88px;
   right: -6%;
   width: 78vw;
   max-width: 980px;
   height: auto;
-  opacity: 0.72;
+  opacity: 0.55;
   filter: drop-shadow(0 0 24px rgba(168, 85, 247, 0.12));
   animation: lpNetworkDrift 28s ease-in-out infinite alternate; }
 
@@ -40,12 +40,7 @@ html.meetia-lp-html,
   animation: lpStarTwinkle 8s ease-in-out infinite alternate; }
 
 .meetia-lp-atmosphere__grid {
-  position: absolute;
-  inset: 0;
-  opacity: 0.14;
-  background-image: linear-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.08) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 18%, #000 0%, transparent 72%); }
+  display: none; }
 
 @keyframes lpNetworkDrift {
   0% {
@@ -179,9 +174,9 @@ html.meetia-lp-html,
     top: 0;
     z-index: 100;
     backdrop-filter: blur(14px);
-    background: rgba(3, 4, 10, 0.88);
-    border-bottom: 1px solid rgba(139, 92, 246, 0.22);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(139, 92, 246, 0.15); }
+    background: #03040a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
   .meetia-modern-lp .meetia-nav__inner {
     max-width: 1200px;
     margin: 0 auto;
@@ -2856,8 +2851,8 @@ html.meetia-lp-html,
       flex-direction: column;
       align-items: stretch;
       padding: 12px 20px 20px;
-      background: rgba(5, 5, 8, 0.96);
-      border-bottom: 1px solid rgba(139, 92, 246, 0.15); }
+      background: #050508;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
       .meetia-modern-lp .meetia-nav__menu.is-open {
         display: flex; }
     .meetia-modern-lp .meetia-nav__links {

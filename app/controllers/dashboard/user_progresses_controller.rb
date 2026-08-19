@@ -19,7 +19,7 @@ class Dashboard::UserProgressesController < Dashboard::BaseController
   private
 
   def set_deal
-    @deal = if admin_signed_in?
+    @deal = if acting_as_admin?
               Deal.find(params[:deal_id])
             else
               current_client.deals.find(params[:deal_id])
