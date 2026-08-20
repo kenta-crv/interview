@@ -154,6 +154,14 @@ class Client < ApplicationRecord
     company.presence || email
   end
 
+  def update_company_name(value)
+    name = value.to_s.strip
+    return false if name.blank?
+    return true if company == name
+
+    update(company: name)
+  end
+
   validates :company, :name, :tel, :address, presence: true, on: :profile_update
   validates :url, format: { with: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true }
 

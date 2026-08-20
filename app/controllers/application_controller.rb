@@ -182,11 +182,11 @@ class ApplicationController < ActionController::Base
   end
 
   def mark_yahoo_trial_conversion!
-    flash[:yahoo_ads_trial_cv] = true
+    session[:yahoo_ads_trial_cv] = true
   end
 
   def yahoo_trial_conversion_pending?
-    flash[:yahoo_ads_trial_cv].present?
+    session.delete(:yahoo_ads_trial_cv).present?
   end
 
   def layout_for_request

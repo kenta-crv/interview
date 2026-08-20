@@ -336,6 +336,7 @@ class Dashboard::DealsController < Dashboard::BaseController
     else
       @deal = current_client.deals.build(managed_by_admin: false)
     end
+    assign_company_name_for_form
   end
 
   def create
@@ -344,8 +345,13 @@ class Dashboard::DealsController < Dashboard::BaseController
     else
       @deal = current_client.deals.build(deal_params.merge(managed_by_admin: false))
     end
+    assign_company_name_for_form
 
-    if @deal.save
+    if company_name_missing_for_deal_owner?
+      @deal.errors.add(:base, t("meetia.dashboard.flash.company_required"))
+      render :new, status: :unprocessable_entity
+    elsif @deal.save
+      sync_company_to_deal_owner
       redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.deal_created")
     else
       render :new, status: :unprocessable_entity
@@ -353,10 +359,16 @@ class Dashboard::DealsController < Dashboard::BaseController
   end
 
   def edit
+    assign_company_name_for_form
   end
 
   def update
-    if @deal.update(deal_params)
+    assign_company_name_for_form
+    if company_name_missing_for_deal_owner?
+      @deal.errors.add(:base, t("meetia.dashboard.flash.company_required"))
+      render :edit, status: :unprocessable_entity
+    elsif @deal.update(deal_params)
+      sync_company_to_deal_owner
       redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.deal_updated")
     else
       render :edit, status: :unprocessable_entity
@@ -427,5 +439,32 @@ class Dashboard::DealsController < Dashboard::BaseController
 
   def admin_creating_deal?
     acting_as_admin? && !client_signed_in?
+  end
+
+  def assign_company_name_for_form
+    @company_name = company_name_param.presence || deal_owner_client&.company.to_s
+  end
+
+  def company_name_param
+    params[:company].to_s.strip.presence || params.dig(:deal, :company).to_s.strip.presence
+  end
+
+  def deal_owner_client
+    return current_client if client_signed_in?
+
+    @deal&.client
+  end
+
+  def company_name_missing_for_deal_owner?
+    return false if admin_creating_deal? || deal_owner_client.blank?
+
+    company_name_param.blank?
+  end
+
+  def sync_company_to_deal_owner
+    client = deal_owner_client
+    return if client.blank?
+
+    client.update_company_name(company_name_param)
   end
 end

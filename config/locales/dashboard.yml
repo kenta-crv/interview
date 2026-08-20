@@ -182,6 +182,9 @@ ja:
         admin_create_note: Admin作成の商談は Admin のみ公開・編集できます（Client側では操作不可）。
         field_title: タイトル
         field_title_ph: '例: 新サービス紹介商談'
+        field_company: 会社名
+        field_company_ph: '例: 株式会社サンプル'
+        field_company_hint: Managementの社名に反映されます。AI商談の会社案内でも使います。
         field_description: 説明
         field_description_ph: 社内メモや商談の目的（任意）
         field_language: 言語
@@ -574,6 +577,7 @@ ja:
         claimed_admin: Admin管理に切り替えました。公開・編集できます
         deal_created: 商談を作成しました
         deal_updated: 商談を更新しました
+        company_required: 会社名を入力してください。
         deal_deleted: 商談を削除しました
         deal_not_found: 商談が見つかりません。
         client_create_required: クライアント商談の新規作成は企業アカウントでログインしてください。Admin商談はAdminで作成できます。
@@ -786,6 +790,9 @@ en:
           (not by clients).
         field_title: Title
         field_title_ph: e.g. New product intro
+        field_company: Company name
+        field_company_ph: e.g. Acme Inc.
+        field_company_hint: Saved as the company name in Management. Also used in the AI company overview.
         field_description: Description
         field_description_ph: Internal notes or goal (optional)
         field_language: Language
@@ -1197,6 +1204,7 @@ en:
         claimed_admin: Switched to Admin-managed. You can publish and edit.
         deal_created: Deal created
         deal_updated: Deal updated
+        company_required: Enter your company name.
         deal_deleted: Deal deleted
         deal_not_found: Deal not found.
         client_create_required: Sign in with a company account to create client deals.

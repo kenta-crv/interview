@@ -23,6 +23,16 @@
     h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.basic_info")
   .db-v2-bottom-card__body
     = form_with model: @deal, url: dashboard_deal_path(@deal), local: true, method: :patch do |f|
+      - if @deal.errors.any?
+        .db-v2-alert.db-v2-alert--danger
+          ul
+            - @deal.errors.full_messages.each do |message|
+              li = message
+      - if @deal.client.present? || client_signed_in?
+        .db-v2-form-group
+          = label_tag "deal_company", t("meetia.dashboard.deals.field_company"), class: "db-v2-form-label"
+          = text_field_tag "deal[company]", @company_name, class: "db-v2-form-control", required: true, id: "deal_company", placeholder: t("meetia.dashboard.deals.field_company_ph"), autocomplete: "organization"
+          p.db-v2-muted = t("meetia.dashboard.deals.field_company_hint")
       .db-v2-form-group
         = f.label :title, t("meetia.dashboard.deals.field_title"), class: "db-v2-form-label"
         = f.text_field :title, class: "db-v2-form-control", required: true
