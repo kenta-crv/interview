@@ -103,6 +103,30 @@ module ApplicationHelper
     }.to_json
   end
 
+  def yahoo_ads_conversion_tags
+    <<~HTML.html_safe
+      <script>
+        ytag({
+          "type":"yjad_conversion",
+          "config":{
+            "yahoo_ydn_conv_io": "sExy6wrWFcaJvWNk_H95ZA..",
+            "yahoo_ydn_conv_label": "ZJV84DQ0OVHBSHWU0P1364033",
+            "yahoo_ydn_conv_transaction_id": "",
+            "yahoo_ydn_conv_value": "0"
+          }
+        });
+        ytag({
+          "type": "yss_conversion",
+          "config": {
+            "yahoo_conversion_id": "1001407226",
+            "yahoo_conversion_label": "IhM2CPaly9kcEKL5sKpE",
+            "yahoo_conversion_value": "1"
+          }
+        });
+      </script>
+    HTML
+  end
+
   def faq_page_json_ld(items)
     entities = Array(items).filter_map do |item|
       q = item[:q].to_s.strip

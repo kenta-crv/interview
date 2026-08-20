@@ -37,6 +37,7 @@ class PlansController < ApplicationController
       end
 
       current_client.initialize_trial_subscription!
+      mark_yahoo_trial_conversion!
       redirect_to dashboard_index_path,
                   notice: t("meetia.auth.trial_started", days: Subscription::TRIAL_DAYS, default: "%{days}日間の無料トライアルを開始しました。")
       return

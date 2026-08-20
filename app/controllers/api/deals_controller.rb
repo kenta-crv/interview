@@ -246,7 +246,7 @@ module Api
     def ensure_deal_quota!
       return if current_client.can_create_deal?
 
-      render json: { errors: [current_client.deal_limit_message] }, status: :forbidden
+      render json: { errors: [current_client.service_limit_message] }, status: :forbidden
     end
 
     def deal_params

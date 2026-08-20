@@ -1,0 +1,59 @@
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f3f0fa;margin:0;padding:0;">
+  <tr>
+    <td align="center" style="padding:28px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="width:100%;max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e8e2f4;">
+        <tr>
+          <td style="background:#12081f;padding:22px 28px;">
+            <p style="margin:0 0 10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;letter-spacing:0.16em;color:#c4b5fd;font-weight:700;">MEETIA</p>
+            <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:22px;line-height:1.35;color:#ffffff;font-weight:700;"><%= @headline %></p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 28px 8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.8;color:#334155;">
+            <p style="margin:0 0 12px;"><%= @client_name %> 様</p>
+            <% case @event %>
+            <% when :registered %>
+              <% if @subscription.trial? %>
+                <p style="margin:0 0 12px;">この度は Meetia の無料トライアルをお申し込みいただき、ありがとうございます。開始手続きが完了しました。</p>
+              <% else %>
+                <p style="margin:0 0 12px;">この度は Meetia をご利用いただき、ありがとうございます。プラン登録が完了しました。</p>
+              <% end %>
+            <% when :changed %>
+              <p style="margin:0 0 12px;">Meetia のプラン変更が完了しました。</p>
+            <% when :cancelled %>
+              <p style="margin:0 0 12px;">Meetia の解約手続きを受け付けました。ご契約期間の終了日まで引き続きご利用いただけます。</p>
+            <% else %>
+              <p style="margin:0 0 12px;">Meetia のご契約内容が更新されました。</p>
+            <% end %>
+
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin:8px 0 8px;">
+              <% rows = [
+                ["プラン", @subscription.plan_name],
+                (@event == :changed && @previous_plan.present? ? ["変更前プラン", @previous_plan_name] : nil),
+                ["ステータス", @status_label],
+                (@trial_ends_label.present? ? ["トライアル終了日", @trial_ends_label] : nil)
+              ].compact %>
+              <% rows.each_with_index do |(label, value), i| %>
+                <tr>
+                  <th align="left" style="width:42%;padding:11px 0;border-top:<%= i.zero? ? '1px solid #ede9fe' : '0' %>;border-bottom:1px solid #ede9fe;font-size:12px;color:#64748b;font-weight:600;"><%= label %></th>
+                  <td style="padding:11px 0;border-top:<%= i.zero? ? '1px solid #ede9fe' : '0' %>;border-bottom:1px solid #ede9fe;font-size:14px;color:#0f172a;"><%= value %></td>
+                </tr>
+              <% end %>
+            </table>
+
+            <p style="margin:24px 0 8px;">
+              <a href="<%= @dashboard_url %>" style="display:inline-block;padding:12px 20px;background:#7c3aed;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;">ダッシュボードへ移動</a>
+            </p>
+            <p style="margin:0 0 16px;font-size:12px;color:#94a3b8;word-break:break-all;"><%= @dashboard_url %></p>
+            <p style="margin:0;font-size:13px;color:#64748b;">ご不明な点は <a href="mailto:info@j-work.jp" style="color:#7c3aed;text-decoration:none;">info@j-work.jp</a> までお問い合わせください。</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 28px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:11px;color:#94a3b8;">
+            株式会社J Work
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

@@ -3,11 +3,11 @@ class Deal < ApplicationRecord
   MAX_SUPPLEMENT_DOCUMENTS = 3
 
   belongs_to :client, optional: true
+  has_many :deal_pages, dependent: :destroy
   has_many :deal_documents, dependent: :destroy
   has_many :deal_audios, dependent: :destroy
   has_many :deal_speeches, dependent: :destroy
   has_many :deal_presentations, dependent: :destroy
-  has_many :deal_pages, dependent: :destroy
   has_one :deal_transcript, dependent: :destroy
   has_one :deal_summary, dependent: :destroy
   has_many :user_progresses, dependent: :destroy
@@ -17,6 +17,12 @@ class Deal < ApplicationRecord
   has_many :deal_follow_up_templates, dependent: :destroy
 
   include DealFollowUpTemplateDefaults
+
+  after_create :increment_client_deal_counter
+
+  private def increment_client_deal_counter
+    client&.increment!(:total_deals_created)
+  end
 
   enum status: {
     uploading: 0,

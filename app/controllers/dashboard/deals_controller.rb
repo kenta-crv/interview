@@ -163,6 +163,11 @@ class Dashboard::DealsController < Dashboard::BaseController
       return
     end
 
+    if @deal.deal_pages.any? && !@deal.failed?
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.already_processed")
+      return
+    end
+
     @deal.start_processing!
     ProcessDealJob.perform_later(@deal.id)
     redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.ai_started")
@@ -417,7 +422,7 @@ class Dashboard::DealsController < Dashboard::BaseController
     return unless client_signed_in?
     return if current_client.can_create_deal?
 
-    redirect_to dashboard_deals_path, alert: current_client.deal_limit_message
+    redirect_to dashboard_deals_path, alert: current_client.service_limit_message
   end
 
   def admin_creating_deal?

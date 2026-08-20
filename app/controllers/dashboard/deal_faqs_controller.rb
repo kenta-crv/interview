@@ -4,7 +4,7 @@ class Dashboard::DealFaqsController < Dashboard::BaseController
   before_action :set_faq, only: [:update, :destroy, :skip]
 
   def create
-    @faq = @deal.deal_faqs.build(deal_faq_params.merge(source: "manual", status: "approved"))
+    @faq = @deal.deal_faqs.build(deal_faq_params.merge(source: "manual", status: "pending"))
     @faq.position = @deal.deal_faqs.maximum(:position).to_i + 1
 
     if @faq.save

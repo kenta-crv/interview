@@ -12,6 +12,7 @@ module Public
       if @deal.visitor_registration_required?
         record_public_page_view!
       else
+        return if reject_if_deal_limit!
         ensure_visitor_session!
         record_public_page_view!
         redirect_to conversation_public_deal_session_path(token: @deal.access_token)
@@ -20,6 +21,7 @@ module Public
 
     def create_user_info
       unless @deal.visitor_registration_required?
+        return if reject_if_deal_limit!
         ensure_visitor_session!
         redirect_to conversation_public_deal_session_path(token: @deal.access_token)
         return
@@ -27,7 +29,7 @@ module Public
 
       owner = @deal.client
       if owner && !owner.can_start_session?
-        flash.now[:alert] = owner.monthly_session_limit_message
+        flash.now[:alert] = owner.deal_limit_message
         render :show, status: :forbidden
         return
       end
@@ -385,6 +387,19 @@ module Public
         errors << t("meetia.deal.field_required", field: t("meetia.dashboard.visitor_fields.#{key}"))
       end
       errors
+    end
+
+    def reject_if_deal_limit!
+      return false if client_preview?
+      return false if session[:user_id].present? && User.exists?(id: session[:user_id])
+
+      owner = @deal.client
+      return false unless owner && !owner.can_start_session?
+
+      flash.now[:alert] = owner.deal_limit_message
+      record_public_page_view!
+      render :show, status: :forbidden
+      true
     end
 
     def apply_public_deal_locale

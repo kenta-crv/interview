@@ -1,0 +1,20 @@
+<%= @headline %>
+<%= @lead %>
+
+イベント: <%= @event_label %>
+クライアントID: <%= @client.id %>
+会社名: <%= @client.try(:company).presence || "-" %>
+お名前: <%= @client.try(:name).presence || "-" %>
+メールアドレス: <%= @client.email %>
+プラン: <%= @subscription.plan_name %>
+<% if @event == :changed && @previous_plan.present? %>
+変更前プラン: <%= @previous_plan_name %>
+<% end %>
+ステータス: <%= @status_label %>
+<% if @trial_ends_label.present? %>
+トライアル終了日: <%= @trial_ends_label %>
+<% end %>
+Stripe Subscription ID: <%= @subscription.stripe_subscription_id.presence || "-" %>
+日時: <%= @occurred_at %>
+
+ダッシュボード: <%= @dashboard_url %>

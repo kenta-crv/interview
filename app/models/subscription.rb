@@ -8,6 +8,9 @@ class Subscription < ApplicationRecord
   validates :status, presence: true
   validates :stripe_subscription_id, uniqueness: true, allow_nil: true
 
+  after_commit :notify_registered, on: :create
+  after_commit :notify_updated, on: :update
+
   TRIAL_DAYS = 14
   STANDARD_INTRO_PERCENT_OFF = 15
   STANDARD_INTRO_MONTHS = 3
@@ -16,12 +19,11 @@ class Subscription < ApplicationRecord
   # price: JPY表示額 / prices: 通貨別表示額（usdはドル単位）
   PLAN_CATALOG = {
     trial: {
-      name: "トライアル",
+      name: "Trial",
       name_en: "Trial",
       price: 0,
       prices: { jpy: 0, usd: 0 },
-      deal_limit: 1,
-      monthly_session_limit: 5,
+      deal_limit: 5,
       service_limit: 1,
       ai_voice_deal: true,
       click_analytics: true,
@@ -31,7 +33,7 @@ class Subscription < ApplicationRecord
       prospect_follow_up: false,
       prospect_follow_up_soon: false,
       priority_support: false,
-      description: "#{TRIAL_DAYS}日間。カード不要。終了後はスタンダードへ誘導",
+      description: "#{TRIAL_DAYS}日間。カード不要。終了後はStandardへ誘導",
       description_en: "#{TRIAL_DAYS} days, no card. Then guided to Standard",
       purchasable: false,
       public_on_lp: true,
@@ -42,12 +44,11 @@ class Subscription < ApplicationRecord
       lp_cta_en: "Try free"
     },
     starter: {
-      name: "スターター",
+      name: "Starter",
       name_en: "Starter",
       price: 29_800,
       prices: { jpy: 29_800, usd: 199 },
       deal_limit: 15,
-      monthly_session_limit: nil,
       service_limit: 1,
       ai_voice_deal: true,
       click_analytics: true,
@@ -69,12 +70,11 @@ class Subscription < ApplicationRecord
       }
     },
     standard: {
-      name: "スタンダード",
+      name: "Standard",
       name_en: "Standard",
       price: 59_800,
       prices: { jpy: 59_800, usd: 399 },
       deal_limit: 50,
-      monthly_session_limit: nil,
       service_limit: 3,
       ai_voice_deal: true,
       click_analytics: true,
@@ -84,8 +84,8 @@ class Subscription < ApplicationRecord
       prospect_follow_up: false,
       prospect_follow_up_soon: false,
       priority_support: false,
-      description: "成長中のチーム向け。商談50件・資料提示URL 3つ・クリック分析付き。",
-      description_en: "For growing teams. 50 deals, 3 presentation URLs, and click analytics.",
+      description: "成長中のチーム向け。商談50件・資料3・クリック分析付き。",
+      description_en: "For growing teams. 50 deals/month, 3 materials, and click analytics.",
       purchasable: true,
       public_on_lp: true,
       popular: true,
@@ -103,8 +103,7 @@ class Subscription < ApplicationRecord
       name_en: "Business",
       price: 98_000,
       prices: { jpy: 98_000, usd: 699 },
-      deal_limit: 100,
-      monthly_session_limit: nil,
+      deal_limit: 300,
       service_limit: 7,
       ai_voice_deal: true,
       click_analytics: true,
@@ -114,8 +113,8 @@ class Subscription < ApplicationRecord
       prospect_follow_up: true,
       prospect_follow_up_soon: false,
       priority_support: false,
-      description: "本格運用向け。商談100件・資料提示URL 7・クリック分析・見込み追客付き。",
-      description_en: "For full-scale ops. 100 deals, 7 presentation URLs, click analytics, and prospect follow-up.",
+      description: "本格運用向け。商談300件・資料7・クリック分析・見込み追客付き。",
+      description_en: "For full-scale ops. 300 deals/month, 7 materials, click analytics, and prospect follow-up.",
       purchasable: true,
       public_on_lp: true,
       featured: true,
@@ -127,13 +126,12 @@ class Subscription < ApplicationRecord
       lp_cta_en: "Choose Business"
     },
     enterprise: {
-      name: "エンタープライズ",
+      name: "Enterprise",
       name_en: "Enterprise",
       price: 198_000,
       prices: { jpy: 198_000, usd: 1_299 },
       deal_limit: nil,
-      monthly_session_limit: nil,
-      service_limit: 10,
+      service_limit: 50,
       ai_voice_deal: true,
       click_analytics: true,
       prospect_scoring: true,
@@ -142,8 +140,8 @@ class Subscription < ApplicationRecord
       prospect_follow_up: true,
       prospect_follow_up_soon: true,
       priority_support: true,
-      description: "大規模運用向け。商談無制限・資料提示URL 10・見込み追客（準備中）。",
-      description_en: "For large-scale ops. Unlimited deals, 10 presentation URLs, prospect follow-up (coming soon).",
+      description: "大規模運用向け。商談無制限・資料50・見込み追客（準備中）。",
+      description_en: "For large-scale ops. Unlimited deals, 50 materials, prospect follow-up (coming soon).",
       purchasable: true,
       public_on_lp: true,
       featured: false,
@@ -158,8 +156,7 @@ class Subscription < ApplicationRecord
 
   LP_COMPARISON_FEATURES = [
     { key: :deal_limit, label: "商談数", label_en: "Deals" },
-    { key: :service_limit, label: "資料提示URL", label_en: "Presentation URLs" },
-    { key: :monthly_session_limit, label: "月間セッション", label_en: "Monthly sessions" },
+    { key: :service_limit, label: "資料数", label_en: "Materials" },
     { key: :ai_voice_deal, label: "AI音声商談", label_en: "AI voice deals" },
     { key: :click_analytics, label: "クリック履歴分析", label_en: "Click analytics" },
     { key: :prospect_scoring, label: "見込み度判定", label_en: "Prospect scoring" },
@@ -243,7 +240,7 @@ class Subscription < ApplicationRecord
       return "—" unless config
 
       case feature_key
-      when :deal_limit, :service_limit, :monthly_session_limit
+      when :deal_limit, :service_limit
         format_limit(config[feature_key])
       when :click_analytics, :ai_voice_deal, :prospect_scoring, :deal_summary, :faq_chat, :priority_support
         config[feature_key] ? "✔︎" : "✕"
@@ -286,7 +283,7 @@ class Subscription < ApplicationRecord
   end
 
   def monthly_session_limit
-    plan_config&.dig(:monthly_session_limit)
+    deal_limit
   end
 
   def delivery_limit
@@ -322,5 +319,19 @@ class Subscription < ApplicationRecord
 
   def expire_trial_and_upgrade!
     expire_trial_without_charge!
+  end
+
+  private
+
+  def notify_registered
+    SubscriptionNotifier.registered(self)
+  end
+
+  def notify_updated
+    if saved_change_to_status? && cancelled?
+      SubscriptionNotifier.cancelled(self)
+    elsif saved_change_to_plan_type?
+      SubscriptionNotifier.changed(self, previous_plan: plan_type_before_last_save)
+    end
   end
 end

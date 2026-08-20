@@ -1,5 +1,5 @@
 - plan = client_signed_in? ? current_client.current_plan_config : nil
-- deal_limit = client_signed_in? ? current_client.deal_limit : nil
+- material_limit = client_signed_in? ? current_client.service_limit : nil
 
 .db-v2-header
   .db-v2-header__left
@@ -7,10 +7,10 @@
     p.db-v2-header__subtitle
       - if acting_as_admin?
         = t("meetia.dashboard.deals.index_subtitle_admin")
-      - elsif deal_limit
-        = t("meetia.dashboard.deals.index_subtitle_limited", plan: plan[:name], used: current_client.deals_count, limit: deal_limit)
+      - elsif material_limit
+        = t("meetia.dashboard.deals.index_subtitle_limited", plan: plan[:name], used: current_client.materials_count, limit: material_limit)
       - else
-        = t("meetia.dashboard.deals.index_subtitle_unlimited", plan: plan[:name], used: current_client.deals_count)
+        = t("meetia.dashboard.deals.index_subtitle_unlimited", plan: plan[:name], used: current_client.materials_count)
   .db-v2-header__right
     = render "/dashboard/theme_switch"
     - if client_signed_in? || acting_as_admin?

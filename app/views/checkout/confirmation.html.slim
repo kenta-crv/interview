@@ -15,7 +15,7 @@
       p
         strong = t("meetia.auth.intro_discount_title", percent: Subscription::STANDARD_INTRO_PERCENT_OFF, months: Subscription::STANDARD_INTRO_MONTHS, default: "初回%{months}ヶ月 %{percent}% OFF")
       p.db-v2-checkout-alert-note
-        = t("meetia.auth.intro_discount_note", default: "スタンダードプランの最初の3ヶ月間、月額料金が15%割引になります。")
+        = t("meetia.auth.intro_discount_note", default: "Standardプランの最初の3ヶ月間、月額料金が15%割引になります。")
 
 .db-v2-bottom-card.db-v2-checkout-card data-turbo="false"
   .db-v2-bottom-card__header
@@ -43,7 +43,7 @@
         span = t("meetia.auth.checkout_feature_deals", count: Subscription.format_limit(@plan_config[:deal_limit]), default: "商談 %{count} 件")
       li
         i.fa-solid.fa-circle-check aria-hidden="true"
-        span = t("meetia.auth.checkout_feature_services", count: @plan_config[:service_limit], default: "サービス %{count} 件")
+        span = t("meetia.auth.checkout_feature_services", count: Subscription.format_limit(@plan_config[:service_limit]), default: "資料 %{count} 件")
       li
         i.fa-solid.fa-circle-check aria-hidden="true"
         span = t("meetia.auth.checkout_feature_analytics", default: "クリック履歴分析")

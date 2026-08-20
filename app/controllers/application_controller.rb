@@ -7,7 +7,8 @@ class ApplicationController < ActionController::Base
   before_action :stash_omniauth_locale
   before_action :init_breadcrumbs
   helper_method :breadcrumbs, :current_locale, :locale_root_href, :href_for_locale,
-                :available_ui_locales, :locale_switch_path_for, :acting_as_admin?
+                :available_ui_locales, :locale_switch_path_for, :acting_as_admin?,
+                :yahoo_trial_conversion_pending?
   before_action :check_trial_expiration
 
   def acting_as_admin?
@@ -178,6 +179,14 @@ class ApplicationController < ActionController::Base
 
   def after_sign_out_path_for(_resource_or_scope)
     locale_root_href
+  end
+
+  def mark_yahoo_trial_conversion!
+    flash[:yahoo_ads_trial_cv] = true
+  end
+
+  def yahoo_trial_conversion_pending?
+    flash[:yahoo_ads_trial_cv].present?
   end
 
   def layout_for_request

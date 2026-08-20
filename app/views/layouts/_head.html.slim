@@ -16,6 +16,9 @@ javascript:
   window.yjDataLayer = window.yjDataLayer || [];
   function ytag() { yjDataLayer.push(arguments); }
   ytag({"type":"ycl_cookie", "config":{"ycl_use_non_cookie_storage":true}});
+
+- if yahoo_trial_conversion_pending?
+  = yahoo_ads_conversion_tags
   
 - if respond_to?(:href_for_locale)
   link rel="alternate" hreflang="ja" href="#{request.base_url}#{href_for_locale(:ja)}"

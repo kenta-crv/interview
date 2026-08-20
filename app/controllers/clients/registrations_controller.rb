@@ -62,6 +62,7 @@ class Clients::RegistrationsController < Devise::RegistrationsController
   def after_sign_up_path_for(_resource)
     resource = _resource
     resource.initialize_trial_subscription! if resource.respond_to?(:initialize_trial_subscription!)
+    mark_yahoo_trial_conversion!
     dashboard_index_path
   end
 

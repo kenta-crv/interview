@@ -174,8 +174,8 @@
                   - elsif !@deal.processing? && @deal.deal_pages.empty?
                     .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
                       p = t("meetia.dashboard.deals.unprocessed")
-                  - if can_manage_deal?(@deal)
-                    = button_to (@deal.deal_pages.any? ? t("meetia.dashboard.deals.reprocess") : t("meetia.dashboard.deals.start_process")),
+                  - if can_manage_deal?(@deal) && (@deal.deal_pages.empty? || @deal.failed?)
+                    = button_to t("meetia.dashboard.deals.start_process"),
                       reprocess_dashboard_deal_path(@deal),
                       method: :post,
                       class: "db-v2-btn db-v2-btn--ghost",

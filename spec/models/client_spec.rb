@@ -76,3 +76,34 @@ RSpec.describe Client, type: :model do
     end
   end
 end
+
+RSpec.describe "Yahoo Ads trial conversion", type: :request do
+  let(:conv_label) { "ZJV84DQ0OVHBSHWU0P1364033" }
+
+  it "新規登録直後のダッシュボードでYAds CVタグを1回出す" do
+    email = "trial-cv-#{SecureRandom.hex(4)}@example.com"
+    post client_registration_path, params: {
+      client: {
+        email: email,
+        password: "password123",
+        password_confirmation: "password123"
+      }
+    }
+
+    expect(response).to redirect_to(dashboard_index_path)
+    follow_redirect!
+    expect(response.body).to include(conv_label)
+    expect(response.body).to include("yjad_conversion")
+
+    get dashboard_index_path
+    expect(response.body).not_to include(conv_label)
+  end
+
+  it "既存ログインではYAds CVタグを出さない" do
+    client = create(:client)
+    sign_in client
+    get dashboard_index_path
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include(conv_label)
+  end
+end

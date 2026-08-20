@@ -73,7 +73,7 @@ module TopsHelper
     ["03", "fa-door-open", "24時間AI商談ルーム", "待機時間ゼロ。24時間365日、いつでも商談可能なAIルームを提供します。", %w[URL共有のみ 深夜・休日対応 即時入室]],
     ["04", "fa-comments", "リアルタイムFAQ対話", "社内FAQを活用し、顧客の質問にリアルタイムで回答。双方向の対話で疑問をその場で解消します。", %w[BANT抽出 操作ログ リード管理]],
     ["05", "fa-chart-line", "見込み度・離脱分析", "商談中の顧客の関心度をスコアリングし、離脱ポイントを分析。データに基づいた改善提案を行います。", %w[離脱分析 関心スライド A〜D判定]],
-    ["06", "fa-envelope", "フォローメール自動配信", "商談後のフォローアップを自動化。パーソナライズされたメールを最適なタイミングで配信します。", %w[自動配信 開封追跡 見送り管理]]
+    ["06", "fa-envelope", "フォローメール自動配信", "Business以上で、商談後のフォローアップを自動化。パーソナライズされたメールを最適なタイミングで配信します。", %w[自動配信 開封追跡 見送り管理]]
   ].freeze
 
   FEATURE_ROWS_EN = [
@@ -82,7 +82,7 @@ module TopsHelper
     ["03", "fa-door-open", "24/7 AI deal room", "Zero wait time. Share a room that is always open for buyers.", ["URL only", "Nights & weekends", "Instant join"]],
     ["04", "fa-comments", "Live FAQ dialogue", "Answer buyer questions in real time with your internal FAQ — clear doubts on the spot.", ["BANT capture", "Action logs", "Lead management"]],
     ["05", "fa-chart-line", "Intent & drop-off analysis", "Score interest during the session and analyze where buyers leave — then improve with data.", ["Drop-off insights", "Interest slides", "A–D grading"]],
-    ["06", "fa-envelope", "Automated follow-up email", "Personal follow-ups at the right time, with open and click tracking.", ["Auto send", "Open tracking", "Nurture control"]]
+    ["06", "fa-envelope", "Automated follow-up email", "On Business and above: personal follow-ups at the right time, with open and click tracking.", ["Auto send", "Open tracking", "Nurture control"]]
   ].freeze
 
   FAQ_ITEMS = [
@@ -90,11 +90,11 @@ module TopsHelper
     { category: "service", q: "Meetiaは何をするサービスですか？", a: "営業資料をアップロードすると、訪問者がURLから入れるAI商談ルームを作れます。資料閲覧・音声対話・質問応答を24時間対応し、見込み度（A〜D）や会話ログをDashboardに残します。人の営業の置き換えではなく、一次対応の自動化です。" },
     { category: "service", q: "既存のPDFや提案資料はそのまま使えますか？", a: "はい。提案資料・料金表・導入事例・FAQなどのPDF／ドキュメントから強みや仕様を抽出し、質問に応じて説明します。" },
     { category: "service", q: "商談中の質問にはどこまで答えられますか？", a: "アップロード資料と設定したFAQをもとに、価格・機能・導入手順・運用イメージなどへリアルタイムで回答します。" },
-    { category: "service", q: "見込み度や離脱はどう見えますか？", a: "会話ログと行動ログから関心の推移・離脱ポイント・見込み度A〜DをDashboardで確認できます。Business以上では見込み追客も利用できます。" },
+    { category: "service", q: "見込み度や離脱はどう見えますか？", a: "会話ログと行動ログから関心の推移・離脱ポイント・見込み度A〜DをDashboardで確認できます。" },
 
     # pricing
-    { category: "pricing", q: "無料トライアルの条件は？", a: "#{Subscription::TRIAL_DAYS}日間・0円・カード不要です。上限は商談1件・月間セッション5・資料提示URL 1つ。終了後の自動課金はなく、スタンダード（月額59,800円／初回3ヶ月15%OFF）へ誘導します。" },
-    { category: "pricing", q: "料金プランと上限を教えてください。", a: "スタンダード月額59,800円（商談50・URL 3）／Business 98,000円（100・7、見込み追客あり）／エンタープライズ198,000円（商談無制限・URL 10）。Starterは新規販売していません。クリック履歴分析は全プラン対象です。" },
+    { category: "pricing", q: "無料トライアルの条件は？", a: "#{Subscription::TRIAL_DAYS}日間・0円・カード不要です。上限は商談5件・資料1つ。終了後の自動課金はなく、Standard（月額59,800円／初回3ヶ月15%OFF）へ誘導します。" },
+    { category: "pricing", q: "料金プランと上限を教えてください。", a: "Standard月額59,800円（商談50・資料3）／Business 98,000円（商談300・資料7）／Enterprise 198,000円（商談無制限・資料50）。Starterは新規販売していません。クリック履歴分析は全プラン対象です。" },
     { category: "pricing", q: "トライアル中に解約したら課金されますか？", a: "トライアル終了時の自動課金はありません。有料プランをCheckoutしたときだけ課金されます。" },
     { category: "pricing", q: "プラン変更や請求書払いはできますか？", a: "プラン変更はDashboardの契約管理から可能です。請求書払いは契約形態により案内します。法人でご希望の場合は導入相談時にお知らせください。" },
 
@@ -102,11 +102,11 @@ module TopsHelper
     { category: "setup", q: "申し込みから初回公開までの手順は？", a: "①「無料トライアル」からアカウント登録（カード不要）→②Trialが自動開始→③Dashboardで資料アップロード・FAQ整備→④商談ルームURLを発行してLP・メール・フォーム完了画面などに設置、の順です。資料が揃っていれば数時間程度で初回公開できます。" },
     { category: "setup", q: "始めるときに用意するものは？", a: "会社概要、サービス資料、料金情報、よくある質問などの営業素材です。公開前にDashboard上で回答や資料表示をテストできます。" },
     { category: "setup", q: "既存サイトへの埋め込みは必要ですか？", a: "必須ではありません。公開URLへの導線が基本です。既存サイトから遷移する形で導入できます。" },
-    { category: "setup", q: "複数商材を1アカウントで運用できますか？", a: "はい。Deal単位で商材・資料を分けて管理できます。同時に使える商談数・URL数はプラン上限に従います。" },
+    { category: "setup", q: "複数商材を1アカウントで運用できますか？", a: "はい。資料の件数はプランの資料上限に従います。" },
 
     # usage
     { category: "usage", q: "商談後のフォローは自動化できますか？", a: "はい。見込み度や検討時期に応じてフォローメールを自動送信し、開封・クリックも追跡できます。" },
-    { category: "usage", q: "運用開始後の設定変更はできますか？", a: "はい。資料差し替え、FAQ更新、フォロー条件の見直しはDashboardから随時反映できます。" },
+    { category: "usage", q: "運用開始後の設定変更はできますか？", a: "FAQの追加・修正は同じ公開リンクのままできます。提案資料（PDF）の差し替えは同一リンクではできません。" },
     { category: "usage", q: "商談データは誰が見られますか？", a: "契約企業の権限ユーザーがDashboardから会話ログ・見込み度・フォロー状況を案件ごとに確認できます。公開URLは運用ルールに応じて管理してください。" }
   ].freeze
 
@@ -115,11 +115,11 @@ module TopsHelper
     { category: "service", q: "What does Meetia do?", a: "Upload sales materials to create an AI deal room visitors join by URL. It covers document viewing, voice conversation, and Q&A 24/7, and stores prospect grades (A–D) and logs in the dashboard. It automates first-touch—not a full replacement for your sales team." },
     { category: "service", q: "Can we reuse existing PDFs and decks?", a: "Yes. Meetia extracts strengths and specs from decks, pricing sheets, case studies, and FAQ docs, then answers in context." },
     { category: "service", q: "How deeply can it answer buyer questions?", a: "Using uploaded materials and configured FAQs, it responds in real time on pricing, features, onboarding, and operations." },
-    { category: "service", q: "How are intent and drop-off shown?", a: "Conversation and behavior logs show interest trends, drop-off points, and grades A–D in the dashboard. Prospect follow-up is available on Business and above." },
+    { category: "service", q: "How are intent and drop-off shown?", a: "Conversation and behavior logs show interest trends, drop-off points, and grades A–D in the dashboard." },
 
     # pricing
-    { category: "pricing", q: "What are the free trial terms?", a: "#{Subscription::TRIAL_DAYS} days at ¥0 / $0, no card required. Limits: 1 deal, 5 monthly sessions, 1 material URL. No auto-charge at end—you're guided to Standard (¥59,800 / $399; 15% off first 3 months)." },
-    { category: "pricing", q: "What are the plans and limits?", a: "Standard ¥59,800 / $399 (50 deals, 3 URLs) / Business ¥98,000 / $699 (100, 7, prospect follow-up) / Enterprise ¥198,000 / $1,299 (unlimited deals, 10 URLs). Starter is not sold to new customers. Click analytics is on all plans." },
+    { category: "pricing", q: "What are the free trial terms?", a: "#{Subscription::TRIAL_DAYS} days at ¥0 / $0, no card required. Limits: 5 deals and 1 material. No auto-charge at end—you're guided to Standard (¥59,800 / $399; 15% off first 3 months)." },
+    { category: "pricing", q: "What are the plans and limits?", a: "Standard ¥59,800 / $399 (50 deals, 3 materials) / Business ¥98,000 / $699 (300 deals, 7 materials) / Enterprise ¥198,000 / $1,299 (unlimited deals, 50 materials). Starter is not sold to new customers. Click analytics is on all plans." },
     { category: "pricing", q: "If I cancel during the trial, am I charged?", a: "No auto-charge when the trial ends. You're only charged after you check out a paid plan." },
     { category: "pricing", q: "Can we change plans or pay by invoice?", a: "Yes—change plans from Dashboard billing. Invoice payment depends on contract type; tell us during onboarding if you need it." },
 
@@ -127,11 +127,11 @@ module TopsHelper
     { category: "setup", q: "What are the steps from signup to first launch?", a: "1) Create an account via Free trial (no card) → 2) Trial starts automatically → 3) Upload materials and FAQs in the Dashboard → 4) Share the deal-room URL on LPs, email, or form thank-you pages. With materials ready, first publish is often possible within hours." },
     { category: "setup", q: "What should we prepare?", a: "Company profile, product docs, pricing, and common Q&As. You can preview answers and materials in the Dashboard before going live." },
     { category: "setup", q: "Do we need to embed it on our site?", a: "No. URL-based routing is the default—link from your existing site." },
-    { category: "setup", q: "Can one account run multiple products?", a: "Yes. Manage materials per Deal. Deal and URL counts follow your plan limits." },
+    { category: "setup", q: "Can one account run multiple products?", a: "Yes. Material count follows your plan." },
 
     # usage
     { category: "usage", q: "Can post-session follow-up be automated?", a: "Yes. Send follow-up emails by intent and timing, with open and click tracking." },
-    { category: "usage", q: "Can we change settings after launch?", a: "Yes. Swap materials, edit FAQs, and adjust follow-up rules anytime from the Dashboard." },
+    { category: "usage", q: "Can we change settings after launch?", a: "Yes—add or edit FAQs on the same public link. Replacing the proposal PDF on the same link is not supported." },
     { category: "usage", q: "Who can see deal data?", a: "Authorized users on your account can view logs, grades, and follow-up status per deal. Manage public URLs according to your policy." }
   ].freeze
 
@@ -172,13 +172,13 @@ module TopsHelper
   SERVICE_CARDS = [
     { num: "01", icon: "fa-cloud-arrow-up", orbit: "fa-file-lines", title: "資料アップロード → AI学習", desc: "PDFやFAQをアップロードするだけ。AIが内容を読解し、商談台本とナレッジを生成します。" },
     { num: "02", icon: "fa-microphone-lines", orbit: "fa-comments", title: "AI商談ルームで音声対話", desc: "訪問者はURLから入室。資料を見せながらAIが音声で提案・ヒアリングを行います。" },
-    { num: "03", icon: "fa-envelope-circle-check", orbit: "fa-chart-pie", title: "見込み度分析・フォロー自動化", desc: "商談ログから関心度を分析。見込み度判定とフォローメール配信まで自動で完結します。" }
+    { num: "03", icon: "fa-envelope-circle-check", orbit: "fa-chart-pie", title: "見込み度分析・フォロー自動化", desc: "商談ログから関心度を分析。見込み度判定は全プラン、フォローメール配信はBusiness以上です。" }
   ].freeze
 
   SERVICE_CARDS_EN = [
     { num: "01", icon: "fa-cloud-arrow-up", orbit: "fa-file-lines", title: "Upload docs → AI learning", desc: "Upload PDFs and FAQs. AI reads them and builds scripts plus knowledge." },
     { num: "02", icon: "fa-microphone-lines", orbit: "fa-comments", title: "Voice dialogue in the deal room", desc: "Buyers join via URL. AI presents and discovers needs with voice." },
-    { num: "03", icon: "fa-envelope-circle-check", orbit: "fa-chart-pie", title: "Intent scoring & follow-up automation", desc: "Analyze interest from logs, grade prospects, and send follow-ups automatically." }
+    { num: "03", icon: "fa-envelope-circle-check", orbit: "fa-chart-pie", title: "Intent scoring & follow-up automation", desc: "Analyze interest from logs and grade prospects on all plans. Follow-up email is Business and above." }
   ].freeze
 
   COMPANY_PROFILE = [

@@ -153,8 +153,8 @@ ja:
       deals:
         index_title: 商談管理
         index_subtitle_admin: 全契約企業の商談一覧
-        index_subtitle_limited: 'プラン: %{plan} ／ 商談 %{used} / %{limit} 件'
-        index_subtitle_unlimited: 'プラン: %{plan} ／ 商談 %{used} 件（無制限）'
+        index_subtitle_limited: 'プラン: %{plan} ／ 資料 %{used} / %{limit} 件'
+        index_subtitle_unlimited: 'プラン: %{plan} ／ 資料 %{used} 件（無制限）'
         create: 商談を新規作成
         create_admin: Admin商談を新規作成
         list_title: 商談一覧
@@ -404,8 +404,8 @@ ja:
         closing: クロージング
       limits:
         deal_limit: 商談数の上限（%{limit}件）に達しています。プランをアップグレードしてください。
-        service_limit: サービス数（資料提示URL）の上限（%{limit}件）に達しています。プランをアップグレードしてください。
-        monthly_session_limit: 月間商談セッションの上限（%{limit}件）に達しています。プランをアップグレードしてください。
+        service_limit: 資料数の上限（%{limit}件）に達しています。プランをアップグレードしてください。
+        monthly_session_limit: 商談数の上限（%{limit}件）に達しています。プランをアップグレードしてください。
       account:
         title: 企業情報
         language_title: 表示言語
@@ -426,7 +426,7 @@ ja:
         problem_new_window: 新しいウィンドウで開く
       banner:
         trial_ended_title: トライアル終了
-        trial_ended_body: スタンダード（%{price}/月）へアップグレード
+        trial_ended_body: Standard（%{price}/月）へアップグレード
         view_plans: プランを見る
         trialing_title: トライアル中
         trial_ends: '（%{date}まで）'
@@ -551,6 +551,7 @@ ja:
         audio_failed: '読み上げの作成に失敗しました: %{message}'
         no_documents: 資料がありません。先にPDFをアップロードしてください
         ai_busy: AI処理中です。完了までお待ちください
+        already_processed: すでにAI処理が完了しています
         ai_started: AI処理を開始しました。完了まで数分かかる場合があります
         not_processing: 処理中ではありません
         processing_reset: 処理状態をリセットしました。再度アップロードできます。
@@ -755,8 +756,8 @@ en:
       deals:
         index_title: Deals
         index_subtitle_admin: All company deals
-        index_subtitle_limited: 'Plan: %{plan} · Deals %{used} / %{limit}'
-        index_subtitle_unlimited: 'Plan: %{plan} · Deals %{used} (unlimited)'
+        index_subtitle_limited: 'Plan: %{plan} · Materials %{used} / %{limit}'
+        index_subtitle_unlimited: 'Plan: %{plan} · Materials %{used} (unlimited)'
         create: Create deal
         create_admin: Create admin deal
         list_title: All deals
@@ -1022,8 +1023,8 @@ en:
         closing: Closing
       limits:
         deal_limit: Deal limit reached (%{limit}). Please upgrade your plan.
-        service_limit: Presentation URL limit reached (%{limit}). Please upgrade your plan.
-        monthly_session_limit: Monthly session limit reached (%{limit}). Please upgrade your plan.
+        service_limit: Material limit reached (%{limit}). Please upgrade your plan.
+        monthly_session_limit: Deal limit reached (%{limit}). Please upgrade your plan.
       account:
         title: Company profile
         language_title: Display language
@@ -1171,6 +1172,7 @@ en:
         audio_failed: 'Failed to build narration: %{message}'
         no_documents: No materials yet. Upload a PDF first.
         ai_busy: AI is still processing. Please wait.
+        already_processed: AI processing has already completed.
         ai_started: AI processing started. It may take a few minutes.
         not_processing: Not currently processing
         processing_reset: Processing reset. You can upload again.

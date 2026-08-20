@@ -112,10 +112,9 @@ module DealEngine
 
         @deal.deal_faqs.create!(
           question: pair[:question],
-          answer: pair[:answer],
           category: pair[:category],
           source: "supplement_pdf",
-          status: "approved",
+          status: "pending",
           position: base_position + index
         )
         created += 1

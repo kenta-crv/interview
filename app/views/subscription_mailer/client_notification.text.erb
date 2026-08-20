@@ -1,0 +1,37 @@
+<%= @client_name %> 様
+
+<% case @event %>
+<% when :registered %>
+<% if @subscription.trial? %>
+この度は Meetia の無料トライアルをお申し込みいただき、誠にありがとうございます。
+トライアルの開始手続きが完了しました。
+<% else %>
+この度は Meetia をご利用いただき、誠にありがとうございます。
+プラン登録が完了しました。
+<% end %>
+<% when :changed %>
+Meetia のプラン変更が完了しました。
+<% if @previous_plan.present? %>
+変更前プラン: <%= @previous_plan_name %>
+<% end %>
+<% when :cancelled %>
+Meetia の解約手続きを受け付けました。
+ご契約期間の終了日まで引き続きご利用いただけます。
+<% else %>
+Meetia のご契約内容が更新されました。
+<% end %>
+
+プラン: <%= @subscription.plan_name %>
+<% if @event == :changed && @previous_plan.present? %>
+変更前プラン: <%= @previous_plan_name %>
+<% end %>
+ステータス: <%= @status_label %>
+<% if @trial_ends_label.present? %>
+トライアル終了日: <%= @trial_ends_label %>
+<% end %>
+
+ダッシュボード: <%= @dashboard_url %>
+
+ご不明な点がございましたら、info@j-work.jp までお問い合わせください。
+
+株式会社J Work

@@ -37,7 +37,7 @@
               - deal_count = @deal_counts[client.id] || 0
               - published_count = @published_deal_counts[client.id] || 0
               - lead_count = @lead_counts[client.id] || 0
-              - deal_limit = plan_config[:deal_limit]
+              - material_limit = plan_config[:service_limit]
               tr
                 td.db-v2-deals-table__title
                   = client.company.presence || "—"
@@ -54,8 +54,8 @@
                   - else
                     span.db-v2-status-badge = client.subscription_status.presence || t("meetia.dashboard.status.no_contract")
                 td
-                  - if deal_limit
-                    = "#{deal_count} / #{deal_limit}"
+                  - if material_limit
+                    = "#{deal_count} / #{material_limit}"
                   - else
                     = t("meetia.dashboard.management.deals_unlimited", count: deal_count)
                 td = published_count

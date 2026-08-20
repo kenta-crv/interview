@@ -14,15 +14,19 @@ module PlanLimitable
   end
 
   def monthly_session_limit
-    current_plan_config[:monthly_session_limit]
+    deal_limit
+  end
+
+  def materials_count
+    on_trial? ? total_deals_created.to_i : deals.count
   end
 
   def deals_count
-    deals.count
+    monthly_sessions_count
   end
 
   def active_services_count
-    situations.active.count
+    materials_count
   end
 
   def monthly_sessions_count
@@ -32,16 +36,16 @@ module PlanLimitable
   end
 
   def can_create_deal?
-    limit = deal_limit
-    limit.nil? || deals_count < limit
+    limit = service_limit
+    limit.nil? || materials_count < limit
   end
 
   def can_create_service?
-    active_services_count < service_limit
+    can_create_deal?
   end
 
   def can_start_session?
-    limit = monthly_session_limit
+    limit = deal_limit
     limit.nil? || monthly_sessions_count < limit
   end
 
@@ -93,10 +97,7 @@ module PlanLimitable
   end
 
   def monthly_session_limit_message
-    limit = monthly_session_limit
-    return nil if limit.nil?
-
-    I18n.t("meetia.dashboard.limits.monthly_session_limit", limit: limit)
+    deal_limit_message
   end
 
   def usage_ratio_for(limit_key)
@@ -104,16 +105,15 @@ module PlanLimitable
     return nil if limit.blank? || limit.to_i.zero?
 
     used = case limit_key
-           when :deal_limit then deals_count
-           when :service_limit then active_services_count
-           when :monthly_session_limit then monthly_sessions_count
+           when :deal_limit then monthly_sessions_count
+           when :service_limit then materials_count
            else 0
            end
     used.to_f / limit
   end
 
   def approaching_limit?(threshold: 0.8)
-    %i[deal_limit service_limit monthly_session_limit].any? do |key|
+    %i[deal_limit service_limit].any? do |key|
       ratio = usage_ratio_for(key)
       ratio && ratio >= threshold
     end

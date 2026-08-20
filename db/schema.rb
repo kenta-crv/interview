@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_08_000001) do
+ActiveRecord::Schema.define(version: 2026_08_19_140000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -72,6 +72,7 @@ ActiveRecord::Schema.define(version: 2026_08_08_000001) do
     t.string "preferred_locale", default: "ja", null: false
     t.string "provider"
     t.string "uid"
+    t.integer "total_deals_created", default: 0, null: false
     t.index ["email"], name: "index_clients_on_email", unique: true
     t.index ["provider", "uid"], name: "index_clients_on_provider_and_uid", unique: true
     t.index ["reset_password_token"], name: "index_clients_on_reset_password_token", unique: true

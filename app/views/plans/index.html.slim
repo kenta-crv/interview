@@ -20,6 +20,6 @@
         p
           = t("meetia.auth.plans_trial_prefix")
           strong = t("meetia.auth.plans_trial_strong", days: Subscription::TRIAL_DAYS)
-          = t("meetia.auth.plans_trial_suffix", deals: trial_config[:deal_limit])
+          = t("meetia.auth.plans_trial_suffix", deals: trial_config[:deal_limit], materials: trial_config[:service_limit])
 
   = render "plans/pricing_slider"
