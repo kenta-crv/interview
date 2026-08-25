@@ -1,4 +1,30 @@
 module ApplicationHelper
+  # Google Ads「Meetia_Trial」イベントスニペットの Label（AW-10998015402/ の後ろ）
+  GOOGLE_ADS_TRIAL_CONVERSION_LABEL = ENV.fetch("GOOGLE_ADS_TRIAL_CONVERSION_LABEL", "vlLmCJa_1OccEKrLofwo").freeze
+
+  # EEA + UK + CH + EFTA（Consent Mode の region 指定用）
+  GOOGLE_ADS_CONSENT_REGIONS = %w[
+    AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE
+    IS LI NO GB CH
+  ].freeze
+
+  def google_ads_consent_regions
+    GOOGLE_ADS_CONSENT_REGIONS
+  end
+
+  def visitor_country_code
+    %w[
+      HTTP_CF_IPCOUNTRY
+      HTTP_CLOUDFRONT_VIEWER_COUNTRY
+      HTTP_X_VERCEL_IP_COUNTRY
+      HTTP_X_COUNTRY_CODE
+    ].each do |header|
+      code = request.get_header(header).to_s.strip.upcase
+      return code if code.match?(/\A[A-Z]{2}\z/)
+    end
+    ""
+  end
+
   def default_meta_tags
     {
       site: "Meetia",
@@ -123,6 +149,18 @@ module ApplicationHelper
             "yahoo_conversion_value": "1"
           }
         });
+      </script>
+    HTML
+  end
+
+  def google_ads_trial_conversion_tag
+    label = GOOGLE_ADS_TRIAL_CONVERSION_LABEL.to_s.strip
+    return "".html_safe if label.blank?
+
+    send_to = "AW-10998015402/#{label}"
+    <<~HTML.html_safe
+      <script>
+        gtag('event', 'conversion', {'send_to': '#{send_to}'});
       </script>
     HTML
   end

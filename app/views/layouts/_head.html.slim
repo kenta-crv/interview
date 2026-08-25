@@ -1,6 +1,8 @@
 meta charset="UTF-8"
 meta name="viewport" content="width=device-width, initial-scale=1.0"
 meta name="turbo-cache-control" content="no-cache"
+meta name="meetia-visitor-country" content=visitor_country_code
+meta name="meetia-consent-regions" content=google_ads_consent_regions.join(",")
 
 = csrf_meta_tags
 = csp_meta_tag
@@ -17,9 +19,138 @@ javascript:
   function ytag() { yjDataLayer.push(arguments); }
   ytag({"type":"ycl_cookie", "config":{"ycl_use_non_cookie_storage":true}});
 
+javascript:
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  (function(){
+    var key = "meetia_ads_consent";
+    var stored = null;
+    try { stored = localStorage.getItem(key); } catch (e) {}
+    var regionMeta = document.querySelector('meta[name="meetia-consent-regions"]');
+    var regions = regionMeta && regionMeta.content ? regionMeta.content.split(",") : [];
+    var params = {
+      ad_storage: "granted",
+      ad_user_data: "granted",
+      ad_personalization: "granted",
+      analytics_storage: "granted"
+    };
+    if (stored === "granted" || stored === "denied") {
+      params.ad_storage = stored;
+      params.ad_user_data = stored;
+      params.ad_personalization = stored;
+      params.analytics_storage = stored;
+      params.wait_for_update = 500;
+      gtag("consent", "default", params);
+      return;
+    }
+    gtag("consent", "default", params);
+    gtag("consent", "default", {
+      ad_storage: "denied",
+      ad_user_data: "denied",
+      ad_personalization: "denied",
+      analytics_storage: "denied",
+      region: regions
+    });
+  })();
+script async=true src="https://www.googletagmanager.com/gtag/js?id=AW-10998015402"
+javascript:
+  gtag('js', new Date());
+  gtag('config', 'AW-10998015402');
+
 - if yahoo_trial_conversion_pending?
   = yahoo_ads_conversion_tags
-  
+  = google_ads_trial_conversion_tag
+
+style
+  |
+    .meetia-consent{position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483000;max-width:560px;margin:0 auto;padding:16px 18px;border-radius:14px;background:#111827;color:#f9fafb;box-shadow:0 18px 40px rgba(0,0,0,.28);font-family:"Noto Sans JP",system-ui,sans-serif}
+    .meetia-consent[hidden]{display:none!important}
+    .meetia-consent__text{margin:0 0 14px;font-size:13px;line-height:1.55;color:#e5e7eb}
+    .meetia-consent__actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+    .meetia-consent__btn{border:0;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer}
+    .meetia-consent__btn--accept{background:#2563eb;color:#fff}
+    .meetia-consent__btn--reject{background:#374151;color:#fff}
+
+javascript:
+  (function(){
+    var KEY = "meetia_ads_consent";
+    function metaContent(name){
+      var m = document.querySelector('meta[name="' + name + '"]');
+      return m && m.content ? m.content : "";
+    }
+    function country(){
+      return metaContent("meetia-visitor-country").toUpperCase();
+    }
+    function euRegions(){
+      return metaContent("meetia-consent-regions").split(",").filter(Boolean);
+    }
+    function timezone(){
+      try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ""; }
+      catch (e) { return ""; }
+    }
+    function isJapanAudience(){
+      if ((document.documentElement.lang || "").toLowerCase().indexOf("ja") === 0) return true;
+      if (country() === "JP") return true;
+      if (timezone() === "Asia/Tokyo") return true;
+      return false;
+    }
+    function inEuAudience(){
+      var c = country();
+      var eu = euRegions();
+      if (c && eu.indexOf(c) >= 0) return true;
+      if (c && c !== "XX" && c !== "T1") return false;
+      var tz = timezone();
+      if (/^Europe\//.test(tz)) return true;
+      if (tz === "Atlantic/Reykjavik" || tz === "Atlantic/Faroe" || tz === "Arctic/Longyearbyen") return true;
+      return false;
+    }
+    function stored(){
+      try { return localStorage.getItem(KEY); } catch (e) { return null; }
+    }
+    function applyConsent(value){
+      if (typeof gtag !== "function") return;
+      gtag("consent", "update", {
+        ad_storage: value,
+        ad_user_data: value,
+        ad_personalization: value,
+        analytics_storage: value
+      });
+      try { localStorage.setItem(KEY, value); } catch (e) {}
+    }
+    function hide(el){ if (el) el.setAttribute("hidden", "hidden"); }
+    function ensureBanner(){
+      if (stored() || isJapanAudience() || !inEuAudience()) return;
+      if (document.getElementById("meetia-consent-banner")) return;
+      var root = document.createElement("div");
+      root.id = "meetia-consent-banner";
+      root.className = "meetia-consent";
+      root.setAttribute("role", "dialog");
+      root.setAttribute("aria-live", "polite");
+      root.innerHTML =
+        '<p class="meetia-consent__text">' +
+        "We use cookies to measure advertising performance (Google Ads). Choose whether to allow ad cookies." +
+        "</p>" +
+        '<div class="meetia-consent__actions">' +
+        '<button type="button" class="meetia-consent__btn meetia-consent__btn--reject" data-consent="denied">Reject</button>' +
+        '<button type="button" class="meetia-consent__btn meetia-consent__btn--accept" data-consent="granted">Accept</button>' +
+        "</div>";
+      root.addEventListener("click", function(ev){
+        var btn = ev.target.closest("[data-consent]");
+        if (!btn) return;
+        applyConsent(btn.getAttribute("data-consent"));
+        hide(root);
+      });
+      (document.body || document.documentElement).appendChild(root);
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", ensureBanner);
+    } else {
+      ensureBanner();
+    }
+    document.addEventListener("turbo:load", ensureBanner);
+    document.addEventListener("turbolinks:load", ensureBanner);
+  })();
+
 - if respond_to?(:href_for_locale)
   link rel="alternate" hreflang="ja" href="#{request.base_url}#{href_for_locale(:ja)}"
   link rel="alternate" hreflang="en" href="#{request.base_url}#{href_for_locale(:en)}"

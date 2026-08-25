@@ -163,7 +163,6 @@
   .db-v2-bottom-card__header.db-v2-deals-hub__header
     .db-v2-deals-hub__heading
       h2.db-v2-bottom-card__title = t("meetia.dashboard.home.deals_hub_title")
-      p.db-v2-deals-hub__lead = t("meetia.dashboard.home.deals_hub_lead")
     - if client_signed_in?
       = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs" do
         i.fa-solid.fa-plus aria-hidden="true"

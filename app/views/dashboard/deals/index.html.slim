@@ -4,19 +4,18 @@
 .db-v2-header
   .db-v2-header__left
     h1.db-v2-header__title = t("meetia.dashboard.deals.index_title")
-    p.db-v2-header__subtitle
-      - if acting_as_admin?
-        = t("meetia.dashboard.deals.index_subtitle_admin")
-      - elsif material_limit
-        = t("meetia.dashboard.deals.index_subtitle_limited", plan: plan[:name], used: current_client.materials_count, limit: material_limit)
-      - else
-        = t("meetia.dashboard.deals.index_subtitle_unlimited", plan: plan[:name], used: current_client.materials_count)
+    - unless acting_as_admin?
+      p.db-v2-header__subtitle
+        - if material_limit
+          = t("meetia.dashboard.deals.index_subtitle_limited", plan: plan[:name], used: current_client.materials_count, limit: material_limit)
+        - else
+          = t("meetia.dashboard.deals.index_subtitle_unlimited", plan: plan[:name], used: current_client.materials_count)
   .db-v2-header__right
     = render "/dashboard/theme_switch"
     - if client_signed_in? || acting_as_admin?
       = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary" do
         i.fa-solid.fa-plus aria-hidden="true"
-        span = acting_as_admin? && !client_signed_in? ? t("meetia.dashboard.deals.create_admin") : t("meetia.dashboard.deals.create")
+        span = t("meetia.dashboard.deals.create")
 
 .db-v2-bottom-card
   .db-v2-bottom-card__header.db-v2-bottom-card__header--split
@@ -32,7 +31,7 @@
         - if client_signed_in? || acting_as_admin?
           = link_to new_dashboard_deal_path, class: "db-v2-btn db-v2-btn--primary" do
             i.fa-solid.fa-plus aria-hidden="true"
-            span = acting_as_admin? && !client_signed_in? ? t("meetia.dashboard.deals.create_admin_short") : t("meetia.dashboard.deals.create_first")
+            span = t("meetia.dashboard.deals.create_first")
     - else
       .db-v2-leads-table-wrap
         table.db-v2-leads-table.db-v2-deals-table

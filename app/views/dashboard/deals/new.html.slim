@@ -9,7 +9,6 @@
       i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
       span.db-v2-breadcrumb__current = t("meetia.dashboard.deals.new_current")
     h1.db-v2-header__title = t("meetia.dashboard.deals.new_title")
-    p.db-v2-header__subtitle = t("meetia.dashboard.deals.new_subtitle")
   .db-v2-header__right
     = render "/dashboard/theme_switch"
     = link_to dashboard_deals_path, class: "db-v2-btn db-v2-btn--ghost" do
@@ -26,14 +25,10 @@
           ul
             - @deal.errors.full_messages.each do |message|
               li = message
-      - if acting_as_admin? && !client_signed_in?
-        .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
-          p = t("meetia.dashboard.deals.admin_create_note")
       - unless acting_as_admin? && !client_signed_in?
         .db-v2-form-group
           = label_tag "deal_company", t("meetia.dashboard.deals.field_company"), class: "db-v2-form-label"
           = text_field_tag "deal[company]", @company_name, class: "db-v2-form-control", required: true, id: "deal_company", placeholder: t("meetia.dashboard.deals.field_company_ph"), autocomplete: "organization"
-          p.db-v2-muted = t("meetia.dashboard.deals.field_company_hint")
       .db-v2-form-group
         = f.label :title, t("meetia.dashboard.deals.field_title"), class: "db-v2-form-label"
         = f.text_field :title, class: "db-v2-form-control", required: true, placeholder: t("meetia.dashboard.deals.field_title_ph")
@@ -46,7 +41,6 @@
       .db-v2-form-group
         = f.label :tts_voice_gender, t("meetia.dashboard.deals.field_voice"), class: "db-v2-form-label"
         = f.select :tts_voice_gender, Deal::TTS_VOICE_GENDERS.keys.map { |k| [t("meetia.dashboard.voice.#{k}"), k] }, {}, class: "db-v2-form-control"
-        p.db-v2-muted = t("meetia.dashboard.deals.voice_hint")
       .db-v2-form-actions
         = f.submit t("meetia.dashboard.deals.submit_create"), class: "db-v2-btn db-v2-btn--primary"
         = link_to dashboard_deals_path, class: "db-v2-btn db-v2-btn--ghost" do

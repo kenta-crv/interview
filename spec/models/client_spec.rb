@@ -94,9 +94,14 @@ RSpec.describe "Yahoo Ads trial conversion", type: :request do
     follow_redirect!
     expect(response.body).to include(conv_label)
     expect(response.body).to include("yjad_conversion")
+    expect(response.body).to include("AW-10998015402")
+    expect(response.body).to include("gtag/js?id=AW-10998015402")
+    expect(response.body).to include("AW-10998015402/vlLmCJa_1OccEKrLofwo")
+    expect(response.body).to include("gtag('event', 'conversion'")
 
     get dashboard_index_path
     expect(response.body).not_to include(conv_label)
+    expect(response.body).not_to include("vlLmCJa_1OccEKrLofwo")
   end
 
   it "既存ログインではYAds CVタグを出さない" do
@@ -105,5 +110,25 @@ RSpec.describe "Yahoo Ads trial conversion", type: :request do
     get dashboard_index_path
     expect(response).to have_http_status(:ok)
     expect(response.body).not_to include(conv_label)
+    expect(response.body).not_to include("vlLmCJa_1OccEKrLofwo")
+  end
+end
+
+RSpec.describe "Google Ads consent mode", type: :request do
+  it "Consent Mode default とカスタムバナー用スクリプトを出す" do
+    get root_path
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include('gtag("consent", "default"')
+    expect(response.body).to include("meetia-consent-banner")
+    expect(response.body).to include("meetia_ads_consent")
+    expect(response.body).to include('name="meetia-visitor-country"')
+    expect(response.body).to include('name="meetia-consent-regions"')
+    expect(response.body).to include('content="AT,BE,BG')
+    expect(response.body).not_to match(/region:\s*\[&quot;/)
+  end
+
+  it "Cloudflare 国ヘッダーを meta に載せる" do
+    get root_path, headers: { "CF-IPCountry" => "DE" }
+    expect(response.body).to include('content="DE"')
   end
 end
