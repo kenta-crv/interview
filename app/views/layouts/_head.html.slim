@@ -13,12 +13,12 @@ link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;70
 = display_meta_tags default_meta_tags
 = favicon_link_tag "favicon.ico"
 
-script async=true src="https://s.yimg.jp/images/listing/tool/cv/ytag.js"
-javascript:
-  window.yjDataLayer = window.yjDataLayer || [];
-  function ytag() { yjDataLayer.push(arguments); }
-  ytag({"type":"ycl_cookie", "config":{"ycl_use_non_cookie_storage":true}});
+link rel="preconnect" href="https://www.googletagmanager.com" crossorigin=""
+link rel="dns-prefetch" href="https://www.googletagmanager.com"
+link rel="dns-prefetch" href="https://www.googleadservices.com"
+link rel="dns-prefetch" href="https://googleads.g.doubleclick.net"
 
+/ Google タグを Yahoo より先・同期読み込みにする（Tag Assistant が握手前にタグ未検出になるのを防ぐ）
 javascript:
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -68,10 +68,16 @@ javascript:
       region: regions
     });
   })();
-script async=true src="https://www.googletagmanager.com/gtag/js?id=AW-10998015402"
+script src="https://www.googletagmanager.com/gtag/js?id=AW-10998015402"
 javascript:
   gtag('js', new Date());
   gtag('config', 'AW-10998015402');
+
+script async=true src="https://s.yimg.jp/images/listing/tool/cv/ytag.js"
+javascript:
+  window.yjDataLayer = window.yjDataLayer || [];
+  function ytag() { yjDataLayer.push(arguments); }
+  ytag({"type":"ycl_cookie", "config":{"ycl_use_non_cookie_storage":true}});
 
 - if yahoo_trial_conversion_pending?
   = yahoo_ads_conversion_tags
