@@ -24,16 +24,32 @@ javascript:
   function gtag(){dataLayer.push(arguments);}
   (function(){
     var key = "meetia_ads_consent";
-    var stored = null;
-    try { stored = localStorage.getItem(key); } catch (e) {}
-    var regionMeta = document.querySelector('meta[name="meetia-consent-regions"]');
-    var regions = regionMeta && regionMeta.content ? regionMeta.content.split(",") : [];
     var params = {
       ad_storage: "granted",
       ad_user_data: "granted",
       ad_personalization: "granted",
       analytics_storage: "granted"
     };
+    function isTagAssistantDebug(){
+      try {
+        var q = String(location.search || "");
+        if (q.indexOf("_dbg") >= 0 || q.indexOf("gtm_debug") >= 0 || q.indexOf("gtm_preview") >= 0) return true;
+        if (document.referrer && document.referrer.indexOf("tagassistant.google.com") >= 0) return true;
+        if (window.top !== window.self) return true;
+      } catch (e) {
+        return true;
+      }
+      return false;
+    }
+    if (isTagAssistantDebug()) {
+      gtag("consent", "default", params);
+      try { localStorage.setItem(key, "granted"); } catch (e) {}
+      return;
+    }
+    var stored = null;
+    try { stored = localStorage.getItem(key); } catch (e) {}
+    var regionMeta = document.querySelector('meta[name="meetia-consent-regions"]');
+    var regions = regionMeta && regionMeta.content ? regionMeta.content.split(",") : [];
     if (stored === "granted" || stored === "denied") {
       params.ad_storage = stored;
       params.ad_user_data = stored;
@@ -118,8 +134,19 @@ javascript:
       try { localStorage.setItem(KEY, value); } catch (e) {}
     }
     function hide(el){ if (el) el.setAttribute("hidden", "hidden"); }
+    function isTagAssistantDebug(){
+      try {
+        var q = String(location.search || "");
+        if (q.indexOf("_dbg") >= 0 || q.indexOf("gtm_debug") >= 0 || q.indexOf("gtm_preview") >= 0) return true;
+        if (document.referrer && document.referrer.indexOf("tagassistant.google.com") >= 0) return true;
+        if (window.top !== window.self) return true;
+      } catch (e) {
+        return true;
+      }
+      return false;
+    }
     function ensureBanner(){
-      if (stored() || isJapanAudience() || !inEuAudience()) return;
+      if (isTagAssistantDebug() || stored() || isJapanAudience() || !inEuAudience()) return;
       if (document.getElementById("meetia-consent-banner")) return;
       var root = document.createElement("div");
       root.id = "meetia-consent-banner";

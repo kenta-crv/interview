@@ -121,6 +121,7 @@ RSpec.describe "Google Ads consent mode", type: :request do
     expect(response.body).to include('gtag("consent", "default"')
     expect(response.body).to include("meetia-consent-banner")
     expect(response.body).to include("meetia_ads_consent")
+    expect(response.body).to include("isTagAssistantDebug")
     expect(response.body).to include('name="meetia-visitor-country"')
     expect(response.body).to include('name="meetia-consent-regions"')
     expect(response.body).to include('content="AT,BE,BG')
@@ -130,5 +131,14 @@ RSpec.describe "Google Ads consent mode", type: :request do
   it "Cloudflare 国ヘッダーを meta に載せる" do
     get root_path, headers: { "CF-IPCountry" => "DE" }
     expect(response.body).to include('content="DE"')
+  end
+
+  it "Tag Assistant 用に frame-ancestors を許可し X-Frame-Options を外す" do
+    get root_path
+    expect(response).to have_http_status(:ok)
+    csp = response.headers["Content-Security-Policy"].to_s
+    expect(csp).to include("frame-ancestors")
+    expect(csp).to include("tagassistant.google.com")
+    expect(response.headers["X-Frame-Options"]).to be_blank
   end
 end
