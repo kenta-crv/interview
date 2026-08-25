@@ -69,11 +69,17 @@ class ApplicationController < ActionController::Base
     locale = resolve_ui_locale
     I18n.locale = locale
 
-    path = request.path.to_s.sub(%r{\A/en(?=/|$)}, "")
-    path = "/" if path.blank?
-    # 公開SEO用URLは表示localeを強制するが、ユーザーのUI希望(session/cookie)は消さない
-    return if public_switchable_path?(path)
+    # /en/* は英語意図を session に残す（OAuth・未ログインリダイレクト用）
+    if request.path.to_s.match?(%r{\A/en(/|\z)})
+      persist_ui_locale!(:en)
+      return
+    end
+
+    path = request.path.to_s
     return if visitor_locale_path?(path)
+
+    # /en なしの公開SEO URL は表示だけ ja にし、session/cookie は消さない
+    return if public_switchable_path?(path)
 
     persist_ui_locale!(locale)
   end
@@ -115,9 +121,11 @@ class ApplicationController < ActionController::Base
     requested = params[:locale].presence.to_s
     return requested.to_sym if Client::LOCALES.include?(requested)
 
+    # /en プレフィックスは params が欠けても英語
+    return :en if request.path.to_s.match?(%r{\A/en(/|\z)})
+
+    path = request.path.to_s
     # /en なしの公開URLは明示的に日本語（session に en が残っていても上書き）
-    path = request.path.to_s.sub(%r{\A/en(?=/|$)}, "")
-    path = "/" if path.blank?
     return :ja if public_switchable_path?(path)
 
     if client_signed_in? && current_client.preferred_locale.present?
@@ -131,6 +139,35 @@ class ApplicationController < ActionController::Base
     return cookie_locale.to_sym if Client::LOCALES.include?(cookie_locale)
 
     :ja
+  end
+
+  # 認証リダイレクト用。英語LP/OAuth 経由なのに /clients/sign_in へ落ちるのを防ぐ
+  def client_sign_in_redirect_path
+    english_auth_redirect? ? new_client_session_en_path(locale: :en) : new_client_session_path
+  end
+
+  def client_sign_up_redirect_path
+    english_auth_redirect? ? new_client_registration_en_path(locale: :en) : new_client_registration_path
+  end
+
+  def english_auth_redirect?
+    return true if I18n.locale.to_s == "en"
+    return true if request.path.to_s.match?(%r{\A/en(/|\z)})
+    return true if session[:omniauth_locale].to_s == "en"
+    return true if session[:ui_locale].to_s == "en"
+    return true if cookies[:ui_locale].to_s == "en"
+    return true if request.referer.to_s.match?(%r{/en(/|\?|#|$)})
+
+    false
+  end
+
+  # 英語LP/OAuth から誤って日本語認証URLへ来たときだけ /en へ戻す
+  # （session が en のまま日本語LPを見ているケースでは跳ね返さない）
+  def english_auth_entry_bounce?
+    return true if session[:omniauth_locale].to_s == "en"
+    return true if request.referer.to_s.match?(%r{/en(/|\?|#|$)})
+
+    false
   end
 
   def public_switchable_path?(path)
@@ -211,10 +248,7 @@ class ApplicationController < ActionController::Base
       respond_to do |format|
         format.json { render json: { error: "Unauthorized" }, status: :unauthorized }
         format.all do
-          redirect_to(
-            (I18n.locale.to_s == "en" ? new_client_session_en_path(locale: :en) : new_client_session_path),
-            alert: t("meetia.auth.login_required")
-          )
+          redirect_to client_sign_in_redirect_path, alert: t("meetia.auth.login_required")
         end
       end
     end

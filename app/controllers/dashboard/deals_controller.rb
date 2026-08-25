@@ -46,7 +46,7 @@ class Dashboard::DealsController < Dashboard::BaseController
 
   def presentation
     unless client_signed_in? || acting_as_admin?
-      redirect_to new_client_session_path, alert: t("meetia.dashboard.flash.login_required")
+      redirect_to client_sign_in_redirect_path, alert: t("meetia.dashboard.flash.login_required")
       return
     end
 

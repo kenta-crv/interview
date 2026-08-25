@@ -6,7 +6,8 @@
 - pages_payload = deal_pages.map { |p| { page_number: p.page_number, title: p.title, script: p.script, audio_url: (deal_record ? deal_record.page_audio_path(p) : (p.page_audio.attached? ? rails_blob_path(p.page_audio, only_path: true) : p.audio_url)), role: (deal_record ? deal_record.page_role_for(p) : nil) } }
 - preview_mode = local_assigns.fetch(:preview_mode, false)
 - sales_call_url = local_assigns[:sales_call_url]
-- config_payload = { pages: pages_payload, opening: opening_payload, opening_segments: opening_segments, closing: closing, respond_url: respond_url, evaluate_url: evaluate_url, track_url: (local_assigns[:track_url].presence), sales_call_url: sales_call_url, public_mode: public_mode, preview_mode: preview_mode, home_url: root_path, cta: cta, materials: materials }.to_json
+- deal_home_url = (deal_record&.language.to_s == "en") ? localized_root_path(locale: :en) : root_path
+- config_payload = { pages: pages_payload, opening: opening_payload, opening_segments: opening_segments, closing: closing, respond_url: respond_url, evaluate_url: evaluate_url, track_url: (local_assigns[:track_url].presence), sales_call_url: sales_call_url, public_mode: public_mode, preview_mode: preview_mode, home_url: deal_home_url, cta: cta, materials: materials }.to_json
 - i18n_payload = t("meetia.deal.js")
 
 script type="application/json" id="deal-presentation-config"

@@ -10,7 +10,7 @@ class Dashboard::BaseController < ApplicationController
   def authenticate_dashboard_user!
     return if client_signed_in? || acting_as_admin?
 
-    redirect_to new_client_session_path, alert: t("meetia.dashboard.flash.login_required")
+    redirect_to client_sign_in_redirect_path, alert: t("meetia.dashboard.flash.login_required")
   end
 
   # Client自身の商談、または Admin管理商談のみ操作可能

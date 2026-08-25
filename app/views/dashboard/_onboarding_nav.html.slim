@@ -1,9 +1,9 @@
 - if client_signed_in?
   nav.db-v2-onboarding-nav aria-label=t("meetia.dashboard.nav.onboarding")
-    = link_to root_path, class: "db-v2-onboarding-nav__link" do
+    = link_to locale_root_href, class: "db-v2-onboarding-nav__link" do
       i.fa-solid.fa-house aria-hidden="true"
       span = t("meetia.dashboard.nav.top")
-    = link_to plans_path, class: "db-v2-onboarding-nav__link" do
+    = link_to plans_path_for_locale, class: "db-v2-onboarding-nav__link" do
       i.fa-solid.fa-tags aria-hidden="true"
       span = t("meetia.dashboard.nav.choose_plan")
     = link_to dashboard_subscription_path, class: "db-v2-onboarding-nav__link" do

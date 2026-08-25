@@ -15,17 +15,17 @@
     .plan-upgrade-banner__body
       strong = t("meetia.dashboard.banner.trial_ended_title")
       span = t("meetia.dashboard.banner.trial_ended_body", price: standard_price)
-    = link_to t("meetia.dashboard.banner.view_plans"), plans_path, class: "plan-upgrade-banner__cta"
+    = link_to t("meetia.dashboard.banner.view_plans"), plans_path_for_locale, class: "plan-upgrade-banner__cta"
 - elsif show_trial
   - trial_label = t("meetia.dashboard.banner.trialing_title")
   - trial_label += t("meetia.dashboard.banner.trial_ends", date: trial_ends.strftime("%Y/%m/%d")) if trial_ends.present?
   .plan-upgrade-banner.plan-upgrade-banner--trial role="status"
     .plan-upgrade-banner__body
       strong = trial_label
-    = link_to t("meetia.dashboard.banner.plans_billing"), plans_path, class: "plan-upgrade-banner__cta"
+    = link_to t("meetia.dashboard.banner.plans_billing"), plans_path_for_locale, class: "plan-upgrade-banner__cta"
 - elsif show_usage
   .plan-upgrade-banner.plan-upgrade-banner--usage role="status"
     .plan-upgrade-banner__body
       strong = t("meetia.dashboard.banner.quota_title")
       span = t("meetia.dashboard.banner.quota_body")
-    = link_to t("meetia.dashboard.banner.check_plans"), plans_path, class: "plan-upgrade-banner__cta"
+    = link_to t("meetia.dashboard.banner.check_plans"), plans_path_for_locale, class: "plan-upgrade-banner__cta"

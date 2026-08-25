@@ -23,6 +23,7 @@ module TopsHelper
     { key: "reviews", label: "レビュー", href: "#reviews" },
     { key: "faq", label: "FAQ", href: "#faq" },
     { key: "company", label: "会社概要", href: "#company" },
+    { key: "trial", label: "トライアル", href: "#trial" },
     { key: "columns", label: "お役立ち記事", href: "/columns" }
   ].freeze
 
@@ -34,6 +35,7 @@ module TopsHelper
     { key: "reviews", label: "Reviews", href: "#reviews" },
     { key: "faq", label: "FAQ", href: "#faq" },
     { key: "company", label: "Company", href: "#company" },
+    { key: "trial", label: "Trial", href: "#trial" },
     { key: "columns", label: "Articles", href: "/columns" }
   ].freeze
 

@@ -3,6 +3,28 @@
 class Clients::PasswordsController < Devise::PasswordsController
   layout "auth"
 
+  def new
+    if !request.path.to_s.match?(%r{\A/en(/|\z)}) && english_auth_entry_bounce?
+      redirect_to new_client_password_en_path(locale: :en) and return
+    end
+
+    super
+  end
+
+  def edit
+    if !request.path.to_s.match?(%r{\A/en(/|\z)})
+      client = resource_class.with_reset_password_token(params[:reset_password_token].to_s)
+      if client&.preferred_locale.to_s == "en"
+        redirect_to edit_client_password_en_path(
+          locale: :en,
+          reset_password_token: params[:reset_password_token]
+        ) and return
+      end
+    end
+
+    super
+  end
+
   def create
     self.resource = resource_class.send_reset_password_instructions(resource_params)
     yield resource if block_given?

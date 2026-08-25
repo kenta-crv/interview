@@ -6,7 +6,7 @@ class TopsController < ApplicationController
   def index
     if params[:deal_session].to_s == "ended"
       flash[:notice] = t("meetia.deal.ended_flash")
-      redirect_to root_path and return
+      redirect_to locale_root_href and return
     end
   end
 

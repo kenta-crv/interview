@@ -41,7 +41,7 @@
       - unless acting_as_admin?
         .db-v2-subscription-upgrade
           h3.db-v2-subscription-upgrade__title = t("meetia.dashboard.subscription.upgrade_title")
-          = link_to plans_path, class: "db-v2-btn db-v2-btn--primary" do
+          = link_to plans_path_for_locale, class: "db-v2-btn db-v2-btn--primary" do
             i.fa-solid.fa-tags aria-hidden="true"
             span = t("meetia.dashboard.subscription.change_plan")
 
@@ -57,7 +57,7 @@
     - else
       .db-v2-empty-state
         p.db-v2-empty-state__text = t("meetia.dashboard.subscription.empty")
-        = link_to plans_path, class: "db-v2-btn db-v2-btn--primary" do
+        = link_to plans_path_for_locale, class: "db-v2-btn db-v2-btn--primary" do
           span = t("meetia.dashboard.subscription.choose_plan")
 
 .db-v2-bottom-card
