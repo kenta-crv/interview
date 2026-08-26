@@ -31,10 +31,6 @@ class Clients::RegistrationsController < Devise::RegistrationsController
   end
 
   def new
-    if !request.path.to_s.match?(%r{\A/en(/|\z)}) && english_auth_entry_bounce?
-      redirect_to new_client_registration_en_path(locale: :en) and return
-    end
-
     super
   end
 

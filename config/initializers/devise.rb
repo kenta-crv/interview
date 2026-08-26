@@ -288,32 +288,13 @@ Devise.setup do |config|
   end
 
   # ==> Warden configuration
-  # 英語LP /en 経由の未ログインを /clients/sign_in（日本語）へ落とさない
-  config.warden do |manager|
-    manager.failure_app = Class.new(Devise::FailureApp) do
-      def redirect_url
-        if scope.to_sym == :client && english_auth_redirect?
-          return new_client_session_en_path(locale: :en)
-        end
-
-        super
-      end
-
-      private
-
-      def english_auth_redirect?
-        req = request
-        return true if I18n.locale.to_s == "en"
-        return true if req.path.to_s.match?(%r{\A/en(/|\z)})
-        return true if req.session[:omniauth_locale].to_s == "en"
-        return true if req.session[:ui_locale].to_s == "en"
-        return true if req.cookie_jar[:ui_locale].to_s == "en"
-        return true if req.referer.to_s.match?(%r{/en(/|\?|#|$)})
-
-        false
-      end
-    end
-  end
+  # If you want to use other strategies, that are not supported by Devise, or
+  # change the failure app, you can configure them inside the config.warden block.
+  #
+  # config.warden do |manager|
+  #   manager.intercept_401 = false
+  #   manager.default_strategies(scope: :user).unshift :some_external_strategy
+  # end
 
   # ==> Mountable engine configurations
   # When using Devise inside an engine, let's call it `MyEngine`, and this engine

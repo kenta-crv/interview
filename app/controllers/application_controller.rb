@@ -68,18 +68,9 @@ class ApplicationController < ActionController::Base
   def set_locale
     locale = resolve_ui_locale
     I18n.locale = locale
-
-    # /en/* は英語意図を session に残す（OAuth・未ログインリダイレクト用）
-    if request.path.to_s.match?(%r{\A/en(/|\z)})
-      persist_ui_locale!(:en)
-      return
-    end
-
-    path = request.path.to_s
-    return if visitor_locale_path?(path)
-
-    # /en なしの公開SEO URL は表示だけ ja にし、session/cookie は消さない
-    return if public_switchable_path?(path)
+    return if visitor_locale_path?(request.path.to_s)
+    # 公開URLの表示言語はアカウント言語（session / preferred_locale）を上書きしない
+    return if public_switchable_path?(request_path_without_locale)
 
     persist_ui_locale!(locale)
   end
@@ -121,11 +112,9 @@ class ApplicationController < ActionController::Base
     requested = params[:locale].presence.to_s
     return requested.to_sym if Client::LOCALES.include?(requested)
 
-    # /en プレフィックスは params が欠けても英語
     return :en if request.path.to_s.match?(%r{\A/en(/|\z)})
 
-    path = request.path.to_s
-    # /en なしの公開URLは明示的に日本語（session に en が残っていても上書き）
+    path = request_path_without_locale
     return :ja if public_switchable_path?(path)
 
     if client_signed_in? && current_client.preferred_locale.present?
@@ -141,33 +130,27 @@ class ApplicationController < ActionController::Base
     :ja
   end
 
-  # 認証リダイレクト用。英語LP/OAuth 経由なのに /clients/sign_in へ落ちるのを防ぐ
+  def request_path_without_locale
+    path = request.path.to_s.sub(%r{\A/en(?=/|$)}, "")
+    path = "/" if path.blank?
+    path
+  end
+
+  def apply_saved_ui_locale!(client)
+    return unless client.respond_to?(:preferred_locale)
+
+    value = client.preferred_locale.to_s
+    value = "ja" unless Client::LOCALES.include?(value)
+    persist_ui_locale!(value)
+    I18n.locale = value.to_sym
+  end
+
   def client_sign_in_redirect_path
-    english_auth_redirect? ? new_client_session_en_path(locale: :en) : new_client_session_path
+    auth_url_locale == "en" ? new_client_session_en_path(locale: :en) : new_client_session_path
   end
 
   def client_sign_up_redirect_path
-    english_auth_redirect? ? new_client_registration_en_path(locale: :en) : new_client_registration_path
-  end
-
-  def english_auth_redirect?
-    return true if I18n.locale.to_s == "en"
-    return true if request.path.to_s.match?(%r{\A/en(/|\z)})
-    return true if session[:omniauth_locale].to_s == "en"
-    return true if session[:ui_locale].to_s == "en"
-    return true if cookies[:ui_locale].to_s == "en"
-    return true if request.referer.to_s.match?(%r{/en(/|\?|#|$)})
-
-    false
-  end
-
-  # 英語LP/OAuth から誤って日本語認証URLへ来たときだけ /en へ戻す
-  # （session が en のまま日本語LPを見ているケースでは跳ね返さない）
-  def english_auth_entry_bounce?
-    return true if session[:omniauth_locale].to_s == "en"
-    return true if request.referer.to_s.match?(%r{/en(/|\?|#|$)})
-
-    false
+    auth_url_locale == "en" ? new_client_registration_en_path(locale: :en) : new_client_registration_path
   end
 
   def public_switchable_path?(path)
