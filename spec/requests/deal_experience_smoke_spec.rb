@@ -70,6 +70,23 @@ RSpec.describe 'Deal experience smoke', type: :request do
       expect(response.body).not_to include('登録してAI商談を開始')
     end
 
+    it 'renders unpublished page in English when deal language is en' do
+      unpublished = Deal.create!(
+        client: client,
+        title: 'Unpublished EN deal',
+        language: 'en',
+        status: :uploading,
+        playback_ready: false
+      )
+
+      get public_deal_session_path(token: unpublished.access_token)
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to include('lang="en"')
+      expect(response.body).to include('This deal is not published yet')
+      expect(response.body).to include('If you have questions, contact the team who shared this link.')
+      expect(response.body).not_to include('ご不明点は、商談のご案内元へお問い合わせください。')
+    end
+
     it 'shows registration form without start overlay' do
       get public_deal_session_path(token: deal.access_token)
       expect(response).to have_http_status(:ok)
@@ -298,7 +315,7 @@ RSpec.describe 'Deal experience smoke', type: :request do
       }.not_to have_enqueued_job(ProcessDealJob)
 
       expect(response).to redirect_to(dashboard_deal_path(uploadable_deal))
-      expect(flash[:alert]).to include('再アップロードできません')
+      expect(flash[:alert]).to include('差し替えできません')
 
       get dashboard_deal_path(uploadable_deal)
       expect(response.body).not_to include(upload_documents_dashboard_deal_path(uploadable_deal))

@@ -216,18 +216,18 @@ ja:
         tab_analytics: ログ/分析
         setup_incomplete: 設定未完了
         upload_title: 資料アップロード
-        admin_only_upload: この商談はAdmin管理です。資料アップロード・公開はAdminで行ってください。
-        client_only_upload: この商談はClient管理です。資料アップロード・公開は企業アカウントで行ってください。
+        admin_only_upload: この商談の資料アップロード・公開は、MeetiaのAdminのみ可能です。
+        client_only_upload: この商談の資料アップロード・公開は、所有する企業のログインでのみ可能です。
         upload_blocked_processing: AI処理中のため、新しい資料はアップロードできません。完了後に再度お試しください。
         upload_pdf_title: PDFをアップロード（バックグラウンドでAI処理）
-        upload_hint: 一度アップロードすると、この商談IDでは再アップロードできません。処理には数分かかります。
+        upload_hint: 一度アップロードすると、この商談では差し替えできません。処理には数分かかります。
         pdf_file: PDFファイル
         choose_file: ファイルを選択
         selected_files: 選択中のファイル
         select_pdf_error: PDFファイルを選択してください
         upload_start: アップロードしてAI処理開始
         uploaded_docs: アップロード済み資料
-        proposal_locked_note: 提案資料はこの商談IDでは固定です。再アップロードするとFAQや音声台本の整合性が崩れるため、変更が必要な場合は新しい商談を作成してください。
+        proposal_locked_note: この商談の提案PDFは差し替えできません。別の資料にする場合は新しい商談を作成してください（FAQ・台本のずれを防ぐためです）。
         open_pdf: PDFを開く
         show_preview: この資料のプレビューを表示する
         hide_preview: プレビューを閉じる
@@ -247,7 +247,7 @@ ja:
         publish: 公開する
         claim_admin: Admin管理にして公開可能にする
         claim_admin_confirm: この商談をAdmin管理に切り替えます。以降はClientからは公開・編集できません。よろしいですか？
-        client_managed_note: この商談はClient管理です
+        client_managed_note: この商談は企業側で管理されています
         admin_managed_note: Admin管理の商談です
         owner_only_note: 公開・編集は商談オーナーのみ可能です
         voice_bar_title: AIナレーションの声
@@ -563,7 +563,7 @@ ja:
         follow_up_unavailable: 現在のプランではフォローアップ機能を利用できません
         follow_up_updated: フォローアップ設定を更新しました
         no_file: ファイルが選択されていません
-        proposal_locked: この商談IDでは提案資料を再アップロードできません。変更が必要な場合は新しい商談を作成してください
+        proposal_locked: この商談の提案PDFは差し替えできません。別の資料にする場合は新しい商談を作成してください
         upload_started: 資料をアップロードしました。AI処理をバックグラウンドで開始しています
         db_busy: データベースが混雑しています。数秒待ってから再度お試しください
         generic_error: 'エラーが発生しました: %{message}'
@@ -581,8 +581,8 @@ ja:
         deal_deleted: 商談を削除しました
         deal_not_found: 商談が見つかりません。
         client_create_required: クライアント商談の新規作成は企業アカウントでログインしてください。Admin商談はAdminで作成できます。
-        forbidden_client_managed: この商談はクライアント管理です。公開・編集は企業アカウントで行ってください。
-        forbidden_admin_managed: この商談はAdmin管理です。公開・編集はAdminアカウントで行ってください。
+        forbidden_client_managed: この商談の公開・編集は、所有する企業のログインでのみ可能です。
+        forbidden_admin_managed: この商談の公開・編集は、MeetiaのAdminのみ可能です。
         faq_added: FAQを追加しました
         faq_updated: FAQを更新しました
         faq_deleted: FAQを削除しました
@@ -828,23 +828,24 @@ en:
         tab_analytics: Logs / analytics
         setup_incomplete: Setup incomplete
         upload_title: Upload materials
-        admin_only_upload: This deal is Admin-managed. Upload and publish from an
-          Admin account.
-        client_only_upload: This deal is Client-managed. Upload and publish from a
-          company account.
+        admin_only_upload: Only Meetia admins can upload materials and publish this
+          deal.
+        client_only_upload: Only the company that owns this deal can upload materials
+          and publish. Sign in with that company account.
         upload_blocked_processing: Upload unavailable while AI is processing. Try
           again when it finishes.
         upload_pdf_title: Upload PDF (AI processes in background)
-        upload_hint: Once uploaded, this deal ID cannot be re-uploaded. Processing
-          may take a few minutes.
+        upload_hint: Once uploaded, the proposal PDF for this deal can’t be replaced.
+          Processing may take a few minutes.
         pdf_file: PDF file
         choose_file: Choose file
         selected_files: Selected files
         select_pdf_error: Please select a PDF file
         upload_start: Upload and start AI
         uploaded_docs: Uploaded materials
-        proposal_locked_note: Proposal files are locked for this deal ID. To change
-          them, create a new deal so FAQ and scripts stay consistent.
+        proposal_locked_note: The proposal PDF for this deal can’t be replaced. To
+          use a different file, create a new deal (this keeps FAQ and scripts in
+          sync).
         open_pdf: Open PDF
         show_preview: Show PDF preview
         hide_preview: Hide preview
@@ -865,7 +866,7 @@ en:
         claim_admin: Take Admin ownership to publish
         claim_admin_confirm: Switch this deal to Admin-managed? Clients will no longer
           be able to publish or edit.
-        client_managed_note: This deal is Client-managed
+        client_managed_note: This deal is managed by the company
         admin_managed_note: This is an Admin-managed deal
         owner_only_note: Only the deal owner can publish or edit
         voice_bar_title: AI narration voice
@@ -1188,8 +1189,8 @@ en:
         follow_up_unavailable: Follow-up is not available on your current plan
         follow_up_updated: Follow-up settings updated
         no_file: No file selected
-        proposal_locked: Proposal files can’t be re-uploaded for this deal ID. Create
-          a new deal to change them.
+        proposal_locked: The proposal PDF for this deal can’t be replaced. Create a
+          new deal to use a different file.
         upload_started: Upload complete. AI processing started in the background.
         db_busy: Database is busy. Wait a few seconds and try again.
         generic_error: 'Something went wrong: %{message}'
@@ -1209,10 +1210,9 @@ en:
         deal_not_found: Deal not found.
         client_create_required: Sign in with a company account to create client deals.
           Admins can create admin deals.
-        forbidden_client_managed: This deal is client-managed. Publish/edit from a
-          company account.
-        forbidden_admin_managed: This deal is Admin-managed. Publish/edit from an
-          Admin account.
+        forbidden_client_managed: Only the company that owns this deal can publish
+          or edit it. Sign in with that company account.
+        forbidden_admin_managed: Only Meetia admins can publish or edit this deal.
         faq_added: FAQ added
         faq_updated: FAQ updated
         faq_deleted: FAQ deleted

@@ -45,7 +45,11 @@ module DealEngine
       text = message.to_s.strip
       return text if text.end_with?("?", "？")
 
-      "#{text}？"
+      japanese? ? "#{text}？" : "#{text}?"
+    end
+
+    def japanese?
+      @deal.language.to_s == "ja"
     end
 
     def duplicate_question?(question)
@@ -61,12 +65,12 @@ module DealEngine
 
     def infer_category(question)
       case question
-      when /料金|費用|価格|プラン|ROI/i then "pricing"
-      when /導入|期間|体制|連携/i then "implementation"
-      when /セキュリティ|データ|個人情報/i then "security"
-      when /競合|比較|違い/i then "comparison"
-      when /サポート|保守/i then "support"
-      when /契約|解約|更新/i then "contract"
+      when /料金|費用|価格|プラン|ROI|price|pricing|cost|fee|plan/i then "pricing"
+      when /導入|期間|体制|連携|implement|timeline|onboard|integrat/i then "implementation"
+      when /セキュリティ|データ|個人情報|security|privacy|breach|encrypt/i then "security"
+      when /競合|比較|違い|competitor|comparison|versus|vs\b/i then "comparison"
+      when /サポート|保守|support|maintenance|helpdesk/i then "support"
+      when /契約|解約|更新|contract|cancel|renewal|term/i then "contract"
       else
         "other"
       end

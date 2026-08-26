@@ -1,12 +1,21 @@
 module DealEngine
   class BuyerStressTestService
-    TOUGH_QUESTION_SEEDS = [
+    TOUGH_QUESTION_SEEDS_JA = [
       { category: "pricing", question: "なぜ競合より高いのですか？具体的なROI根拠は？" },
       { category: "implementation", question: "導入失敗時のリスクと撤退条件を教えてください" },
       { category: "security", question: "情報漏洩が起きた場合の責任範囲と補償は？" },
       { category: "contract", question: "最低契約期間と解約ペナルティはありますか？" },
       { category: "comparison", question: "自社で内製する場合との比較優位は何ですか？" },
       { category: "support", question: "担当者が変わった場合の引き継ぎ体制は？" }
+    ].freeze
+
+    TOUGH_QUESTION_SEEDS_EN = [
+      { category: "pricing", question: "Why are you more expensive than competitors, and what ROI proof can you show?" },
+      { category: "implementation", question: "What are the failure risks and exit conditions if implementation goes wrong?" },
+      { category: "security", question: "If a data breach happens, what is your liability and compensation?" },
+      { category: "contract", question: "Is there a minimum term or cancellation penalty?" },
+      { category: "comparison", question: "What is your advantage versus building this in-house?" },
+      { category: "support", question: "How do you handle handoff when our account owner changes?" }
     ].freeze
 
     def initialize(deal, client: nil, limit: nil)
@@ -44,9 +53,17 @@ module DealEngine
 
     private
 
+    def japanese?
+      @deal.language.to_s == "ja"
+    end
+
+    def tough_question_seeds
+      japanese? ? TOUGH_QUESTION_SEEDS_JA : TOUGH_QUESTION_SEEDS_EN
+    end
+
     def fetch_questions
       ai_questions = fetch_ai_questions
-      list = ai_questions.presence || TOUGH_QUESTION_SEEDS
+      list = ai_questions.presence || tough_question_seeds
       list.first(@limit)
     end
 
@@ -55,14 +72,26 @@ module DealEngine
       return [] if api_key.blank? || @deal.deal_summary.blank?
 
       summary = @deal.deal_summary
-      prompt = <<~PROMPT
-        「#{@deal.title}」の商談資料に対し、厳しいBuyerが突っ込む質問を#{@limit}件提案してください。
-        資料だけでは答えにくいものを優先。JSON配列のみ:
-        [{"category":"pricing|implementation|security|comparison|support|contract|other","question":"..."}]
+      prompt = if japanese?
+        <<~PROMPT
+          「#{@deal.title}」の商談資料に対し、厳しいBuyerが突っ込む質問を#{@limit}件提案してください。
+          資料だけでは答えにくいものを優先。JSON配列のみ:
+          [{"category":"pricing|implementation|security|comparison|support|contract|other","question":"..."}]
 
-        要約: #{summary.summary}
-        要点: #{summary.key_points}
-      PROMPT
+          要約: #{summary.summary}
+          要点: #{summary.key_points}
+        PROMPT
+      else
+        <<~PROMPT
+          For the deal "#{@deal.title}", propose #{@limit} tough buyer questions that materials alone may not answer well.
+          Write every question in English, even if the source materials are Japanese.
+          Return JSON array only:
+          [{"category":"pricing|implementation|security|comparison|support|contract|other","question":"..."}]
+
+          Summary: #{summary.summary}
+          Key points: #{summary.key_points}
+        PROMPT
+      end
 
       uri = URI.parse("https://api.openai.com/v1/chat/completions")
       http = Net::HTTP.new(uri.host, uri.port)

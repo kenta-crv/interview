@@ -29,4 +29,19 @@ RSpec.describe DealEngine::BuyerStressTestService do
     expect(result[:tested]).to eq(3)
     expect(deal.deal_faqs.where(source: "stress_test").count).to be >= 1
   end
+
+  it "uses English seed questions for English deals when AI is unavailable" do
+    en_deal = client.deals.create!(title: "EN Stress Deal", language: "en")
+    en_deal.create_deal_summary!(summary: "English summary", key_points: "key points")
+
+    service = described_class.new(en_deal, client: client, limit: 3)
+    allow(service).to receive(:fetch_ai_questions).and_return([])
+    result = service.run!
+
+    questions = en_deal.deal_faqs.where(source: "stress_test").pluck(:question)
+    expect(result[:tested]).to eq(3)
+    expect(questions).not_to be_empty
+    expect(questions.join).not_to match(/競合|導入|契約/)
+    expect(questions).to all(match(/[A-Za-z]/))
+  end
 end

@@ -35,6 +35,17 @@
     - else
       .db-v2-leads-table-wrap
         table.db-v2-leads-table.db-v2-deals-table
+          colgroup
+            col.db-v2-col--id
+            col.db-v2-col--title
+            - if acting_as_admin?
+              col.db-v2-col--managed
+            col.db-v2-col--status
+            col.db-v2-col--lang
+            col.db-v2-col--docs
+            col.db-v2-col--pub
+            col.db-v2-col--date
+            col.db-v2-col--actions
           thead
             tr
               th = t("meetia.dashboard.deals.col_id")

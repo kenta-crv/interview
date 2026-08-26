@@ -237,8 +237,10 @@ class Dashboard::DealsController < Dashboard::BaseController
       return
     end
 
+    files = Array(params[:files]).uniq { |file| [file.original_filename.to_s, file.size.to_i] }
+
     ActiveRecord::Base.transaction do
-      params[:files].each do |file|
+      files.each do |file|
         document = @deal.deal_documents.create!(
           filename: file.original_filename,
           content_type: file.content_type,
@@ -332,9 +334,9 @@ class Dashboard::DealsController < Dashboard::BaseController
 
   def new
     if admin_creating_deal?
-      @deal = Deal.new(managed_by_admin: true, language: "ja")
+      @deal = Deal.new(managed_by_admin: true, language: default_deal_language)
     else
-      @deal = current_client.deals.build(managed_by_admin: false)
+      @deal = current_client.deals.build(managed_by_admin: false, language: default_deal_language)
     end
     assign_company_name_for_form
   end
@@ -439,6 +441,10 @@ class Dashboard::DealsController < Dashboard::BaseController
 
   def admin_creating_deal?
     acting_as_admin? && !client_signed_in?
+  end
+
+  def default_deal_language
+    I18n.locale.to_s == "en" ? "en" : "ja"
   end
 
   def assign_company_name_for_form

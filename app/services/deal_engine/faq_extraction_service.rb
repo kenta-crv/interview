@@ -36,7 +36,7 @@ module DealEngine
       api_key = ENV["OPENAI_API_KEY"]
       return heuristic_pairs(text) if api_key.blank?
 
-      prompt = if @deal.language == "ja"
+      prompt = if japanese?
         <<~PROMPT
           以下の補足資料テキストから、Buyer向けFAQ（質問と回答のペア）を抽出してください。
           明確なQ&Aがなければ、内容から推測して最大10件作成してください。
@@ -48,7 +48,8 @@ module DealEngine
       else
         <<~PROMPT
           Extract FAQ Q&A pairs from this supplement document text. Max 10 items.
-          JSON array only: [{"category":"...","question":"...","answer":"..."}]
+          Write every question and answer in English, even if the source text is Japanese.
+          JSON array only: [{"category":"pricing|implementation|security|comparison|support|contract|other","question":"...","answer":"..."}]
 
           #{text.truncate(8000)}
         PROMPT
@@ -85,10 +86,22 @@ module DealEngine
       chunks.map.with_index do |chunk, index|
         {
           category: "other",
-          question: "補足資料のポイント#{index + 1}を教えてください",
+          question: heuristic_question(index + 1),
           answer: chunk.truncate(500)
         }
       end
+    end
+
+    def heuristic_question(n)
+      if japanese?
+        "補足資料のポイント#{n}を教えてください"
+      else
+        "Can you explain key point #{n} from the supplement materials?"
+      end
+    end
+
+    def japanese?
+      @deal.language.to_s == "ja"
     end
 
     def normalize_pair(item)
@@ -112,6 +125,7 @@ module DealEngine
 
         @deal.deal_faqs.create!(
           question: pair[:question],
+          answer: pair[:answer],
           category: pair[:category],
           source: "supplement_pdf",
           status: "pending",

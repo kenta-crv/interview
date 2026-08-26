@@ -1,6 +1,6 @@
 module DealEngine
   class FaqGapAnalysisService
-    STANDARD_QUESTIONS = [
+    STANDARD_QUESTIONS_JA = [
       { category: "pricing", question: "料金プランや初期費用・月額費用を教えてください" },
       { category: "implementation", question: "導入期間と必要な社内リソースを教えてください" },
       { category: "security", question: "セキュリティやデータの取り扱いについて教えてください" },
@@ -10,6 +10,35 @@ module DealEngine
       { category: "pricing", question: "ROIや費用対効果の根拠を教えてください" },
       { category: "implementation", question: "既存システムとの連携方法を教えてください" }
     ].freeze
+
+    STANDARD_QUESTIONS_EN = [
+      { category: "pricing", question: "What are the pricing plans, setup fees, and monthly costs?" },
+      { category: "implementation", question: "What is the implementation timeline and what internal resources do we need?" },
+      { category: "security", question: "How do you handle security and customer data?" },
+      { category: "comparison", question: "How do you differ from competitors or alternatives?" },
+      { category: "support", question: "What support do you provide after go-live?" },
+      { category: "contract", question: "What are the contract term, cancellation, and renewal conditions?" },
+      { category: "pricing", question: "What ROI or cost-benefit evidence can you share?" },
+      { category: "implementation", question: "How do you integrate with our existing systems?" }
+    ].freeze
+
+    SUMMARY_KEYWORDS_JA = {
+      "pricing" => %w[料金 費用 価格 プラン 月額 ROI],
+      "implementation" => %w[導入 期間 体制 リソース 連携],
+      "security" => %w[セキュリティ データ 暗号 コンプライアンス],
+      "comparison" => %w[競合 比較 違い 優位],
+      "support" => %w[サポート 保守 問い合わせ],
+      "contract" => %w[契約 解約 更新 最低]
+    }.freeze
+
+    SUMMARY_KEYWORDS_EN = {
+      "pricing" => %w[price pricing cost fee plan monthly ROI],
+      "implementation" => %w[implementation timeline onboarding resources integration],
+      "security" => %w[security data encryption compliance privacy],
+      "comparison" => %w[competitor comparison difference advantage alternative],
+      "support" => %w[support maintenance helpdesk],
+      "contract" => %w[contract cancel cancellation renewal term]
+    }.freeze
 
     def initialize(deal, client: nil, limit: nil)
       @deal = deal
@@ -26,6 +55,18 @@ module DealEngine
     end
 
     private
+
+    def japanese?
+      @deal.language.to_s == "ja"
+    end
+
+    def standard_questions
+      japanese? ? STANDARD_QUESTIONS_JA : STANDARD_QUESTIONS_EN
+    end
+
+    def summary_keywords
+      japanese? ? SUMMARY_KEYWORDS_JA : SUMMARY_KEYWORDS_EN
+    end
 
     def gap_limit_for_client
       @client.gap_analysis_question_limit
@@ -46,7 +87,7 @@ module DealEngine
       existing = @deal.deal_faqs.pluck(:question).join("\n")
       pages = @deal.deal_pages.order(:page_number).limit(8).map { |p| "P#{p.page_number} #{p.title}: #{p.script.to_s.truncate(200)}" }.join("\n")
 
-      prompt = if @deal.language == "ja"
+      prompt = if japanese?
         <<~PROMPT
           あなたはB2B商談のナレッジギャップ分析担当です。
           以下の提案資料を読み、Buyerが商談中に聞きそうだが資料だけでは答えにくい質問を#{@limit}件以内で提案してください。
@@ -65,12 +106,21 @@ module DealEngine
         PROMPT
       else
         <<~PROMPT
-          Analyze the proposal and suggest up to #{@limit} buyer questions poorly covered by materials.
-          Return JSON array only: [{"category":"...","question":"..."}]
+          You are analyzing knowledge gaps for a B2B sales conversation.
+          Suggest up to #{@limit} buyer questions that materials alone may not answer well.
+          Exclude duplicates of existing FAQs.
+          Write every question in English, even if the source materials are Japanese.
+          Return JSON array only: [{"category":"pricing|implementation|security|comparison|support|contract|other","question":"..."}]
 
-          Summary: #{summary.summary}
-          Slides: #{pages}
-          Existing FAQ: #{existing.presence || "none"}
+          Summary:
+          #{summary.summary}
+          #{summary.key_points}
+
+          Slides:
+          #{pages}
+
+          Existing FAQ:
+          #{existing.presence || "none"}
         PROMPT
       end
 
@@ -114,23 +164,16 @@ module DealEngine
       summary_text = [@deal.deal_summary&.summary, @deal.deal_summary&.key_points].join(" ")
       existing_questions = @deal.deal_faqs.pluck(:question)
 
-      STANDARD_QUESTIONS.reject do |item|
+      standard_questions.reject do |item|
         existing_questions.any? { |q| similar_question?(q, item[:question]) } ||
           covered_in_summary?(summary_text, item)
       end
     end
 
     def covered_in_summary?(summary_text, item)
-      keywords = {
-        "pricing" => %w[料金 費用 価格 プラン 月額 ROI],
-        "implementation" => %w[導入 期間 体制 リソース 連携],
-        "security" => %w[セキュリティ データ 暗号 コンプライアンス],
-        "comparison" => %w[競合 比較 違い 優位],
-        "support" => %w[サポート 保守 問い合わせ],
-        "contract" => %w[契約 解約 更新 最低]
-      }[item[:category]] || []
-
-      keywords.count { |word| summary_text.include?(word) } >= 2
+      keywords = summary_keywords[item[:category]] || []
+      haystack = japanese? ? summary_text : summary_text.downcase
+      keywords.count { |word| haystack.include?(japanese? ? word : word.downcase) } >= 2
     end
 
     def similar_question?(a, b)
@@ -138,7 +181,7 @@ module DealEngine
     end
 
     def normalize(text)
-      text.to_s.gsub(/\s+/, "")
+      text.to_s.gsub(/\s+/, "").downcase
     end
 
     def persist_suggestions(suggestions)

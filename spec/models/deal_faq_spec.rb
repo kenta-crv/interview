@@ -47,6 +47,15 @@ RSpec.describe DealEngine::FaqTemplateService do
     expect(deal.deal_faqs.pluck(:answer)).to all(be_blank)
   end
 
+  it "seeds English template faqs for English deals" do
+    en_deal = client.deals.create!(title: "EN Template Deal", language: "en")
+    described_class.new(en_deal).seed_if_empty!
+    questions = en_deal.deal_faqs.pluck(:question)
+    expect(questions.size).to eq(3)
+    expect(questions).to all(match(/[A-Za-z]/))
+    expect(questions.join).not_to match(/料金|導入|サポート/)
+  end
+
   it "does not duplicate when faqs already exist" do
     deal.deal_faqs.create!(question: "Existing", answer: "A", category: "other", status: "approved")
     described_class.new(deal).seed_if_empty!

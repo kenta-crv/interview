@@ -293,6 +293,15 @@ class Deal < ApplicationRecord
     deal_documents.proposals.exists?
   end
 
+  # 同一ファイルを複数回選んだ場合など、同名・同サイズの提案PDFは1件だけ見せる
+  def proposal_documents_for_display
+    deal_documents.proposals.order(:id).to_a
+      .group_by { |doc| [doc.filename.to_s, doc.file_size.to_i] }
+      .values
+      .map { |group| group.max_by(&:id) }
+      .sort_by(&:id)
+  end
+
   def supplement_upload_limit_reached?
     deal_documents.supplements.count >= MAX_SUPPLEMENT_DOCUMENTS
   end

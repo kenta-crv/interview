@@ -191,7 +191,12 @@
               span.db-v2-deal-quick-card__meta = l(deal.updated_at, format: :short)
 
       .db-v2-leads-table-wrap
-        table.db-v2-leads-table.db-v2-deals-table
+        table.db-v2-leads-table.db-v2-deals-hub-table
+          colgroup
+            col.db-v2-col--title
+            col.db-v2-col--status
+            col.db-v2-col--date
+            col.db-v2-col--actions
           thead
             tr
               th = t("meetia.dashboard.home.col_title")
@@ -211,7 +216,7 @@
                     span.db-v2-status-badge = deal.status
                 td = l(deal.updated_at, format: :short)
                 td
-                  = link_to t("meetia.dashboard.common.open"), dashboard_deal_path(deal), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"
+                  = link_to t("meetia.dashboard.common.open"), dashboard_deal_path(deal), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs"
 
 - if @recent_leads.any?
   .db-v2-bottom-card

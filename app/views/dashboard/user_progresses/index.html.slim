@@ -46,8 +46,8 @@
             - @user_progresses.each do |progress|
               - evaluation = @evaluations_by_user_id[progress.user_id]
               tr
-                td= progress.id
-                td= progress.user&.name.presence || "—"
+                td.db-v2-deals-table__id = progress.id
+                td.db-v2-deals-table__title = progress.user&.name.presence || "—"
                 td= progress.user&.job_title.presence || "—"
                 td= progress.user&.company.presence || "—"
                 td= progress.user&.email.presence || "—"

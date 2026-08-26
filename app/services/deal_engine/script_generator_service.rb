@@ -67,12 +67,18 @@ module DealEngine
         <<~PROMPT
           Based on this deal summary, create 3 opening narration scripts (80-120 words each)
           and 1 closing sales script (120-180 words).
+          Write ALL scripts in English, even if the source materials are Japanese.
 
           Summary:
           #{context.truncate(4000)}
 
           Output JSON only:
-          {"greeting":"...","company_overview":"...","usage_guide":"...","closing":"..."}
+          {
+            "greeting": "Greeting (company/deal name: #{@deal.title})",
+            "company_overview": "Company / service overview",
+            "usage_guide": "How to proceed. Must include these 3 options: (1) ask free-form questions (2) pick a topic from the menu below (3) if unspecified, continue through the materials",
+            "closing": "Sales closing that briefly restates value and invites contract/trial or a follow-up with a human rep"
+          }
         PROMPT
       end
 
@@ -132,7 +138,9 @@ module DealEngine
       else
         <<~PROMPT
           Create menu items for as many substantive slides as practical (about 6-12, excluding cover/greeting-only). Each item must include page_number.
+          Write every label in English, even if slide titles are Japanese.
           Order menu_items by ascending page_number.
+          Prefer concrete labels (overview, pricing, support, flow). Avoid abstract labels like "first half".
 
           Slides:
           #{page_data.to_json}

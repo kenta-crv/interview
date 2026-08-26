@@ -540,35 +540,55 @@ function activateDealShowTab(tabId) {
   });
 
   if (window.history && window.history.replaceState) {
-    window.history.replaceState(null, '', '#' + nextTab);
+    var path = window.location.pathname + window.location.search + '#' + nextTab;
+    window.history.replaceState(null, '', path);
   }
 }
 
-function initDealShowTabs() {
-  var root = document.querySelector('.db-v2-deal-show');
-  if (!root || root.dataset.dealTabsReady === 'true') return;
-
-  root.dataset.dealTabsReady = 'true';
-
-  root.querySelectorAll('[data-deal-tab]').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      activateDealShowTab(btn.getAttribute('data-deal-tab'));
-    });
-  });
-
+function syncDealShowTabFromLocation() {
+  if (!document.querySelector('.db-v2-deal-show')) return;
   activateDealShowTab(window.location.hash || 'studio');
 }
 
-function initProblemReportModal() {
-  var modal = document.getElementById('problem-report-modal');
-  if (!modal || modal.dataset.problemModalReady === 'true') return;
-  modal.dataset.problemModalReady = 'true';
+function initDealShowTabs() {
+  // Bind once on document. Turbo replaces .db-v2-deal-show, so per-button
+  // listeners + data-deal-tabs-ready on the root die after navigation.
+  if (window.__meetiaDealTabsBound) return;
+  window.__meetiaDealTabsBound = true;
 
-  var frame = modal.querySelector('[data-problem-modal-frame]');
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-deal-tab]');
+    if (!btn || !document.querySelector('.db-v2-deal-show')) return;
+    e.preventDefault();
+    activateDealShowTab(btn.getAttribute('data-deal-tab'));
+  });
+
+  document.addEventListener('turbo:before-cache', function() {
+    var root = document.querySelector('.db-v2-deal-show');
+    if (!root) return;
+    delete root.dataset.dealTabsReady;
+  });
+}
+
+
+function initProblemReportModal() {
+  // Bind once on document. Always resolve the live modal node so Turbo Drive
+  // navigations (which replace #problem-report-modal) keep working.
+  if (window.__meetiaProblemModalBound) return;
+  window.__meetiaProblemModalBound = true;
+
   var lastFocus = null;
 
+  function getModal() {
+    return document.getElementById('problem-report-modal');
+  }
+
   function openModal() {
+    var modal = getModal();
+    if (!modal) return;
+
     lastFocus = document.activeElement;
+    var frame = modal.querySelector('[data-problem-modal-frame]');
     if (frame) {
       var src = frame.getAttribute('data-src');
       if (src && frame.getAttribute('src') !== src) {
@@ -583,14 +603,20 @@ function initProblemReportModal() {
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
-    var closeBtn = modal.querySelector('[data-problem-modal-close]');
+    var closeBtn = modal.querySelector('button[data-problem-modal-close]');
     if (closeBtn) closeBtn.focus();
   }
 
   function closeModal() {
+    var modal = getModal();
+    if (!modal) {
+      document.body.style.overflow = '';
+      return;
+    }
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    var frame = modal.querySelector('[data-problem-modal-frame]');
     if (frame) frame.setAttribute('src', 'about:blank');
     if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
   }
@@ -608,14 +634,17 @@ function initProblemReportModal() {
       openModal();
       return;
     }
-    if (e.target.closest('[data-problem-modal-close]') && modal.contains(e.target.closest('[data-problem-modal-close]'))) {
+    var closeEl = e.target.closest('[data-problem-modal-close]');
+    var modal = getModal();
+    if (closeEl && modal && modal.contains(closeEl)) {
       e.preventDefault();
       closeModal();
     }
   });
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+    var modal = getModal();
+    if (e.key === 'Escape' && modal && modal.classList.contains('is-open')) {
       closeModal();
     }
   });
@@ -627,20 +656,33 @@ function initProblemReportModal() {
       redirectAfterSubmit(data.url);
     }
   });
+
+  document.addEventListener('turbo:before-cache', function() {
+    var modal = getModal();
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    var frame = modal.querySelector('[data-problem-modal-frame]');
+    if (frame) frame.setAttribute('src', 'about:blank');
+    document.body.style.overflow = '';
+  });
 }
 
 document.addEventListener('DOMContentLoaded', initDashboardSidebar);
 document.addEventListener('DOMContentLoaded', initDashboardTheme);
 document.addEventListener('DOMContentLoaded', initDealShowTabs);
+document.addEventListener('DOMContentLoaded', syncDealShowTabFromLocation);
 document.addEventListener('DOMContentLoaded', scrollDashboardAnchor);
 document.addEventListener('DOMContentLoaded', initProblemReportModal);
 document.addEventListener('turbo:load', initDashboardSidebar);
 document.addEventListener('turbo:load', initDashboardTheme);
 document.addEventListener('turbo:load', initDealShowTabs);
+document.addEventListener('turbo:load', syncDealShowTabFromLocation);
 document.addEventListener('turbo:load', scrollDashboardAnchor);
 document.addEventListener('turbo:load', initProblemReportModal);
 document.addEventListener('turbolinks:load', initDashboardSidebar);
 document.addEventListener('turbolinks:load', initDashboardTheme);
 document.addEventListener('turbolinks:load', initDealShowTabs);
+document.addEventListener('turbolinks:load', syncDealShowTabFromLocation);
 document.addEventListener('turbolinks:load', scrollDashboardAnchor);
 document.addEventListener('turbolinks:load', initProblemReportModal);

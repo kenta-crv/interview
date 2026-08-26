@@ -1306,24 +1306,37 @@ html[data-dashboard-theme="light"] .dashboard-v2-container .db-v2-card-link:hove
   font-size: 10px;
 }
 
+.dashboard-v2-container .db-v2-leads-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .dashboard-v2-container .db-v2-leads-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: auto;
   font-size: 13px;
+}
+
+.dashboard-v2-container .db-v2-leads-table th,
+.dashboard-v2-container .db-v2-leads-table td {
+  padding: 12px 10px;
+  vertical-align: middle;
 }
 
 .dashboard-v2-container .db-v2-leads-table th {
   text-align: left;
-  padding: 8px 6px;
   font-size: 11px;
   font-weight: 600;
   color: var(--db-text-muted);
   border-bottom: 1px solid var(--db-table-border);
   box-shadow: 0 1px 0 rgba(139, 92, 246, 0.06);
+  white-space: nowrap;
 }
 
 .dashboard-v2-container .db-v2-leads-table td {
-  padding: 11px 6px;
   color: var(--db-text);
   border-bottom: 1px solid var(--db-table-border);
 }
@@ -1684,15 +1697,57 @@ html[data-dashboard-theme="light"] .dashboard-v2-container .db-v2-rank-badge--b 
   color: var(--db-text-muted);
 }
 
+/* Deals list: explicit column balance */
+.dashboard-v2-container .db-v2-deals-table {
+  width: 100%;
+  min-width: 920px;
+  table-layout: fixed;
+}
+
+.dashboard-v2-container .db-v2-deals-table .db-v2-col--id { width: 56px; }
+.dashboard-v2-container .db-v2-deals-table .db-v2-col--title { width: 26%; }
+.dashboard-v2-container .db-v2-deals-table .db-v2-col--managed { width: 92px; }
+.dashboard-v2-container .db-v2-deals-table .db-v2-col--status { width: 118px; }
+.dashboard-v2-container .db-v2-deals-table .db-v2-col--lang { width: 76px; }
+.dashboard-v2-container .db-v2-deals-table .db-v2-col--docs { width: 64px; }
+.dashboard-v2-container .db-v2-deals-table .db-v2-col--pub { width: 72px; }
+.dashboard-v2-container .db-v2-deals-table .db-v2-col--date { width: 108px; }
+.dashboard-v2-container .db-v2-deals-table .db-v2-col--actions { width: 280px; }
+
 .dashboard-v2-container .db-v2-deals-table__id {
   font-family: ui-monospace, monospace;
   color: var(--db-text-muted);
   font-size: 12px;
+  white-space: nowrap;
 }
 
 .dashboard-v2-container .db-v2-deals-table__title {
   font-weight: 600;
   color: var(--db-heading);
+}
+
+.dashboard-v2-container .db-v2-deals-table .db-v2-deals-table__title,
+.dashboard-v2-container .db-v2-deals-hub-table .db-v2-deals-table__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Home deals hub: 4 columns only */
+.dashboard-v2-container .db-v2-deals-hub-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.dashboard-v2-container .db-v2-deals-hub-table .db-v2-col--title { width: auto; }
+.dashboard-v2-container .db-v2-deals-hub-table .db-v2-col--status { width: 140px; }
+.dashboard-v2-container .db-v2-deals-hub-table .db-v2-col--date { width: 140px; }
+.dashboard-v2-container .db-v2-deals-hub-table .db-v2-col--actions { width: 88px; }
+
+.dashboard-v2-container .db-v2-deals-hub-table td:nth-child(2),
+.dashboard-v2-container .db-v2-deals-hub-table td:nth-child(3),
+.dashboard-v2-container .db-v2-deals-hub-table td:nth-child(4) {
+  white-space: nowrap;
 }
 
 .dashboard-v2-container .db-v2-deals-table__link {
@@ -1714,9 +1769,33 @@ html[data-dashboard-theme="light"] .dashboard-v2-container .db-v2-rank-badge--b 
 
 .dashboard-v2-container .db-v2-deals-table__actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
   align-items: center;
+}
+
+/* Companies list: separate balance from deals */
+.dashboard-v2-container .db-v2-companies-table {
+  width: 100%;
+  min-width: 980px;
+  table-layout: fixed;
+}
+
+.dashboard-v2-container .db-v2-companies-table .db-v2-col--company { width: 16%; }
+.dashboard-v2-container .db-v2-companies-table .db-v2-col--email { width: 18%; }
+.dashboard-v2-container .db-v2-companies-table .db-v2-col--contact { width: 12%; }
+.dashboard-v2-container .db-v2-companies-table .db-v2-col--plan { width: 88px; }
+.dashboard-v2-container .db-v2-companies-table .db-v2-col--status { width: 96px; }
+.dashboard-v2-container .db-v2-companies-table .db-v2-col--num { width: 72px; }
+.dashboard-v2-container .db-v2-companies-table .db-v2-col--date { width: 108px; }
+.dashboard-v2-container .db-v2-companies-table .db-v2-col--actions { width: 104px; }
+
+.dashboard-v2-container .db-v2-companies-table td:nth-child(1),
+.dashboard-v2-container .db-v2-companies-table td:nth-child(2),
+.dashboard-v2-container .db-v2-companies-table td:nth-child(3) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dashboard-v2-container .db-v2-inline-form {
@@ -2273,6 +2352,14 @@ html[data-dashboard-theme="light"] .dashboard-v2-container .db-v2-alert--danger 
   gap: 10px;
 }
 
+.dashboard-v2-container .db-v2-upload-form__picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
 .dashboard-v2-container .db-v2-upload-form__input {
   position: static;
   opacity: 1;
@@ -2282,7 +2369,26 @@ html[data-dashboard-theme="light"] .dashboard-v2-container .db-v2-alert--danger 
   pointer-events: auto;
 }
 
+.dashboard-v2-container .db-v2-upload-form__input--hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .dashboard-v2-container .db-v2-upload-form__input:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.dashboard-v2-container .db-v2-upload-form__picker .db-v2-btn:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
@@ -4290,6 +4396,16 @@ html[data-dashboard-theme="light"] .dashboard-v2-container .db-v2-subscription-s
 .dashboard-v2-container .db-v2-pricing-compare-table td {
   text-align: center;
   vertical-align: middle;
+}
+
+.dashboard-v2-container .db-v2-pricing-compare-table {
+  min-width: 0;
+}
+
+.dashboard-v2-container .db-v2-pricing-compare-table th:last-child,
+.dashboard-v2-container .db-v2-pricing-compare-table td:last-child {
+  width: auto;
+  white-space: normal;
 }
 
 .dashboard-v2-container .db-v2-pricing-compare-table th:first-child,

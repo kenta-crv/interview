@@ -111,7 +111,12 @@
                       p.db-v2-upload-form__hint = t("meetia.dashboard.deals.upload_hint")
                       .db-v2-upload-form__controls
                         label.db-v2-form-label for="deal-documents-input" = t("meetia.dashboard.deals.pdf_file")
-                        = file_field_tag "files[]", multiple: true, accept: ".pdf,application/pdf", class: "db-v2-form-control db-v2-upload-form__input", id: "deal-documents-input", disabled: @deal.processing?
+                        .db-v2-upload-form__picker
+                          = file_field_tag "files[]", multiple: true, accept: ".pdf,application/pdf", class: "db-v2-upload-form__input db-v2-upload-form__input--hidden", id: "deal-documents-input", disabled: @deal.processing?
+                          button#deal-documents-pick.db-v2-btn.db-v2-btn--ghost type="button" disabled=(@deal.processing? ? true : nil)
+                            i.fa-solid.fa-folder-open aria-hidden="true"
+                            span = t("meetia.dashboard.deals.choose_file")
+
                     #deal-documents-selected.db-v2-upload-zone__selected hidden=true
                       p.db-v2-upload-zone__selected-label = t("meetia.dashboard.deals.selected_files")
                       ul#deal-documents-file-list.db-v2-upload-zone__file-list
@@ -120,7 +125,8 @@
                     .db-v2-form-actions
                       = submit_tag t("meetia.dashboard.deals.upload_start"), class: "db-v2-btn db-v2-btn--primary", id: "deal-documents-submit", disabled: @deal.processing?
 
-          - if @deal.deal_documents.proposals.any?
+          - proposal_docs = @deal.proposal_documents_for_display
+          - if proposal_docs.any?
             .db-v2-bottom-card
               .db-v2-bottom-card__header
                 h2.db-v2-bottom-card__title = t("meetia.dashboard.deals.uploaded_docs")
@@ -129,7 +135,7 @@
                   i.fa-solid.fa-lock aria-hidden="true"
                   p = t("meetia.dashboard.deals.proposal_locked_note")
                 .db-v2-doc-list
-                  - @deal.deal_documents.proposals.each do |doc|
+                  - proposal_docs.each do |doc|
                     - preview_src = doc.file.attached? ? rails_blob_path(doc.file, disposition: "inline") : nil
                     - related_pages = @deal.deal_pages.select { |p| p.deal_document_id == doc.id }.sort_by(&:page_number)
                     .db-v2-doc-card

@@ -18,7 +18,18 @@
         p.db-v2-empty-state__text = t("meetia.dashboard.management.empty")
     - else
       .db-v2-leads-table-wrap
-        table.db-v2-leads-table.db-v2-deals-table
+        table.db-v2-leads-table.db-v2-companies-table
+          colgroup
+            col.db-v2-col--company
+            col.db-v2-col--email
+            col.db-v2-col--contact
+            col.db-v2-col--plan
+            col.db-v2-col--status
+            col.db-v2-col--num
+            col.db-v2-col--num
+            col.db-v2-col--num
+            col.db-v2-col--date
+            col.db-v2-col--actions
           thead
             tr
               th = t("meetia.dashboard.management.col_company")
