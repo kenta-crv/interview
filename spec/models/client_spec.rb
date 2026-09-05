@@ -119,6 +119,7 @@ RSpec.describe "Google Ads consent mode", type: :request do
     get root_path
     expect(response).to have_http_status(:ok)
     expect(response.body).to include('gtag("consent", "default"')
+    expect(response.body).to include("gtag('config', 'G-YCZ141VD12')")
     expect(response.body).to include("meetia-consent-banner")
     expect(response.body).to include("meetia_ads_consent")
     expect(response.body).to include("isTagAssistantDebug")
