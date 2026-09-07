@@ -4,8 +4,6 @@
 .db-v2-header
   .db-v2-header__left
     h1.db-v2-header__title = t("meetia.dashboard.deals.index_title")
-    - if acting_as_admin?
-      p.db-v2-header__subtitle = t("meetia.dashboard.deals.index_subtitle_admin")
     - unless acting_as_admin?
       p.db-v2-header__subtitle
         - if material_limit

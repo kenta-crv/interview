@@ -26,11 +26,6 @@
         = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener", data: { turbo: false }, title: t("meetia.dashboard.deals.preview_only_title") do
           i.fa-solid.fa-wand-magic-sparkles aria-hidden="true"
           span = t("meetia.dashboard.deals.simulation")
-        - if acting_as_admin?
-          - if @deal.featured_on_homepage?
-            = button_to t("meetia.dashboard.deals.homepage_unfeature"), unfeature_from_homepage_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost", data: { confirm: t("meetia.dashboard.deals.homepage_unfeature_confirm"), turbo: false }
-          - else
-            = button_to t("meetia.dashboard.deals.homepage_feature"), feature_on_homepage_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: t("meetia.dashboard.deals.homepage_feature_confirm"), turbo: false }
         - if can_manage_deal?(@deal)
           = link_to edit_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
             i.fa-solid.fa-gear aria-hidden="true"
