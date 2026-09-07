@@ -402,6 +402,24 @@ html.meetia-lp-html,
     padding-right: 24px;
     border-radius: 999px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 24px rgba(168, 85, 247, 0.45), 0 0 48px rgba(168, 85, 247, 0.2); }
+  .meetia-modern-lp .meetia-btn--cta-deal {
+    gap: 12px;
+    padding-right: 24px;
+    border-radius: 999px;
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), 0 0 24px rgba(168, 85, 247, 0.18); }
+    .meetia-modern-lp .meetia-btn--cta-deal:hover {
+      transform: translateY(-1px);
+      background: #0a0a0a;
+      color: #ffffff;
+      border-color: rgba(196, 181, 253, 0.55);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45), 0 0 28px rgba(168, 85, 247, 0.32); }
+    .meetia-modern-lp .meetia-btn--cta-deal .meetia-btn__play-icon {
+      background: var(--lp-gradient);
+      border-color: transparent;
+      color: #fff; }
   .meetia-modern-lp .meetia-btn__play-icon {
     display: inline-flex;
     align-items: center;
@@ -3850,7 +3868,8 @@ html.meetia-lp-html,
     max-width: 100%; }
   .meetia-modern-lp .meetia-hero-portal__scene {
     border-radius: 12px; }
-  .meetia-modern-lp .meetia-btn--cta-play {
+  .meetia-modern-lp .meetia-btn--cta-play,
+  .meetia-modern-lp .meetia-btn--cta-deal {
     padding-left: 20px;
     padding-right: 18px; }
 }

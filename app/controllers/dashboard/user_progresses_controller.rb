@@ -19,10 +19,10 @@ class Dashboard::UserProgressesController < Dashboard::BaseController
   private
 
   def set_deal
-    @deal = if acting_as_admin?
+            @deal = if acting_as_admin?
               Deal.find(params[:deal_id])
             else
-              current_client.deals.find(params[:deal_id])
+              current_client.deals.where(managed_by_admin: false).find(params[:deal_id])
             end
   rescue ActiveRecord::RecordNotFound
     redirect_to dashboard_deals_path, alert: t("meetia.dashboard.flash.deal_not_found")

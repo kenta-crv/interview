@@ -152,6 +152,7 @@ document.querySelectorAll('.brand-track img').forEach(icon => {
 
 document.querySelectorAll(".faq-japan-item").forEach((item) => {
   const question = item.querySelector(".faq-japan-question");
+  if (!question) return;
 
   question.addEventListener("click", () => {
     document.querySelectorAll(".faq-japan-item").forEach((faq) => {
@@ -329,8 +330,10 @@ document.addEventListener('DOMContentLoaded', function() {
   
 });
 
-const style = document.createElement('style');
-style.textContent = `
+if (!window.__meetiaJapNottoStyle) {
+  window.__meetiaJapNottoStyle = true;
+  var japNottoStyle = document.createElement('style');
+  japNottoStyle.textContent = `
   @keyframes jap-notto-float {
     0%, 100% {
       transform: translate(-50%, -50%) translateY(0px);
@@ -340,12 +343,13 @@ style.textContent = `
     }
   }
 `;
-document.head.appendChild(style);
+  document.head.appendChild(japNottoStyle);
+}
 
 
 
 
-const mountDataTargetNav = () => {
+function mountDataTargetNav() {
   document.body.addEventListener('click', (e) => {
     const a = e.target.closest('a[data-target]');
     if (!a) return;
@@ -363,7 +367,7 @@ const mountDataTargetNav = () => {
     // 擬似スクロールイベントでfadeIn系の再判定を促す
     setTimeout(() => window.dispatchEvent(new Event('scroll')), 60);
   });
-};
+}
 
 // ログインドロップダウン
 document.addEventListener('turbo:load', function() {
@@ -427,42 +431,48 @@ document.addEventListener('click', function(e) {
   applyDashboardTheme(btn.getAttribute('data-dashboard-theme-value'));
 });
 
+function dashboardContainer() {
+  return document.getElementById('dashboard-v2-container');
+}
+
+function closeDashboardSidebar() {
+  var container = dashboardContainer();
+  if (container) container.classList.remove('db-v2-sidebar--open');
+  document.body.style.overflow = '';
+}
+
+function closeDashboardAccountMenus() {
+  var container = dashboardContainer();
+  if (!container) return;
+  container.querySelectorAll('[data-sidebar-account].is-open').forEach(function(el) {
+    el.classList.remove('is-open');
+    var toggle = el.querySelector('[data-sidebar-account-toggle]');
+    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+  });
+}
+
 function initDashboardSidebar() {
-  var container = document.getElementById('dashboard-v2-container');
-  if (!container || container.dataset.dashboardSidebarReady === 'true') return;
+  closeDashboardSidebar();
+  closeDashboardAccountMenus();
 
-  container.dataset.dashboardSidebarReady = 'true';
+  if (window.__meetiaDashboardSidebarBound) return;
+  window.__meetiaDashboardSidebarBound = true;
 
-  var open = function() {
-    container.classList.add('db-v2-sidebar--open');
-    document.body.style.overflow = 'hidden';
-  };
+  document.addEventListener('click', function(e) {
+    if (!dashboardContainer()) return;
 
-  var close = function() {
-    container.classList.remove('db-v2-sidebar--open');
-    document.body.style.overflow = '';
-  };
+    if (e.target.closest('[data-dashboard-sidebar-toggle]')) {
+      var container = dashboardContainer();
+      container.classList.add('db-v2-sidebar--open');
+      document.body.style.overflow = 'hidden';
+      return;
+    }
 
-  var closeAccountMenus = function() {
-    container.querySelectorAll('[data-sidebar-account].is-open').forEach(function(el) {
-      el.classList.remove('is-open');
-      var toggle = el.querySelector('[data-sidebar-account-toggle]');
-      if (toggle) toggle.setAttribute('aria-expanded', 'false');
-    });
-  };
+    if (e.target.closest('[data-dashboard-sidebar-close], [data-dashboard-sidebar-overlay]')) {
+      closeDashboardSidebar();
+      return;
+    }
 
-  container.querySelectorAll('[data-dashboard-sidebar-toggle]').forEach(function(btn) {
-    btn.addEventListener('click', open);
-  });
-
-  container.querySelectorAll('[data-dashboard-sidebar-close]').forEach(function(btn) {
-    btn.addEventListener('click', close);
-  });
-
-  var overlay = container.querySelector('[data-dashboard-sidebar-overlay]');
-  if (overlay) overlay.addEventListener('click', close);
-
-  container.addEventListener('click', function(e) {
     var accountToggle = e.target.closest('[data-sidebar-account-toggle]');
     if (accountToggle) {
       e.preventDefault();
@@ -470,7 +480,7 @@ function initDashboardSidebar() {
       var account = accountToggle.closest('[data-sidebar-account]');
       if (!account) return;
       var willOpen = !account.classList.contains('is-open');
-      closeAccountMenus();
+      closeDashboardAccountMenus();
       if (willOpen) {
         account.classList.add('is-open');
         accountToggle.setAttribute('aria-expanded', 'true');
@@ -479,17 +489,25 @@ function initDashboardSidebar() {
     }
 
     if (!e.target.closest('[data-sidebar-account]')) {
-      closeAccountMenus();
+      closeDashboardAccountMenus();
     }
 
     var link = e.target.closest('.db-v2-sidebar__link');
     if (link && window.matchMedia('(max-width: 1023px)').matches) {
-      close();
+      closeDashboardSidebar();
     }
   });
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeAccountMenus();
+    if (e.key === 'Escape') {
+      closeDashboardAccountMenus();
+      closeDashboardSidebar();
+    }
+  });
+
+  document.addEventListener('turbo:before-cache', function() {
+    closeDashboardSidebar();
+    closeDashboardAccountMenus();
   });
 }
 
@@ -497,12 +515,19 @@ var DEAL_SHOW_TAB_ALIASES = {
   'content-edit': 'studio',
   'deal-knowledge': 'studio',
   'presentation-cta': 'distribution',
+  'homepage-feature': 'distribution',
+  'visitor-registration': 'distribution',
   'follow-up-settings': 'follow-up',
   'presentation-analytics': 'analytics'
 };
 
 function scrollDashboardAnchor() {
   if (!document.getElementById('dashboard-v2-container') || !window.location.hash) return;
+  if (document.querySelector('.db-v2-deal-show')) {
+    var tabId = String(window.location.hash).replace(/^#/, '').replace(/^deal-tab-/, '');
+    var tabNames = ['studio', 'distribution', 'follow-up', 'analytics'];
+    if (tabNames.indexOf(tabId) >= 0 || DEAL_SHOW_TAB_ALIASES[tabId]) return;
+  }
   var el = document.querySelector(window.location.hash);
   if (el) {
     window.setTimeout(function() {
@@ -513,7 +538,7 @@ function scrollDashboardAnchor() {
 
 function resolveDealShowTabId(raw) {
   if (!raw) return 'studio';
-  var id = raw.replace(/^#/, '');
+  var id = String(raw).replace(/^#/, '').replace(/^deal-tab-/, '');
   var mapped = DEAL_SHOW_TAB_ALIASES[id] || id;
   var valid = ['studio', 'distribution', 'follow-up', 'analytics'];
   return valid.indexOf(mapped) >= 0 ? mapped : 'studio';
@@ -536,11 +561,10 @@ function activateDealShowTab(tabId) {
   panels.forEach(function(panel) {
     var isActive = panel.id === 'deal-tab-' + nextTab;
     panel.classList.toggle('is-active', isActive);
-    panel.hidden = !isActive;
   });
 
   if (window.history && window.history.replaceState) {
-    var path = window.location.pathname + window.location.search + '#' + nextTab;
+    var path = window.location.pathname + window.location.search + '#deal-tab-' + nextTab;
     window.history.replaceState(null, '', path);
   }
 }
@@ -551,8 +575,6 @@ function syncDealShowTabFromLocation() {
 }
 
 function initDealShowTabs() {
-  // Bind once on document. Turbo replaces .db-v2-deal-show, so per-button
-  // listeners + data-deal-tabs-ready on the root die after navigation.
   if (window.__meetiaDealTabsBound) return;
   window.__meetiaDealTabsBound = true;
 
@@ -560,13 +582,13 @@ function initDealShowTabs() {
     var btn = e.target.closest('[data-deal-tab]');
     if (!btn || !document.querySelector('.db-v2-deal-show')) return;
     e.preventDefault();
+    e.stopPropagation();
     activateDealShowTab(btn.getAttribute('data-deal-tab'));
   });
 
-  document.addEventListener('turbo:before-cache', function() {
-    var root = document.querySelector('.db-v2-deal-show');
-    if (!root) return;
-    delete root.dataset.dealTabsReady;
+  window.addEventListener('hashchange', function() {
+    if (!document.querySelector('.db-v2-deal-show')) return;
+    syncDealShowTabFromLocation();
   });
 }
 

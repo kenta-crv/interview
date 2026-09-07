@@ -32,7 +32,6 @@ class Subscription < ApplicationRecord
       faq_chat: true,
       prospect_follow_up: false,
       prospect_follow_up_soon: false,
-      priority_support: false,
       description: "#{TRIAL_DAYS}日間。カード不要。終了後はStandardへ誘導",
       description_en: "#{TRIAL_DAYS} days, no card. Then guided to Standard",
       purchasable: false,
@@ -57,7 +56,6 @@ class Subscription < ApplicationRecord
       faq_chat: true,
       prospect_follow_up: false,
       prospect_follow_up_soon: false,
-      priority_support: false,
       description: "（新規販売停止）",
       description_en: "(Not available for new purchases)",
       purchasable: false,
@@ -83,7 +81,6 @@ class Subscription < ApplicationRecord
       faq_chat: true,
       prospect_follow_up: false,
       prospect_follow_up_soon: false,
-      priority_support: false,
       description: "成長中のチーム向け。商談50件・資料3・クリック分析付き。",
       description_en: "For growing teams. 50 deals/month, 3 materials, and click analytics.",
       purchasable: true,
@@ -112,7 +109,6 @@ class Subscription < ApplicationRecord
       faq_chat: true,
       prospect_follow_up: true,
       prospect_follow_up_soon: false,
-      priority_support: false,
       description: "本格運用向け。商談300件・資料7・クリック分析・見込み追客付き。",
       description_en: "For full-scale ops. 300 deals/month, 7 materials, click analytics, and prospect follow-up.",
       purchasable: true,
@@ -139,7 +135,6 @@ class Subscription < ApplicationRecord
       faq_chat: true,
       prospect_follow_up: true,
       prospect_follow_up_soon: true,
-      priority_support: true,
       description: "大規模運用向け。商談無制限・資料50・見込み追客（準備中）。",
       description_en: "For large-scale ops. Unlimited deals, 50 materials, prospect follow-up (coming soon).",
       purchasable: true,
@@ -162,8 +157,7 @@ class Subscription < ApplicationRecord
     { key: :prospect_scoring, label: "見込み度判定", label_en: "Prospect scoring" },
     { key: :deal_summary, label: "商談ログ・サマリー", label_en: "Deal logs & summary" },
     { key: :faq_chat, label: "リアルタイムFAQ", label_en: "Realtime FAQ" },
-    { key: :prospect_follow_up, label: "フォローメール追客", label_en: "Follow-up email" },
-    { key: :priority_support, label: "優先サポート", label_en: "Priority support" }
+    { key: :prospect_follow_up, label: "フォローメール追客", label_en: "Follow-up email" }
   ].freeze
 
   class << self
@@ -242,7 +236,7 @@ class Subscription < ApplicationRecord
       case feature_key
       when :deal_limit, :service_limit
         format_limit(config[feature_key])
-      when :click_analytics, :ai_voice_deal, :prospect_scoring, :deal_summary, :faq_chat, :priority_support
+      when :click_analytics, :ai_voice_deal, :prospect_scoring, :deal_summary, :faq_chat
         config[feature_key] ? "✔︎" : "✕"
       when :prospect_follow_up
         if config[:prospect_follow_up_soon]

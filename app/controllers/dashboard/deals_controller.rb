@@ -2,7 +2,7 @@ class Dashboard::DealsController < Dashboard::BaseController
   include FileUploadValidation
 
   before_action :authenticate_deal_manager!, except: [:index, :show, :presentation]
-  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :claim_admin_management, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_visitor_registration_settings, :update_follow_up_settings, :processing_status]
+  before_action :set_deal, only: [:show, :edit, :update, :destroy, :presentation, :update_content, :ai_rewrite, :regenerate_audio, :publish, :claim_admin_management, :feature_on_homepage, :unfeature_from_homepage, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_visitor_registration_settings, :update_follow_up_settings, :processing_status]
   before_action :authorize_deal_management!, only: [:edit, :update, :destroy, :update_content, :ai_rewrite, :regenerate_audio, :publish, :reprocess, :reset_processing, :upload_documents, :upload_supplement_documents, :update_presentation_settings, :update_visitor_registration_settings, :update_follow_up_settings]
   before_action :load_deal_associations, only: [:show]
   before_action :ensure_deal_quota!, only: [:new, :create]
@@ -13,6 +13,8 @@ class Dashboard::DealsController < Dashboard::BaseController
              else
                current_client.deals.where(managed_by_admin: false).includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
              end
+    @homepage_featured_deal = Deal.homepage_featured_deal if acting_as_admin?
+    @homepage_feature_candidates = homepage_feature_candidates if acting_as_admin?
   end
 
   def show
@@ -332,6 +334,30 @@ class Dashboard::DealsController < Dashboard::BaseController
     redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.claimed_admin")
   end
 
+  def feature_on_homepage
+    apply_homepage_feature!(@deal)
+  end
+
+  def set_homepage_feature
+    deal = Deal.find_by(id: params[:deal_id])
+    if deal.blank?
+      redirect_to dashboard_deals_path(anchor: "homepage-feature"), alert: t("meetia.dashboard.flash.deal_not_found")
+      return
+    end
+
+    apply_homepage_feature!(deal)
+  end
+
+  def unfeature_from_homepage
+    unless acting_as_admin?
+      redirect_to dashboard_deal_path(@deal), alert: t("meetia.dashboard.flash.admin_only")
+      return
+    end
+
+    @deal.update!(homepage_featured: false)
+    redirect_to homepage_feature_redirect_path, notice: t("meetia.dashboard.flash.homepage_unfeatured")
+  end
+
   def new
     if admin_creating_deal?
       @deal = Deal.new(managed_by_admin: true, language: default_deal_language)
@@ -392,6 +418,40 @@ class Dashboard::DealsController < Dashboard::BaseController
             end
   rescue ActiveRecord::RecordNotFound
     redirect_to dashboard_deals_path, alert: t("meetia.dashboard.flash.deal_not_found")
+  end
+
+  def homepage_feature_redirect_path
+    if params[:from].to_s == "list" || action_name == "set_homepage_feature"
+      dashboard_deals_path(anchor: "homepage-feature")
+    else
+      dashboard_deal_path(@deal, anchor: "homepage-feature")
+    end
+  end
+
+  def homepage_feature_candidates
+    Deal.where(playback_ready: true).where(id: DealPage.select(:deal_id)).order(:title)
+  end
+
+  def apply_homepage_feature!(deal)
+    unless acting_as_admin?
+      target = deal&.persisted? ? dashboard_deal_path(deal) : dashboard_deals_path
+      redirect_to target, alert: t("meetia.dashboard.flash.admin_only")
+      return
+    end
+
+    @deal = deal
+
+    unless deal.publicly_accessible?
+      redirect_to homepage_feature_redirect_path, alert: t("meetia.dashboard.flash.homepage_feature_unpublished")
+      return
+    end
+
+    Deal.transaction do
+      Deal.where(homepage_featured: true).where.not(id: deal.id).update_all(homepage_featured: false)
+      deal.update!(homepage_featured: true, managed_by_admin: true)
+    end
+
+    redirect_to homepage_feature_redirect_path, notice: t("meetia.dashboard.flash.homepage_featured")
   end
 
   def load_deal_associations

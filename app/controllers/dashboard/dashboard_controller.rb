@@ -7,16 +7,21 @@ class Dashboard::DashboardController < Dashboard::BaseController
       deal_ids = Deal.pluck(:id)
     else
       @deals = current_client.deals
+                             .where(managed_by_admin: false)
                              .includes(:deal_documents, :deal_summary, :user_progresses)
                              .order(updated_at: :desc)
       @display_name = current_client.name.presence || current_client.email
-      deal_ids = current_client.deals.pluck(:id)
+      deal_ids = current_client.deals.where(managed_by_admin: false).pluck(:id)
     end
 
     @recent_deals = @deals.limit(5)
     @analytics = DealEngine::AnalyticsSummaryService.call(deal_ids: deal_ids)
 
-    scope = acting_as_admin? ? UserProgress.joins(:deal) : UserProgress.joins(:deal).where(deals: { client_id: current_client.id })
+    scope = if acting_as_admin?
+              UserProgress.joins(:deal)
+            else
+              UserProgress.joins(:deal).where(deals: { client_id: current_client.id, managed_by_admin: false })
+            end
     @recent_leads = scope.includes(:user, :deal).order(updated_at: :desc).limit(5)
 
     render "dashboard/index"

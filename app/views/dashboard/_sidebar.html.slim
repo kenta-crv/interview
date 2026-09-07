@@ -25,6 +25,14 @@
           span = t("meetia.dashboard.nav.leads")
           - if client_signed_in? && !nav_deal
             span.db-v2-sidebar__hint = t("meetia.dashboard.nav.leads_hint")
+        - if acting_as_admin?
+          = link_to dashboard_deals_path(anchor: "homepage-feature"), class: sidebar_link_class(:homepage_feature) do
+            i.fa-solid.fa-play aria-hidden="true"
+            span = t("meetia.dashboard.nav.homepage_feature")
+          - if (company_log_deal = Deal.homepage_featured_deal)
+            = link_to dashboard_deal_user_progresses_path(company_log_deal), class: sidebar_link_class(:company_logs) do
+              i.fa-solid.fa-building aria-hidden="true"
+              span = t("meetia.dashboard.nav.company_logs")
 
       .db-v2-sidebar__section
         p.db-v2-sidebar__section-label = t("meetia.dashboard.nav.section_account")

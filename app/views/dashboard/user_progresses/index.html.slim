@@ -7,9 +7,9 @@
       i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
       = link_to @deal.title.truncate(28), dashboard_deal_path(@deal), class: "db-v2-breadcrumb__link"
       i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
-      span.db-v2-breadcrumb__current = t("meetia.dashboard.leads.title")
-    h1.db-v2-header__title = t("meetia.dashboard.leads.title")
-    p.db-v2-header__subtitle = @deal.title
+      span.db-v2-breadcrumb__current = @deal.featured_on_homepage? ? t("meetia.dashboard.leads.company_title") : t("meetia.dashboard.leads.title")
+    h1.db-v2-header__title = @deal.featured_on_homepage? ? t("meetia.dashboard.leads.company_title") : t("meetia.dashboard.leads.title")
+    p.db-v2-header__subtitle = @deal.featured_on_homepage? ? t("meetia.dashboard.leads.company_subtitle") : @deal.title
   .db-v2-header__right
     = render "/dashboard/theme_switch"
     = link_to dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do

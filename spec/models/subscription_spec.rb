@@ -72,13 +72,11 @@ RSpec.describe Subscription, type: :model do
 
     it 'shows dashboard feature flags' do
       expect(Subscription.format_feature_value(:standard, :ai_voice_deal)).to eq('✔︎')
-      expect(Subscription.format_feature_value(:standard, :priority_support)).to eq('✕')
-      expect(Subscription.format_feature_value(:enterprise, :priority_support)).to eq('✔︎')
     end
 
     it 'exposes expanded comparison features' do
       expect(Subscription::LP_COMPARISON_FEATURES.map { |f| f[:key] }).to include(
-        :deal_limit, :service_limit, :ai_voice_deal, :prospect_scoring, :deal_summary, :faq_chat, :priority_support
+        :deal_limit, :service_limit, :ai_voice_deal, :prospect_scoring, :deal_summary, :faq_chat
       )
     end
   end

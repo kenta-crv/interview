@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_19_140000) do
+ActiveRecord::Schema.define(version: 2026_09_07_000000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -316,9 +316,11 @@ ActiveRecord::Schema.define(version: 2026_08_19_140000) do
     t.boolean "managed_by_admin", default: false, null: false
     t.boolean "skip_visitor_registration", default: false, null: false
     t.json "visitor_info_fields", default: {}, null: false
+    t.boolean "homepage_featured", default: false, null: false
     t.index ["access_token"], name: "index_deals_on_access_token", unique: true
     t.index ["client_id", "status"], name: "index_deals_on_client_id_and_status"
     t.index ["client_id"], name: "index_deals_on_client_id"
+    t.index ["homepage_featured"], name: "index_deals_on_homepage_featured"
     t.index ["industry"], name: "index_deals_on_industry"
     t.index ["managed_by_admin"], name: "index_deals_on_managed_by_admin"
     t.index ["status"], name: "index_deals_on_status"

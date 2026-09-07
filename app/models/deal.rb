@@ -46,6 +46,26 @@ class Deal < ApplicationRecord
   scope :recent, -> { order(created_at: :desc) }
   scope :by_status, ->(status) { where(status: status) }
   scope :by_token, ->(token) { where(access_token: token) }
+  scope :homepage_featured, -> { where(homepage_featured: true) }
+
+  def self.homepage_featured_deal
+    featured = find_by(homepage_featured: true)
+    return featured if featured
+
+    where(managed_by_admin: true, playback_ready: true)
+      .where(id: DealPage.select(:deal_id))
+      .order(:id)
+      .first
+  end
+
+  def self.public_homepage_featured_deal
+    deal = homepage_featured_deal
+    deal&.publicly_accessible? ? deal : nil
+  end
+
+  def featured_on_homepage?
+    self.class.homepage_featured_deal&.id == id
+  end
 
   def publicly_accessible?
     playback_ready? && deal_pages.exists?

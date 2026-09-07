@@ -37,7 +37,9 @@ ja:
         section_current_deal: 現在の商談
         dashboard: ダッシュボード
         deals: 商談一覧
+        homepage_feature: AI商談体験
         leads: リード管理
+        company_logs: 自社向けログ
         leads_hint: 商談作成後
         studio: スタジオ
         lead: リード
@@ -150,9 +152,10 @@ ja:
         cancel_pending: 解約手続き済み
         analyzing: 分析待ち
         opted_out: 導入見送り
+        homepage_featured: トップ掲載
       deals:
         index_title: 商談管理
-        index_subtitle_admin: 全契約企業の商談一覧
+        index_subtitle_admin: 全契約企業の商談一覧。トップの「AI商談体験」もここから選べます。
         index_subtitle_limited: 'プラン: %{plan} ／ 資料 %{used} / %{limit} 件'
         index_subtitle_unlimited: 'プラン: %{plan} ／ 資料 %{used} 件（無制限）'
         create: 商談を新規作成
@@ -268,6 +271,20 @@ ja:
         publish_status: 公開ステータス
         url_live: 商談URLは公開中です
         url_waiting: 台本確認後、スタジオタブの「公開する」を押してください
+        homepage_feature_title: トップページの「AI商談体験」
+        homepage_feature_lead: Admin管理の公開商談を1件選ぶと、トップページのボタンから全員がこの商談を開始できます。会話ログはAdminのみ確認できます。
+        homepage_feature_active: この商談がトップページに掲載されています。
+        homepage_banner_unset: まだ選ばれていません。下のプルダウンから公開中の商談を選んで設定してください。
+        homepage_banner_set: 現在の掲載は「%{title}」です。トップの「AI商談体験」からこの商談が始まります。
+        homepage_select_blank: 公開中の商談を選ぶ
+        homepage_apply: この商談をAI商談体験にする
+        homepage_no_candidates: 公開中の商談がありません。先に商談を公開してください。
+        homepage_feature: AI商談体験に設定
+        homepage_feature_confirm: この商談をトップページの「AI商談体験」に設定します。既存の掲載があれば置き換わります。よろしいですか？
+        homepage_unfeature: 掲載を解除
+        homepage_unfeature_confirm: トップページの「AI商談体験」からこの商談を外します。よろしいですか？
+        homepage_open_deal: 商談を開く
+        homepage_featured_short: 掲載中
         deal_url_label: 商談URL（LPに貼り付け）
         visitor_reg_title: 参加者情報の入力
         visitor_reg_lead: 商談URLを開いたときに、訪問者へ入力してもらう項目を設定します。情報なしで即商談に入ることも選べます。
@@ -479,6 +496,8 @@ ja:
         deals_unlimited: "%{count}（無制限）"
       leads:
         title: リード管理
+        company_title: 自社向けログ
+        company_subtitle: トップページのAI商談。Adminのみ確認できます。
         back_to_deal: 商談に戻る
         list_title: リード一覧
         empty: まだリード情報がありません
@@ -583,6 +602,10 @@ ja:
         client_create_required: クライアント商談の新規作成は企業アカウントでログインしてください。Admin商談はAdminで作成できます。
         forbidden_client_managed: この商談の公開・編集は、所有する企業のログインでのみ可能です。
         forbidden_admin_managed: この商談の公開・編集は、MeetiaのAdminのみ可能です。
+        homepage_featured: トップページの「AI商談体験」に設定しました
+        homepage_unfeatured: トップ掲載を解除しました
+        homepage_feature_admin_managed: Admin管理の商談のみトップに掲載できます
+        homepage_feature_unpublished: 公開済みの商談のみトップに掲載できます
         faq_added: FAQを追加しました
         faq_updated: FAQを更新しました
         faq_deleted: FAQを削除しました
@@ -643,7 +666,9 @@ en:
         section_current_deal: Current deal
         dashboard: Dashboard
         deals: Deals
+        homepage_feature: AI deal experience
         leads: Leads
+        company_logs: Company logs
         leads_hint: After creating a deal
         studio: Studio
         lead: Leads
@@ -757,9 +782,10 @@ en:
         cancel_pending: Cancellation scheduled
         analyzing: Pending analysis
         opted_out: Opted out
+        homepage_featured: Featured on home
       deals:
         index_title: Deals
-        index_subtitle_admin: All company deals
+        index_subtitle_admin: All company deals. Pick the homepage “AI deal experience” here.
         index_subtitle_limited: 'Plan: %{plan} · Materials %{used} / %{limit}'
         index_subtitle_unlimited: 'Plan: %{plan} · Materials %{used} (unlimited)'
         create: Create deal
@@ -889,6 +915,20 @@ en:
         publish_status: Publish status
         url_live: Deal URL is live
         url_waiting: After reviewing scripts, press Publish in the Studio tab
+        homepage_feature_title: Homepage “AI deal experience”
+        homepage_feature_lead: Pick one Admin-managed live deal. Everyone who clicks the homepage button starts this conversation. Logs are Admin-only.
+        homepage_feature_active: This deal is featured on the homepage.
+        homepage_banner_unset: Nothing selected yet. Choose a live deal from the dropdown and save.
+        homepage_banner_set: Currently featuring “%{title}”. Homepage visitors start this deal.
+        homepage_select_blank: Choose a live deal
+        homepage_apply: Use this deal for AI deal experience
+        homepage_no_candidates: No live deals yet. Publish a deal first.
+        homepage_feature: Set as AI deal experience
+        homepage_feature_confirm: Feature this deal on the homepage “AI deal experience” button? It replaces any current featured deal.
+        homepage_unfeature: Remove
+        homepage_unfeature_confirm: Remove this deal from the homepage “AI deal experience” button?
+        homepage_open_deal: Open deal
+        homepage_featured_short: Featured
         deal_url_label: Deal URL (paste on your LP)
         visitor_reg_title: Visitor registration
         visitor_reg_lead: Choose which fields visitors fill in when opening the deal
@@ -1104,6 +1144,8 @@ en:
         deals_unlimited: "%{count} (unlimited)"
       leads:
         title: Leads
+        company_title: Company logs
+        company_subtitle: Homepage AI deal. Visible to Admin only.
         back_to_deal: Back to deal
         list_title: Leads
         empty: No leads yet
@@ -1213,6 +1255,10 @@ en:
         forbidden_client_managed: Only the company that owns this deal can publish
           or edit it. Sign in with that company account.
         forbidden_admin_managed: Only Meetia admins can publish or edit this deal.
+        homepage_featured: Featured as the homepage “AI deal experience”
+        homepage_unfeatured: Removed from homepage
+        homepage_feature_admin_managed: Only Admin-managed deals can be featured
+        homepage_feature_unpublished: Only published deals can be featured
         faq_added: FAQ added
         faq_updated: FAQ updated
         faq_deleted: FAQ deleted

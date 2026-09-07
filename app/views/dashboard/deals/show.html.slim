@@ -26,6 +26,11 @@
         = link_to conversation_public_deal_session_path(token: @deal.access_token, preview: 1), class: "db-v2-btn db-v2-btn--ghost", target: "_blank", rel: "noopener", data: { turbo: false }, title: t("meetia.dashboard.deals.preview_only_title") do
           i.fa-solid.fa-wand-magic-sparkles aria-hidden="true"
           span = t("meetia.dashboard.deals.simulation")
+        - if acting_as_admin?
+          - if @deal.featured_on_homepage?
+            = button_to t("meetia.dashboard.deals.homepage_unfeature"), unfeature_from_homepage_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost", data: { confirm: t("meetia.dashboard.deals.homepage_unfeature_confirm"), turbo: false }
+          - else
+            = button_to t("meetia.dashboard.deals.homepage_feature"), feature_on_homepage_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: t("meetia.dashboard.deals.homepage_feature_confirm"), turbo: false }
         - if can_manage_deal?(@deal)
           = link_to edit_dashboard_deal_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do
             i.fa-solid.fa-gear aria-hidden="true"
@@ -66,18 +71,18 @@
       p = t("meetia.dashboard.deals.processing_failed")
 
   nav.db-v2-tabs role="tablist" aria-label=t("meetia.dashboard.deals.tabs_aria")
-    button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="studio" aria-selected="true"
+    button.db-v2-tabs__btn.is-active type="button" role="tab" aria-selected="true" data-deal-tab="studio"
       i.fa-solid.fa-clapperboard aria-hidden="true"
       span = t("meetia.dashboard.deals.tab_studio")
-    button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="distribution" aria-selected="false"
+    button.db-v2-tabs__btn type="button" role="tab" aria-selected="false" data-deal-tab="distribution"
       i.fa-solid.fa-tower-broadcast aria-hidden="true"
       span = t("meetia.dashboard.deals.tab_distribution")
-    button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="follow-up" aria-selected="false"
+    button.db-v2-tabs__btn type="button" role="tab" aria-selected="false" data-deal-tab="follow-up"
       i.fa-solid.fa-envelope aria-hidden="true"
       span = t("meetia.dashboard.deals.tab_follow_up")
       - if follow_up_feature_available?(deal_owner) && @follow_up_setup_gaps.any?
         span.db-v2-tabs__mark title=@deal.follow_up_share_lock_message aria-label=t("meetia.dashboard.deals.setup_incomplete") !
-    button.db-v2-tabs__btn type="button" role="tab" data-deal-tab="analytics" aria-selected="false"
+    button.db-v2-tabs__btn type="button" role="tab" aria-selected="false" data-deal-tab="analytics"
       i.fa-solid.fa-chart-line aria-hidden="true"
       span = t("meetia.dashboard.deals.tab_analytics")
 
@@ -270,6 +275,15 @@
             - else
               .db-v2-alert.db-v2-alert--info.db-v2-alert--compact
                 p = t("meetia.dashboard.deals.url_waiting")
+            - if acting_as_admin?
+              .db-v2-form-group#homepage-feature
+                label.db-v2-form-label = t("meetia.dashboard.deals.homepage_feature_title")
+                p.db-v2-muted = t("meetia.dashboard.deals.homepage_feature_lead")
+                - if @deal.featured_on_homepage?
+                  p.db-v2-muted = t("meetia.dashboard.deals.homepage_feature_active")
+                  = button_to t("meetia.dashboard.deals.homepage_unfeature"), unfeature_from_homepage_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost", data: { confirm: t("meetia.dashboard.deals.homepage_unfeature_confirm"), turbo: false }
+                - else
+                  = button_to t("meetia.dashboard.deals.homepage_feature"), feature_on_homepage_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: t("meetia.dashboard.deals.homepage_feature_confirm"), turbo: false }
             .db-v2-form-group
               label.db-v2-form-label = t("meetia.dashboard.deals.deal_url_label")
               .db-v2-copy-row data-share-ready=(@deal.publicly_accessible? ? "true" : "false")
@@ -581,3 +595,6 @@
               h2.db-v2-bottom-card__title = t("meetia.dashboard.home.events_empty_title")
             .db-v2-bottom-card__body
               p.db-v2-muted = t("meetia.dashboard.home.events_empty_lead")
+
+  script type="text/javascript"
+    == "(function(){var root=document.querySelector('[data-deal-dashboard]');if(!root)return;function show(tab){root.querySelectorAll('[data-deal-tab]').forEach(function(b){var on=b.getAttribute('data-deal-tab')===tab;b.classList.toggle('is-active',on);b.setAttribute('aria-selected',on?'true':'false');});root.querySelectorAll('.db-v2-tab-panel').forEach(function(p){p.classList.toggle('is-active',p.id==='deal-tab-'+tab);});}root.querySelectorAll('[data-deal-tab]').forEach(function(b){b.addEventListener('click',function(e){e.preventDefault();show(b.getAttribute('data-deal-tab'));});});var h=String(location.hash||'').replace(/^#/,'').replace(/^deal-tab-/,'');if(h==='homepage-feature'||h==='presentation-cta'||h==='visitor-registration')show('distribution');else if(h==='follow-up-settings'||h==='follow-up')show('follow-up');else if(h==='analytics'||h==='presentation-analytics')show('analytics');})();"

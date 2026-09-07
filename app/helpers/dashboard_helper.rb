@@ -32,8 +32,12 @@ module DashboardHelper
       controller_name == "dashboard"
     when :deals
       controller_name == "deals"
+    when :homepage_feature
+      false
     when :leads
-      controller_name == "user_progresses"
+      controller_name == "user_progresses" && !@deal&.featured_on_homepage?
+    when :company_logs
+      controller_name == "user_progresses" && @deal&.featured_on_homepage?
     when :subscription
       controller_name == "subscriptions"
     when :account

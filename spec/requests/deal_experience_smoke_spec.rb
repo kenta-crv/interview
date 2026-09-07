@@ -364,4 +364,63 @@ RSpec.describe 'Deal experience smoke', type: :request do
       expect(response).to redirect_to(conversation_public_deal_session_path(token: deal.access_token, preview: 1))
     end
   end
+
+  describe 'homepage featured AI deal' do
+    let(:admin) { create(:admin) }
+    let(:admin_deal) do
+      featured = Deal.create!(
+        title: 'Meetia自社商談',
+        language: 'ja',
+        status: :completed,
+        playback_ready: true,
+        managed_by_admin: true,
+        client_id: nil
+      )
+      doc = featured.deal_documents.create!(filename: 'meetia.pdf', content_type: 'application/pdf')
+      featured.deal_pages.create!(
+        deal_document: doc,
+        page_number: 1,
+        title: 'Meetia',
+        script: 'Meetiaのご案内です'
+      )
+      featured
+    end
+
+    it 'links the homepage CTA to the featured public deal' do
+      admin_deal
+
+      get root_path
+      expect(response.body).to include('AI商談体験')
+      expect(response.body).to include(public_deal_session_path(token: admin_deal.access_token))
+    end
+
+    it 'lets admin pick a published deal from the deals index' do
+      sign_in admin
+      post set_homepage_feature_dashboard_deals_path, params: { deal_id: admin_deal.id }
+      expect(response).to redirect_to(dashboard_deals_path(anchor: 'homepage-feature'))
+      expect(admin_deal.reload).to be_homepage_featured
+    end
+
+    it 'lets admin feature a published deal from the deal page' do
+      sign_in admin
+      post feature_on_homepage_dashboard_deal_path(admin_deal)
+      expect(response).to redirect_to(dashboard_deal_path(admin_deal, anchor: 'homepage-feature'))
+      expect(admin_deal.reload).to be_homepage_featured
+    end
+
+    it 'does not let a client feature a deal' do
+      sign_in client
+      post feature_on_homepage_dashboard_deal_path(deal)
+      expect(response).to redirect_to(dashboard_deal_path(deal))
+      expect(deal.reload).not_to be_homepage_featured
+    end
+
+    it 'hides featured admin-deal logs from the client' do
+      admin_deal
+      sign_in client
+
+      get dashboard_deal_user_progresses_path(admin_deal)
+      expect(response).to redirect_to(dashboard_deals_path)
+    end
+  end
 end

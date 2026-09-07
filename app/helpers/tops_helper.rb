@@ -367,6 +367,17 @@ module TopsHelper
     { target: "_blank", rel: "noopener noreferrer" }
   end
 
+  def lp_ai_deal_start_path
+    deal = Deal.public_homepage_featured_deal
+    return nil unless deal
+
+    public_deal_session_path(token: deal.access_token)
+  end
+
+  def lp_ai_deal_start_link_options
+    { target: "_blank", rel: "noopener noreferrer" }
+  end
+
   def lp_login_path
     if client_signed_in?
       dashboard_root_path

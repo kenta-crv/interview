@@ -157,6 +157,8 @@ Rails.application.routes.draw do
         post :regenerate_audio
         post :publish
         post :claim_admin_management
+        post :feature_on_homepage
+        post :unfeature_from_homepage
         post :reprocess
         post :reset_processing
         post :upload_documents
@@ -165,6 +167,9 @@ Rails.application.routes.draw do
         patch :update_visitor_registration_settings
         patch :update_follow_up_settings
         get :processing_status
+      end
+      collection do
+        post :set_homepage_feature
       end
     end
   end

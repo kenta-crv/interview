@@ -15,7 +15,7 @@
         i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
         = link_to @deal.title.truncate(24), dashboard_deal_path(@deal), class: "db-v2-breadcrumb__link"
         i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
-        = link_to t("meetia.dashboard.leads.title"), dashboard_deal_user_progresses_path(@deal), class: "db-v2-breadcrumb__link"
+        = link_to (@deal.featured_on_homepage? ? t("meetia.dashboard.leads.company_title") : t("meetia.dashboard.leads.title")), dashboard_deal_user_progresses_path(@deal), class: "db-v2-breadcrumb__link"
         i.fa-solid.fa-chevron-right.db-v2-breadcrumb__sep aria-hidden="true"
         span.db-v2-breadcrumb__current = t("meetia.dashboard.leads.detail")
       .db-v2-lead-detail__meta

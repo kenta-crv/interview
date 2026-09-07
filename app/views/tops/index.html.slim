@@ -34,10 +34,21 @@
         .meetia-hero__cta-block
           .meetia-hero__actions
             = link_to lp_trial_experience_path, lp_trial_experience_link_options.merge(class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-btn--cta-play") do
-              span = t("meetia.lp.cta_experience")
+              span = t("meetia.lp.cta_trial")
               span.meetia-btn__play-icon aria-hidden="true"
                 i.fa-solid.fa-play
-            = link_to t("meetia.lp.cta_features"), "#features", class: "meetia-btn meetia-btn--outline meetia-btn--lg"
+            - ai_deal_path = lp_ai_deal_start_path
+            - ai_deal_btn_class = "meetia-btn meetia-btn--lg meetia-btn--cta-deal"
+            - if ai_deal_path
+              = link_to ai_deal_path, lp_ai_deal_start_link_options.merge(class: ai_deal_btn_class) do
+                span = t("meetia.lp.cta_features")
+                span.meetia-btn__play-icon aria-hidden="true"
+                  i.fa-solid.fa-play
+            - else
+              = link_to "#features", class: ai_deal_btn_class do
+                span = t("meetia.lp.cta_features")
+                span.meetia-btn__play-icon aria-hidden="true"
+                  i.fa-solid.fa-play
           p.meetia-hero__trial-note
             i.fa-solid.fa-circle-check aria-hidden="true"
             span = t("meetia.lp.hero_trial_note", days: Subscription::TRIAL_DAYS)
