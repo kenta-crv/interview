@@ -81,6 +81,31 @@
     }
   }
 
+  function markProcessingStart(form) {
+    if (!form || !form.hasAttribute('data-processing-start')) return;
+    var btn = form.querySelector('[type="submit"]');
+    if (!btn || btn.disabled) return;
+    var label = form.getAttribute('data-processing-start-label');
+    if (label) {
+      if (btn.tagName === 'INPUT') {
+        btn.value = label;
+      } else {
+        btn.textContent = label;
+      }
+    }
+    window.setTimeout(function() {
+      btn.disabled = true;
+    }, 0);
+  }
+
+  function bindProcessingStartForms() {
+    if (document.documentElement.dataset.dealProcessingStartBound === 'true') return;
+    document.documentElement.dataset.dealProcessingStartBound = 'true';
+    document.addEventListener('submit', function(e) {
+      markProcessingStart(e.target);
+    });
+  }
+
   function setupDealDashboard(root) {
     if (root.dataset.dealDashboardBound === 'true') return;
     root.dataset.dealDashboardBound = 'true';
@@ -201,6 +226,7 @@
   }
 
   function onReady() {
+    bindProcessingStartForms();
     var root = document.querySelector('[data-deal-dashboard]');
     if (root) setupDealDashboard(root);
   }

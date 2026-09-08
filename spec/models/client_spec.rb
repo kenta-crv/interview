@@ -115,6 +115,16 @@ RSpec.describe "Yahoo Ads trial conversion", type: :request do
 end
 
 RSpec.describe "Google Ads consent mode", type: :request do
+  it "日本語LPと英語LPから記事へのリンクを出さない" do
+    get root_path
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("/columns")
+
+    get "/en"
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("/columns")
+  end
+
   it "Consent Mode default とカスタムバナー用スクリプトを出す" do
     get root_path
     expect(response).to have_http_status(:ok)

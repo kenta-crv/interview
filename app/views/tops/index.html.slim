@@ -676,15 +676,4 @@
           i.fa-solid.fa-rocket aria-hidden="true"
           span = t("meetia.lp.body.cta_band_btn")
 
-  section.meetia-columns-seo#columns-seo
-    .meetia-columns-seo__inner
-      span.meetia-section__eyebrow Resources
-      h2.meetia-columns-seo__title = t("meetia.lp.body.columns_title")
-      p.meetia-columns-seo__lead = t("meetia.lp.body.columns_lead")
-      ul.meetia-columns-seo__list
-        - featured_columns_for_lp.each do |item|
-          li = link_to item[:title], item[:path]
-      p.meetia-columns-seo__more
-        = link_to t("meetia.lp.body.columns_all"), "/columns", class: "meetia-btn meetia-btn--outline meetia-btn--sm"
-
   = render "tops/shared/footer"

@@ -23,8 +23,7 @@ module TopsHelper
     { key: "reviews", label: "レビュー", href: "#reviews" },
     { key: "faq", label: "FAQ", href: "#faq" },
     { key: "company", label: "会社概要", href: "#company" },
-    { key: "trial", label: "トライアル", href: "#trial" },
-    { key: "columns", label: "お役立ち記事", href: "/columns" }
+    { key: "trial", label: "トライアル", href: "#trial" }
   ].freeze
 
   LP_NAV_ITEMS_EN = [
@@ -35,8 +34,7 @@ module TopsHelper
     { key: "reviews", label: "Reviews", href: "#reviews" },
     { key: "faq", label: "FAQ", href: "#faq" },
     { key: "company", label: "Company", href: "#company" },
-    { key: "trial", label: "Trial", href: "#trial" },
-    { key: "columns", label: "Articles", href: "/columns" }
+    { key: "trial", label: "Trial", href: "#trial" }
   ].freeze
 
   FEATURED_COLUMNS = [
@@ -115,6 +113,7 @@ module TopsHelper
   FAQ_ITEMS_EN = [
     # service
     { category: "service", q: "What does Meetia do?", a: "Upload sales materials to create an AI deal room visitors join by URL. It covers document viewing, voice conversation, and Q&A 24/7, and stores prospect grades (A–D) and logs in the dashboard. It automates first-touch—not a full replacement for your sales team." },
+    { category: "service", q: "Is Meetia an AI SDR?", a: "Meetia is an inbound AI sales agent, not an outbound email or LinkedIn SDR. After a download or inquiry, buyers join a URL, talk through your materials by voice, and you get an A–D grade. It automates first-touch—not prospecting sequences." },
     { category: "service", q: "Can we reuse existing PDFs and decks?", a: "Yes. Meetia extracts strengths and specs from decks, pricing sheets, case studies, and FAQ docs, then answers in context." },
     { category: "service", q: "How deeply can it answer buyer questions?", a: "Using uploaded materials and configured FAQs, it responds in real time on pricing, features, onboarding, and operations." },
     { category: "service", q: "How are intent and drop-off shown?", a: "Conversation and behavior logs show interest trends, drop-off points, and grades A–D in the dashboard." },

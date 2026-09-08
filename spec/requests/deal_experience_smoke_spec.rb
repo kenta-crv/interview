@@ -227,20 +227,34 @@ RSpec.describe 'Deal experience smoke', type: :request do
     end
 
     it 'starts reprocess via server-side POST without JavaScript' do
-      expect {
-        post reprocess_dashboard_deal_path(deal)
-      }.to have_enqueued_job(ProcessDealJob).with(deal.id)
+      doc = uploadable_deal.deal_documents.create!(filename: 'test.pdf', content_type: 'application/pdf')
+      doc.file.attach(
+        io: StringIO.new('%PDF-1.4 test'),
+        filename: 'test.pdf',
+        content_type: 'application/pdf'
+      )
 
-      expect(response).to redirect_to(dashboard_deal_path(deal))
+      expect {
+        post reprocess_dashboard_deal_path(uploadable_deal)
+      }.to have_enqueued_job(ProcessDealJob).with(uploadable_deal.id)
+
+      expect(response).to redirect_to(dashboard_deal_path(uploadable_deal, anchor: 'processing-banner'))
       follow_redirect!
       expect(response.body).to include('AI処理中')
-      expect(response.body).to include('reprocess')
+      expect(response.body).to include('processing-banner')
     end
 
     it 'renders reprocess button on show page' do
-      get dashboard_deal_path(deal)
+      doc = uploadable_deal.deal_documents.create!(filename: 'test.pdf', content_type: 'application/pdf')
+      doc.file.attach(
+        io: StringIO.new('%PDF-1.4 test'),
+        filename: 'test.pdf',
+        content_type: 'application/pdf'
+      )
+
+      get dashboard_deal_path(uploadable_deal)
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include(reprocess_dashboard_deal_path(deal))
+      expect(response.body).to include(reprocess_dashboard_deal_path(uploadable_deal))
       expect(response.body).to include('data-deal-dashboard')
       expect(response.body).not_to include('process-pdf-btn')
     end
@@ -290,7 +304,7 @@ RSpec.describe 'Deal experience smoke', type: :request do
         post upload_documents_dashboard_deal_path(uploadable_deal), params: { files: [pdf] }
       }.to have_enqueued_job(ProcessDealJob).with(uploadable_deal.id)
 
-      expect(response).to redirect_to(dashboard_deal_path(uploadable_deal))
+      expect(response).to redirect_to(dashboard_deal_path(uploadable_deal, anchor: 'processing-banner'))
     end
 
     it 'blocks a second proposal upload for the same deal' do

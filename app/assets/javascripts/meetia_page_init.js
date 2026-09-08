@@ -474,6 +474,7 @@
   }
 
   function dismissFlashMessages() {
+    if (document.getElementById('processing-banner')) return;
     document.querySelectorAll('.meetia-lp-flash, .flash-message, .db-v2-flash-stack .db-v2-alert').forEach(function(flash) {
       if (flash.getAttribute('data-flash-dismiss-scheduled') === 'true') return;
       flash.setAttribute('data-flash-dismiss-scheduled', 'true');

@@ -172,7 +172,7 @@ class Dashboard::DealsController < Dashboard::BaseController
 
     @deal.start_processing!
     ProcessDealJob.perform_later(@deal.id)
-    redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.ai_started")
+    redirect_to dashboard_deal_path(@deal, anchor: "processing-banner"), notice: t("meetia.dashboard.flash.ai_started")
   end
 
   def reset_processing
@@ -256,7 +256,7 @@ class Dashboard::DealsController < Dashboard::BaseController
     @deal.start_processing!
     ProcessDealJob.perform_later(@deal.id)
 
-    redirect_to dashboard_deal_path(@deal), notice: t("meetia.dashboard.flash.upload_started")
+    redirect_to dashboard_deal_path(@deal, anchor: "processing-banner"), notice: t("meetia.dashboard.flash.upload_started")
   rescue ActiveRecord::RecordInvalid => e
     redirect_to dashboard_deal_path(@deal), alert: e.message
   rescue ActiveRecord::StatementInvalid => e

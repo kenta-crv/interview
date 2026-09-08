@@ -243,6 +243,7 @@ ja:
         unprocessed: 未処理です。「PDFを再処理」を実行してください。
         reprocess: PDFを再処理
         start_process: PDFを処理開始
+        start_process_busy: 処理を開始しています…
         reprocess_confirm: PDFを再処理します。バックグラウンドで実行されます。よろしいですか？
         script_audio_title: 台本・音声編集
         publish_confirm_coverage: ナレッジ完成度が%{coverage}%です。このまま公開しますか？
@@ -884,6 +885,7 @@ en:
         unprocessed: Not processed yet. Run “Reprocess PDF”.
         reprocess: Reprocess PDF
         start_process: Start PDF processing
+        start_process_busy: Starting processing…
         reprocess_confirm: Reprocess this PDF in the background?
         script_audio_title: Scripts & audio
         publish_confirm_coverage: Knowledge coverage is %{coverage}%. Publish anyway?

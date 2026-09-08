@@ -16,12 +16,6 @@ footer.meetia-footer
       .meetia-footer__nav-links
         - lp_nav_items[4, 3].each do |item|
           = link_to item[:label], item[:href], class: "meetia-footer__link"
-    nav.meetia-footer__nav aria-label=t("meetia.lp.footer_resources")
-      h3.meetia-footer__nav-title = t("meetia.lp.footer_resources")
-      .meetia-footer__nav-links
-        = link_to t("meetia.lp.footer_articles"), "/columns", class: "meetia-footer__link"
-        - featured_columns_for_lp.first(3).each do |item|
-          = link_to item[:title].truncate(28), item[:path], class: "meetia-footer__link"
     .meetia-footer__cta
       h3.meetia-footer__nav-title = t("meetia.lp.footer_try")
       p = "#{Subscription::TRIAL_DAYS}#{t('meetia.lp.footer_trial')}"
@@ -35,5 +29,3 @@ footer.meetia-footer
         | FAQ
       = link_to "#company", class: "meetia-footer__bottom-link" do
         = t("meetia.lp.footer_company")
-      = link_to "/columns", class: "meetia-footer__bottom-link" do
-        = t("meetia.lp.footer_articles")
