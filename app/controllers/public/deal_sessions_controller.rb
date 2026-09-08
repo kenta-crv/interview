@@ -9,13 +9,13 @@ module Public
     before_action :load_tracking_context, only: [:track_event]
 
     def show
-      if @deal.visitor_registration_required?
-        record_public_page_view!
-      else
+      if homepage_experience_deal? || !@deal.visitor_registration_required?
         return if reject_if_deal_limit!
         ensure_visitor_session!
         record_public_page_view!
         redirect_to conversation_public_deal_session_path(token: @deal.access_token)
+      else
+        record_public_page_view!
       end
     end
 
@@ -242,8 +242,17 @@ module Public
       end
     end
 
+    def homepage_experience_deal?
+      Deal.public_homepage_featured_deal&.id == @deal.id
+    end
+
     def require_registered_user
       return if client_preview?
+
+      if homepage_experience_deal?
+        ensure_visitor_session!
+        return
+      end
 
       @user = User.find_by(id: session[:user_id])
       unless @user

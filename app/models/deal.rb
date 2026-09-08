@@ -59,8 +59,13 @@ class Deal < ApplicationRecord
   end
 
   def self.public_homepage_featured_deal
-    deal = homepage_featured_deal
-    deal&.publicly_accessible? ? deal : nil
+    featured = find_by(homepage_featured: true)
+    return featured if featured&.publicly_accessible?
+
+    where(managed_by_admin: true, playback_ready: true)
+      .where(id: DealPage.select(:deal_id))
+      .order(:id)
+      .detect(&:publicly_accessible?)
   end
 
   def featured_on_homepage?

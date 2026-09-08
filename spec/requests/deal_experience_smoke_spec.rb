@@ -391,7 +391,16 @@ RSpec.describe 'Deal experience smoke', type: :request do
 
       get root_path
       expect(response.body).to include('AI商談体験')
-      expect(response.body).to include(public_deal_session_path(token: admin_deal.access_token))
+      expect(response.body).to include(conversation_public_deal_session_path(token: admin_deal.access_token))
+      expect(response.body).to match(/target="_blank"[^>]*meetia-btn--cta-deal|meetia-btn--cta-deal[^>]*target="_blank"/)
+      expect(response.body).not_to match(/meetia-btn--cta-deal[^>]*#features/)
+    end
+
+    it 'starts the featured deal conversation without visitor registration' do
+      admin_deal
+
+      get conversation_public_deal_session_path(token: admin_deal.access_token)
+      expect(response).to have_http_status(:ok)
     end
 
     it 'lets admin pick a published deal from the deals index' do
