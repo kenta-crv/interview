@@ -612,6 +612,37 @@
       var conversationHistory = [];
       var closeLogged = false;
       var exitModalShown = false;
+      var IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+      var lastUserActivityAt = Date.now();
+      var idleTimeoutEnded = false;
+
+      function touchUserActivity() {
+        lastUserActivityAt = Date.now();
+      }
+
+      function endForIdleTimeout() {
+        if (idleTimeoutEnded || closeLogged) return;
+        idleTimeoutEnded = true;
+        logSessionClose('idle_timeout');
+        showCompleteScreen({
+          title: t('idle_timeout_title', 'Session ended due to inactivity'),
+          lead: t('idle_timeout_lead', 'Taking you to the homepage…'),
+          hideActions: true,
+          documentTitle: t('idle_timeout_doc_title', 'Deal ended')
+        });
+        var home = (config.home_url || '/').toString();
+        var sep = home.indexOf('?') >= 0 ? '&' : '?';
+        window.setTimeout(function() {
+          window.location.replace(home + sep + 'deal_session=ended');
+        }, 1500);
+      }
+
+      setInterval(function() {
+        if (idleTimeoutEnded || closeLogged || exitModalShown) return;
+        if (Date.now() - lastUserActivityAt >= IDLE_TIMEOUT_MS) {
+          endForIdleTimeout();
+        }
+      }, 5000);
 
       function trackEvent(eventType, details) {
         if (!trackUrl) return;
@@ -1510,6 +1541,7 @@
       }
 
       function startPresentation() {
+        touchUserActivity();
         if (presentationStarted) {
           if (hasResumablePlayback()) return resumePlayback();
           // 開始済みのキューを二重起動しない（セグメント飛び・音声二重の原因）
@@ -1623,6 +1655,7 @@
 
       choiceButtons.forEach(function(button) {
         button.addEventListener('click', function() {
+          touchUserActivity();
           ensureStarted(function() {
             handleTopicChoice(button);
           });
@@ -1631,6 +1664,7 @@
 
       pageNavItems.forEach(function(item) {
         item.addEventListener('click', function() {
+          touchUserActivity();
           var pageNumber = parseInt(item.dataset.pageNumber, 10);
           if (!pageNumber) return;
           cancelAutoAdvance();
@@ -1653,15 +1687,18 @@
 
         // 入力中は自動ページ送りだけ止める（音声は止めない）
         freeTextInput.addEventListener('focus', function() {
+          touchUserActivity();
           holdPresentationAdvance();
         });
         freeTextInput.addEventListener('input', function() {
+          touchUserActivity();
           if (!holdAutoAdvance) holdPresentationAdvance();
         });
 
         freeTextBtn.addEventListener('click', function() {
           var message = freeTextInput.value.trim();
           if (!message || freeTextSending) return;
+          touchUserActivity();
           freeTextSending = true;
           freeTextInput.value = '';
           ensureStarted(function() {

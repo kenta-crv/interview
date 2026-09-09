@@ -101,6 +101,9 @@ ja:
         ended_lead: このタブを閉じてください。
         ended_doc_title: 商談終了
         ended_redirect_lead: トップページへ移動します…
+        idle_timeout_title: 無操作のため商談を終了しました
+        idle_timeout_lead: トップページへ移動します…
+        idle_timeout_doc_title: 商談終了
         preview_title: プレビュー終了
         preview_lead: プレビューのため、リードは保存されません。このタブを閉じます。
         preview_doc_title: プレビュー終了
@@ -522,6 +525,9 @@ en:
         ended_lead: You can close this tab.
         ended_doc_title: Deal ended
         ended_redirect_lead: Taking you to the homepage…
+        idle_timeout_title: Session ended due to inactivity
+        idle_timeout_lead: Taking you to the homepage…
+        idle_timeout_doc_title: Deal ended
         preview_title: Preview ended
         preview_lead: Preview mode — no lead is saved. This tab will close.
         preview_doc_title: Preview ended
