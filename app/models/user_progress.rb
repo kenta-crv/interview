@@ -6,9 +6,16 @@ class UserProgress < ApplicationRecord
   has_many :follow_up_deliveries, dependent: :destroy
   has_many :follow_up_unsubscribes, dependent: :destroy
 
+  LOCALES = %w[ja en].freeze
+
   validates :user_id, :deal_id, presence: true
   validates :user_id, uniqueness: { scope: :deal_id }
   validates :prospect_grade, inclusion: { in: %w[A B C D] }, allow_nil: true
+  validates :locale, inclusion: { in: LOCALES }
+
+  def follow_up_locale
+    LOCALES.include?(locale.to_s) ? locale.to_s : "ja"
+  end
 
   enum consideration_phase: {
     initial: 0,

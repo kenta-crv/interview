@@ -13,7 +13,8 @@ class Dashboard::DealsController < Dashboard::BaseController
              else
                current_client.deals.where(managed_by_admin: false).includes(:deal_documents, :deal_audios, :deal_transcript, :deal_summary, :deal_speeches).order(created_at: :desc)
              end
-    @homepage_featured_deal = Deal.homepage_featured_deal if acting_as_admin?
+    @homepage_featured_deal_ja = Deal.homepage_featured_deal("ja") if acting_as_admin?
+    @homepage_featured_deal_en = Deal.homepage_featured_deal("en") if acting_as_admin?
     @homepage_feature_candidates = homepage_feature_candidates if acting_as_admin?
   end
 
@@ -212,7 +213,7 @@ class Dashboard::DealsController < Dashboard::BaseController
     ActiveRecord::Base.transaction do
       @deal.update!(follow_up_settings_params) if params[:deal].present?
 
-      Array(params[:templates]).each do |template_id, template_params|
+      (params[:templates].presence || {}).each do |template_id, template_params|
         template = @deal.deal_follow_up_templates.find(template_id)
         template.update!(follow_up_template_params(template_params))
       end
@@ -220,7 +221,7 @@ class Dashboard::DealsController < Dashboard::BaseController
 
     redirect_to dashboard_deal_path(@deal, anchor: 'follow-up-settings'), notice: t("meetia.dashboard.flash.follow_up_updated")
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => e
-    redirect_to dashboard_deal_path(@deal, anchor: 'follow-up-settings'), alert: e.message
+    redirect_to dashboard_deal_path(@deal, anchor: 'follow-up-settings'), alert: e.message.to_s.truncate(300)
   end
 
   def upload_documents
@@ -354,7 +355,7 @@ class Dashboard::DealsController < Dashboard::BaseController
       return
     end
 
-    @deal.update!(homepage_featured: false)
+    @deal.update!(homepage_featured: false, homepage_featured_locale: nil)
     redirect_to homepage_feature_redirect_path, notice: t("meetia.dashboard.flash.homepage_unfeatured")
   end
 
@@ -446,9 +447,18 @@ class Dashboard::DealsController < Dashboard::BaseController
       return
     end
 
+    locale = Deal.normalize_homepage_locale(params[:locale].presence || deal.language)
+
     Deal.transaction do
-      Deal.where(homepage_featured: true).where.not(id: deal.id).update_all(homepage_featured: false)
-      deal.update!(homepage_featured: true, managed_by_admin: true)
+      Deal.where(homepage_featured_locale: locale).where.not(id: deal.id).update_all(
+        homepage_featured_locale: nil,
+        homepage_featured: false
+      )
+      deal.update!(
+        homepage_featured_locale: locale,
+        homepage_featured: true,
+        managed_by_admin: true
+      )
     end
 
     redirect_to homepage_feature_redirect_path, notice: t("meetia.dashboard.flash.homepage_featured")
@@ -479,17 +489,22 @@ class Dashboard::DealsController < Dashboard::BaseController
     params.require(:deal).permit(:follow_up_sales_url)
   end
 
-  def follow_up_template_params(raw_params)
-    permitted = raw_params.permit(:enabled, :delay_days, :subject, :body, :include_sales_call_link, :include_contract_link)
-    {
-      enabled: ActiveModel::Type::Boolean.new.cast(permitted[:enabled]),
-      delay_days: permitted[:delay_days],
-      subject: permitted[:subject],
-      body: permitted[:body],
-      include_sales_call_link: ActiveModel::Type::Boolean.new.cast(permitted[:include_sales_call_link]),
-      include_contract_link: ActiveModel::Type::Boolean.new.cast(permitted[:include_contract_link])
-    }
-  end
+    def follow_up_template_params(raw_params)
+      permitted = raw_params.permit(
+        :enabled, :delay_days, :subject, :body, :subject_en, :body_en,
+        :include_sales_call_link, :include_contract_link
+      )
+      {
+        enabled: ActiveModel::Type::Boolean.new.cast(permitted[:enabled]),
+        delay_days: permitted[:delay_days],
+        subject: permitted[:subject],
+        body: permitted[:body],
+        subject_en: permitted[:subject_en],
+        body_en: permitted[:body_en],
+        include_sales_call_link: ActiveModel::Type::Boolean.new.cast(permitted[:include_sales_call_link]),
+        include_contract_link: ActiveModel::Type::Boolean.new.cast(permitted[:include_contract_link])
+      }
+    end
 
   def ensure_deal_quota!
     return if admin_creating_deal?

@@ -273,15 +273,21 @@ ja:
         url_live: 商談URLは公開中です
         url_waiting: 台本確認後、スタジオタブの「公開する」を押してください
         homepage_feature_title: トップページの「AI商談体験」
-        homepage_feature_lead: Admin管理の公開商談を1件選ぶと、トップページのボタンから全員がこの商談を開始できます。会話ログはAdminのみ確認できます。
+        homepage_feature_bilingual_lead: 日本語LP（/）と英語LP（/en）に、資料の異なる商談を1本ずつ載せられます。
+        homepage_feature_for_ja: 日本語トップ
+        homepage_feature_for_en: English top
+        homepage_feature_lead: Admin管理の公開商談を言語ごとに1件ずつ選ぶと、各言語トップのボタンからその商談が始まります。
+        homepage_feature_lead_locale: この商談の言語（%{locale}）向けトップ体験として掲載します。資料が違う場合は言語ごとに別商談を作ってください。
         homepage_feature_active: この商談がトップページに掲載されています。
+        homepage_feature_active_locale: 現在 %{locale} トップに掲載中です。
+        homepage_feature_as: "%{locale} トップに掲載"
         homepage_banner_unset: まだ選ばれていません。下のプルダウンから公開中の商談を選んで設定してください。
         homepage_banner_set: 現在の掲載は「%{title}」です。トップの「AI商談体験」からこの商談が始まります。
         homepage_select_blank: 公開中の商談を選ぶ
-        homepage_apply: この商談をAI商談体験にする
+        homepage_apply: この言語のAI商談体験にする
         homepage_no_candidates: 公開中の商談がありません。先に商談を公開してください。
         homepage_feature: AI商談体験に設定
-        homepage_feature_confirm: この商談をトップページの「AI商談体験」に設定します。既存の掲載があれば置き換わります。よろしいですか？
+        homepage_feature_confirm: この商談をトップページの「AI商談体験」に設定します。同じ言語の既存掲載があれば置き換わります。よろしいですか？
         homepage_unfeature: 掲載を解除
         homepage_unfeature_confirm: トップページの「AI商談体験」からこの商談を外します。よろしいですか？
         homepage_open_deal: 商談を開く
@@ -311,8 +317,10 @@ ja:
         follow_up_days_later: "%{days}日後"
         follow_up_timing: 送信タイミング
         follow_up_days_after: 日後（商談終了から）
-        follow_up_subject: 件名
-        follow_up_body: 本文
+        follow_up_subject: 件名（日本語）
+        follow_up_body: 本文（日本語）
+        follow_up_subject_en: 件名（English）
+        follow_up_body_en: 本文（English）
         follow_up_vars: '利用可能: {{user_name}} / {{deal_title}} / {{company_name}} /
           {{prospect_grade}} / {{session_summary}} / {{interest_topics}} / {{next_action}}'
         follow_up_sales_btn: 担当者に繋ぐボタン
@@ -420,7 +428,7 @@ ja:
         lock_templates: 送信するフォローメールが1通もオンになっていません
       scripts:
         greeting: 挨拶
-        company_overview: 会社概要
+        company_overview: サービス概要
         usage_guide: 操作案内
         closing: クロージング
       limits:
@@ -918,15 +926,21 @@ en:
         url_live: Deal URL is live
         url_waiting: After reviewing scripts, press Publish in the Studio tab
         homepage_feature_title: Homepage “AI deal experience”
-        homepage_feature_lead: Pick one Admin-managed live deal. Everyone who clicks the homepage button starts this conversation. Logs are Admin-only.
+        homepage_feature_bilingual_lead: Feature one deal for the Japanese LP (/) and another for the English LP (/en), each with its own materials.
+        homepage_feature_for_ja: Japanese homepage
+        homepage_feature_for_en: English homepage
+        homepage_feature_lead: Pick one live Admin deal per language. Homepage visitors start that language’s conversation.
+        homepage_feature_lead_locale: Features this deal for the %{locale} homepage experience. Use a separate deal when materials differ by language.
         homepage_feature_active: This deal is featured on the homepage.
+        homepage_feature_active_locale: Currently featured on the %{locale} homepage.
+        homepage_feature_as: "Feature on %{locale} homepage"
         homepage_banner_unset: Nothing selected yet. Choose a live deal from the dropdown and save.
         homepage_banner_set: Currently featuring “%{title}”. Homepage visitors start this deal.
         homepage_select_blank: Choose a live deal
-        homepage_apply: Use this deal for AI deal experience
+        homepage_apply: Use for this language’s AI deal experience
         homepage_no_candidates: No live deals yet. Publish a deal first.
         homepage_feature: Set as AI deal experience
-        homepage_feature_confirm: Feature this deal on the homepage “AI deal experience” button? It replaces any current featured deal.
+        homepage_feature_confirm: Feature this deal on the homepage “AI deal experience” button? It replaces any current featured deal for the same language.
         homepage_unfeature: Remove
         homepage_unfeature_confirm: Remove this deal from the homepage “AI deal experience” button?
         homepage_open_deal: Open deal
@@ -958,8 +972,10 @@ en:
         follow_up_days_later: In %{days} days
         follow_up_timing: Send timing
         follow_up_days_after: days after deal end
-        follow_up_subject: Subject
-        follow_up_body: Body
+        follow_up_subject: Subject (Japanese)
+        follow_up_body: Body (Japanese)
+        follow_up_subject_en: Subject (English)
+        follow_up_body_en: Body (English)
         follow_up_vars: 'Available: {{user_name}} / {{deal_title}} / {{company_name}}
           / {{prospect_grade}} / {{session_summary}} / {{interest_topics}} / {{next_action}}'
         follow_up_sales_btn: Sales handoff button
@@ -1068,7 +1084,7 @@ en:
         lock_templates: No follow-up emails are enabled
       scripts:
         greeting: Greeting
-        company_overview: Company overview
+        company_overview: Service overview
         usage_guide: How to use
         closing: Closing
       limits:

@@ -86,4 +86,13 @@ RSpec.describe DealFollowUp::BodyRenderer do
     expect(html).to include("担当者に相談する")
     expect(html).not_to include("契約について相談する")
   end
+
+  it "uses English chrome when progress locale is en" do
+    user_progress.update!(locale: "en")
+    html = described_class.new(delivery).html_body
+
+    expect(html).to include("Discuss a contract")
+    expect(html).to include("Talk to our team")
+    expect(html).to include("Unsubscribe")
+  end
 end

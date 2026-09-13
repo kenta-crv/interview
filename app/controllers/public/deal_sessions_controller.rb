@@ -13,8 +13,9 @@ module Public
         return if reject_if_deal_limit!
         ensure_visitor_session!
         record_public_page_view!
-        redirect_to conversation_public_deal_session_path(token: @deal.access_token)
+        redirect_to conversation_public_deal_session_path(token: @deal.access_token, locale: @user_progress&.follow_up_locale)
       else
+        remember_visitor_locale!
         record_public_page_view!
       end
     end
@@ -23,7 +24,7 @@ module Public
       unless @deal.visitor_registration_required?
         return if reject_if_deal_limit!
         ensure_visitor_session!
-        redirect_to conversation_public_deal_session_path(token: @deal.access_token)
+        redirect_to conversation_public_deal_session_path(token: @deal.access_token, locale: @user_progress&.follow_up_locale)
         return
       end
 
@@ -48,10 +49,12 @@ module Public
 
       if @user.save
         @user_progress = @deal.user_progresses.find_or_initialize_by(user: @user)
-        @user_progress.update!(filtered_progress_attrs)
+        @user_progress.assign_attributes(filtered_progress_attrs)
+        assign_visitor_locale!(@user_progress)
+        @user_progress.save!
 
         session[:user_id] = @user.id
-        redirect_to conversation_public_deal_session_path(token: @deal.access_token), notice: t("meetia.deal.registered")
+        redirect_to conversation_public_deal_session_path(token: @deal.access_token, locale: @user_progress.follow_up_locale), notice: t("meetia.deal.registered")
       else
         flash.now[:alert] = @user.errors.full_messages.join(I18n.locale.to_s == "en" ? "; " : "、")
         render :show, status: :unprocessable_entity
@@ -243,7 +246,7 @@ module Public
     end
 
     def homepage_experience_deal?
-      Deal.public_homepage_featured_deal&.id == @deal.id
+      @deal.featured_on_homepage?
     end
 
     def require_registered_user
@@ -415,6 +418,23 @@ module Public
       apply_deal_locale!(@deal)
     end
 
+    def resolve_visitor_locale
+      loc = params[:locale].to_s
+      loc = session[:deal_visitor_locale].to_s unless UserProgress::LOCALES.include?(loc)
+      loc = @deal.language.to_s unless UserProgress::LOCALES.include?(loc)
+      UserProgress::LOCALES.include?(loc) ? loc : "ja"
+    end
+
+    def remember_visitor_locale!
+      loc = params[:locale].to_s
+      session[:deal_visitor_locale] = loc if UserProgress::LOCALES.include?(loc)
+    end
+
+    def assign_visitor_locale!(progress)
+      remember_visitor_locale!
+      progress.locale = resolve_visitor_locale
+    end
+
     def apply_visitor_user_fallbacks!(user)
       user.name = user.name.presence || t("meetia.common.guest")
       user.job_title = user.job_title.presence || "-"
@@ -424,15 +444,21 @@ module Public
     def ensure_visitor_session!
       return if client_preview?
 
+      remember_visitor_locale!
+
       existing = User.find_by(id: session[:user_id])
       if existing
         @user = existing
         @user_progress = @deal.user_progresses.find_or_create_by!(user: @user)
+        assign_visitor_locale!(@user_progress)
+        @user_progress.save! if @user_progress.changed?
         return
       end
 
       @user = User.build_guest!
-      @user_progress = @deal.user_progresses.create!(user: @user)
+      @user_progress = @deal.user_progresses.new(user: @user)
+      assign_visitor_locale!(@user_progress)
+      @user_progress.save!
       session[:user_id] = @user.id
     end
 

@@ -29,26 +29,30 @@
         div
           p
             strong = t("meetia.dashboard.deals.homepage_feature_title")
-            | ：
-            - if @homepage_featured_deal
-              = t("meetia.dashboard.deals.homepage_banner_set", title: @homepage_featured_deal.title)
-            - else
-              = t("meetia.dashboard.deals.homepage_banner_unset")
-          - if @homepage_feature_candidates.present?
-            = form_with url: set_homepage_feature_dashboard_deals_path, method: :post, local: true, html: { class: "db-v2-homepage-feature-form" } do
-              = select_tag :deal_id,
-                options_from_collection_for_select(@homepage_feature_candidates, :id, :title, @homepage_featured_deal&.id),
-                { include_blank: t("meetia.dashboard.deals.homepage_select_blank"), class: "db-v2-form-control", required: true }
-              = submit_tag t("meetia.dashboard.deals.homepage_apply"), class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs", data: { disable_with: t("meetia.dashboard.deals.homepage_apply") }
-          - else
+          p.db-v2-muted = t("meetia.dashboard.deals.homepage_feature_bilingual_lead")
+          - [["ja", @homepage_featured_deal_ja], ["en", @homepage_featured_deal_en]].each do |loc, featured|
+            .db-v2-homepage-feature-locale
+              p
+                strong = t("meetia.dashboard.deals.homepage_feature_for_#{loc}")
+                | ：
+                - if featured
+                  = t("meetia.dashboard.deals.homepage_banner_set", title: featured.title)
+                - else
+                  = t("meetia.dashboard.deals.homepage_banner_unset")
+              - if @homepage_feature_candidates.present?
+                = form_with url: set_homepage_feature_dashboard_deals_path, method: :post, local: true, html: { class: "db-v2-homepage-feature-form" } do
+                  = hidden_field_tag :locale, loc
+                  = select_tag :deal_id,
+                    options_from_collection_for_select(@homepage_feature_candidates, :id, :title, featured&.id),
+                    { include_blank: t("meetia.dashboard.deals.homepage_select_blank"), class: "db-v2-form-control", required: true }
+                  = submit_tag t("meetia.dashboard.deals.homepage_apply"), class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs", data: { disable_with: t("meetia.dashboard.deals.homepage_apply") }
+              - if featured
+                .db-v2-deal-show__actions
+                  = link_to dashboard_deal_path(featured), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs" do
+                    span = t("meetia.dashboard.deals.homepage_open_deal")
+                  = button_to t("meetia.dashboard.deals.homepage_unfeature"), unfeature_from_homepage_dashboard_deal_path(featured, from: "list"), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { confirm: t("meetia.dashboard.deals.homepage_unfeature_confirm"), turbo: false }
+          - if @homepage_feature_candidates.blank?
             p = t("meetia.dashboard.deals.homepage_no_candidates")
-          - if @homepage_featured_deal
-            .db-v2-deal-show__actions
-              = link_to dashboard_deal_path(@homepage_featured_deal), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs" do
-                span = t("meetia.dashboard.deals.homepage_open_deal")
-              = link_to dashboard_deal_user_progresses_path(@homepage_featured_deal), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs" do
-                span = t("meetia.dashboard.nav.company_logs")
-              = button_to t("meetia.dashboard.deals.homepage_unfeature"), unfeature_from_homepage_dashboard_deal_path(@homepage_featured_deal, from: "list"), method: :post, class: "db-v2-btn db-v2-btn--ghost db-v2-btn--xs", form: { class: "db-v2-inline-form" }, data: { confirm: t("meetia.dashboard.deals.homepage_unfeature_confirm"), turbo: false }
     - if @deals.empty?
       .db-v2-empty-state
         .db-v2-empty-state__icon
@@ -86,7 +90,7 @@
               th = t("meetia.dashboard.deals.col_actions")
           tbody
             - @deals.each do |deal|
-              tr class=(@homepage_featured_deal&.id == deal.id ? "db-v2-deals-table__row--featured" : nil)
+              tr class=(deal.featured_on_homepage? ? "db-v2-deals-table__row--featured" : nil)
                 td.db-v2-deals-table__id = deal.id
                 td.db-v2-deals-table__title
                   = link_to deal.title, dashboard_deal_path(deal), class: "db-v2-deals-table__link"

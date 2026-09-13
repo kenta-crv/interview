@@ -16,7 +16,8 @@ RSpec.describe DealFollowUp::EnqueueCampaignService do
   let(:user_progress) { deal.user_progresses.create!(user: user) }
 
   before do
-    client.subscriptions.create!(plan_type: :business, status: :active)
+    client.subscriptions.update_all(plan_type: "business", status: "active")
+    client.reload
     allow(DealFollowUpMailer).to receive_message_chain(:follow_up, :deliver_now)
   end
 
@@ -65,5 +66,36 @@ RSpec.describe DealFollowUp::EnqueueCampaignService do
     expect {
       described_class.call(user_progress: user_progress, ended_at: Time.current, force: true)
     }.to change(FollowUpDelivery, :count).by(5)
+  end
+
+  it "copies English template content when progress locale is en" do
+    deal.ensure_follow_up_templates!
+    template = deal.deal_follow_up_templates.find_by!(delay_days: 0)
+    template.update!(
+      subject: "日本語件名",
+      body: "日本語本文 {{user_name}}",
+      subject_en: "English subject",
+      body_en: "English body {{user_name}}"
+    )
+    user_progress.update!(locale: "en")
+    allow(DealFollowUpMailer).to receive_message_chain(:follow_up, :deliver_now)
+
+    described_class.call(user_progress: user_progress, ended_at: Time.current, force: true)
+
+    first = user_progress.follow_up_deliveries.find_by!(sequence: 1)
+    expect(first.subject).to eq("English subject")
+    expect(first.body).to eq("English body {{user_name}}")
+  end
+
+  it "falls back to Japanese content when English fields are blank" do
+    template = deal.deal_follow_up_templates.find_by!(delay_days: 0)
+    template.update_columns(
+      subject: "日本語件名",
+      body: "日本語本文",
+      subject_en: "",
+      body_en: ""
+    )
+
+    expect(template.content_for_locale("en")).to eq(subject: "日本語件名", body: "日本語本文")
   end
 end

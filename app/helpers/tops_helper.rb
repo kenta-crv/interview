@@ -367,10 +367,10 @@ module TopsHelper
   end
 
   def lp_ai_deal_start_path
-    deal = Deal.public_homepage_featured_deal
+    deal = Deal.public_homepage_featured_deal(I18n.locale)
     return nil unless deal
 
-    conversation_public_deal_session_path(token: deal.access_token)
+    conversation_public_deal_session_path(token: deal.access_token, locale: I18n.locale)
   end
 
   def lp_login_path

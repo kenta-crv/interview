@@ -46,7 +46,7 @@ module DealFollowUp
     end
 
     def with_deal_locale
-      loc = @deal.language.to_s == "en" ? :en : :ja
+      loc = @user_progress.follow_up_locale == "en" ? :en : :ja
       I18n.with_locale(loc) { yield }
     end
 

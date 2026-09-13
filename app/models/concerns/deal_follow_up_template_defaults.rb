@@ -4,17 +4,15 @@ module DealFollowUpTemplateDefaults
   DEFAULT_TEMPLATES = [].freeze
 
   def default_follow_up_templates
-    locale = language.to_s == "en" ? :en : :ja
-    items = I18n.with_locale(locale) { I18n.t("meetia.follow_up.templates") }
-    Array(items).map do |item|
-      hash = item.respond_to?(:symbolize_keys) ? item.symbolize_keys : item
-      {
-        delay_days: hash[:delay_days].to_i,
-        subject: hash[:subject].to_s,
-        body: hash[:body].to_s.strip,
-        include_sales_call_link: ActiveModel::Type::Boolean.new.cast(hash[:include_sales_call_link]),
-        include_contract_link: ActiveModel::Type::Boolean.new.cast(hash[:include_contract_link])
-      }
+    primary = follow_up_template_items_for(language.to_s == "en" ? :en : :ja)
+    english = follow_up_template_items_for(:en).index_by { |item| item[:delay_days] }
+
+    primary.map do |item|
+      en = english[item[:delay_days]] || {}
+      item.merge(
+        subject_en: en[:subject].to_s,
+        body_en: en[:body].to_s.strip
+      )
     end
   end
 
@@ -36,6 +34,7 @@ module DealFollowUpTemplateDefaults
   def ensure_follow_up_templates!
     remove_legacy_fourteen_day_templates!
     ensure_canonical_follow_up_templates!
+    backfill_follow_up_english_templates!
     reorder_follow_up_templates_by_delay!
   end
 
@@ -73,6 +72,20 @@ module DealFollowUpTemplateDefaults
 
   private
 
+  def follow_up_template_items_for(locale)
+    items = I18n.with_locale(locale) { I18n.t("meetia.follow_up.templates") }
+    Array(items).map do |item|
+      hash = item.respond_to?(:symbolize_keys) ? item.symbolize_keys : item
+      {
+        delay_days: hash[:delay_days].to_i,
+        subject: hash[:subject].to_s,
+        body: hash[:body].to_s.strip,
+        include_sales_call_link: ActiveModel::Type::Boolean.new.cast(hash[:include_sales_call_link]),
+        include_contract_link: ActiveModel::Type::Boolean.new.cast(hash[:include_contract_link])
+      }
+    end
+  end
+
   def remove_legacy_fourteen_day_templates!
     deal_follow_up_templates.where(delay_days: 14).find_each do |template|
       if template.follow_up_deliveries.exists?
@@ -98,12 +111,27 @@ module DealFollowUpTemplateDefaults
     end
   end
 
+  def backfill_follow_up_english_templates!
+    english = follow_up_template_items_for(:en).index_by { |item| item[:delay_days] }
+    deal_follow_up_templates.find_each do |template|
+      next if template.subject_en.present? && template.body_en.present?
+
+      en = english[template.delay_days] || {}
+      template.update!(
+        subject_en: template.subject_en.presence || en[:subject].to_s,
+        body_en: template.body_en.presence || en[:body].to_s.strip
+      )
+    end
+  end
+
   def refresh_legacy_customer_template!(template, attrs)
     return unless legacy_customer_body?(template.body)
 
     template.update!(
       subject: attrs[:subject],
       body: attrs[:body],
+      subject_en: attrs[:subject_en],
+      body_en: attrs[:body_en],
       include_sales_call_link: attrs[:include_sales_call_link],
       include_contract_link: attrs[:include_contract_link]
     )

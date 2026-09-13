@@ -24,4 +24,12 @@ class DealFollowUpTemplate < ApplicationRecord
       I18n.t("meetia.dashboard.follow_up.nurture", n: sequence - 1)
     end
   end
+
+  def content_for_locale(locale)
+    if locale.to_s == "en" && subject_en.to_s.strip.present? && body_en.to_s.strip.present?
+      { subject: subject_en, body: body_en }
+    else
+      { subject: subject, body: body }
+    end
+  end
 end

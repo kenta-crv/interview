@@ -405,13 +405,13 @@ RSpec.describe 'Deal experience smoke', type: :request do
 
       get root_path
       expect(response.body).to include('AI商談体験')
-      expect(response.body).to include(conversation_public_deal_session_path(token: admin_deal.access_token))
+      expect(response.body).to include(conversation_public_deal_session_path(token: admin_deal.access_token, locale: :ja))
       expect(response.body).to match(/target="_blank"[^>]*meetia-btn--cta-deal|meetia-btn--cta-deal[^>]*target="_blank"/)
       expect(response.body).not_to match(/meetia-btn--cta-deal[^>]*#features/)
     end
 
     it 'starts the featured deal conversation without visitor registration' do
-      admin_deal
+      admin_deal.update!(homepage_featured_locale: "ja", homepage_featured: true)
 
       get conversation_public_deal_session_path(token: admin_deal.access_token)
       expect(response).to have_http_status(:ok)
@@ -419,16 +419,38 @@ RSpec.describe 'Deal experience smoke', type: :request do
 
     it 'lets admin pick a published deal from the deals index' do
       sign_in admin
-      post set_homepage_feature_dashboard_deals_path, params: { deal_id: admin_deal.id }
+      post set_homepage_feature_dashboard_deals_path, params: { deal_id: admin_deal.id, locale: "ja" }
       expect(response).to redirect_to(dashboard_deals_path(anchor: 'homepage-feature'))
       expect(admin_deal.reload).to be_homepage_featured
+      expect(admin_deal.homepage_featured_locale).to eq("ja")
     end
 
     it 'lets admin feature a published deal from the deal page' do
       sign_in admin
-      post feature_on_homepage_dashboard_deal_path(admin_deal)
+      post feature_on_homepage_dashboard_deal_path(admin_deal), params: { locale: "ja" }
       expect(response).to redirect_to(dashboard_deal_path(admin_deal, anchor: 'homepage-feature'))
       expect(admin_deal.reload).to be_homepage_featured
+      expect(admin_deal.homepage_featured_locale).to eq("ja")
+    end
+
+    it 'features Japanese and English deals separately' do
+      en_deal = Deal.create!(
+        title: 'Meetia EN',
+        language: 'en',
+        status: :completed,
+        playback_ready: true,
+        managed_by_admin: true,
+        client_id: nil
+      )
+      doc = en_deal.deal_documents.create!(filename: 'meetia-en.pdf', content_type: 'application/pdf')
+      en_deal.deal_pages.create!(deal_document: doc, page_number: 1, title: 'Meetia', script: 'Meetia overview')
+
+      sign_in admin
+      post set_homepage_feature_dashboard_deals_path, params: { deal_id: admin_deal.id, locale: "ja" }
+      post set_homepage_feature_dashboard_deals_path, params: { deal_id: en_deal.id, locale: "en" }
+
+      expect(Deal.homepage_featured_deal("ja").id).to eq(admin_deal.id)
+      expect(Deal.homepage_featured_deal("en").id).to eq(en_deal.id)
     end
 
     it 'does not let a client feature a deal' do

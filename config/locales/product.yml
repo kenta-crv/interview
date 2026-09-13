@@ -64,7 +64,7 @@ ja:
       address_ph: "例: 東京都渋谷区..."
       ended_flash: 商談が終了しました。ご参加ありがとうございました。
       opening_greeting: ご挨拶
-      opening_company: 会社概要
+      opening_company: サービス概要
       opening_guide: ご案内
       default_topics:
         overview: サービス概要
@@ -488,7 +488,7 @@ en:
       address_ph: "e.g. 1 Market St, San Francisco"
       ended_flash: The deal has ended. Thank you for joining.
       opening_greeting: Greeting
-      opening_company: Company overview
+      opening_company: Service overview
       opening_guide: How this works
       default_topics:
         overview: Overview

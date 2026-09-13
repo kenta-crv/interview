@@ -63,11 +63,12 @@ module DealFollowUp
 
     def create_and_schedule_delivery!(template)
       scheduled_at = @ended_at + template.delay_days.days
+      content = template.content_for_locale(@user_progress.follow_up_locale)
       @user_progress.follow_up_deliveries.create!(
         deal_follow_up_template: template,
         sequence: template.sequence,
-        subject: template.subject,
-        body: template.body,
+        subject: content[:subject],
+        body: content[:body],
         scheduled_at: scheduled_at,
         status: "scheduled"
       )

@@ -46,30 +46,42 @@ class Deal < ApplicationRecord
   scope :recent, -> { order(created_at: :desc) }
   scope :by_status, ->(status) { where(status: status) }
   scope :by_token, ->(token) { where(access_token: token) }
-  scope :homepage_featured, -> { where(homepage_featured: true) }
+  scope :homepage_featured, -> { where.not(homepage_featured_locale: nil) }
 
-  def self.homepage_featured_deal
-    featured = find_by(homepage_featured: true)
+  def self.normalize_homepage_locale(locale)
+    locale.to_s == "en" ? "en" : "ja"
+  end
+
+  def self.homepage_featured_deal(locale = I18n.locale)
+    loc = normalize_homepage_locale(locale)
+    featured = find_by(homepage_featured_locale: loc)
     return featured if featured
 
-    where(managed_by_admin: true, playback_ready: true)
+    where(managed_by_admin: true, playback_ready: true, language: loc)
       .where(id: DealPage.select(:deal_id))
       .order(:id)
       .first
   end
 
-  def self.public_homepage_featured_deal
-    featured = find_by(homepage_featured: true)
+  def self.public_homepage_featured_deal(locale = I18n.locale)
+    loc = normalize_homepage_locale(locale)
+    featured = find_by(homepage_featured_locale: loc)
     return featured if featured&.publicly_accessible?
 
-    where(managed_by_admin: true, playback_ready: true)
+    where(managed_by_admin: true, playback_ready: true, language: loc)
       .where(id: DealPage.select(:deal_id))
       .order(:id)
       .detect(&:publicly_accessible?)
   end
 
-  def featured_on_homepage?
-    self.class.homepage_featured_deal&.id == id
+  def featured_on_homepage?(locale = nil)
+    return homepage_featured_locale.present? if locale.nil?
+
+    homepage_featured_locale == self.class.normalize_homepage_locale(locale)
+  end
+
+  def homepage_feature_locale
+    homepage_featured_locale.presence || (language.to_s == "en" ? "en" : "ja")
   end
 
   def publicly_accessible?

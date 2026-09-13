@@ -29,7 +29,7 @@
           = link_to dashboard_deals_path(anchor: "homepage-feature"), class: sidebar_link_class(:homepage_feature) do
             i.fa-solid.fa-play aria-hidden="true"
             span = t("meetia.dashboard.nav.homepage_feature")
-          - if (company_log_deal = Deal.homepage_featured_deal)
+          - if (company_log_deal = Deal.homepage_featured_deal("ja") || Deal.homepage_featured_deal("en"))
             = link_to dashboard_deal_user_progresses_path(company_log_deal), class: sidebar_link_class(:company_logs) do
               i.fa-solid.fa-building aria-hidden="true"
               span = t("meetia.dashboard.nav.company_logs")

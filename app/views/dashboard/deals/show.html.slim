@@ -272,12 +272,12 @@
             - if acting_as_admin?
               .db-v2-form-group#homepage-feature
                 label.db-v2-form-label = t("meetia.dashboard.deals.homepage_feature_title")
-                p.db-v2-muted = t("meetia.dashboard.deals.homepage_feature_lead")
+                p.db-v2-muted = t("meetia.dashboard.deals.homepage_feature_lead_locale", locale: @deal.language.to_s.upcase)
                 - if @deal.featured_on_homepage?
-                  p.db-v2-muted = t("meetia.dashboard.deals.homepage_feature_active")
+                  p.db-v2-muted = t("meetia.dashboard.deals.homepage_feature_active_locale", locale: @deal.homepage_featured_locale.to_s.upcase)
                   = button_to t("meetia.dashboard.deals.homepage_unfeature"), unfeature_from_homepage_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--ghost", data: { confirm: t("meetia.dashboard.deals.homepage_unfeature_confirm"), turbo: false }
                 - else
-                  = button_to t("meetia.dashboard.deals.homepage_feature"), feature_on_homepage_dashboard_deal_path(@deal), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: t("meetia.dashboard.deals.homepage_feature_confirm"), turbo: false }
+                  = button_to t("meetia.dashboard.deals.homepage_feature_as", locale: @deal.language.to_s.upcase), feature_on_homepage_dashboard_deal_path(@deal, locale: @deal.language), method: :post, class: "db-v2-btn db-v2-btn--primary", data: { confirm: t("meetia.dashboard.deals.homepage_feature_confirm"), turbo: false }
             .db-v2-form-group
               label.db-v2-form-label = t("meetia.dashboard.deals.deal_url_label")
               .db-v2-copy-row data-share-ready=(@deal.publicly_accessible? ? "true" : "false")
@@ -387,6 +387,13 @@
                         .db-v2-form-group
                           = label_tag "templates[#{template.id}_body]", t("meetia.dashboard.deals.follow_up_body"), class: "db-v2-form-label"
                           = text_area_tag "templates[#{template.id}][body]", template.body, class: "db-v2-form-control", rows: 5
+                          small.db-v2-muted = t("meetia.dashboard.deals.follow_up_vars")
+                        .db-v2-form-group
+                          = label_tag "templates[#{template.id}_subject_en]", t("meetia.dashboard.deals.follow_up_subject_en"), class: "db-v2-form-label"
+                          = text_field_tag "templates[#{template.id}][subject_en]", template.subject_en, class: "db-v2-form-control"
+                        .db-v2-form-group
+                          = label_tag "templates[#{template.id}_body_en]", t("meetia.dashboard.deals.follow_up_body_en"), class: "db-v2-form-label"
+                          = text_area_tag "templates[#{template.id}][body_en]", template.body_en, class: "db-v2-form-control", rows: 5
                           small.db-v2-muted = t("meetia.dashboard.deals.follow_up_vars")
                         .db-v2-form-group.db-v2-form-group--checks
                           label.db-v2-check-label

@@ -58,7 +58,7 @@ module DealEngine
           JSONのみ出力:
           {
             "greeting": "挨拶（会社名は#{@deal.title}）",
-            "company_overview": "会社・サービス概要",
+            "company_overview": "資料に基づくサービス紹介。誰に何を提供するかを短く述べる",
             "usage_guide": "進め方の3択案内。必ず次を含める: (1)気になる点を自由に質問 (2)下のメニューからトピックを選ぶ (3)ご指定がない場合はこのまま進行",
             "closing": "営業クロージング。魅力・価値を短く再提示し、契約またはトライアル、もしくは担当者への詳細案内を促す"
           }
@@ -75,7 +75,7 @@ module DealEngine
           Output JSON only:
           {
             "greeting": "Greeting (company/deal name: #{@deal.title})",
-            "company_overview": "Company / service overview",
+            "company_overview": "Service intro from the materials: who you serve and what you offer",
             "usage_guide": "How to proceed. Must include these 3 options: (1) ask free-form questions (2) pick a topic from the menu below (3) if unspecified, continue through the materials",
             "closing": "Sales closing that briefly restates value and invites contract/trial or a follow-up with a human rep"
           }
