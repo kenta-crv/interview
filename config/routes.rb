@@ -127,6 +127,7 @@ Rails.application.routes.draw do
   # --- ダッシュボード機能の集約 ---
   namespace :dashboard do
     get 'index', to: 'dashboard#index', as: :index
+    get "setup", to: "setup#show", as: :setup
     root to: 'dashboard#index'
 
     resource :account, only: [:show, :update]

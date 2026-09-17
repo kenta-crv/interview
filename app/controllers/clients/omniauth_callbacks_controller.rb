@@ -69,8 +69,4 @@ class Clients::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   def client_sign_up_path_for_oauth_locale
     resolved_locale == "en" ? new_client_registration_en_path(locale: :en) : new_client_registration_path
   end
-
-  def after_sign_in_path_for(_resource)
-    dashboard_root_path
-  end
 end

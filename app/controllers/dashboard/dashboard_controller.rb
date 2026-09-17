@@ -1,5 +1,10 @@
 class Dashboard::DashboardController < Dashboard::BaseController
   def index
+    if client_signed_in? && !acting_as_admin? && current_client.first_setup_incomplete?
+      redirect_to dashboard_setup_path
+      return
+    end
+
     if acting_as_admin?
       @deals = Deal.includes(:deal_documents, :deal_summary, :user_progresses)
                    .order(updated_at: :desc)

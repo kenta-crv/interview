@@ -63,7 +63,7 @@ class Clients::RegistrationsController < Devise::RegistrationsController
     resource = _resource
     resource.initialize_trial_subscription! if resource.respond_to?(:initialize_trial_subscription!)
     mark_yahoo_trial_conversion!
-    dashboard_index_path
+    dashboard_setup_path
   end
 
   private

@@ -135,6 +135,17 @@ ja:
         leads_sessions: リード・セッション
         view_leads: リード一覧を見る
         follow_up_value: "%{opened} / %{clicked}（送信 %{sent}）"
+      setup:
+        title: はじめに
+        subtitle: 資料を上げると、訪問者が入れるAI商談ルームができます
+        steps_title: 最初の3ステップ
+        step_create: 商談を作る（会社名・タイトル）
+        step_upload: 提案資料のPDFをアップロードする
+        step_publish: プレビューして公開URLをコピーする
+        cta_create: 商談を新規作成
+        cta_upload: 商談を開いて資料を上げる
+        cta_publish: プレビューして公開する
+        materials_hint: 手元にPDFがなくても、先に商談を作っておけます。会社概要・サービス資料・料金表などが用意できたら、同じ手順でアップロードしてください。
       status:
         live: 公開中
         processing: 処理中
@@ -179,6 +190,7 @@ ja:
         new_title: 新規商談作成
         new_current: 新規作成
         new_subtitle: タイトルと基本設定だけ先に登録し、続けて資料・台本を整えます
+        new_setup_lead: ステップ1/3 — 会社名とタイトルを登録します。資料は次の画面でアップロードできます。
         back_to_list: 一覧に戻る
         back_to_list_short: 一覧へ
         basic_info: 基本情報
@@ -205,6 +217,12 @@ ja:
         simulation: シミュレーション
         list_short: 一覧
         preview_note: 即時プレゼン／シミュレーションはプレビューです（リードは記録されません）。リード確認は共有URLの「開く」またはコピーした公開URLで登録してください。
+        next_upload_title: 次にやること
+        next_upload_lead: 最初のPDFをアップロードしてください。資料からAI商談が生成されます。
+        next_upload_cta: 資料アップロードへ
+        next_publish_title: 次にやること
+        next_publish_lead: プレビューで確認し、問題なければ公開してください。
+        next_publish_cta: 公開するへ
         share_url: 共有URL
         processing_message: AI処理中です（要約・台本・音声生成）。このページは自動更新されます。
         reset_stuck: 処理が止まっている場合はリセット
@@ -490,6 +508,17 @@ ja:
         change_to: "%{name}に変更"
       management:
         subtitle: 契約企業の一覧と使用状況
+        tabs_aria: Managementの切り替え
+        tab_companies: 契約企業
+        tab_journeys: 来訪進行
+        journeys_title: 来訪進行履歴
+        journeys_empty: まだ来訪進行の履歴はありません
+        col_progress: 進行
+        col_visitor: 来訪者
+        col_client: 契約企業
+        col_deal: 商談
+        col_last_action: 最終操作
+        col_last_at: 最終日時
         list_title: 契約企業一覧
         empty: 登録されている契約企業はありません
         col_company: 企業名
@@ -503,6 +532,16 @@ ja:
         col_registered: 登録日
         col_actions: 操作
         deals_unlimited: "%{count}（無制限）"
+      journey:
+        label: 来訪進行
+        reached: "%{step}まで進んでいます"
+        steps:
+          registered: 登録
+          started: 開始
+          viewed: 閲覧
+          engaged: 対話
+          converted: 意向
+          completed: 完了
       leads:
         title: リード管理
         company_title: 自社向けログ
@@ -511,6 +550,7 @@ ja:
         list_title: リード一覧
         empty: まだリード情報がありません
         col_id: ID
+        col_progress: 進行
         col_name: リード名
         col_job: 役職
         col_company: 会社名
@@ -774,6 +814,17 @@ en:
         leads_sessions: Leads & sessions
         view_leads: View leads
         follow_up_value: "%{opened} / %{clicked} (%{sent} sent)"
+      setup:
+        title: Get started
+        subtitle: Upload a deck to create an AI deal room visitors can join
+        steps_title: 3 steps to go live
+        step_create: Create a deal (company and title)
+        step_upload: Upload your proposal PDF
+        step_publish: Preview, then copy the public URL
+        cta_create: Create a deal
+        cta_upload: Open the deal and upload materials
+        cta_publish: Preview and publish
+        materials_hint: No PDF yet? Create the deal first. When you have a company overview, product deck, or pricing sheet, upload it in the same flow.
       status:
         live: Live
         processing: Processing
@@ -818,6 +869,7 @@ en:
         new_title: New deal
         new_current: New
         new_subtitle: Save the title and basics first, then upload materials and scripts
+        new_setup_lead: Step 1 of 3 — save the company and title. You can upload the deck on the next screen.
         back_to_list: Back to list
         back_to_list_short: All deals
         basic_info: Basics
@@ -848,6 +900,12 @@ en:
         list_short: All deals
         preview_note: Instant present / simulation are previews (leads are not recorded).
           Use Open or a copied public URL to capture leads.
+        next_upload_title: Next step
+        next_upload_lead: Upload your first PDF. Meetia builds the AI deal from that deck.
+        next_upload_cta: Go to upload
+        next_publish_title: Next step
+        next_publish_lead: Preview the room, then publish when it looks right.
+        next_publish_cta: Go to publish
         share_url: Share URL
         processing_message: AI processing (summary, scripts, audio). This page refreshes
           automatically.
@@ -1147,6 +1205,17 @@ en:
         change_to: Switch to %{name}
       management:
         subtitle: Companies and usage
+        tabs_aria: Management sections
+        tab_companies: Companies
+        tab_journeys: Visitor progress
+        journeys_title: Visitor progress history
+        journeys_empty: No visitor progress yet
+        col_progress: Progress
+        col_visitor: Visitor
+        col_client: Company
+        col_deal: Deal
+        col_last_action: Last action
+        col_last_at: Last seen
         list_title: Companies
         empty: No companies registered
         col_company: Company
@@ -1160,6 +1229,16 @@ en:
         col_registered: Registered
         col_actions: Actions
         deals_unlimited: "%{count} (unlimited)"
+      journey:
+        label: Visitor progress
+        reached: Reached %{step}
+        steps:
+          registered: Registered
+          started: Started
+          viewed: Viewed
+          engaged: Chat
+          converted: Intent
+          completed: Completed
       leads:
         title: Leads
         company_title: Company logs
@@ -1168,6 +1247,7 @@ en:
         list_title: Leads
         empty: No leads yet
         col_id: ID
+        col_progress: Progress
         col_name: Lead
         col_job: Title
         col_company: Company

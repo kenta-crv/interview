@@ -80,7 +80,7 @@ end
 RSpec.describe "Yahoo Ads trial conversion", type: :request do
   let(:conv_label) { "ZJV84DQ0OVHBSHWU0P1364033" }
 
-  it "新規登録直後のダッシュボードでYAds CVタグを1回出す" do
+  it "新規登録直後の初回案内でYAds CVタグを1回出す" do
     email = "trial-cv-#{SecureRandom.hex(4)}@example.com"
     post client_registration_path, params: {
       client: {
@@ -90,7 +90,7 @@ RSpec.describe "Yahoo Ads trial conversion", type: :request do
       }
     }
 
-    expect(response).to redirect_to(dashboard_index_path)
+    expect(response).to redirect_to(dashboard_setup_path)
     follow_redirect!
     expect(response.body).to include(conv_label)
     expect(response.body).to include("yjad_conversion")
@@ -99,7 +99,7 @@ RSpec.describe "Yahoo Ads trial conversion", type: :request do
     expect(response.body).to include("AW-10998015402/vlLmCJa_1OccEKrLofwo")
     expect(response.body).to include("gtag('event', 'conversion'")
 
-    get dashboard_index_path
+    get dashboard_setup_path
     expect(response.body).not_to include(conv_label)
     expect(response.body).not_to include("vlLmCJa_1OccEKrLofwo")
   end
@@ -107,7 +107,7 @@ RSpec.describe "Yahoo Ads trial conversion", type: :request do
   it "既存ログインではYAds CVタグを出さない" do
     client = create(:client)
     sign_in client
-    get dashboard_index_path
+    get dashboard_setup_path
     expect(response).to have_http_status(:ok)
     expect(response.body).not_to include(conv_label)
     expect(response.body).not_to include("vlLmCJa_1OccEKrLofwo")

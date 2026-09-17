@@ -468,4 +468,49 @@ RSpec.describe 'Deal experience smoke', type: :request do
       expect(response).to redirect_to(dashboard_deals_path)
     end
   end
+
+  describe 'admin management visitor journeys' do
+    let(:admin) { create(:admin) }
+    let(:visitor) { create(:user, name: '来訪太郎') }
+
+    it 'shows visitor progress history on Management' do
+      progress = deal.user_progresses.create!(user: visitor)
+      DealPresentationEvent.create!(
+        deal: deal,
+        user: visitor,
+        user_progress: progress,
+        session_key: 'sess-mgmt',
+        event_type: 'page_view',
+        page_number: 2,
+        occurred_at: Time.current
+      )
+
+      sign_in admin
+      get dashboard_management_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('来訪進行履歴')
+      expect(response.body).to include('来訪太郎')
+      expect(response.body).to include('閲覧')
+      expect(response.body).to include(dashboard_deal_user_progress_path(deal, progress))
+    end
+
+    it 'shows the journey tracker on the lead list' do
+      progress = deal.user_progresses.create!(user: visitor)
+      DealPresentationEvent.create!(
+        deal: deal,
+        user: visitor,
+        user_progress: progress,
+        session_key: 'sess-lead',
+        event_type: 'cta_click',
+        occurred_at: Time.current
+      )
+
+      sign_in client
+      get dashboard_deal_user_progresses_path(deal)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('意向')
+    end
+  end
 end

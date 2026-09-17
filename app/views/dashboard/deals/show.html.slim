@@ -34,6 +34,16 @@
           i.fa-solid.fa-arrow-left aria-hidden="true"
           span = t("meetia.dashboard.deals.list_short")
 
+  - next_action = deal_next_setup_action(@deal)
+  - if next_action
+    .db-v2-alert.db-v2-alert--info.db-v2-deal-next-action
+      i.fa-solid.fa-list-check aria-hidden="true"
+      div
+        p
+          strong = t(next_action[:title_key])
+        p.db-v2-muted = t(next_action[:lead_key])
+        = link_to t(next_action[:cta_key]), next_action[:href], class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs"
+
   p.db-v2-muted.db-v2-deal-show__preview-note
     = t("meetia.dashboard.deals.preview_note")
 

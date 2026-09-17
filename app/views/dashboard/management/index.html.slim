@@ -5,7 +5,15 @@
   .db-v2-header__right
     = render "/dashboard/theme_switch"
 
-.db-v2-bottom-card
+nav.db-v2-tabs role="tablist" aria-label=t("meetia.dashboard.management.tabs_aria")
+  a.db-v2-tabs__btn.is-active href="#management-companies"
+    i.fa-solid.fa-building aria-hidden="true"
+    span = t("meetia.dashboard.management.tab_companies")
+  a.db-v2-tabs__btn href="#management-journeys"
+    i.fa-solid.fa-route aria-hidden="true"
+    span = t("meetia.dashboard.management.tab_journeys")
+
+#management-companies.db-v2-bottom-card
   .db-v2-bottom-card__header.db-v2-bottom-card__header--split
     h2.db-v2-bottom-card__title = t("meetia.dashboard.management.list_title")
     span.db-v2-deals-count = t("meetia.dashboard.common.count_companies", count: @clients.size)
@@ -74,3 +82,53 @@
                 td= l(client.created_at, format: :short)
                 td
                   = link_to t("meetia.dashboard.common.detail"), dashboard_subscription_path(client_id: client.id), class: "db-v2-btn db-v2-btn--ghost db-v2-btn--sm"
+
+#management-journeys.db-v2-bottom-card
+  .db-v2-bottom-card__header.db-v2-bottom-card__header--split
+    h2.db-v2-bottom-card__title = t("meetia.dashboard.management.journeys_title")
+    span.db-v2-deals-count = t("meetia.dashboard.common.count", count: @visitor_progresses.size)
+
+  .db-v2-bottom-card__body
+    - if @visitor_progresses.empty?
+      .db-v2-empty-state
+        .db-v2-empty-state__icon
+          i.fa-solid.fa-route aria-hidden="true"
+        p.db-v2-empty-state__text = t("meetia.dashboard.management.journeys_empty")
+    - else
+      .db-v2-leads-table-wrap
+        table.db-v2-leads-table
+          thead
+            tr
+              th = t("meetia.dashboard.management.col_progress")
+              th = t("meetia.dashboard.management.col_visitor")
+              th = t("meetia.dashboard.management.col_client")
+              th = t("meetia.dashboard.management.col_deal")
+              th = t("meetia.dashboard.management.col_last_action")
+              th = t("meetia.dashboard.management.col_last_at")
+              th = t("meetia.dashboard.management.col_actions")
+          tbody
+            - @visitor_progresses.each do |progress|
+              - journey = @journeys[progress.id]
+              - last_event = journey && journey[:last_event]
+              tr
+                td
+                  = visitor_journey_tracker(journey, compact: true)
+                  span.db-v2-journey__current = visitor_journey_step_label(journey)
+                td.db-v2-deals-table__title = progress.user&.name.presence || progress.user&.email.presence || t("meetia.dashboard.leads.fallback_name", id: progress.id)
+                td = progress.deal&.client&.company.presence || progress.deal&.client&.email.presence || "—"
+                td = progress.deal&.title.presence || "—"
+                td
+                  - if last_event
+                    = last_event.display_event_type
+                    - if journey[:last_page].present?
+                      = " / "
+                      = t("meetia.dashboard.common.page_number", page: journey[:last_page])
+                  - else
+                    | —
+                td
+                  - if journey && journey[:last_at]
+                    = l(journey[:last_at], format: :short)
+                  - else
+                    = l(progress.updated_at, format: :short)
+                td
+                  = link_to t("meetia.dashboard.leads.detail"), dashboard_deal_user_progress_path(progress.deal, progress), class: "db-v2-btn db-v2-btn--primary db-v2-btn--xs"

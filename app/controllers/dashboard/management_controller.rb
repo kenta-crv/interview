@@ -16,6 +16,8 @@ module Dashboard
       @published_deal_counts = Deal.where(client_id: client_ids, playback_ready: true)
                                    .group(:client_id)
                                    .count
+      @visitor_progresses = UserProgress.includes(:user, deal: :client).order(updated_at: :desc).limit(100)
+      @journeys = UserProgress.journey_summaries_for(@visitor_progresses)
     end
   end
 end

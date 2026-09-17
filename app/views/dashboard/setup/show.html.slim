@@ -1,0 +1,27 @@
+- setup = client_setup_progress(@deals)
+
+.db-v2-header
+  .db-v2-header__left
+    h1.db-v2-header__title = t("meetia.dashboard.setup.title")
+    p.db-v2-header__subtitle = t("meetia.dashboard.setup.subtitle")
+  .db-v2-header__right
+    = render "/dashboard/theme_switch"
+
+.db-v2-bottom-card.db-v2-setup-card
+  .db-v2-bottom-card__header
+    h2.db-v2-bottom-card__title = t("meetia.dashboard.setup.steps_title")
+  .db-v2-bottom-card__body
+    ol.db-v2-setup-steps
+      - setup[:steps].each do |step|
+        - current = setup[:current_step] == step[:key]
+        li class="db-v2-setup-steps__item#{' is-done' if step[:done]}#{' is-current' if current}"
+          span.db-v2-setup-steps__mark aria-hidden="true"
+            - if step[:done]
+              i.fa-solid.fa-check
+            - else
+              span = { create: "1", upload: "2", publish: "3" }[step[:key]]
+          span.db-v2-setup-steps__label = t("meetia.dashboard.setup.step_#{step[:key]}")
+    p.db-v2-muted.db-v2-setup-card__hint = t("meetia.dashboard.setup.materials_hint")
+    = link_to setup[:cta_path], class: "db-v2-btn db-v2-btn--primary" do
+      i.fa-solid.fa-arrow-right aria-hidden="true"
+      span = t(setup[:cta_key])

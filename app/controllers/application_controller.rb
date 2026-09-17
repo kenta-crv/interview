@@ -191,7 +191,7 @@ class ApplicationController < ActionController::Base
       sign_out(:client) if client_signed_in?
       dashboard_root_path
     when Client
-      dashboard_root_path
+      resource.first_setup_incomplete? ? dashboard_setup_path : dashboard_root_path
     else
       locale_root_href
     end

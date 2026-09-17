@@ -29,6 +29,10 @@
           span.db-v2-status-badge.db-v2-status-badge--fail = t("meetia.dashboard.status.opted_out")
       h1.db-v2-header__title = lead_name
       p.db-v2-header__subtitle = @deal.title
+      .db-v2-lead-detail__journey
+        = visitor_journey_tracker(@journey)
+        p.db-v2-lead-detail__journey-note
+          = t("meetia.dashboard.journey.reached", step: visitor_journey_step_label(@journey))
     .db-v2-header__right
       = render "/dashboard/theme_switch"
       = link_to dashboard_deal_user_progresses_path(@deal), class: "db-v2-btn db-v2-btn--ghost" do

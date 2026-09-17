@@ -154,6 +154,10 @@ class Client < ApplicationRecord
     company.presence || email
   end
 
+  def first_setup_incomplete?
+    !deals.where(managed_by_admin: false, playback_ready: true).exists?
+  end
+
   def update_company_name(value)
     name = value.to_s.strip
     return false if name.blank?

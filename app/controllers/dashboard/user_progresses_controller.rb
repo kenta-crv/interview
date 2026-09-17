@@ -4,10 +4,12 @@ class Dashboard::UserProgressesController < Dashboard::BaseController
   def index
     @user_progresses = @deal.user_progresses.includes(:user).order(created_at: :desc)
     @evaluations_by_user_id = @deal.deal_evaluations.index_by(&:user_id)
+    @journeys = UserProgress.journey_summaries_for(@user_progresses)
   end
 
   def show
     @user_progress = @deal.user_progresses.find(params[:id])
+    @journey = UserProgress.journey_summaries_for([@user_progress])[@user_progress.id]
     @presentation_events = @deal.deal_presentation_events
                                .where(user_id: @user_progress.user_id)
                                .recent_first

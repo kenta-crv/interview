@@ -32,6 +32,7 @@
           thead
             tr
               th = t("meetia.dashboard.leads.col_id")
+              th = t("meetia.dashboard.leads.col_progress")
               th = t("meetia.dashboard.leads.col_name")
               th = t("meetia.dashboard.leads.col_job")
               th = t("meetia.dashboard.leads.col_company")
@@ -47,6 +48,9 @@
               - evaluation = @evaluations_by_user_id[progress.user_id]
               tr
                 td.db-v2-deals-table__id = progress.id
+                td
+                  = visitor_journey_tracker(@journeys[progress.id], compact: true)
+                  span.db-v2-journey__current = visitor_journey_step_label(@journeys[progress.id])
                 td.db-v2-deals-table__title = progress.user&.name.presence || "—"
                 td= progress.user&.job_title.presence || "—"
                 td= progress.user&.company.presence || "—"
