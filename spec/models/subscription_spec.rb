@@ -59,8 +59,8 @@ RSpec.describe Subscription, type: :model do
       expect(Subscription.format_feature_value(:business, :prospect_follow_up)).to eq('✔︎')
     end
 
-    it 'shows 近日公開 for enterprise prospect follow up' do
-      expect(Subscription.format_feature_value(:enterprise, :prospect_follow_up)).to eq('近日公開')
+    it 'shows checkmark for enterprise prospect follow up' do
+      expect(Subscription.format_feature_value(:enterprise, :prospect_follow_up)).to eq('✔︎')
     end
 
     it 'formats deal and material limits' do
