@@ -14,6 +14,3 @@
 //= link dashboard.css
 //= link interview.css
 //= link tops.css
-//= link questions.css
-//= link situations.css
-//= link answers.css
