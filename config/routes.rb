@@ -30,6 +30,9 @@ Rails.application.routes.draw do
     get "reviews", to: redirect { |path_params, _req| "/#{path_params[:locale]}#reviews" }
     get "faq", to: redirect { |path_params, _req| "/#{path_params[:locale]}#faq" }
     get "company", to: redirect { |path_params, _req| "/#{path_params[:locale]}#company" }
+    get "privacy", to: "tops#privacy", as: :localized_privacy
+    get "tos", to: "tops#tos", as: :localized_tos
+    get "specific", to: "tops#specific", as: :localized_specific
 
     devise_scope :client do
       get "clients/sign_in", to: "clients/sessions#new", as: :new_client_session_en
@@ -55,6 +58,9 @@ Rails.application.routes.draw do
   get 'faq', to: redirect('/#faq')
   get 'company', to: redirect('/#company')
   get 'interview', to: 'tops#interview'
+  get "privacy", to: "tops#privacy"
+  get "tos", to: "tops#tos"
+  get "specific", to: "tops#specific"
 
 
   # --- 面接シナリオ管理 ---

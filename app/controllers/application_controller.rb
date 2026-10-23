@@ -163,7 +163,12 @@ class ApplicationController < ActionController::Base
       path.start_with?("/clients/sign_up") ||
       path.start_with?("/clients/password") ||
       path.start_with?("/clients/auth") ||
-      (path == "/clients" && !client_signed_in?)
+      (path == "/clients" && !client_signed_in?) ||
+      legal_public_path?(path)
+  end
+
+  def legal_public_path?(path)
+    %w[/privacy /tos /specific].include?(path.to_s.split("?", 2).first)
   end
 
   def visitor_locale_path?(path)

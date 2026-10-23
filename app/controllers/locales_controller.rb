@@ -41,6 +41,7 @@ class LocalesController < ApplicationController
       path.start_with?("/interview") ||
       path.start_with?("/clients/sign_in") ||
       path.start_with?("/clients/sign_up") ||
-      path.start_with?("/clients/password")
+      path.start_with?("/clients/password") ||
+      legal_public_path?(path)
   end
 end

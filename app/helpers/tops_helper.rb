@@ -93,9 +93,9 @@ module TopsHelper
     { category: "service", q: "見込み度や離脱はどう見えますか？", a: "会話ログと行動ログから関心の推移・離脱ポイント・見込み度A〜DをDashboardで確認できます。" },
 
     # pricing
-    { category: "pricing", q: "無料トライアルの条件は？", a: "#{Subscription::TRIAL_DAYS}日間・0円・カード不要です。上限は商談5件・資料1つ。終了後の自動課金はなく、Standard（月額59,800円／初回3ヶ月15%OFF）へ誘導します。" },
-    { category: "pricing", q: "料金プランと上限を教えてください。", a: "Standard月額59,800円（商談50・資料3）／Business 98,000円（商談300・資料7）／Enterprise 198,000円（商談無制限・資料50）。Starterは新規販売していません。クリック履歴分析は全プラン対象です。" },
-    { category: "pricing", q: "トライアル中に解約したら課金されますか？", a: "トライアル終了時の自動課金はありません。有料プランをCheckoutしたときだけ課金されます。" },
+    { category: "pricing", q: "無料トライアルの条件は？", a: "#{Subscription::TRIAL_DAYS}日間・0円・カード不要です。上限は商談5件・資料1つ。終了後の自動課金はありません。継続される場合は、Standard（月額59,800円／初回3ヶ月15%OFF）をご案内します。" },
+    { category: "pricing", q: "料金プランと上限を教えてください。", a: "お申し込みいただけるのは、Standard月額59,800円（商談50・資料3）、Business 98,000円（商談300・資料7）、Enterprise 198,000円（商談無制限・資料50）です。クリック履歴分析は全プラン対象です。" },
+    { category: "pricing", q: "トライアル中に解約したら課金されますか？", a: "トライアル終了時の自動課金はありません。有料プランにお申し込みいただいたときだけ課金されます。" },
     { category: "pricing", q: "プラン変更や請求書払いはできますか？", a: "プラン変更はDashboardの契約管理から可能です。請求書払いは契約形態により案内します。法人でご希望の場合は導入相談時にお知らせください。" },
 
     # setup
@@ -119,9 +119,9 @@ module TopsHelper
     { category: "service", q: "How are intent and drop-off shown?", a: "Conversation and behavior logs show interest trends, drop-off points, and grades A–D in the dashboard." },
 
     # pricing
-    { category: "pricing", q: "What are the free trial terms?", a: "#{Subscription::TRIAL_DAYS} days at ¥0 / $0, no card required. Limits: 5 deals and 1 material. No auto-charge at end—you're guided to Standard (¥59,800 / $399; 15% off first 3 months)." },
-    { category: "pricing", q: "What are the plans and limits?", a: "Standard ¥59,800 / $399 (50 deals, 3 materials) / Business ¥98,000 / $699 (300 deals, 7 materials) / Enterprise ¥198,000 / $1,299 (unlimited deals, 50 materials). Starter is not sold to new customers. Click analytics is on all plans." },
-    { category: "pricing", q: "If I cancel during the trial, am I charged?", a: "No auto-charge when the trial ends. You're only charged after you check out a paid plan." },
+    { category: "pricing", q: "What are the free trial terms?", a: "#{Subscription::TRIAL_DAYS} days at ¥0 / $0, no card required. Limits: 5 deals and 1 material. There is no automatic charge when the trial ends. If you want to continue, we will offer Standard (¥59,800 / $399; 15% off the first 3 months)." },
+    { category: "pricing", q: "What are the plans and limits?", a: "You can sign up for Standard ¥59,800 / $399 (50 deals, 3 materials), Business ¥98,000 / $699 (300 deals, 7 materials), or Enterprise ¥198,000 / $1,299 (unlimited deals, 50 materials). Click analytics is on all plans." },
+    { category: "pricing", q: "If I cancel during the trial, am I charged?", a: "No automatic charge when the trial ends. You are charged only after you subscribe to a paid plan." },
     { category: "pricing", q: "Can we change plans or pay by invoice?", a: "Yes—change plans from Dashboard billing. Invoice payment depends on contract type; tell us during onboarding if you need it." },
 
     # setup
@@ -182,33 +182,33 @@ module TopsHelper
     { num: "03", icon: "fa-envelope-circle-check", orbit: "fa-chart-pie", title: "Intent scoring & follow-up automation", desc: "Analyze interest from logs and grade prospects on all plans. Follow-up email is Business and above." }
   ].freeze
 
+  LP_CONTACT_EMAIL = "info@j-work.jp".freeze
+
   COMPANY_PROFILE = [
     ["会社名", "株式会社J Work"],
     ["代表取締役", "奥山　健太"],
-    ["設立", "2023年8月22日"],
+    ["設立", "2023年8月18日"],
     ["資本金", "5,000,000円"],
     ["所在地", "東京都港区浜松町２丁目２番１５号２Ｆ"],
-    ["事業内容", "AI商談代行サービス「Meetia」の開発・提供"]
+    ["事業内容", "AI商談代行サービス「Meetia」の開発・提供"],
+    ["メールアドレス", LP_CONTACT_EMAIL]
   ].freeze
 
   COMPANY_PROFILE_EN = [
     ["Company", "J Work Inc."],
     ["CEO", "Kenta Okuyama"],
-    ["Founded", "August 22, 2023"],
+    ["Founded", "August 18, 2023"],
     ["Capital", "JPY 5,000,000"],
     ["Address", "2F, 2-2-15 Hamamatsucho, Minato-ku, Tokyo"],
-    ["Business", "Development and delivery of Meetia, an AI sales agent"]
+    ["Business", "Development and delivery of Meetia, an AI sales agent"],
+    ["Email", LP_CONTACT_EMAIL]
   ].freeze
 
   COMPANY_STATS = [
-    { icon: "fa-calendar", label: "顧客満足度", num: "97.5", unit: "%" },
-    { icon: "fa-building", label: "累計導入社数", num: "500", unit: "+社" },
     { icon: "fa-clock", label: "対応体制", num: "24", unit: "時間" }
   ].freeze
 
   COMPANY_STATS_EN = [
-    { icon: "fa-calendar", label: "Customer satisfaction", num: "97.5", unit: "%" },
-    { icon: "fa-building", label: "Adopting companies", num: "500", unit: "+" },
     { icon: "fa-clock", label: "Coverage", num: "24", unit: "h" }
   ].freeze
 
@@ -254,6 +254,11 @@ module TopsHelper
     I18n.locale.to_s == "en"
   end
 
+  def public_legal_href(page)
+    prefix = lp_english? ? "/en" : ""
+    "#{prefix}/#{page}"
+  end
+
   def lp_nav_items
     lp_english? ? LP_NAV_ITEMS_EN : LP_NAV_ITEMS
   end
@@ -297,6 +302,10 @@ module TopsHelper
 
   def company_profile_rows
     lp_english? ? COMPANY_PROFILE_EN : COMPANY_PROFILE
+  end
+
+  def lp_contact_email
+    LP_CONTACT_EMAIL
   end
 
   def company_stats

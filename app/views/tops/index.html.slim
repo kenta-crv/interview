@@ -1,5 +1,7 @@
-- set_meta_tags title: t("meetia.lp.meta_title")
-- set_meta_tags description: t("meetia.lp.meta_description")
+- page_title = t("meetia.lp.meta_title")
+- page_meta = { title: page_title, description: t("meetia.lp.meta_description") }
+- page_meta[:site] = false if page_title.include?("Meetia")
+- set_meta_tags page_meta
 
 .meetia-modern-lp
   header.meetia-nav
@@ -442,9 +444,6 @@
             = link_to lp_sign_up_path, class: "meetia-btn meetia-btn--primary meetia-btn--lg meetia-btn--pill" do
               = t("meetia.lp.cta_start_meetia")
               i.fa-solid.fa-chevron-right aria-hidden="true"
-            = link_to lp_plans_path, class: "meetia-btn meetia-btn--outline meetia-btn--lg meetia-btn--pill" do
-              i.fa-solid.fa-download aria-hidden="true"
-              = t("meetia.lp.body.features_dl")
 
   section#pricing.meetia-section.meetia-pricing-section
     .meetia-section__inner.meetia-section__inner--wide
@@ -511,17 +510,6 @@
         span.meetia-section__eyebrow REVIEWS
         h2.meetia-section__title = t("meetia.lp.body.reviews_title")
         p.meetia-section__lead = t("meetia.lp.body.reviews_lead")
-      .meetia-reviews-summary
-        .meetia-reviews-summary__stat
-          span.meetia-reviews-summary__value 4.8
-          span.meetia-reviews-summary__label
-            | / 5.0
-        .meetia-reviews-summary__stat
-          span.meetia-reviews-summary__value 500+
-          span.meetia-reviews-summary__label = t("meetia.lp.body.reviews_companies")
-        .meetia-reviews-summary__stat
-          span.meetia-reviews-summary__value 98%
-          span.meetia-reviews-summary__label = t("meetia.lp.body.reviews_retention")
       .meetia-reviews-slider data-reviews-slider=""
         button.meetia-reviews-slider__btn.meetia-reviews-slider__btn--prev type="button" aria-label=t("meetia.lp.body.aria_prev_review") data-reviews-prev=""
           i.fa-solid.fa-chevron-left aria-hidden="true"
@@ -561,7 +549,7 @@
               p.meetia-faq-panel__a = item[:a]
       .meetia-faq-contact
         p = t("meetia.lp.body.faq_unresolved")
-        = link_to "#company", class: "meetia-btn meetia-btn--primary meetia-btn--lg" do
+        = link_to "mailto:#{lp_contact_email}", class: "meetia-btn meetia-btn--primary meetia-btn--lg" do
           i.fa-solid.fa-envelope aria-hidden="true"
           span = t("meetia.lp.body.faq_contact")
 
@@ -651,7 +639,11 @@
               - company_profile_rows.each do |label, value|
                 .meetia-company-profile__row
                   .meetia-company-profile__th = label
-                  .meetia-company-profile__td = value
+                  .meetia-company-profile__td
+                    - if value.to_s.include?("@")
+                      = mail_to value
+                    - else
+                      = value
 
   section#trial.meetia-cta-band
     .meetia-cta-band__inner

@@ -32,4 +32,8 @@
         - company_profile_rows.each do |label, value|
           .meetia-company-profile__row
             .meetia-company-profile__th = label
-            .meetia-company-profile__td = value
+            .meetia-company-profile__td
+              - if value.to_s.include?("@")
+                = mail_to value
+              - else
+                = value

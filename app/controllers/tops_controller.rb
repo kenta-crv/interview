@@ -10,6 +10,21 @@ class TopsController < ApplicationController
     end
   end
 
+  def privacy
+    @legal_page = :privacy
+    render :legal
+  end
+
+  def tos
+    @legal_page = :tos
+    render :legal
+  end
+
+  def specific
+    @legal_page = :specific
+    render :legal
+  end
+
   def interview
     current_client&.check_and_upgrade_expired_trial
     @situations = Situation.where(archived: false).order(:title)

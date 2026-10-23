@@ -23,9 +23,12 @@ footer.meetia-footer
         i.fa-solid.fa-bolt aria-hidden="true"
         span = t("meetia.lp.footer_cta")
   .meetia-footer__bottom
-    p.meetia-footer__copy © #{Time.current.year} Meetia Inc.
+    p.meetia-footer__copy © #{Time.current.year} #{t("meetia.lp.footer_legal")}
     .meetia-footer__bottom-links
       = link_to "#faq", class: "meetia-footer__bottom-link" do
         | FAQ
       = link_to "#company", class: "meetia-footer__bottom-link" do
         = t("meetia.lp.footer_company")
+      = link_to (lp_english? ? "Privacy Policy" : "プライバシーポリシー"), public_legal_href("privacy"), class: "meetia-footer__bottom-link"
+      = link_to (lp_english? ? "Terms of Service" : "利用規約"), public_legal_href("tos"), class: "meetia-footer__bottom-link"
+      = link_to (lp_english? ? "Legal notice" : "特定商取引法に基づく表記"), public_legal_href("specific"), class: "meetia-footer__bottom-link"
